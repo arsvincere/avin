@@ -1,4 +1,4 @@
-use avin_data::Command;
+use avin::Command;
 use std::env;
 use std::process;
 
