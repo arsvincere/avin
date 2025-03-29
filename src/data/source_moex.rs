@@ -1,4 +1,4 @@
-use crate::conf::{DAY_BEGIN, MSK_TIME_DIF};
+use crate::conf::{DAY_BEGIN, DT_FMT, MSK_TIME_DIF};
 use crate::data::instrument::Instrument;
 use crate::data::market_data::MarketData;
 use chrono::prelude::*;
@@ -55,7 +55,6 @@ impl SourceMoex {
     //
     //     // dataversion marketdata marketdata_yields securities
     //     let json: serde_json::Value = response.json().await.unwrap();
-    //     // dbg!(&json);
     //
     //     // let dataversion = &json["dataversion"];
     //     // let marketdata = &json["marketdata"];
@@ -75,12 +74,9 @@ impl SourceMoex {
     //     // как скачать данные.. с конца в конец тикеры которые мне
     //     // нужны я и так знаю.
     //     let columns = &json["securities"]["columns"];
-    //     dbg!(&columns);
     //     let columns = columns.as_array().unwrap();
-    //     dbg!(&columns);
     //     for i in columns {
     //         let s = i.as_str().unwrap();
-    //         dbg!(&s);
     //     }
     //
     //     // let json = serde_json::to_string(&json["securities"]).unwrap();
@@ -119,18 +115,18 @@ impl SourceMoex {
     pub async fn get_bars(
         &self,
         instrument: &Instrument,
-        data_type: &MarketData,
+        market_data: &MarketData,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<DataFrame, &'static str> {
-        let mut from = Self::utc_to_msk(begin);
-        let till = Self::utc_to_msk(end);
+        let mut from = Self::utc_to_msk(begin, market_data);
+        let till = Self::utc_to_msk(end, market_data);
 
         let mut candles = DataFrame::empty_with_schema(&self.candle_schema);
         while from < till {
             println!("   from {from}");
             let response = self
-                .try_request(instrument, data_type, &from, &till)
+                .try_request(instrument, market_data, &from, &till)
                 .await
                 .unwrap();
             let json: serde_json::Value = match response.json().await {
@@ -151,31 +147,52 @@ impl SourceMoex {
             let last = Self::get_last_dt(&part);
             if last < till {
                 from = last;
+            } else {
+                break;
             }
         }
 
         candles = Self::drop_duplicate(candles);
+        candles = Self::convert_dt(candles);
         candles = Self::set_tz_utc(candles);
 
         return Ok(candles);
     }
 
-    fn utc_to_msk(dt: &DateTime<Utc>) -> NaiveDateTime {
-        let naive_dt = dt.naive_utc();
+    fn utc_to_msk(
+        dt: &DateTime<Utc>,
+        market_data: &MarketData,
+    ) -> NaiveDateTime {
+        // INFO: Нюанс
+        // Для таймфреймов D, W, M
+        // 2024-01-01 00:00:00+00:00  ->  2024-01-01 00:00:00
+        // --
+        // Для таймфреймов < D
+        // 2024-01-01 07:30:00+00:00  ->  2024-01-01 10:30:00
 
-        // INFO: если время в Utc 00:00:00, значит качаем большие
-        // таймфреймы: D W M, тогда возвращаю наивное время как есть
-        // время тут не важно, главное дата правильная.
-        if naive_dt.time() == DAY_BEGIN {
-            return naive_dt;
+        let naive_dt = dt.naive_utc();
+        match market_data {
+            MarketData::BAR_1M => naive_dt + MSK_TIME_DIF,
+            MarketData::BAR_10M => naive_dt + MSK_TIME_DIF,
+            MarketData::BAR_1H => naive_dt + MSK_TIME_DIF,
+            MarketData::BAR_D => naive_dt,
+            MarketData::BAR_W => naive_dt,
+            MarketData::BAR_M => naive_dt,
+            _ => todo!(),
         }
 
-        // INFO: иначе качаем маленькие таймфреймы, тут правим время тоже
-        return naive_dt + MSK_TIME_DIF;
+        // // INFO: если время в Utc 00:00:00, значит качаем большие
+        // // таймфреймы: D W M, тогда возвращаю наивное время как есть
+        // // время тут не важно, главное дата правильная.
+        // if naive_dt.time() == DAY_BEGIN {
+        //     return naive_dt;
+        // }
+        //
+        // // INFO: иначе качаем маленькие таймфреймы, тут правим время тоже
+        // return naive_dt + MSK_TIME_DIF;
     }
     fn msk_to_utc(moex_dt: &str) -> NaiveDateTime {
-        let format = "%Y-%m-%d %H:%M:%S";
-        let dt = NaiveDateTime::parse_from_str(moex_dt, format).unwrap();
+        let dt = NaiveDateTime::parse_from_str(moex_dt, DT_FMT).unwrap();
 
         // INFO:
         // У меня так и не получилось запихать в DataFrame DateTime<Utc>
@@ -204,11 +221,11 @@ impl SourceMoex {
     async fn try_request(
         &self,
         instrument: &Instrument,
-        data_type: &MarketData,
+        market_data: &MarketData,
         from: &NaiveDateTime,
         till: &NaiveDateTime,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        let url = self.get_url(instrument, data_type, from, till).unwrap();
+        let url = self.get_url(instrument, market_data, from, till).unwrap();
         let request = self
             .client
             .get(&url)
@@ -222,7 +239,7 @@ impl SourceMoex {
     fn get_url(
         &self,
         instrument: &Instrument,
-        data_type: &MarketData,
+        market_data: &MarketData,
         begin: &NaiveDateTime,
         end: &NaiveDateTime,
     ) -> Result<String, &'static str> {
@@ -241,15 +258,22 @@ impl SourceMoex {
         let data = "/candles.json?";
         let from = format!("from={begin}&"); // "from=2025-01-01 00:00&"
         let till = format!("till={end}&"); // "till=2025-03-27 14:35&"
-        let interval = Self::interval_from(&data_type)?;
+        let interval = Self::interval_from(&market_data)?;
 
         url = format!("{url}{ticker}{data}{from}{till}{interval}");
         Ok(url)
     }
-    fn interval_from(data_type: &MarketData) -> Result<&str, &'static str> {
-        match data_type {
-            MarketData::BAR_D => Ok("interval=24"),
+    fn interval_from(market_data: &MarketData) -> Result<&str, &'static str> {
+        match market_data {
             MarketData::BAR_1M => Ok("interval=1"),
+            MarketData::BAR_10M => Ok("interval=10"),
+            MarketData::BAR_1H => Ok("interval=60"),
+            MarketData::BAR_D => Ok("interval=24"),
+            MarketData::BAR_W => Ok("interval=7"),
+            MarketData::BAR_M => Ok("interval=31"),
+
+            MarketData::BAR_5M => Err("5M data is not availible at MOEX"),
+            // _ => todo!(),
         }
     }
     fn parse_json_candles(json: serde_json::Value) -> DataFrame {
@@ -328,8 +352,7 @@ impl SourceMoex {
         let last = candles.column("dt").unwrap().len() - 1;
         let last =
             candles.column("dt").unwrap().get(last).unwrap().str_value();
-        let last = NaiveDateTime::parse_from_str(&last, "%Y-%m-%d %H:%M:%S")
-            .unwrap();
+        let last = NaiveDateTime::parse_from_str(&last, DT_FMT).unwrap();
 
         return last;
     }
@@ -339,7 +362,7 @@ impl SourceMoex {
         // последняя свеча: сначала она идет последняя, а на следующем
         // шаге цикла она первая. Все потому что долбаная мосбиржа
         // выдает свечи в закрытом диапазоне [from, till]. Было бы
-        // меньше боли если бы выдавала как обычнов программировании
+        // меньше боли если бы выдавала как обычно в программировании
         // полуоткрытый диапазон [from, till).
         // Ну самый простой вариант - переложить работу по удаленю
         // дублей на DataFrame.
@@ -349,7 +372,7 @@ impl SourceMoex {
             .unique_stable(Some(&[col_name]), UniqueKeepStrategy::Any, None)
             .unwrap()
     }
-    fn set_tz_utc(mut candles: DataFrame) -> DataFrame {
+    fn convert_dt(mut candles: DataFrame) -> DataFrame {
         let mut datetime: Vec<NaiveDateTime> = Vec::new();
         for opt_naive in candles.column("dt").unwrap().str().unwrap().iter() {
             let utc_dt = Self::msk_to_utc(opt_naive.unwrap());
@@ -360,7 +383,10 @@ impl SourceMoex {
             .with_column(Column::new("dt".into(), &datetime))
             .unwrap();
 
-        let candles = candles
+        candles
+    }
+    fn set_tz_utc(candles: DataFrame) -> DataFrame {
+        candles
             .lazy()
             .with_column(col("dt").dt().replace_time_zone(
                 Some("UTC".into()),
@@ -368,8 +394,6 @@ impl SourceMoex {
                 NonExistent::Raise,
             ))
             .collect()
-            .unwrap();
-
-        candles
+            .unwrap()
     }
 }

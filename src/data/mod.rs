@@ -8,5 +8,6 @@ mod source_moex;
 
 pub use cli::Command;
 pub use instrument::Instrument;
+pub use manager::Manager;
 pub use market_data::MarketData;
 pub use source::Source;

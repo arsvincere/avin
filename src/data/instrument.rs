@@ -1,4 +1,5 @@
 use crate::conf::DATA_DIR;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct Instrument {
@@ -7,11 +8,19 @@ pub struct Instrument {
     pub ticker: String,
 }
 impl Instrument {
-    pub fn path(&self) -> String {
-        format!(
-            "{DATA_DIR}/{}/{}/{}",
-            self.exchange, self.itype, self.ticker
-        )
+    pub fn path(&self) -> PathBuf {
+        let mut p = std::path::PathBuf::new();
+        p.push(&DATA_DIR);
+        p.push(&self.exchange);
+        p.push(&self.itype);
+        p.push(&self.ticker);
+
+        return p;
+
+        // format!(
+        //     "{DATA_DIR}/{}/{}/{}",
+        //     self.exchange, self.itype, self.ticker
+        // )
     }
     pub fn clone(&self) -> Self {
         let instrument = Instrument {
@@ -21,7 +30,7 @@ impl Instrument {
         };
         return instrument;
     }
-    pub fn from(s: &String) -> Result<Instrument, &'static str> {
+    pub fn from(s: &str) -> Result<Instrument, &'static str> {
         let parts: Vec<&str> = s.split("_").collect();
         if parts.len() != 3 {
             eprintln!("Fail to create instrument from str: {s}");

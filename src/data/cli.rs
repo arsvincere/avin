@@ -26,11 +26,16 @@ impl Command {
         if self.args[1] == "download" {
             self.try_download().await?;
         }
+        if self.args[1] == "convert" {
+            self.try_convert()?;
+        }
 
         Ok(())
     }
+
     async fn try_download(&self) -> Result<(), &'static str> {
-        // avin-data download -s moex -i moex_share_sber --data_type bar_d
+        // Command example:
+        // avin download -s moex -i moex_share_sber --data_type bar_d
         if self.args.len() < 7 {
             panic!("Маловато аргументов для загрузки")
         };
@@ -45,7 +50,31 @@ impl Command {
         assert_eq!(self.args[6], "--data_type");
         let data_type = MarketData::from(&self.args[7])?;
 
-        Manager::download(&source, &instrument, &data_type).await?;
+        if let Some(year_flag) = self.args.get(8) {
+            assert_eq!(year_flag, "--year");
+            let year: i32 = self.args[9].parse().unwrap();
+            Manager::download(&source, &instrument, &data_type, Some(year))
+                .await?;
+        } else {
+            Manager::download(&source, &instrument, &data_type, None).await?;
+        }
+
+        Ok(())
+    }
+    fn try_convert(&self) -> Result<(), &'static str> {
+        // Command example:
+        // avin convert -i moex_share_sber bar_1m bar_5m
+        if self.args.len() < 6 {
+            panic!("Маловато аргументов для конвертации")
+        };
+
+        assert_eq!(self.args[2], "-i");
+        let instrument = Instrument::from(&self.args[3])?;
+
+        let in_t = MarketData::from(&self.args[4])?;
+        let out_t = MarketData::from(&self.args[5])?;
+
+        Manager::convert(&instrument, &in_t, &out_t)?;
 
         Ok(())
     }

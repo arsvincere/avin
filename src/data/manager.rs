@@ -1,9 +1,11 @@
+use crate::core::Bar;
 use crate::data::data_file_bar::DataFileBar;
 use crate::data::instrument::Instrument;
 use crate::data::market_data::MarketData;
 use crate::data::source::Source;
 use crate::data::source_moex::SourceMoex;
 use chrono::prelude::*;
+use polars::prelude::*;
 
 pub struct Manager {}
 impl Manager {
@@ -11,6 +13,7 @@ impl Manager {
         source: &Source,
         instrument: &Instrument,
         market_data: &MarketData,
+        year: Option<i32>,
     ) -> Result<(), &'static str> {
         let source = match source {
             Source::MOEX => SourceMoex::new(),
@@ -19,12 +22,167 @@ impl Manager {
         };
         println!(":: Download {} {}", instrument.ticker, market_data.name());
 
+        match year {
+            Some(year) => {
+                Self::download_one_year(
+                    &source,
+                    &instrument,
+                    &market_data,
+                    year,
+                )
+                .await
+            }
+            None => {
+                Self::download_all_availible(
+                    &source,
+                    &instrument,
+                    &market_data,
+                )
+                .await
+            }
+        }
+    }
+    pub fn convert(
+        instrument: &Instrument,
+        in_t: &MarketData,
+        out_t: &MarketData,
+    ) -> Result<(), &'static str> {
+        println!(
+            ":: Convert {} {} -> {}",
+            instrument.ticker,
+            in_t.name(),
+            out_t.name(),
+        );
+
+        // load data files
+        let data = DataFileBar::request_all(instrument, in_t)?;
+        if data.len() == 0 {
+            return Err("   - no data files");
+        }
+
+        // convert timeframe
+        for i in data {
+            Manager::convert_timeframe(&i, in_t, out_t)?;
+        }
+
+        // сохранить
+
+        println!("Convert complete!");
+        Ok(())
+    }
+    pub fn request(
+        instrument: &Instrument,
+        market_data: &MarketData,
+        begin: &DateTime<Utc>,
+        end: &DateTime<Utc>,
+    ) -> Result<Vec<Bar>, &'static str> {
+        let mut year = begin.year();
+        let end_year = end.year();
+
+        let mut df =
+            DataFileBar::load(instrument, market_data, year).unwrap();
+        year = year + 1;
+        while year <= end_year {
+            let file_df =
+                DataFileBar::load(instrument, market_data, year).unwrap();
+            df.extend(&file_df).unwrap();
+            year += 1;
+        }
+
+        let date_time = df
+            .column("dt")
+            .unwrap()
+            .datetime()
+            .unwrap()
+            .as_datetime_iter()
+            .map(|x| x.unwrap().and_utc());
+        let mut open = df
+            .column("open")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut high = df
+            .column("high")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut low =
+            df.column("low").unwrap().f64().unwrap().into_no_null_iter();
+        let mut close = df
+            .column("close")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut volume = df
+            .column("volume")
+            .unwrap()
+            .u64()
+            .unwrap()
+            .into_no_null_iter();
+
+        let mut bars: Vec<Bar> = Vec::new();
+        for dt in date_time {
+            if dt >= *begin && dt < *end {
+                let bar = Bar::new(
+                    dt,
+                    open.next().unwrap(),
+                    high.next().unwrap(),
+                    low.next().unwrap(),
+                    close.next().unwrap(),
+                    volume.next().unwrap(),
+                )
+                .unwrap();
+                bars.push(bar);
+            }
+        }
+
+        return Ok(bars);
+    }
+
+    async fn download_one_year(
+        source: &SourceMoex,
+        instrument: &Instrument,
+        market_data: &MarketData,
+        year: i32,
+    ) -> Result<(), &'static str> {
+        let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
+        let df = source
+            .get_bars(&instrument, &market_data, &begin, &end)
+            .await?;
+
+        if df.is_empty() {
+            return Err("   - no data for {year}");
+        }
+
+        // INFO: ParquetWriter требует &mut df для сохранения...
+        // по факту никто data_file не меняет перед записью
+        let mut data_file = DataFileBar::new(
+            instrument.clone(),
+            market_data.clone(),
+            df,
+            year,
+        )
+        .unwrap();
+        DataFileBar::save(&mut data_file)?;
+
+        println!("Download complete!");
+        Ok(())
+    }
+    async fn download_all_availible(
+        source: &SourceMoex,
+        instrument: &Instrument,
+        market_data: &MarketData,
+    ) -> Result<(), &'static str> {
         let mut year: i32 = 1990; // суть - более старых данных точно нет
         let now_year = Utc::now().year();
 
         while year <= now_year {
             let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
-            let end = Utc.with_ymd_and_hms(year + 1, 1, 1, 0, 0, 0).unwrap();
+            let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
             let df = source
                 .get_bars(&instrument, &market_data, &begin, &end)
                 .await?;
@@ -50,5 +208,187 @@ impl Manager {
 
         println!("Download complete!");
         Ok(())
+    }
+    fn convert_timeframe(
+        data: &DataFileBar,
+        in_t: &MarketData,
+        out_t: &MarketData,
+    ) -> Result<(), &'static str> {
+        let b = NaiveDate::from_ymd_opt(data.year, 1, 1)
+            .unwrap()
+            .and_hms_opt(0, 0, 0)
+            .unwrap();
+        let e = NaiveDate::from_ymd_opt(data.year, 12, 31)
+            .unwrap()
+            .and_hms_opt(23, 59, 0)
+            .unwrap();
+        let r = polars::prelude::date_range(
+            "dt".into(),
+            b,
+            e,
+            Duration::new(
+                time_unit::TimeUnit::Minutes.get_unit_nanoseconds() as i64,
+            ),
+            ClosedWindow::Both, // Both=[b,e], None=(b,e)...
+            polars::prelude::TimeUnit::Milliseconds,
+            None,
+        )
+        .unwrap();
+        let c = Series::new("name".into(), r);
+        let df = df!(
+            "dt" => c,
+        );
+        // TODO:
+        // пока получилось только создать датафрейм типо "__fillVoid" как
+        // раньше делал. Без пробелов по датам. Теперь его еще timezone
+        // Utc поставить. Потом надо объединить с реальными барама.
+        // Потом как то селектить по группам и сливать в один бар.
+        // Сейчас это слишком сложно для меня... нифига еще не понимаю
+        // как работать с датафреймами на расте, на питоне блин все было
+        // просто.
+        dbg!(&in_t);
+        dbg!(&out_t);
+        dbg!(&df);
+
+        todo!();
+
+        // NOTE: old python code convert timeframe
+        //
+        // bars = cls.__fillVoid(bars, in_type)
+        // period = out_type.toTimeDelta()
+        //
+        // converted = list()
+        // i = 0
+        // while i < len(bars):
+        //     first = i
+        //     last = i
+        //     while last < len(bars):
+        //         time_dif = bars[last].dt - bars[first].dt
+        //         if time_dif < period:
+        //             last += 1
+        //         else:
+        //             break
+        //
+        //     new_bar = cls.__join(bars[first:last])
+        //     if new_bar is not None:
+        //         converted.append(new_bar)
+        //
+        //     i = last
+        //
+        // return converted
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn request_1m() {
+        let instr = Instrument::from("moex_share_sber").unwrap();
+        let market_data = MarketData::BAR_1M;
+        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
+
+        let bars =
+            Manager::request(&instr, &market_data, &begin, &end).unwrap();
+        let first = &bars[0];
+        let last = &bars[bars.len() - 1];
+
+        assert_eq!(first.dt, begin);
+        assert_eq!(
+            last.dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 7, 59, 0).unwrap()
+        );
+    }
+    #[test]
+    fn request_10m() {
+        let instr = Instrument::from("moex_share_sber").unwrap();
+        let market_data = MarketData::BAR_10M;
+        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
+
+        let bars =
+            Manager::request(&instr, &market_data, &begin, &end).unwrap();
+        let first = &bars[0];
+        let last = &bars[bars.len() - 1];
+
+        assert_eq!(first.dt, begin);
+        assert_eq!(
+            last.dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 7, 50, 0).unwrap()
+        );
+    }
+    #[test]
+    fn request_1h() {
+        let instr = Instrument::from("moex_share_sber").unwrap();
+        let market_data = MarketData::BAR_1H;
+        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2023, 8, 1, 13, 0, 0).unwrap();
+
+        let bars =
+            Manager::request(&instr, &market_data, &begin, &end).unwrap();
+        let first = &bars[0];
+        let last = &bars[bars.len() - 1];
+
+        assert_eq!(first.dt, begin);
+        assert_eq!(
+            last.dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 12, 0, 0).unwrap()
+        );
+    }
+    #[test]
+    fn request_d() {
+        let instr = Instrument::from(&"moex_share_sber".to_string()).unwrap();
+        let market_data = MarketData::BAR_D;
+        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 0, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2023, 9, 1, 0, 0, 0).unwrap();
+
+        let bars =
+            Manager::request(&instr, &market_data, &begin, &end).unwrap();
+        let first = &bars[0];
+        let last = &bars[bars.len() - 1];
+
+        assert_eq!(first.dt, begin);
+        assert_eq!(
+            last.dt,
+            Utc.with_ymd_and_hms(2023, 8, 31, 0, 0, 0).unwrap()
+        );
+    }
+    #[test]
+    fn request_w() {
+        let instr = Instrument::from(&"moex_share_sber".to_string()).unwrap();
+        let market_data = MarketData::BAR_W;
+        let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
+
+        let bars =
+            Manager::request(&instr, &market_data, &begin, &end).unwrap();
+        let first = &bars[0];
+        let last = &bars[bars.len() - 1];
+
+        assert_eq!(first.dt, begin);
+        assert_eq!(
+            last.dt,
+            Utc.with_ymd_and_hms(2024, 12, 30, 0, 0, 0).unwrap()
+        );
+    }
+    #[test]
+    fn request_m() {
+        let instr = Instrument::from(&"moex_share_sber".to_string()).unwrap();
+        let market_data = MarketData::BAR_M;
+        let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
+
+        let bars =
+            Manager::request(&instr, &market_data, &begin, &end).unwrap();
+        let first = &bars[0];
+        let last = &bars[bars.len() - 1];
+
+        assert_eq!(first.dt, begin);
+        assert_eq!(
+            last.dt,
+            Utc.with_ymd_and_hms(2024, 12, 1, 0, 0, 0).unwrap()
+        );
     }
 }
