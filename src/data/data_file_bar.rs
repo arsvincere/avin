@@ -1,32 +1,32 @@
-use crate::data::instrument::Instrument;
+use crate::core::Asset;
 use crate::data::market_data::MarketData;
 use crate::utils::Cmd;
 use polars::prelude::*;
 use std::path::PathBuf;
 
 #[derive(Debug)]
-pub struct DataFileBar {
-    pub instrument: Instrument,
+pub struct DataFileBar<'a> {
+    pub asset: &'a Asset,
     pub market_data: MarketData,
     pub data: DataFrame,
     pub year: i32,
 }
-impl DataFileBar {
+impl<'a> DataFileBar<'a> {
     pub fn path(&self) -> PathBuf {
-        let mut path = self.instrument.path();
+        let mut path = self.asset.path();
         path.push(&self.market_data.name());
         path.push(format!("{}.pqt", self.year.to_string()));
 
-        // return format!("{instrument_path}/{market_data}/{year}.pqt");
+        // return format!("{asset_path}/{market_data}/{year}.pqt");
         path
     }
 
     pub fn new(
-        instrument: Instrument,
+        asset: &'a Asset,
         market_data: MarketData,
         data: DataFrame,
         year: i32,
-    ) -> Result<DataFileBar, &'static str> {
+    ) -> Result<DataFileBar<'a>, &'static str> {
         // TODO: проверка что begin end в пределах файла в одном году
         // находятся
         // let begin = data.column("dt").unwrap().get(0).unwrap();
@@ -34,7 +34,7 @@ impl DataFileBar {
         // let end = data.column("dt").unwrap().get(end - 1).unwrap();
 
         let data_file = DataFileBar {
-            instrument,
+            asset,
             market_data,
             data,
             year,
@@ -49,12 +49,12 @@ impl DataFileBar {
         Ok(())
     }
     pub fn load(
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         year: i32,
     ) -> Result<DataFrame, &'static str> {
         // get path
-        let mut path = instrument.path();
+        let mut path = asset.path();
         path.push(&market_data.name());
         path.push(format!("{year}.pqt"));
 
@@ -62,7 +62,7 @@ impl DataFileBar {
         return Ok(df);
 
         // let data_file = DataFileBar::new(
-        //     instrument.clone(),
+        //     asset.clone(),
         //     market_data.clone(),
         //     df,
         //     year,
@@ -72,11 +72,11 @@ impl DataFileBar {
         // Ok(data_file)
     }
     pub fn request_all(
-        instrument: &Instrument,
+        asset: &'a Asset,
         market_data: &MarketData,
-    ) -> Result<Vec<DataFileBar>, &'static str> {
+    ) -> Result<Vec<DataFileBar<'a>>, &'static str> {
         // get dir path
-        let mut dir_path = instrument.path();
+        let mut dir_path = asset.path();
         dir_path.push(&market_data.name());
 
         // get files
@@ -94,13 +94,9 @@ impl DataFileBar {
                 .parse()
                 .unwrap();
             let df = Cmd::read_pqt(&path).unwrap();
-            let data_file = DataFileBar::new(
-                instrument.clone(),
-                market_data.clone(),
-                df,
-                year,
-            )
-            .unwrap();
+            let data_file =
+                DataFileBar::new(asset, market_data.clone(), df, year)
+                    .unwrap();
 
             all_data_files.push(data_file);
         }

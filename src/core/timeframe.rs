@@ -1,7 +1,9 @@
+use std::hash::Hash;
+
 use crate::data::MarketData;
 use chrono::TimeDelta;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TimeFrame {
     pub name: String,
 }
@@ -19,7 +21,7 @@ impl TimeFrame {
             _ => panic!("Invalid TimeFrame: {}", self.name),
         }
     }
-    pub fn as_market_data(&self) -> MarketData {
+    pub fn to_market_data(&self) -> MarketData {
         match self.name.as_str() {
             "1M" => MarketData::BAR_1M,
             "5M" => MarketData::BAR_5M,
@@ -49,6 +51,11 @@ impl TimeFrame {
     }
 }
 
+impl Hash for TimeFrame {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
 // class TimeFrame:  # {{{
 //     def __hash__(self):  # {{{
 //         return hash(str(self))
@@ -192,16 +199,16 @@ mod tests {
         TimeFrame::new("7M");
     }
     #[test]
-    fn as_market_data() {
-        assert_eq!(TimeFrame::new("1M").as_market_data(), MarketData::BAR_1M);
-        assert_eq!(TimeFrame::new("5M").as_market_data(), MarketData::BAR_5M);
+    fn to_market_data() {
+        assert_eq!(TimeFrame::new("1M").to_market_data(), MarketData::BAR_1M);
+        assert_eq!(TimeFrame::new("5M").to_market_data(), MarketData::BAR_5M);
         assert_eq!(
-            TimeFrame::new("10M").as_market_data(),
+            TimeFrame::new("10M").to_market_data(),
             MarketData::BAR_10M
         );
-        assert_eq!(TimeFrame::new("1H").as_market_data(), MarketData::BAR_1H);
-        assert_eq!(TimeFrame::new("D").as_market_data(), MarketData::BAR_D);
-        assert_eq!(TimeFrame::new("W").as_market_data(), MarketData::BAR_W);
-        assert_eq!(TimeFrame::new("M").as_market_data(), MarketData::BAR_M);
+        assert_eq!(TimeFrame::new("1H").to_market_data(), MarketData::BAR_1H);
+        assert_eq!(TimeFrame::new("D").to_market_data(), MarketData::BAR_D);
+        assert_eq!(TimeFrame::new("W").to_market_data(), MarketData::BAR_W);
+        assert_eq!(TimeFrame::new("M").to_market_data(), MarketData::BAR_M);
     }
 }

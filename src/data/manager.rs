@@ -1,6 +1,6 @@
+use crate::core::Asset;
 use crate::core::Bar;
 use crate::data::data_file_bar::DataFileBar;
-use crate::data::instrument::Instrument;
 use crate::data::market_data::MarketData;
 use crate::data::source::Source;
 use crate::data::source_moex::SourceMoex;
@@ -11,7 +11,7 @@ pub struct Manager {}
 impl Manager {
     pub async fn download(
         source: &Source,
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         year: Option<i32>,
     ) -> Result<(), &'static str> {
@@ -20,42 +20,33 @@ impl Manager {
             Source::TINKOFF => panic!("Нахер с Тинькофф качать?"),
             Source::CONVERTER => panic!(),
         };
-        println!(":: Download {} {}", instrument.ticker, market_data.name());
+        println!(":: Download {} {}", asset.ticker, market_data.name());
 
         match year {
             Some(year) => {
-                Self::download_one_year(
-                    &source,
-                    &instrument,
-                    &market_data,
-                    year,
-                )
-                .await
+                Self::download_one_year(&source, &asset, &market_data, year)
+                    .await
             }
             None => {
-                Self::download_all_availible(
-                    &source,
-                    &instrument,
-                    &market_data,
-                )
-                .await
+                Self::download_all_availible(&source, &asset, &market_data)
+                    .await
             }
         }
     }
     pub fn convert(
-        instrument: &Instrument,
+        asset: &Asset,
         in_t: &MarketData,
         out_t: &MarketData,
     ) -> Result<(), &'static str> {
         println!(
             ":: Convert {} {} -> {}",
-            instrument.ticker,
+            asset.ticker,
             in_t.name(),
             out_t.name(),
         );
 
         // load data files
-        let data = DataFileBar::request_all(instrument, in_t)?;
+        let data = DataFileBar::request_all(asset, in_t)?;
         if data.len() == 0 {
             return Err("   - no data files");
         }
@@ -71,7 +62,7 @@ impl Manager {
         Ok(())
     }
     pub fn request(
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
@@ -79,12 +70,11 @@ impl Manager {
         let mut year = begin.year();
         let end_year = end.year();
 
-        let mut df =
-            DataFileBar::load(instrument, market_data, year).unwrap();
+        let mut df = DataFileBar::load(asset, market_data, year).unwrap();
         year = year + 1;
         while year <= end_year {
             let file_df =
-                DataFileBar::load(instrument, market_data, year).unwrap();
+                DataFileBar::load(asset, market_data, year).unwrap();
             df.extend(&file_df).unwrap();
             year += 1;
         }
@@ -144,15 +134,13 @@ impl Manager {
 
     async fn download_one_year(
         source: &SourceMoex,
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         year: i32,
     ) -> Result<(), &'static str> {
         let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
-        let df = source
-            .get_bars(&instrument, &market_data, &begin, &end)
-            .await?;
+        let df = source.get_bars(&asset, &market_data, &begin, &end).await?;
 
         if df.is_empty() {
             return Err("   - no data for {year}");
@@ -160,13 +148,8 @@ impl Manager {
 
         // INFO: ParquetWriter требует &mut df для сохранения...
         // по факту никто data_file не меняет перед записью
-        let mut data_file = DataFileBar::new(
-            instrument.clone(),
-            market_data.clone(),
-            df,
-            year,
-        )
-        .unwrap();
+        let mut data_file =
+            DataFileBar::new(asset, market_data.clone(), df, year).unwrap();
         DataFileBar::save(&mut data_file)?;
 
         println!("Download complete!");
@@ -174,7 +157,7 @@ impl Manager {
     }
     async fn download_all_availible(
         source: &SourceMoex,
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
     ) -> Result<(), &'static str> {
         let mut year: i32 = 1990; // суть - более старых данных точно нет
@@ -183,9 +166,8 @@ impl Manager {
         while year <= now_year {
             let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
             let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
-            let df = source
-                .get_bars(&instrument, &market_data, &begin, &end)
-                .await?;
+            let df =
+                source.get_bars(&asset, &market_data, &begin, &end).await?;
 
             if df.is_empty() {
                 println!("   - no data for {year}");
@@ -195,13 +177,9 @@ impl Manager {
 
             // INFO: ParquetWriter требует &mut df для сохранения...
             // по факту никто data_file не меняет перед записью
-            let mut data_file = DataFileBar::new(
-                instrument.clone(),
-                market_data.clone(),
-                df,
-                year,
-            )
-            .unwrap();
+            let mut data_file =
+                DataFileBar::new(asset, market_data.clone(), df, year)
+                    .unwrap();
             DataFileBar::save(&mut data_file)?;
             year += 1;
         }
@@ -285,7 +263,7 @@ mod tests {
 
     #[test]
     fn request_1m() {
-        let instr = Instrument::from("moex_share_sber").unwrap();
+        let instr = Asset::from("moex_share_sber").unwrap();
         let market_data = MarketData::BAR_1M;
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
@@ -303,7 +281,7 @@ mod tests {
     }
     #[test]
     fn request_10m() {
-        let instr = Instrument::from("moex_share_sber").unwrap();
+        let instr = Asset::from("moex_share_sber").unwrap();
         let market_data = MarketData::BAR_10M;
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
@@ -321,7 +299,7 @@ mod tests {
     }
     #[test]
     fn request_1h() {
-        let instr = Instrument::from("moex_share_sber").unwrap();
+        let instr = Asset::from("moex_share_sber").unwrap();
         let market_data = MarketData::BAR_1H;
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 8, 1, 13, 0, 0).unwrap();
@@ -339,7 +317,7 @@ mod tests {
     }
     #[test]
     fn request_d() {
-        let instr = Instrument::from(&"moex_share_sber".to_string()).unwrap();
+        let instr = Asset::from("moex_share_sber").unwrap();
         let market_data = MarketData::BAR_D;
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 9, 1, 0, 0, 0).unwrap();
@@ -357,7 +335,7 @@ mod tests {
     }
     #[test]
     fn request_w() {
-        let instr = Instrument::from(&"moex_share_sber".to_string()).unwrap();
+        let instr = Asset::from("moex_share_sber").unwrap();
         let market_data = MarketData::BAR_W;
         let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
@@ -375,7 +353,7 @@ mod tests {
     }
     #[test]
     fn request_m() {
-        let instr = Instrument::from(&"moex_share_sber".to_string()).unwrap();
+        let instr = Asset::from("moex_share_sber").unwrap();
         let market_data = MarketData::BAR_M;
         let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();

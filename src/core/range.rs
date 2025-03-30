@@ -19,11 +19,11 @@ impl Range {
         }
     }
     pub fn mid(&self) -> f64 {
-        let mn = self.min();
-        let mx = self.max();
-        let half = (mx - mn) / 2.0;
+        let min = self.min();
+        let max = self.max();
+        let half = (max - min) / 2.0;
 
-        mn + half
+        min + half
     }
 
     /// abs of range

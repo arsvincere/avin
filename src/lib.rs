@@ -1,3 +1,7 @@
+//! # AVIN - Ars VINcere
+//!
+//! A great future awaits me!
+
 mod conf;
 mod core;
 mod data;

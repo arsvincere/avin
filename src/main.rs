@@ -1,21 +1,18 @@
-use avin::Instrument;
-use avin::Manager;
-use avin::MarketData;
-use chrono::prelude::*;
-use std::time::{Duration, Instant};
+use avin::*;
 
 #[tokio::main]
 async fn main() {
-    let instr = Instrument::from("moex_share_sber").unwrap();
-    let market_data = MarketData::BAR_1M;
-    let begin = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
-    let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
+    let mut asset = Asset::from("moex_share_sber").unwrap();
+    let tf = TimeFrame::new("5M");
 
-    let start = Instant::now();
-    let bars = Manager::request(&instr, &market_data, &begin, &end).unwrap();
-    let duration = start.elapsed();
+    let chart = asset.load_chart(&tf).unwrap();
+    assert_eq!(chart.tf(), &tf);
 
-    println!("Request bars: {:?}", duration);
+    dbg!(chart.bars().len());
+    dbg!(chart.first());
+    dbg!(chart.last());
+    assert!(chart.bars().len() > 4000);
+    assert!(chart.bars().len() < 5000);
 }
 
 // Request bars: 944.485158ms  - collect

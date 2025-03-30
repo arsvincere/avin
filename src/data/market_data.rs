@@ -1,4 +1,7 @@
 #![allow(non_camel_case_types)]
+
+use crate::core::TimeFrame;
+
 #[derive(Debug, PartialEq)]
 pub enum MarketData {
     BAR_1M,
@@ -50,6 +53,21 @@ impl MarketData {
             "BAR_W" => Ok(MarketData::BAR_W),
             "BAR_M" => Ok(MarketData::BAR_M),
             _ => Err("Invalid data type"),
+        }
+    }
+}
+
+impl From<TimeFrame> for MarketData {
+    fn from(tf: TimeFrame) -> MarketData {
+        match tf.name.as_str() {
+            "1M" => MarketData::BAR_1M,
+            "5M" => MarketData::BAR_5M,
+            "10M" => MarketData::BAR_10M,
+            "1H" => MarketData::BAR_1H,
+            "D" => MarketData::BAR_D,
+            "W" => MarketData::BAR_W,
+            "M" => MarketData::BAR_M,
+            _ => panic!("Invalid TimeFrame: {}", tf.name),
         }
     }
 }

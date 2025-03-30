@@ -1,15 +1,15 @@
 use crate::conf::{DAY_BEGIN, DT_FMT, MSK_TIME_DIF};
-use crate::data::instrument::Instrument;
+use crate::core::Asset;
 use crate::data::market_data::MarketData;
+use crate::Cmd;
 use chrono::prelude::*;
 use polars::prelude::*;
+use std::path::Path;
 
 pub struct SourceMoex {
     // pub name: String,
     service: String,
     api_key: String,
-    // user_name: String,
-    // password: String,
     client: reqwest::Client,
     candle_schema: Schema,
 }
@@ -17,9 +17,9 @@ impl SourceMoex {
     pub fn new() -> Self {
         // let name = "MOEX";
         let service = "https://apim.moex.com/iss";
-        let api_key = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJaVHA2Tjg1ekE4YTBFVDZ5SFBTajJ2V0ZldzNOc2xiSVR2bnVaYWlSNS1NIn0.eyJleHAiOjE3NDUzMDc1MzMsImlhdCI6MTc0MjcxNTUzMywiYXV0aF90aW1lIjoxNzQyNzE1MTExLCJqdGkiOiIxZWVmMmEyYi0wZTYzLTQyNjAtOWViNS1iODkwNDEzYTE2YjIiLCJpc3MiOiJodHRwczovL3NzbzIubW9leC5jb20vYXV0aC9yZWFsbXMvY3JhbWwiLCJhdWQiOlsiYWNjb3VudCIsImlzcyJdLCJzdWIiOiJmOjBiYTZhOGYwLWMzOGEtNDlkNi1iYTBlLTg1NmYxZmU0YmY3ZTo3OWViYzZhNi1iNmNlLTRjZWUtOGNhYi03OTI5NmI1MGYzZjIiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJpc3MiLCJzaWQiOiI4NWZkZWFiZi0zMjExLTRlMDgtYmFiNy0yZGRhZTY2MWE3ZTUiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIi8qIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIGlzc19hbGdvcGFjayBwcm9maWxlIG9mZmxpbmVfYWNjZXNzIGVtYWlsIGJhY2t3YXJkc19jb21wYXRpYmxlIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJpc3NfcGVybWlzc2lvbnMiOiIxMzcsIDEzOCwgMTM5LCAxNDAsIDE2NSwgMTY2LCAxNjcsIDE2OCwgMzI5LCA0MjEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiI3OWViYzZhNi1iNmNlLTRjZWUtOGNhYi03OTI5NmI1MGYzZjIiLCJzZXNzaW9uX3N0YXRlIjoiODVmZGVhYmYtMzIxMS00ZTA4LWJhYjctMmRkYWU2NjFhN2U1In0.KSgQ4LnZA-QXwImADKm0xdQYqAxqxpk2YQ3V8ejGOPlV9Gs4JEAmqvWwhrkMylFJHnHf68Qgw11xEltyzF2kqZ9a5Zv5aVjtaE7qr6IdSVuWBp0X6AKIIS2uStKeqmT0BePesecPeY6DGBlnOYznpttnnCtkNGJ1Ax72qgZA8-Cz2LudilJVEQW0-OsBd-FZO4rr1sZ68Qa8JeUdJOHzErxhO7oPha0xHuL_2ypa-G9-KDUQArfc7okVcnetE0_sxuAq80wKEYagR_4Ca82-VQdYF_doE1KSELXudfZO9nKsS35898mraWK1jhUfUKVYTaStvS9eSyyHWY9_52qhnA";
-        // let user_name = "mr.alexavin@gmail.com";
-        // let password = "GRSww23.m";
+        let key_path =
+            Path::new("/home/alex/avin/usr/connect/moex/api_key.txt");
+        let api_key = Cmd::read(key_path).unwrap().trim().to_string();
         let client = reqwest::Client::new();
 
         let candle_schema = Schema::from_iter(vec![
@@ -34,9 +34,7 @@ impl SourceMoex {
         Self {
             // name: name.to_string(),
             service: service.to_string(),
-            api_key: api_key.to_string(),
-            // user_name: user_name.to_string(),
-            // password: password.to_string(),
+            api_key,
             client,
             candle_schema,
         }
@@ -114,7 +112,7 @@ impl SourceMoex {
     // }
     pub async fn get_bars(
         &self,
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
@@ -126,7 +124,7 @@ impl SourceMoex {
         while from < till {
             println!("   from {from}");
             let response = self
-                .try_request(instrument, market_data, &from, &till)
+                .try_request(asset, market_data, &from, &till)
                 .await
                 .unwrap();
             let json: serde_json::Value = match response.json().await {
@@ -220,12 +218,12 @@ impl SourceMoex {
     }
     async fn try_request(
         &self,
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         from: &NaiveDateTime,
         till: &NaiveDateTime,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        let url = self.get_url(instrument, market_data, from, till).unwrap();
+        let url = self.get_url(asset, market_data, from, till).unwrap();
         let request = self
             .client
             .get(&url)
@@ -238,15 +236,15 @@ impl SourceMoex {
     }
     fn get_url(
         &self,
-        instrument: &Instrument,
+        asset: &Asset,
         market_data: &MarketData,
         begin: &NaiveDateTime,
         end: &NaiveDateTime,
     ) -> Result<String, &'static str> {
         let mut url = self.service.clone();
 
-        assert_eq!(instrument.itype, "SHARE");
-        if instrument.itype == "SHARE" {
+        assert_eq!(asset.itype, "SHARE");
+        if asset.itype == "SHARE" {
             url.push_str(
                 "/engines/stock/markets/shares/boards/tqbr/securities/",
             );
@@ -254,7 +252,7 @@ impl SourceMoex {
             panic!("unsupported itype");
         }
 
-        let ticker = &instrument.ticker;
+        let ticker = &asset.ticker;
         let data = "/candles.json?";
         let from = format!("from={begin}&"); // "from=2025-01-01 00:00&"
         let till = format!("till={end}&"); // "till=2025-03-27 14:35&"
