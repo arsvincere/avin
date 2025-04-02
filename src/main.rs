@@ -1,19 +1,76 @@
-use avin::*;
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
+use std::future::Future;
 
 #[tokio::main]
 async fn main() {
-    let mut asset = Asset::from("moex_share_sber").unwrap();
-    let tf = TimeFrame::new("5M");
+    let e = BarEvent {
+        asset: "SBER".to_string(),
+        timeframe: "5M".to_string(),
+        bar: "bar_1".to_string(),
+    };
+    let event = Event::Bar(e);
 
-    let chart = asset.load_chart(&tf).unwrap();
-    assert_eq!(chart.tf(), &tf);
+    let mut sig_newbar = Signal::new();
 
-    dbg!(chart.bars().len());
-    dbg!(chart.first());
-    dbg!(chart.last());
-    assert!(chart.bars().len() > 4000);
-    assert!(chart.bars().len() < 5000);
+    // let x = slot_1;
+    // x = 5;
+
+    sig_newbar.connect(slot_1);
+    sig_newbar.connect(slot_2);
+
+    sig_newbar.emit(&event);
 }
 
-// Request bars: 944.485158ms  - collect
-// Request bars: 785.288914ms  - iter
+#[derive(Debug)]
+enum Event {
+    Bar(BarEvent),
+}
+
+#[derive(Debug)]
+struct Signal {
+    receivers: Vec<fn(&Event)>,
+}
+impl Signal {
+    pub fn new() -> Signal {
+        Signal {
+            receivers: Vec::new(),
+        }
+    }
+    pub fn connect(
+        &mut self,
+        call_back: for<'a> fn(&'a Event) -> Future<Output = ()>,
+    ) {
+        self.receivers.push(call_back);
+    }
+    pub fn emit(&self, e: &Event) {
+        for receiver in self.receivers.iter() {
+            receiver(e);
+        }
+    }
+}
+
+#[derive(Debug)]
+struct BarEvent {
+    pub asset: String,
+    pub timeframe: String,
+    pub bar: String,
+}
+
+async fn slot_1(e: &Event) {
+    let x = match e {
+        Event::Bar(x) => x,
+    };
+    println!("slot_1 {}", x.bar);
+}
+async fn slot_2(e: &Event) {
+    let x = match e {
+        Event::Bar(x) => x,
+    };
+    println!("slot_2 {}", x.bar);
+}

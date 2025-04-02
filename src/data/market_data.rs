@@ -1,8 +1,15 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 #![allow(non_camel_case_types)]
 
 use crate::core::TimeFrame;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum MarketData {
     BAR_1M,
     BAR_5M,
@@ -22,17 +29,6 @@ impl MarketData {
             MarketData::BAR_D => String::from("BAR_D"),
             MarketData::BAR_W => String::from("BAR_W"),
             MarketData::BAR_M => String::from("BAR_M"),
-        }
-    }
-    pub fn clone(&self) -> Self {
-        match self {
-            MarketData::BAR_1M => MarketData::BAR_1M,
-            MarketData::BAR_5M => MarketData::BAR_5M,
-            MarketData::BAR_10M => MarketData::BAR_10M,
-            MarketData::BAR_1H => MarketData::BAR_1H,
-            MarketData::BAR_D => MarketData::BAR_D,
-            MarketData::BAR_W => MarketData::BAR_W,
-            MarketData::BAR_M => MarketData::BAR_M,
         }
     }
     pub fn from(s: &String) -> Result<MarketData, &'static str> {

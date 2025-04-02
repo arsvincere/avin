@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use crate::conf::{DAY_BEGIN, DT_FMT, MSK_TIME_DIF};
 use crate::core::Asset;
 use crate::data::market_data::MarketData;

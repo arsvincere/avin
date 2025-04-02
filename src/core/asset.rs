@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use crate::conf::DATA_DIR;
 use crate::conf::DEFAULT_BARS_COUNT;
 use crate::core::chart::Chart;
