@@ -6,6 +6,8 @@ license = "MIT"
 description = "A great future awaits me!"
 
 [dependencies]
+    tinkoff-invest-api = { version = "0.2" }
+    tonic = "0.13"
     chrono = "0.4"
     chrono-tz = "0.10"
     bitflags = "2.6"

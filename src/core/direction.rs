@@ -5,7 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[tokio::main]
-async fn main() {
-    //
+#[derive(Debug, Clone, PartialEq)]
+pub enum Direction {
+    Buy,
+    Sell,
 }

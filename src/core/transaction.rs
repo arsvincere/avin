@@ -24,6 +24,9 @@ impl Transaction {
             price,
         }
     }
+    pub fn value(&self) -> f64 {
+        self.price * self.quantity as f64
+    }
     pub fn to_hash_map(&self) -> HashMap<&str, String> {
         let mut hm = HashMap::new();
         hm.insert("dt", self.dt.to_rfc3339());

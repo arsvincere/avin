@@ -15,28 +15,31 @@ use super::Transaction;
 pub struct Operation {
     pub dt: DateTime<Utc>,
     pub quantity: u32,
-    pub amount: f64,
+    pub value: f64,
     pub commission: Option<f64>,
 }
 impl Operation {
-    pub fn from(transactions: Vec<Transaction>) -> Self {
+    pub fn from(transactions: &Vec<Transaction>) -> Self {
         if transactions.is_empty() {
             panic!("Empty transactions list! Fail to create operation!");
         }
 
         let mut quantity: u32 = 0;
-        let mut amount: f64 = 0.0;
+        let mut value: f64 = 0.0;
         for i in transactions.iter() {
             quantity += i.quantity;
-            amount += i.quantity as f64 * i.price;
+            value += i.quantity as f64 * i.price;
         }
 
         Self {
             dt: transactions.last().unwrap().dt,
             quantity,
-            amount,
+            value,
             commission: None,
         }
+    }
+    pub fn avg_price(&self) -> f64 {
+        self.value / self.quantity as f64
     }
 
     pub fn to_hash_map(&self) -> HashMap<&str, String> {
@@ -49,7 +52,7 @@ impl Operation {
         let mut info = HashMap::new();
         info.insert("dt", self.dt.to_rfc3339());
         info.insert("quantity", self.quantity.to_string());
-        info.insert("amount", self.amount.to_string());
+        info.insert("value", self.value.to_string());
         info.insert("commission", commission);
 
         info
@@ -66,7 +69,7 @@ impl std::fmt::Display for Operation {
         write!(
             f,
             "Operation={} {}={}{}",
-            formatted, self.quantity, self.amount, commission
+            formatted, self.quantity, self.value, commission
         )
     }
 }
@@ -77,14 +80,18 @@ mod tests {
 
     #[test]
     fn new() {
-        let dt = Utc::now();
-        let t1 = Transaction::new(dt.clone(), 10, 320.0);
+        let dt_1 = Utc::now();
+        let t1 = Transaction::new(dt_1, 10, 320.0);
         std::thread::sleep(std::time::Duration::new(0, 100));
-        let dt = Utc::now();
-        let t2 = Transaction::new(dt.clone(), 10, 330.0);
+        let dt_2 = Utc::now();
+        let t2 = Transaction::new(dt_2.clone(), 10, 330.0);
 
-        let op = Operation::from(vec![t1, t2]);
-        dbg!(&op);
+        let op = Operation::from(&vec![t1, t2]);
+        assert_eq!(op.dt, dt_2);
+        assert_eq!(op.quantity, 20);
+        assert_eq!(op.value, 6500.0);
+        assert_eq!(op.commission, None);
+        assert_eq!(op.avg_price(), 325.0);
     }
 }
 

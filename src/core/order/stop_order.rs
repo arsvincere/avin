@@ -5,7 +5,14 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[tokio::main]
-async fn main() {
-    //
-}
+use crate::core::direction::Direction;
+use crate::core::transaction::Transaction;
+
+#[derive(Debug)]
+pub struct StopOrder {}
+#[derive(Debug)]
+pub struct NewStopOrder {}
+#[derive(Debug)]
+pub struct PostedStopOrder {}
+#[derive(Debug)]
+pub struct RejectedStopOrder {}
