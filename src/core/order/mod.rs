@@ -9,7 +9,16 @@ mod limit_order;
 mod market_order;
 mod stop_order;
 
-pub use market_order::{MarketOrder, NewMarketOrder, PostedMarketOrder};
+pub use limit_order::{
+    LimitOrder, NewLimitOrder, PostedLimitOrder, RejectedLimitOrder,
+};
+pub use market_order::{
+    MarketOrder, NewMarketOrder, PostedMarketOrder, RejectedMarketOrder,
+};
+pub use stop_order::{
+    NewStopOrder, PostedStopOrder, RejectedStopOrder, StopOrder,
+    TriggeredOrder,
+};
 
 #[derive(Debug)]
 pub enum Order {
