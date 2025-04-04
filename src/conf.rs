@@ -18,3 +18,5 @@ pub const DT_FMT: &str = "%Y-%m-%d %H:%M:%S";
 pub const DAY_BEGIN: NaiveTime = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
 pub const DAY_END: NaiveTime = NaiveTime::from_hms_opt(23, 59, 59).unwrap();
 pub const MSK_TIME_DIF: TimeDelta = TimeDelta::hours(3);
+
+pub const MINUTES_IN_DAY: i32 = 24 * 60 * 60;

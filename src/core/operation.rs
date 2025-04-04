@@ -14,17 +14,17 @@ use super::Transaction;
 #[derive(Debug)]
 pub struct Operation {
     pub dt: DateTime<Utc>,
-    pub quantity: u32,
+    pub quantity: i32,
     pub value: f64,
-    pub commission: Option<f64>,
+    pub commission: f64,
 }
 impl Operation {
-    pub fn from(transactions: &Vec<Transaction>) -> Self {
+    pub fn from(transactions: &Vec<Transaction>, commission: f64) -> Self {
         if transactions.is_empty() {
             panic!("Empty transactions list! Fail to create operation!");
         }
 
-        let mut quantity: u32 = 0;
+        let mut quantity: i32 = 0;
         let mut value: f64 = 0.0;
         for i in transactions.iter() {
             quantity += i.quantity;
@@ -35,7 +35,7 @@ impl Operation {
             dt: transactions.last().unwrap().dt,
             quantity,
             value,
-            commission: None,
+            commission,
         }
     }
     pub fn avg_price(&self) -> f64 {
@@ -43,33 +43,22 @@ impl Operation {
     }
 
     pub fn to_hash_map(&self) -> HashMap<&str, String> {
-        let commission = if self.commission.is_some() {
-            self.commission.unwrap().to_string()
-        } else {
-            String::new()
-        };
-
         let mut info = HashMap::new();
         info.insert("dt", self.dt.to_rfc3339());
         info.insert("quantity", self.quantity.to_string());
         info.insert("value", self.value.to_string());
-        info.insert("commission", commission);
+        info.insert("commission", self.commission.to_string());
 
         info
     }
 }
 impl std::fmt::Display for Operation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let formatted = format!("{}", self.dt.format(DT_FMT));
-        let commission = if self.commission.is_some() {
-            format!("+{}", self.commission.unwrap())
-        } else {
-            String::new()
-        };
+        let dt = format!("{}", self.dt.format(DT_FMT));
         write!(
             f,
             "Operation={} {}={}{}",
-            formatted, self.quantity, self.value, commission
+            dt, self.quantity, self.value, self.commission
         )
     }
 }
@@ -86,11 +75,11 @@ mod tests {
         let dt_2 = Utc::now();
         let t2 = Transaction::new(dt_2.clone(), 10, 330.0);
 
-        let op = Operation::from(&vec![t1, t2]);
+        let op = Operation::from(&vec![t1, t2], 6500.0 * 0.001);
         assert_eq!(op.dt, dt_2);
         assert_eq!(op.quantity, 20);
         assert_eq!(op.value, 6500.0);
-        assert_eq!(op.commission, None);
+        assert_eq!(op.commission, 6.5);
         assert_eq!(op.avg_price(), 325.0);
     }
 }

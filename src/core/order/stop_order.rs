@@ -9,17 +9,12 @@ use crate::core::direction::Direction;
 use crate::core::order::limit_order::PostedLimitOrder;
 use crate::core::order::market_order::PostedMarketOrder;
 
-pub enum TriggeredOrder {
-    Market(PostedMarketOrder),
-    Limit(PostedLimitOrder),
-}
-
 #[derive(Debug)]
-pub struct StopOrder {
-    pub direction: Direction,
-    pub lots: u32,
-    pub stop_price: f64,
-    pub exec_price: Option<f64>,
+pub enum StopOrder {
+    New(NewStopOrder),
+    Posted(PostedStopOrder),
+    Triggered(TriggeredStopOrder),
+    Rejected(RejectedStopOrder),
 }
 impl StopOrder {
     pub fn new(
@@ -74,7 +69,7 @@ pub struct PostedStopOrder {
     pub broker_id: String,
 }
 impl PostedStopOrder {
-    pub fn trigger(self, broker_id: &str) -> TriggeredOrder {
+    pub fn trigger(self, broker_id: &str) -> TriggeredStopOrder {
         match self.exec_price {
             Some(exec_price) => {
                 let order = PostedLimitOrder {
@@ -84,7 +79,7 @@ impl PostedStopOrder {
                     broker_id: broker_id.to_string(),
                     transactions: Vec::new(),
                 };
-                TriggeredOrder::Limit(order)
+                TriggeredStopOrder::Limit(order)
             }
             None => {
                 let order = PostedMarketOrder {
@@ -93,10 +88,16 @@ impl PostedStopOrder {
                     broker_id: broker_id.to_string(),
                     transactions: Vec::new(),
                 };
-                TriggeredOrder::Market(order)
+                TriggeredStopOrder::Market(order)
             }
         }
     }
+}
+
+#[derive(Debug)]
+pub enum TriggeredStopOrder {
+    Market(PostedMarketOrder),
+    Limit(PostedLimitOrder),
 }
 
 #[derive(Debug)]
@@ -124,7 +125,7 @@ mod tests {
         assert_eq!(posted.broker_id, "order_id=100500");
 
         let triggered_order = posted.trigger("market_order_id=100501");
-        if let TriggeredOrder::Market(order) = triggered_order {
+        if let TriggeredStopOrder::Market(order) = triggered_order {
             assert_eq!(order.direction, Direction::Buy);
             assert_eq!(order.lots, 2);
             assert_eq!(order.broker_id, "market_order_id=100501");
@@ -145,7 +146,7 @@ mod tests {
         assert_eq!(posted.broker_id, "order_id=100500");
 
         let triggered_order = posted.trigger("limit_order_id=100501");
-        if let TriggeredOrder::Limit(order) = triggered_order {
+        if let TriggeredStopOrder::Limit(order) = triggered_order {
             assert_eq!(order.direction, Direction::Buy);
             assert_eq!(order.lots, 2);
             assert_eq!(order.price, 4510.0);

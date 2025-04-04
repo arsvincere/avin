@@ -9,22 +9,143 @@ mod limit_order;
 mod market_order;
 mod stop_order;
 
+use crate::core::direction::Direction;
+use crate::core::operation::Operation;
+use crate::core::transaction::Transaction;
+
 pub use limit_order::{
-    LimitOrder, NewLimitOrder, PostedLimitOrder, RejectedLimitOrder,
+    FilledLimitOrder, LimitOrder, NewLimitOrder, PostedLimitOrder,
+    RejectedLimitOrder,
 };
 pub use market_order::{
-    MarketOrder, NewMarketOrder, PostedMarketOrder, RejectedMarketOrder,
+    FilledMarketOrder, MarketOrder, NewMarketOrder, PostedMarketOrder,
+    RejectedMarketOrder,
 };
 pub use stop_order::{
     NewStopOrder, PostedStopOrder, RejectedStopOrder, StopOrder,
-    TriggeredOrder,
+    TriggeredStopOrder,
 };
 
 #[derive(Debug)]
 pub enum Order {
-    Market,
-    Limit,
-    Stop,
+    Market(MarketOrder),
+    Limit(LimitOrder),
+    Stop(StopOrder),
+}
+impl Order {
+    pub fn is_posted(&self) -> bool {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::Posted(_) => true,
+                _ => false,
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::Posted(_) => true,
+                _ => false,
+            },
+            Order::Stop(stop) => match stop {
+                StopOrder::Posted(_) => true,
+                _ => false,
+            },
+        }
+    }
+    pub fn is_filled(&self) -> bool {
+        match self {
+            Order::Market(o) => match o {
+                MarketOrder::Filled(_) => true,
+                _ => false,
+            },
+            Order::Limit(o) => match o {
+                LimitOrder::Filled(_) => true,
+                _ => false,
+            },
+            Order::Stop(_) => panic!("Stop order can't be filled"),
+        }
+    }
+    pub fn direction(&self) -> &Direction {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::New(o) => &o.direction,
+                MarketOrder::Posted(o) => &o.direction,
+                MarketOrder::Filled(o) => &o.direction,
+                MarketOrder::Rejected(o) => &o.direction,
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::New(o) => &o.direction,
+                LimitOrder::Posted(o) => &o.direction,
+                LimitOrder::Filled(o) => &o.direction,
+                LimitOrder::Rejected(o) => &o.direction,
+            },
+            Order::Stop(stop) => match stop {
+                StopOrder::New(o) => &o.direction,
+                StopOrder::Posted(o) => &o.direction,
+                StopOrder::Rejected(o) => &o.direction,
+                StopOrder::Triggered(o) => match o {
+                    TriggeredStopOrder::Market(o) => &o.direction,
+                    TriggeredStopOrder::Limit(o) => &o.direction,
+                },
+            },
+        }
+    }
+    pub fn lots(&self) -> u32 {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::New(o) => o.lots,
+                MarketOrder::Posted(o) => o.lots,
+                MarketOrder::Filled(o) => o.lots,
+                MarketOrder::Rejected(o) => o.lots,
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::New(o) => o.lots,
+                LimitOrder::Posted(o) => o.lots,
+                LimitOrder::Filled(o) => o.lots,
+                LimitOrder::Rejected(o) => o.lots,
+            },
+            Order::Stop(stop) => match stop {
+                StopOrder::New(o) => o.lots,
+                StopOrder::Posted(o) => o.lots,
+                StopOrder::Rejected(o) => o.lots,
+                StopOrder::Triggered(o) => match o {
+                    TriggeredStopOrder::Market(o) => o.lots,
+                    TriggeredStopOrder::Limit(o) => o.lots,
+                },
+            },
+        }
+    }
+    pub fn transactions(&self) -> Option<&Vec<Transaction>> {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::New(_) => None,
+                MarketOrder::Posted(o) => Some(&o.transactions),
+                MarketOrder::Filled(o) => Some(&o.transactions),
+                MarketOrder::Rejected(_) => None,
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::New(_) => None,
+                LimitOrder::Posted(o) => Some(&o.transactions),
+                LimitOrder::Filled(o) => Some(&o.transactions),
+                LimitOrder::Rejected(_) => None,
+            },
+            Order::Stop(stop) => match stop {
+                _ => None,
+            },
+        }
+    }
+    pub fn operation(&self) -> Option<&Operation> {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::Filled(o) => Some(&o.operation),
+                _ => None,
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::Filled(o) => Some(&o.operation),
+                _ => None,
+            },
+            Order::Stop(stop) => match stop {
+                _ => None,
+            },
+        }
+    }
 }
 
 // class Order(metaclass=abc.ABCMeta):  # {{{

@@ -22,6 +22,45 @@ pub struct Asset {
     charts: HashMap<TimeFrame, Chart>,
 }
 impl Asset {
+    pub fn from(s: &str) -> Result<Asset, &'static str> {
+        let parts: Vec<&str> = s.split("_").collect();
+        if parts.len() != 3 {
+            eprintln!("Fail to create asset from str: {s}");
+            return Err("Invalid asset");
+        };
+
+        // TODO: пока работает только биржа MOEX
+        let exchange = parts[0].to_uppercase();
+        assert_eq!(exchange, "MOEX");
+
+        // TODO: пока работает только тип инструмента SHARE
+        let itype = parts[1].to_uppercase();
+        assert_eq!(itype, "SHARE");
+
+        // TODO: пока не сделал кэширование информации о доступных
+        // инструментах работает только ниже указанные тикеры
+        let ticker = parts[2].to_uppercase();
+        assert!("GAZP LKOH MOEX ROSN SBER VTBR YDEX".contains(&ticker));
+
+        let charts = HashMap::new();
+
+        let asset = Asset {
+            exchange,
+            itype,
+            ticker,
+            charts,
+        };
+        Ok(asset)
+    }
+    pub fn copy_id(&self) -> Asset {
+        Asset {
+            exchange: self.exchange.clone(),
+            itype: self.itype.clone(),
+            ticker: self.ticker.clone(),
+            charts: HashMap::new(),
+        }
+    }
+
     pub fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
         self.charts.get(tf)
     }
@@ -54,38 +93,13 @@ impl Asset {
 
         return p;
     }
-
-    pub fn from(s: &str) -> Result<Asset, &'static str> {
-        let parts: Vec<&str> = s.split("_").collect();
-        if parts.len() != 3 {
-            eprintln!("Fail to create asset from str: {s}");
-            return Err("Invalid asset");
-        };
-
-        // TODO: пока работает только биржа MOEX
-        let exchange = parts[0].to_uppercase();
-        assert_eq!(exchange, "MOEX");
-
-        // TODO: пока работает только тип инструмента SHARE
-        let itype = parts[1].to_uppercase();
-        assert_eq!(itype, "SHARE");
-
-        // TODO: пока не сделал кэширование информации о доступных
-        // инструментах работает только ниже указанные тикеры
-        let ticker = parts[2].to_uppercase();
-        assert!("GAZP LKOH MOEX ROSN SBER VTBR YDEX".contains(&ticker));
-
-        let charts = HashMap::new();
-
-        let asset = Asset {
-            exchange,
-            itype,
-            ticker,
-            charts,
-        };
-        Ok(asset)
+}
+impl std::fmt::Display for Asset {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Asset={} {} {}", self.exchange, self.itype, self.ticker)
     }
 }
+
 // class Asset(Instrument, ABC):  # {{{
 //     @abstractmethod  # __init__# {{{
 //     def __init__(self, info: dict):

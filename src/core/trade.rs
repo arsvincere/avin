@@ -5,25 +5,462 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[derive(Debug, PartialEq)]
-pub enum TradeType {
-    Long,
-    Short,
+use crate::core::asset::Asset;
+use crate::core::direction::Direction;
+use crate::core::order::{Order, PostedStopOrder};
+use chrono::{DateTime, TimeDelta, Utc};
+use std::collections::HashMap;
+
+#[derive(Debug)]
+pub enum Trade {
+    New(NewTrade),
+    // Posted(PostedTrade),
+    Opened(OpenedTrade),
+    Closed(ClosedTrade),
 }
-impl TradeType {
-    pub fn name(&self) -> String {
-        match self {
-            TradeType::Long => String::from("long"),
-            TradeType::Short => String::from("short"),
+impl Trade {
+    pub fn new(
+        dt: &DateTime<Utc>,
+        strategy: &str,
+        typ: TradeType,
+        asset: &Asset,
+    ) -> NewTrade {
+        NewTrade {
+            dt: dt.clone(),
+            strategy: strategy.to_string(),
+            typ,
+            asset: asset.copy_id(),
+            info: HashMap::new(),
         }
     }
 }
 
-pub struct Trade {}
+#[derive(Debug, Clone, PartialEq)]
+pub enum TradeType {
+    Long,
+    Short,
+}
+
+#[derive(Debug)]
+pub struct NewTrade {
+    pub dt: DateTime<Utc>,
+    pub strategy: String,
+    pub typ: TradeType,
+    pub asset: Asset,
+    pub info: HashMap<String, String>,
+}
+impl NewTrade {
+    // pub fn post(self, posted_order: Order) -> PostedTrade {
+    //     if !posted_order.is_posted() {
+    //         panic!("order shoud be posted")
+    //     }
+    //     PostedTrade {
+    //         dt: self.dt,
+    //         strategy: self.strategy,
+    //         typ: self.typ,
+    //         asset: self.asset,
+    //         info: self.info,
+    //         orders: vec![posted_order],
+    //     }
+    // }
+    pub fn open(self, filled_order: Order) -> OpenedTrade {
+        if !filled_order.is_filled() {
+            panic!("order shoud be filled")
+        }
+        OpenedTrade {
+            dt: self.dt,
+            strategy: self.strategy,
+            typ: self.typ,
+            asset: self.asset,
+            info: self.info,
+            orders: vec![filled_order],
+
+            stop_loss: None,
+            take_profit: None,
+        }
+    }
+}
+
+// #[derive(Debug)]
+// pub struct PostedTrade {
+//     pub dt: DateTime<Utc>,
+//     pub strategy: String,
+//     pub typ: TradeType,
+//     pub asset: Asset,
+//     pub info: HashMap<String, String>,
+//     pub orders: Vec<Order>,
+// }
+// impl PostedTrade {
+//     pub fn add_order(&mut self, order: Order) {
+//         self.orders.push(order)
+//     }
+//     pub fn open(self) -> OpenedTrade {
+//         // TODO: проверка что есть хотя бы один исполненный ордер
+//         OpenedTrade {
+//             dt: self.dt,
+//             strategy: self.strategy,
+//             typ: self.typ,
+//             asset: self.asset,
+//             info: self.info,
+//             orders: self.orders,
+//
+//             stop_loss: None,
+//             take_profit: None,
+//         }
+//     }
+// }
+
+#[derive(Debug)]
+pub struct OpenedTrade {
+    pub dt: DateTime<Utc>,
+    pub strategy: String,
+    pub typ: TradeType,
+    pub asset: Asset,
+    pub info: HashMap<String, String>,
+    pub orders: Vec<Order>,
+
+    pub stop_loss: Option<PostedStopOrder>,
+    pub take_profit: Option<PostedStopOrder>,
+}
+impl OpenedTrade {
+    pub fn add_order(&mut self, filled_order: Order) {
+        if !filled_order.is_filled() {
+            panic!("order shoud be filled")
+        }
+
+        self.orders.push(filled_order)
+    }
+    pub fn set_stop(&mut self, stop_order: PostedStopOrder) {
+        self.stop_loss = Some(stop_order);
+    }
+    pub fn set_take(&mut self, stop_order: PostedStopOrder) {
+        self.take_profit = Some(stop_order);
+    }
+    pub fn close(self) -> ClosedTrade {
+        let trade = ClosedTrade {
+            dt: self.dt,
+            strategy: self.strategy,
+            typ: self.typ,
+            asset: self.asset,
+            info: self.info,
+            orders: self.orders,
+        };
+
+        // INFO: проверка что трейд действительно закрыт
+        // количество активов в позиции = 0
+        if trade.quantity() != 0 {
+            panic!("in closed trade quantity != 0");
+        }
+        trade
+    }
+}
+
+#[derive(Debug)]
+pub struct ClosedTrade {
+    pub dt: DateTime<Utc>,
+    pub strategy: String,
+    pub typ: TradeType,
+    pub asset: Asset,
+    pub info: HashMap<String, String>,
+    pub orders: Vec<Order>,
+}
+impl ClosedTrade {
+    pub fn is_long(&self) -> bool {
+        self.typ == TradeType::Long
+    }
+    pub fn is_short(&self) -> bool {
+        self.typ == TradeType::Short
+    }
+    pub fn is_win(&self) -> bool {
+        todo!();
+    }
+    pub fn is_loss(&self) -> bool {
+        todo!();
+    }
+
+    pub fn lots(&self) -> i32 {
+        todo!();
+    }
+
+    pub fn quantity(&self) -> i32 {
+        let mut total: i32 = 0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.quantity
+            } else {
+                total -= op.quantity
+            }
+        }
+
+        total
+    }
+    pub fn buy_quantity(&self) -> i32 {
+        let mut total: i32 = 0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.quantity
+            }
+        }
+
+        total
+    }
+    pub fn sell_quantity(&self) -> i32 {
+        let mut total: i32 = 0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Sell {
+                total += op.quantity
+            }
+        }
+
+        total
+    }
+
+    pub fn value(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.value
+            } else {
+                total -= op.value
+            }
+        }
+
+        total
+    }
+    pub fn buy_value(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.value
+            }
+        }
+
+        total
+    }
+    pub fn sell_value(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Sell {
+                total += op.value
+            }
+        }
+
+        total
+    }
+
+    pub fn commission(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            total += op.commission
+        }
+
+        total
+    }
+    pub fn buy_commission(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.commission
+            }
+        }
+
+        total
+    }
+    pub fn sell_commission(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => panic!("in closed trade all orders must be filled"),
+            };
+            if *order.direction() == Direction::Sell {
+                total += op.commission
+            }
+        }
+
+        total
+    }
+
+    pub fn buy_avg(&self) -> f64 {
+        self.buy_value() / self.buy_quantity() as f64
+    }
+    pub fn sell_avg(&self) -> f64 {
+        self.sell_value() / self.sell_quantity() as f64
+    }
+
+    pub fn open_dt(&self) -> DateTime<Utc> {
+        let o = self.orders.first().unwrap();
+        match o.transactions() {
+            Some(transactions) => transactions.first().unwrap().dt,
+            None => panic!("closed trade without transactions in order"),
+        }
+    }
+    pub fn close_dt(&self) -> DateTime<Utc> {
+        let o = self.orders.last().unwrap();
+        match o.transactions() {
+            Some(transactions) => transactions.last().unwrap().dt,
+            None => panic!("closed trade without transactions in order"),
+        }
+    }
+    pub fn timedelta(&self) -> TimeDelta {
+        self.close_dt() - self.open_dt()
+    }
+    pub fn result(&self) -> f64 {
+        self.sell_value() - self.buy_value() - self.commission()
+    }
+    pub fn result_p(&self) -> f64 {
+        self.result() / self.buy_value() * 100.0
+    }
+    pub fn speed(&self) -> f64 {
+        // INFO: если таймдельту перевести сразу в дни то
+        // для трейдов короче одного дня там будет 0.
+        // поэтому смотрю на количество минут трейда, делю на 60 и 24
+        // получается например 600 / 60 / 24 = 0.42 дня.
+        // Беру результат трейда в процентах и делю на это число
+        // в итоге получается количество рублей в день
+        // используется для сравнения эффективности трейдов с учетом
+        // времени которое деньги были заняты в этом трейде.
+        self.result() / (self.timedelta().num_minutes() as f64 / 60.0 / 24.0)
+    }
+    pub fn speed_p(&self) -> f64 {
+        // INFO: если таймдельту перевести сразу в дни то
+        // для трейдов короче одного дня там будет 0.
+        // поэтому смотрю на количество минут трейда, делю на 60 и 24
+        // получается например 600 / 60 / 24 = 0.42 дня.
+        // Беру результат трейда в процентах и делю на это число
+        // в итоге получается количество процентов в день
+        // используется для сравнения эффективности трейдов с учетом
+        // времени которое деньги были заняты в этом трейде.
+        self.result_p()
+            / (self.timedelta().num_minutes() as f64 / 60.0 / 24.0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+    use chrono::{TimeZone, Utc};
+
+    #[test]
+    fn statuses() {
+        // create trade
+        let asset = Asset::from("moex_share_sber").unwrap();
+        let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
+        let trade =
+            Trade::new(&dt, "Trend T3 Posterior v1", TradeType::Long, &asset);
+        assert_eq!(trade.dt, dt);
+        assert_eq!(trade.strategy, "Trend T3 Posterior v1");
+        assert_eq!(trade.asset.ticker, "SBER");
+        assert_eq!(trade.info.len(), 0);
+
+        // open trade - add first filled order
+        let order = LimitOrder::new(Direction::Buy, 10, 301.0);
+        let mut order = order.post("broker_id=100500");
+        let tr = Transaction::new(
+            Utc.with_ymd_and_hms(2025, 4, 5, 14, 57, 0).unwrap(),
+            100,
+            301.0,
+        );
+        order.add_transaction(tr);
+        let order = order.fill(3.0);
+        let mut trade = trade.open(Order::Limit(LimitOrder::Filled(order)));
+        assert_eq!(trade.orders.len(), 1);
+
+        // add second filled order
+        let order = LimitOrder::new(Direction::Sell, 10, 311.0);
+        let mut order = order.post("broker_id=100501");
+        let tr = Transaction::new(
+            Utc.with_ymd_and_hms(2025, 4, 6, 14, 57, 0).unwrap(),
+            100,
+            311.0,
+        );
+        order.add_transaction(tr);
+        let order = order.fill(3.0);
+        trade.add_order(Order::Limit(LimitOrder::Filled(order)));
+        assert_eq!(trade.orders.len(), 2);
+
+        // close trade
+        let trade = trade.close();
+        assert_eq!(trade.result(), 994.0);
+        assert!(trade.result_p() > 3.3);
+        assert_eq!(trade.timedelta().num_seconds(), 86400); // сутки
+        assert!(trade.speed() > 990.0);
+        assert!(trade.speed_p() > 3.3);
+    }
+    #[test]
+    #[should_panic]
+    fn close_unclosed_trade() {
+        // create trade
+        let asset = Asset::from("moex_share_sber").unwrap();
+        let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
+        let trade =
+            Trade::new(&dt, "Trend T3 Posterior v1", TradeType::Long, &asset);
+        assert_eq!(trade.dt, dt);
+        assert_eq!(trade.strategy, "Trend T3 Posterior v1");
+        assert_eq!(trade.asset.ticker, "SBER");
+        assert_eq!(trade.info.len(), 0);
+
+        // open trade - add first filled order
+        let order = LimitOrder::new(Direction::Buy, 10, 301.0);
+        let mut order = order.post("broker_id=100500");
+        let tr = Transaction::new(
+            Utc.with_ymd_and_hms(2025, 4, 5, 14, 57, 0).unwrap(),
+            100,
+            301.0,
+        );
+        order.add_transaction(tr);
+        let order = order.fill(3.0);
+        let trade = trade.open(Order::Limit(LimitOrder::Filled(order)));
+        assert_eq!(trade.orders.len(), 1);
+
+        // try close opened trade - should_panic
+        let _ = trade.close();
+    }
+}
 
 // class Trade:  # {{{
 //     class Status(enum.Enum):  # {{{
-//         UNDEFINE = enum.auto()
 //         INITIAL = enum.auto()
 //         PENDING = enum.auto()
 //         TRIGGERED = enum.auto()

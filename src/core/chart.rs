@@ -80,7 +80,7 @@ impl Chart {
 }
 impl AsRef<Chart> for Chart {
     fn as_ref(&self) -> &Chart {
-        self
+        &self
     }
 }
 

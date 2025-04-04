@@ -55,7 +55,7 @@ impl MarketData {
 
 impl From<TimeFrame> for MarketData {
     fn from(tf: TimeFrame) -> MarketData {
-        match tf.name.as_str() {
+        match tf.name().as_str() {
             "1M" => MarketData::BAR_1M,
             "5M" => MarketData::BAR_5M,
             "10M" => MarketData::BAR_10M,
@@ -63,7 +63,7 @@ impl From<TimeFrame> for MarketData {
             "D" => MarketData::BAR_D,
             "W" => MarketData::BAR_W,
             "M" => MarketData::BAR_M,
-            _ => panic!("Invalid TimeFrame: {}", tf.name),
+            _ => panic!("Invalid TimeFrame: {}", tf.name()),
         }
     }
 }

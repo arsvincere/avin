@@ -24,5 +24,5 @@ pub use operation::Operation;
 pub use order::*;
 pub use range::Range;
 pub use timeframe::TimeFrame;
-pub use trade::{Trade, TradeType};
+pub use trade::{ClosedTrade, NewTrade, OpenedTrade, Trade, TradeType};
 pub use transaction::Transaction;

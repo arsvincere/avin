@@ -5,17 +5,36 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use std::hash::Hash;
-
 use crate::data::MarketData;
 use chrono::TimeDelta;
+use std::hash::Hash;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct TimeFrame {
-    pub name: String,
+    name: String,
 }
 
 impl TimeFrame {
+    pub fn new(name: &str) -> Self {
+        let valid_name = match name {
+            "1M" => name,
+            "5M" => name,
+            "10M" => name,
+            "1H" => name,
+            "D" => name,
+            "W" => name,
+            "M" => name,
+            _ => panic!("Invalid TimeFrame: {name}"),
+        };
+
+        TimeFrame {
+            name: valid_name.to_string(),
+        }
+    }
+
+    pub fn name(&self) -> &String {
+        &self.name
+    }
     pub fn timedelta(&self) -> TimeDelta {
         match self.name.as_str() {
             "1M" => TimeDelta::new(60, 0).unwrap(),
@@ -40,22 +59,6 @@ impl TimeFrame {
             _ => panic!("Invalid TimeFrame: {}", self.name),
         }
     }
-    pub fn new(name: &str) -> Self {
-        let valid_name = match name {
-            "1M" => name,
-            "5M" => name,
-            "10M" => name,
-            "1H" => name,
-            "D" => name,
-            "W" => name,
-            "M" => name,
-            _ => panic!("Invalid TimeFrame: {name}"),
-        };
-
-        TimeFrame {
-            name: valid_name.to_string(),
-        }
-    }
 }
 
 impl Hash for TimeFrame {
@@ -63,6 +66,31 @@ impl Hash for TimeFrame {
         self.name.hash(state);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic]
+    fn invalid_timeframe() {
+        TimeFrame::new("7M");
+    }
+    #[test]
+    fn to_market_data() {
+        assert_eq!(TimeFrame::new("1M").to_market_data(), MarketData::BAR_1M);
+        assert_eq!(TimeFrame::new("5M").to_market_data(), MarketData::BAR_5M);
+        assert_eq!(
+            TimeFrame::new("10M").to_market_data(),
+            MarketData::BAR_10M
+        );
+        assert_eq!(TimeFrame::new("1H").to_market_data(), MarketData::BAR_1H);
+        assert_eq!(TimeFrame::new("D").to_market_data(), MarketData::BAR_D);
+        assert_eq!(TimeFrame::new("W").to_market_data(), MarketData::BAR_W);
+        assert_eq!(TimeFrame::new("M").to_market_data(), MarketData::BAR_M);
+    }
+}
+
 // class TimeFrame:  # {{{
 //     def __hash__(self):  # {{{
 //         return hash(str(self))
@@ -195,27 +223,3 @@ impl Hash for TimeFrame {
 //
 //
 // # }}}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[should_panic]
-    fn invalid_timeframe() {
-        TimeFrame::new("7M");
-    }
-    #[test]
-    fn to_market_data() {
-        assert_eq!(TimeFrame::new("1M").to_market_data(), MarketData::BAR_1M);
-        assert_eq!(TimeFrame::new("5M").to_market_data(), MarketData::BAR_5M);
-        assert_eq!(
-            TimeFrame::new("10M").to_market_data(),
-            MarketData::BAR_10M
-        );
-        assert_eq!(TimeFrame::new("1H").to_market_data(), MarketData::BAR_1H);
-        assert_eq!(TimeFrame::new("D").to_market_data(), MarketData::BAR_D);
-        assert_eq!(TimeFrame::new("W").to_market_data(), MarketData::BAR_W);
-        assert_eq!(TimeFrame::new("M").to_market_data(), MarketData::BAR_M);
-    }
-}

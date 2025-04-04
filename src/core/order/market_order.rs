@@ -10,12 +10,11 @@ use crate::core::operation::Operation;
 use crate::core::transaction::Transaction;
 
 #[derive(Debug)]
-pub struct MarketOrder {
-    pub direction: Direction,
-    pub lots: u32,
-    pub broker_id: String,
-    pub transactions: Vec<Transaction>,
-    pub operation: Operation,
+pub enum MarketOrder {
+    New(NewMarketOrder),
+    Posted(PostedMarketOrder),
+    Filled(FilledMarketOrder),
+    Rejected(RejectedMarketOrder),
 }
 impl MarketOrder {
     pub fn new(direction: Direction, lots: u32) -> NewMarketOrder {
@@ -57,9 +56,9 @@ impl PostedMarketOrder {
     pub fn add_transaction(&mut self, t: Transaction) {
         self.transactions.push(t);
     }
-    pub fn fill(self) -> MarketOrder {
-        let operation = Operation::from(&self.transactions);
-        MarketOrder {
+    pub fn fill(self, commission: f64) -> FilledMarketOrder {
+        let operation = Operation::from(&self.transactions, commission);
+        FilledMarketOrder {
             direction: self.direction,
             lots: self.lots,
             broker_id: self.broker_id,
@@ -67,6 +66,15 @@ impl PostedMarketOrder {
             operation,
         }
     }
+}
+
+#[derive(Debug)]
+pub struct FilledMarketOrder {
+    pub direction: Direction,
+    pub lots: u32,
+    pub broker_id: String,
+    pub transactions: Vec<Transaction>,
+    pub operation: Operation,
 }
 
 #[derive(Debug)]
@@ -99,11 +107,11 @@ mod tests {
         assert_eq!(posted.broker_id, "order_id=100500");
         assert_eq!(posted.transactions.len(), 2);
 
-        let order = posted.fill();
+        let order = posted.fill(3.2);
         assert_eq!(order.operation.dt, t2_dt);
         assert_eq!(order.operation.quantity, 10);
         assert_eq!(order.operation.value, 3200.0);
-        assert_eq!(order.operation.commission, None);
+        assert_eq!(order.operation.commission, 3.2);
     }
     #[test]
     fn reject() {

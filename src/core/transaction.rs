@@ -13,11 +13,11 @@ use chrono::{DateTime, Utc};
 #[derive(Debug)]
 pub struct Transaction {
     pub dt: DateTime<Utc>,
-    pub quantity: u32,
+    pub quantity: i32,
     pub price: f64,
 }
 impl Transaction {
-    pub fn new(dt: DateTime<Utc>, quantity: u32, price: f64) -> Self {
+    pub fn new(dt: DateTime<Utc>, quantity: i32, price: f64) -> Self {
         Transaction {
             dt,
             quantity,
