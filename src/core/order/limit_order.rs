@@ -8,8 +8,9 @@
 use crate::core::direction::Direction;
 use crate::core::operation::Operation;
 use crate::core::transaction::Transaction;
+use bitcode::{Decode, Encode};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub enum LimitOrder {
     New(NewLimitOrder),
     Posted(PostedLimitOrder),
@@ -24,9 +25,24 @@ impl LimitOrder {
             price,
         }
     }
+    pub fn from_csv() {}
+    pub fn to_csv(&self) -> String {
+        let mut csv = "limit;".to_string();
+        match self {
+            LimitOrder::New(o) => {
+                csv.push_str("new;");
+                csv.push_str(o.direction.to_str());
+                csv.push_str(&o.lots.to_string());
+            }
+            LimitOrder::Posted(_) => csv.push_str("posted;"),
+            LimitOrder::Filled(_) => csv.push_str("filled;"),
+            LimitOrder::Rejected(_) => csv.push_str("rejected;"),
+        };
+        todo!();
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct NewLimitOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -52,7 +68,7 @@ impl NewLimitOrder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct PostedLimitOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -77,7 +93,7 @@ impl PostedLimitOrder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct FilledLimitOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -87,7 +103,7 @@ pub struct FilledLimitOrder {
     pub operation: Operation,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct RejectedLimitOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -107,19 +123,27 @@ mod tests {
         let mut posted = new.post("order_id=100500");
         assert_eq!(posted.broker_id, "order_id=100500");
 
-        let t1 = Transaction::new(Utc::now(), 1, 4500.0);
+        let t1 = Transaction::new(
+            Utc::now().timestamp_nanos_opt().unwrap(),
+            1,
+            4500.0,
+        );
         posted.add_transaction(t1);
         assert_eq!(posted.broker_id, "order_id=100500");
         assert_eq!(posted.transactions.len(), 1);
 
         let t2_dt = Utc::now();
-        let t2 = Transaction::new(t2_dt.clone(), 1, 4510.0);
+        let t2 = Transaction::new(
+            t2_dt.clone().timestamp_nanos_opt().unwrap(),
+            1,
+            4510.0,
+        );
         posted.add_transaction(t2);
         assert_eq!(posted.broker_id, "order_id=100500");
         assert_eq!(posted.transactions.len(), 2);
 
         let order = posted.fill(4.5);
-        assert_eq!(order.operation.dt, t2_dt);
+        assert_eq!(order.operation.dt(), t2_dt);
         assert_eq!(order.operation.quantity, 2);
         assert_eq!(order.operation.value, 9010.0);
         assert_eq!(order.operation.commission, 4.5);

@@ -6,10 +6,11 @@
  ****************************************************************************/
 
 use crate::data::MarketData;
+use bitcode::{Decode, Encode};
 use chrono::TimeDelta;
 use std::hash::Hash;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Encode, Decode)]
 pub struct TimeFrame {
     name: String,
 }
@@ -90,136 +91,3 @@ mod tests {
         assert_eq!(TimeFrame::new("M").to_market_data(), MarketData::BAR_M);
     }
 }
-
-// class TimeFrame:  # {{{
-//     def __hash__(self):  # {{{
-//         return hash(str(self))
-//
-//     # }}}
-//     def __eq__(self, other):  # operator ==  # {{{
-//         if isinstance(other, TimeFrame):
-//             return self.__period == other.__period
-//         elif isinstance(other, timedelta):
-//             return self.__period == other
-//         elif isinstance(other, str):
-//             other = TimeFrame(other)
-//             return self.__period == other.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сравнение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __lt__(self, other):  # operator <  # {{{
-//         if isinstance(other, TimeFrame):
-//             return self.__period < other.__period
-//         elif isinstance(other, timedelta):
-//             return self.__period < other
-//         elif isinstance(other, str):
-//             other = TimeFrame(other)
-//             return self.__period < other.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сравнение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __le__(self, other):  # operator <=  # {{{
-//         if isinstance(other, TimeFrame):
-//             return self.__period <= other.__period
-//         elif isinstance(other, timedelta):
-//             return self.__period <= other
-//         elif isinstance(other, str):
-//             other = TimeFrame(other)
-//             return self.__period <= other.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сравнение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __gt__(self, other):  # operator >  # {{{
-//         if isinstance(other, TimeFrame):
-//             return self.__period > other.__period
-//         elif isinstance(other, timedelta):
-//             return self.__period > other
-//         elif isinstance(other, str):
-//             other = TimeFrame(other)
-//             return self.__period > other.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сравнение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __ge__(self, other):  # operator >=  # {{{
-//         if isinstance(other, TimeFrame):
-//             return self.__period >= other.__period
-//         elif isinstance(other, timedelta):
-//             return self.__period >= other
-//         elif isinstance(other, str):
-//             other = TimeFrame(other)
-//             return self.__period >= other.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сравнение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __add__(self, other):  # operator +  # {{{
-//         if isinstance(other, timedelta):
-//             return other + self.__period
-//         if isinstance(other, datetime):
-//             return other + self.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сложение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __radd__(self, other):  # operator + #  {{{
-//         if isinstance(other, timedelta):
-//             return other + self.__period
-//         if isinstance(other, datetime):
-//             return other + self.__period
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое сложение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __mul__(self, other):  # operator *  # {{{
-//         if isinstance(other, int):
-//             return self.__period * other
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое умножение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def __rmul__(self, other):  # operator *  # {{{
-//         if isinstance(other, int):
-//             return self.__period * other
-//         else:
-//             raise CoreError(
-//                 f"Недопустимое умножение <TimeFrame> и {type(other)}"
-//             )
-//
-//     # }}}
-//     def minutes(self):  # {{{
-//         return int(self.__period.total_seconds() / 60)
-//
-//     # }}}
-//
-//
-// TimeFrame.ALL = [
-//     TimeFrame("1M"),
-//     TimeFrame("5M"),
-//     TimeFrame("1H"),
-//     TimeFrame("D"),
-//     TimeFrame("W"),
-//     TimeFrame("M"),
-// ]
-//
-//
-// # }}}

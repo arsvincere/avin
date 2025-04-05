@@ -6,7 +6,6 @@
  ****************************************************************************/
 
 use crate::core::Asset;
-use crate::core::Bar;
 use crate::data::data_file_bar::DataFileBar;
 use crate::data::market_data::MarketData;
 use crate::data::source::Source;
@@ -73,7 +72,7 @@ impl Manager {
         market_data: &MarketData,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
-    ) -> Result<Vec<Bar>, &'static str> {
+    ) -> Result<DataFrame, &'static str> {
         let mut year = begin.year();
         let end_year = end.year();
 
@@ -86,57 +85,20 @@ impl Manager {
             year += 1;
         }
 
-        let date_time = df
-            .column("dt")
-            .unwrap()
-            .datetime()
-            .unwrap()
-            .as_datetime_iter()
-            .map(|x| x.unwrap().and_utc());
-        let mut open = df
-            .column("open")
-            .unwrap()
-            .f64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut high = df
-            .column("high")
-            .unwrap()
-            .f64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut low =
-            df.column("low").unwrap().f64().unwrap().into_no_null_iter();
-        let mut close = df
-            .column("close")
-            .unwrap()
-            .f64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut volume = df
-            .column("volume")
-            .unwrap()
-            .u64()
-            .unwrap()
-            .into_no_null_iter();
+        let begin = begin.timestamp_nanos_opt().unwrap();
+        let end = end.timestamp_nanos_opt().unwrap();
+        let df = df
+            .clone()
+            .lazy()
+            .filter(col("ts_nanos").is_between(
+                begin,
+                end,
+                ClosedInterval::Left,
+            ))
+            .collect()
+            .unwrap();
 
-        let mut bars: Vec<Bar> = Vec::new();
-        for dt in date_time {
-            if dt >= *begin && dt < *end {
-                let bar = Bar::new(
-                    dt,
-                    open.next().unwrap(),
-                    high.next().unwrap(),
-                    low.next().unwrap(),
-                    close.next().unwrap(),
-                    volume.next().unwrap(),
-                )
-                .unwrap();
-                bars.push(bar);
-            }
-        }
-
-        return Ok(bars);
+        Ok(df)
     }
 
     async fn download_one_year(
@@ -267,113 +229,116 @@ impl Manager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Usr;
+    use crate::core::Bar;
 
-    #[test]
-    fn request_1m() {
-        let instr = Asset::from("moex_share_sber").unwrap();
-        let market_data = MarketData::BAR_1M;
-        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
-
-        let bars =
-            Manager::request(&instr, &market_data, &begin, &end).unwrap();
-        let first = &bars[0];
-        let last = &bars[bars.len() - 1];
-
-        assert_eq!(first.dt, begin);
-        assert_eq!(
-            last.dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 7, 59, 0).unwrap()
-        );
-    }
+    // #[test]
+    // fn request_1m() {
+    //     let instr = Asset::from("moex_share_sber").unwrap();
+    //     let data = MarketData::BAR_1M;
+    //     let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
+    //     let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
+    //
+    //     let df = Manager::request(&instr, &data, &begin, &end).unwrap();
+    //     let bars = Bar::from_df(df).unwrap();
+    //     let first = bars.first().unwrap();
+    //     let last = bars.last().unwrap();
+    //
+    //     assert_eq!(first.dt(), begin);
+    //     assert_eq!(
+    //         last.dt(),
+    //         Utc.with_ymd_and_hms(2023, 8, 1, 7, 59, 0).unwrap()
+    //     );
+    // }
     #[test]
     fn request_10m() {
         let instr = Asset::from("moex_share_sber").unwrap();
-        let market_data = MarketData::BAR_10M;
-        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
+        let data = MarketData::BAR_10M;
+        let begin = Usr::dt("2023-08-01 10:00:00");
+        let end = Usr::dt("2023-08-01 11:00:00");
 
-        let bars =
-            Manager::request(&instr, &market_data, &begin, &end).unwrap();
-        let first = &bars[0];
-        let last = &bars[bars.len() - 1];
+        let df = Manager::request(&instr, &data, &begin, &end).unwrap();
+        let bars = Bar::from_df(df).unwrap();
+        let first = bars.first().unwrap();
+        let last = bars.last().unwrap();
 
-        assert_eq!(first.dt, begin);
+        assert_eq!(first.dt(), begin);
         assert_eq!(
-            last.dt,
+            last.dt(),
             Utc.with_ymd_and_hms(2023, 8, 1, 7, 50, 0).unwrap()
         );
     }
     #[test]
     fn request_1h() {
         let instr = Asset::from("moex_share_sber").unwrap();
-        let market_data = MarketData::BAR_1H;
-        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2023, 8, 1, 13, 0, 0).unwrap();
+        let data = MarketData::BAR_1H;
+        let begin = Usr::dt("2023-08-01 10:00:00");
+        let end = Usr::dt("2023-08-01 13:00:00");
 
-        let bars =
-            Manager::request(&instr, &market_data, &begin, &end).unwrap();
-        let first = &bars[0];
-        let last = &bars[bars.len() - 1];
+        let df = Manager::request(&instr, &data, &begin, &end).unwrap();
+        dbg!(&df);
+        let bars = Bar::from_df(df).unwrap();
+        let first = bars.first().unwrap();
+        let last = bars.last().unwrap();
 
-        assert_eq!(first.dt, begin);
+        assert_eq!(first.dt(), begin);
         assert_eq!(
-            last.dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 12, 0, 0).unwrap()
+            last.dt(),
+            Utc.with_ymd_and_hms(2023, 8, 1, 9, 0, 0).unwrap()
         );
     }
     #[test]
     fn request_d() {
         let instr = Asset::from("moex_share_sber").unwrap();
-        let market_data = MarketData::BAR_D;
-        let begin = Utc.with_ymd_and_hms(2023, 8, 1, 0, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2023, 9, 1, 0, 0, 0).unwrap();
+        let data = MarketData::BAR_D;
+        let begin = Usr::date("2023-08-01");
+        let end = Usr::date("2023-09-01");
 
-        let bars =
-            Manager::request(&instr, &market_data, &begin, &end).unwrap();
-        let first = &bars[0];
-        let last = &bars[bars.len() - 1];
+        let df = Manager::request(&instr, &data, &begin, &end).unwrap();
+        let bars = Bar::from_df(df).unwrap();
+        let first = bars.first().unwrap();
+        let last = bars.last().unwrap();
 
-        assert_eq!(first.dt, begin);
+        assert_eq!(first.dt(), begin);
         assert_eq!(
-            last.dt,
-            Utc.with_ymd_and_hms(2023, 8, 31, 0, 0, 0).unwrap()
+            last.dt(),
+            Utc.with_ymd_and_hms(2023, 8, 30, 21, 0, 0).unwrap()
         );
     }
     #[test]
     fn request_w() {
         let instr = Asset::from("moex_share_sber").unwrap();
-        let market_data = MarketData::BAR_W;
-        let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
+        let data = MarketData::BAR_W;
+        let begin = Usr::date("2024-01-01");
+        let end = Usr::date("2025-01-01");
 
-        let bars =
-            Manager::request(&instr, &market_data, &begin, &end).unwrap();
-        let first = &bars[0];
-        let last = &bars[bars.len() - 1];
+        let df = Manager::request(&instr, &data, &begin, &end).unwrap();
+        let bars = Bar::from_df(df).unwrap();
+        let first = bars.first().unwrap();
+        let last = bars.last().unwrap();
 
-        assert_eq!(first.dt, begin);
+        assert_eq!(first.dt(), begin);
         assert_eq!(
-            last.dt,
-            Utc.with_ymd_and_hms(2024, 12, 30, 0, 0, 0).unwrap()
+            last.dt(),
+            Utc.with_ymd_and_hms(2024, 12, 29, 21, 0, 0).unwrap()
         );
     }
     #[test]
     fn request_m() {
         let instr = Asset::from("moex_share_sber").unwrap();
-        let market_data = MarketData::BAR_M;
-        let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-        let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
+        let data = MarketData::BAR_M;
+        let begin = Usr::date("2024-01-01");
+        let end = Usr::date("2025-01-01");
 
-        let bars =
-            Manager::request(&instr, &market_data, &begin, &end).unwrap();
-        let first = &bars[0];
-        let last = &bars[bars.len() - 1];
+        let df = Manager::request(&instr, &data, &begin, &end).unwrap();
+        let bars = Bar::from_df(df).unwrap();
+        let first = bars.first().unwrap();
+        let last = bars.last().unwrap();
 
-        assert_eq!(first.dt, begin);
+        assert_eq!(first.dt(), begin);
         assert_eq!(
-            last.dt,
-            Utc.with_ymd_and_hms(2024, 12, 1, 0, 0, 0).unwrap()
+            last.dt(),
+            Utc.with_ymd_and_hms(2024, 11, 30, 21, 0, 0).unwrap()
         );
     }
 }

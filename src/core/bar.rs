@@ -6,12 +6,14 @@
  ****************************************************************************/
 
 use crate::core::range::Range;
+use bitcode::{Decode, Encode};
 use chrono::prelude::*;
+use polars::frame::DataFrame;
 use std::error::Error;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Encode, Decode)]
 pub struct Bar {
-    pub dt: DateTime<Utc>,
+    pub ts_nanos: i64,
     pub o: f64,
     pub h: f64,
     pub l: f64,
@@ -22,10 +24,18 @@ impl Bar {
     pub fn display(&self) -> String {
         format!(
             "Bar: dt={} o={} h={} l={} c={} v={}",
-            self.dt, self.o, self.h, self.l, self.c, self.v
+            self.dt(),
+            self.o,
+            self.h,
+            self.l,
+            self.c,
+            self.v
         )
     }
 
+    pub fn dt(&self) -> DateTime<Utc> {
+        DateTime::from_timestamp_nanos(self.ts_nanos)
+    }
     pub fn is_bear(&self) -> bool {
         self.o > self.c
     }
@@ -54,80 +64,74 @@ impl Bar {
     }
 
     pub fn new(
-        dt: DateTime<Utc>,
+        ts_nanos: i64,
         o: f64,
         h: f64,
         l: f64,
         c: f64,
         v: u64,
     ) -> Result<Bar, Box<dyn Error>> {
-        let bar = Bar { dt, o, h, l, c, v };
+        let bar = Bar {
+            ts_nanos,
+            o,
+            h,
+            l,
+            c,
+            v,
+        };
         Ok(bar)
     }
-}
+    pub fn from_df(df: DataFrame) -> Result<Vec<Bar>, Box<dyn Error>> {
+        let timestamp = df
+            .column("ts_nanos")
+            .unwrap()
+            .i64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut open = df
+            .column("open")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut high = df
+            .column("high")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut low =
+            df.column("low").unwrap().f64().unwrap().into_no_null_iter();
+        let mut close = df
+            .column("close")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
+        let mut volume = df
+            .column("volume")
+            .unwrap()
+            .u64()
+            .unwrap()
+            .into_no_null_iter();
 
-// class Bar:
-//     class Type(enum.Flag):  # {{{
-//         UNDEFINE = 0
-//         # BEAR = 1
-//         # BULL = 2
-//         INSIDE = 4
-//         OVERFLOW = 8
-//         OUTSIDE = 16
-//         EXTREMUM = 32
-//
-//     # }}}
-//
-//     def __contains__(self, price: float) -> bool:  # {{{
-//         return self.low <= price <= self.high
-//
-//     # }}}
-//
-//     @property  # data  # {{{
-//     def data(self) -> dict:
-//         return self.__data
-//
-//     # }}}
-//
-//     def addFlag(self, flag: Bar.Type) -> None:  # {{{
-//         assert isinstance(flag, Bar.Type)
-//         self.__flags |= flag
-//
-//     # }}}
-//     def delFlag(self, flag: Bar.Type) -> None:  # {{{
-//         assert isinstance(flag, Bar.Type)
-//         self.__flags &= ~flag
-//
-//     # }}}
-//     def isInside(self) -> bool:  # {{{
-//         return self.__flags & Bar.Type.INSIDE == Bar.Type.INSIDE
-//
-//     # }}}
-//     def isOverflow(self) -> bool:  # {{{
-//         return self.__flags & Bar.Type.OVERFLOW == Bar.Type.OVERFLOW
-//
-//     # }}}
-//     def isOutside(self) -> bool:  # {{{
-//         return self.__flags & Bar.Type.OUTSIDE == Bar.Type.OUTSIDE
-//
-//     # }}}
-//     def isExtremum(self) -> bool:  # {{{
-//         return self.__flags & Bar.Type.EXTREMUM == Bar.Type.EXTREMUM
-//
-//     # }}}
-//
-//     def to_df(self):  # {{{
-//         return pl.DataFrame(self.__data)
-//
-//     # }}}
-//
-//     # }}}
-//     @classmethod  # fromRecord  # {{{
-//     def fromRecord(cls, record: asyncpg.Record, chart=None):
-//         bar = cls(dict(record), chart)
-//         return bar
-//
-//     # }}}
+        let mut bars: Vec<Bar> = Vec::new();
+        for ts in timestamp {
+            let bar = Bar::new(
+                ts,
+                open.next().unwrap(),
+                high.next().unwrap(),
+                low.next().unwrap(),
+                close.next().unwrap(),
+                volume.next().unwrap(),
+            )
+            .unwrap();
+            bars.push(bar);
+        }
+
+        return Ok(bars);
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -136,8 +140,9 @@ mod tests {
     #[test]
     fn ohlcv() {
         let dt = Utc::now();
-        let b = Bar::new(dt, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
-        assert_eq!(b.dt, dt);
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
+        assert_eq!(b.dt(), dt);
         assert_eq!(b.o, 10.0);
         assert_eq!(b.h, 11.1);
         assert_eq!(b.l, 9.9);
@@ -147,11 +152,12 @@ mod tests {
     #[test]
     fn bear_bull() {
         let dt = Utc::now();
-        let b = Bar::new(dt, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
         assert!(b.is_bull());
         assert!(!b.is_bear());
 
-        let b = Bar::new(dt, 10.0, 11.1, 9.0, 9.5, 5000).unwrap();
+        let b = Bar::new(ts, 10.0, 11.1, 9.0, 9.5, 5000).unwrap();
         assert!(!b.is_bull());
         assert!(b.is_bear());
     }

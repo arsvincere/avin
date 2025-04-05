@@ -6,15 +6,20 @@ license = "MIT"
 description = "A great future awaits me!"
 
 [dependencies]
-    tinkoff-invest-api = { version = "0.2" }
-    tonic = "0.13"
+    # async-stream = "0.3"
+    bitcode = "=0.6.5"
+    # bitflags = "2.6"
     chrono = "0.4"
-    chrono-tz = "0.10"
-    bitflags = "2.6"
+    # chrono-tz = "0.10"
+    # futures = "0.3"
+    # futures-util = "0.2"
     reqwest = { version = "0.12", features = ["json"] }
-    tokio = { version = "1", features = ["full"] }
-    serde = "1.0"
+    # serde = "1.0"
     serde_json = "1.0"
+    time-unit = "0.1"
+    # tinkoff-invest-api = { version = "0.2" }
+    tokio = { version = "1", features = ["full"] }
+    # tonic = "0.13"
     polars = { version = "0.46", features = [
         "lazy",
         "describe",
@@ -34,10 +39,7 @@ description = "A great future awaits me!"
         "is_between",
         "polars-ops",
     ] }
-    time-unit = "0.1"
 
-    futures = "0.3"
-    async-stream = "0.3"
-    futures-util = "0.2"
+
 
 

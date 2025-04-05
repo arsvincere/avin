@@ -5,10 +5,10 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::conf::{DAY_BEGIN, DT_FMT, MSK_TIME_DIF};
+use crate::Cmd;
+use crate::conf::{DT_FMT, MSK_TIME_DIF};
 use crate::core::Asset;
 use crate::data::market_data::MarketData;
-use crate::Cmd;
 use chrono::prelude::*;
 use polars::prelude::*;
 use std::path::Path;
@@ -124,8 +124,8 @@ impl SourceMoex {
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<DataFrame, &'static str> {
-        let mut from = Self::utc_to_msk(begin, market_data);
-        let till = Self::utc_to_msk(end, market_data);
+        let mut from = Self::utc_to_msk(begin);
+        let till = Self::utc_to_msk(end);
 
         let mut candles = DataFrame::empty_with_schema(&self.candle_schema);
         while from < till {
@@ -158,70 +158,19 @@ impl SourceMoex {
         }
 
         candles = Self::drop_duplicate(candles);
-        candles = Self::convert_dt(candles);
-        candles = Self::set_tz_utc(candles);
+        candles = Self::dt_to_timestamp(candles);
 
         return Ok(candles);
     }
 
-    fn utc_to_msk(
-        dt: &DateTime<Utc>,
-        market_data: &MarketData,
-    ) -> NaiveDateTime {
-        // INFO: Нюанс
-        // Для таймфреймов D, W, M
-        // 2024-01-01 00:00:00+00:00  ->  2024-01-01 00:00:00
-        // --
-        // Для таймфреймов < D
-        // 2024-01-01 07:30:00+00:00  ->  2024-01-01 10:30:00
-
-        let naive_dt = dt.naive_utc();
-        match market_data {
-            MarketData::BAR_1M => naive_dt + MSK_TIME_DIF,
-            MarketData::BAR_10M => naive_dt + MSK_TIME_DIF,
-            MarketData::BAR_1H => naive_dt + MSK_TIME_DIF,
-            MarketData::BAR_D => naive_dt,
-            MarketData::BAR_W => naive_dt,
-            MarketData::BAR_M => naive_dt,
-            _ => todo!(),
-        }
-
-        // // INFO: если время в Utc 00:00:00, значит качаем большие
-        // // таймфреймы: D W M, тогда возвращаю наивное время как есть
-        // // время тут не важно, главное дата правильная.
-        // if naive_dt.time() == DAY_BEGIN {
-        //     return naive_dt;
-        // }
-        //
-        // // INFO: иначе качаем маленькие таймфреймы, тут правим время тоже
-        // return naive_dt + MSK_TIME_DIF;
+    fn utc_to_msk(dt: &DateTime<Utc>) -> NaiveDateTime {
+        dt.naive_utc() + MSK_TIME_DIF
     }
-    fn msk_to_utc(moex_dt: &str) -> NaiveDateTime {
-        let dt = NaiveDateTime::parse_from_str(moex_dt, DT_FMT).unwrap();
+    fn msk_to_utc(moex_dt: &str) -> DateTime<Utc> {
+        let dt = format!("{}+03:00", moex_dt);
+        let dt = DateTime::parse_from_str(&dt, "%Y-%m-%d %H:%M:%S%z");
 
-        // INFO:
-        // У меня так и не получилось запихать в DataFrame DateTime<Utc>
-        // Почему-то NaiveDateTime принимает, а с таймзоной Utc уже нет.
-        // Поэтому несмотря на то что функция называется msk_to_utc
-        // она возвращает NaiveDateTime, но время само уже с оффсетом Utc.
-        // Сама таймзона Utc лепится уже позже внутри DataFrame, методом
-        // replace_time_zone
-
-        // INFO: Еще один нюанс:
-        // Для таймфреймов D, W, M - moex_dt имеет время 00:00:00
-        // Если от него отнять 3 часа, то в Utc получится не то что надо:
-        // 2025-01-01 00:00:00+03:00  ->  2024-12-31 21:00:00+00:00
-        // Поэтому чтобы оставить ту же дату, для больших таймфреймов
-        // возвращаю значение без изменений, тот же день:
-        // 2025-01-01 00:00:00+00:00
-        // --
-        // Для таймфреймов < D, время != 00:00:00
-        // меняю оффсет, но возвращаю все равно тип NaiveDateTime
-        if dt.time() == DAY_BEGIN {
-            return dt;
-        } else {
-            return dt - MSK_TIME_DIF;
-        }
+        dt.unwrap().to_utc()
     }
     async fn try_request(
         &self,
@@ -377,28 +326,31 @@ impl SourceMoex {
             .unique_stable(Some(&[col_name]), UniqueKeepStrategy::Any, None)
             .unwrap()
     }
-    fn convert_dt(mut candles: DataFrame) -> DataFrame {
-        let mut datetime: Vec<NaiveDateTime> = Vec::new();
-        for opt_naive in candles.column("dt").unwrap().str().unwrap().iter() {
-            let utc_dt = Self::msk_to_utc(opt_naive.unwrap());
-            datetime.push(utc_dt);
+    fn dt_to_timestamp(mut candles: DataFrame) -> DataFrame {
+        let mut timestamp: Vec<i64> = Vec::new();
+        for naive_opt in candles.column("dt").unwrap().str().unwrap().iter() {
+            let utc_dt = Self::msk_to_utc(naive_opt.unwrap());
+            let ts = utc_dt.timestamp_nanos_opt().unwrap();
+            timestamp.push(ts);
         }
 
         candles
-            .with_column(Column::new("dt".into(), &datetime))
+            .insert_column(0, Column::new("ts_nanos".into(), &timestamp))
+            .unwrap()
+            .drop_in_place("dt")
             .unwrap();
 
         candles
     }
-    fn set_tz_utc(candles: DataFrame) -> DataFrame {
-        candles
-            .lazy()
-            .with_column(col("dt").dt().replace_time_zone(
-                Some("UTC".into()),
-                lit("raise"),
-                NonExistent::Raise,
-            ))
-            .collect()
-            .unwrap()
-    }
+    // fn set_tz_utc(candles: DataFrame) -> DataFrame {
+    //     candles
+    //         .lazy()
+    //         .with_column(col("dt").dt().replace_time_zone(
+    //             Some("UTC".into()),
+    //             lit("raise"),
+    //             NonExistent::Raise,
+    //         ))
+    //         .collect()
+    //         .unwrap()
+    // }
 }

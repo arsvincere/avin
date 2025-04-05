@@ -8,8 +8,9 @@
 use crate::core::direction::Direction;
 use crate::core::order::limit_order::PostedLimitOrder;
 use crate::core::order::market_order::PostedMarketOrder;
+use bitcode::{Decode, Encode};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub enum StopOrder {
     New(NewStopOrder),
     Posted(PostedStopOrder),
@@ -32,7 +33,7 @@ impl StopOrder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct NewStopOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -60,7 +61,7 @@ impl NewStopOrder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct PostedStopOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -94,13 +95,13 @@ impl PostedStopOrder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub enum TriggeredStopOrder {
     Market(PostedMarketOrder),
     Limit(PostedLimitOrder),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Decode, Encode)]
 pub struct RejectedStopOrder {
     pub direction: Direction,
     pub lots: u32,

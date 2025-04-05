@@ -5,15 +5,15 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::DT_FMT;
+use crate::conf::DT_FMT;
+use crate::core::transaction::Transaction;
+use bitcode::{Decode, Encode};
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 
-use super::Transaction;
-
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Encode, Decode)]
 pub struct Operation {
-    pub dt: DateTime<Utc>,
+    pub ts_nanos: i64,
     pub quantity: i32,
     pub value: f64,
     pub commission: f64,
@@ -32,29 +32,59 @@ impl Operation {
         }
 
         Self {
-            dt: transactions.last().unwrap().dt,
+            ts_nanos: transactions.last().unwrap().ts_nanos,
             quantity,
             value,
             commission,
         }
     }
-    pub fn avg_price(&self) -> f64 {
-        self.value / self.quantity as f64
+    pub fn from_bin(bytes: &Vec<u8>) -> Self {
+        bitcode::decode(bytes).unwrap()
     }
+    pub fn from_csv(csv: &str) -> Self {
+        let parts: Vec<&str> = csv.split(';').collect();
 
+        let ts_nanos: i64 = parts[0].parse().unwrap();
+        let quantity: i32 = parts[1].parse().unwrap();
+        let value: f64 = parts[2].parse().unwrap();
+        let commission: f64 = parts[3].parse().unwrap();
+
+        Operation {
+            ts_nanos,
+            quantity,
+            value,
+            commission,
+        }
+    }
+    pub fn to_bin(&self) -> Vec<u8> {
+        bitcode::encode(self)
+    }
+    pub fn to_csv(&self) -> String {
+        format!(
+            "{};{};{};{};",
+            self.ts_nanos, self.quantity, self.value, self.commission
+        )
+    }
     pub fn to_hash_map(&self) -> HashMap<&str, String> {
         let mut info = HashMap::new();
-        info.insert("dt", self.dt.to_rfc3339());
+        info.insert("ts_nanos", self.ts_nanos.to_string());
         info.insert("quantity", self.quantity.to_string());
         info.insert("value", self.value.to_string());
         info.insert("commission", self.commission.to_string());
 
         info
     }
+
+    pub fn dt(&self) -> DateTime<Utc> {
+        DateTime::from_timestamp_nanos(self.ts_nanos)
+    }
+    pub fn avg_price(&self) -> f64 {
+        self.value / self.quantity as f64
+    }
 }
 impl std::fmt::Display for Operation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let dt = format!("{}", self.dt.format(DT_FMT));
+        let dt = format!("{}", self.dt().format(DT_FMT));
         write!(
             f,
             "Operation={} {}={}{}",
@@ -66,143 +96,44 @@ impl std::fmt::Display for Operation {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
 
     #[test]
     fn new() {
-        let dt_1 = Utc::now();
-        let t1 = Transaction::new(dt_1, 10, 320.0);
-        std::thread::sleep(std::time::Duration::new(0, 100));
-        let dt_2 = Utc::now();
-        let t2 = Transaction::new(dt_2.clone(), 10, 330.0);
+        let ts_1 = 100500;
+        let t1 = Transaction::new(ts_1, 10, 320.0);
+        let ts_2 = 100600;
+        let t2 = Transaction::new(ts_2, 10, 330.0);
 
         let op = Operation::from(&vec![t1, t2], 6500.0 * 0.001);
-        assert_eq!(op.dt, dt_2);
+        assert_eq!(op.ts_nanos, ts_2);
         assert_eq!(op.quantity, 20);
         assert_eq!(op.value, 6500.0);
         assert_eq!(op.commission, 6.5);
         assert_eq!(op.avg_price(), 325.0);
     }
-}
+    #[test]
+    fn csv() {
+        let dt = Utc.with_ymd_and_hms(2025, 4, 6, 12, 19, 0).unwrap();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let t1 = Transaction::new(ts, 10, 320.0);
+        let op = Operation::from(&vec![t1], 320.0 * 10.0 * 0.0005);
 
-// class Operation:
-//     def __init__(  # {{{
-//         self,
-//         account_name: str,
-//         dt: datetime,
-//         direction: Direction,
-//         instrument: Instrument,
-//         lots: int,
-//         quantity: int,
-//         price: float,
-//         amount: float,
-//         commission: Optional[float],
-//         operation_id: Optional[Id] = None,
-//         order_id: Optional[Id] = None,
-//         trade_id: Optional[Id] = None,
-//         meta: Optional[str] = None,
-//     ):
-//         logger.debug("Operation.__init__()")
-//
-//         self.account_name = account_name
-//         self.dt = dt
-//         self.direction = direction
-//         self.instrument = instrument
-//         self.price = price
-//         self.lots = lots
-//         self.quantity = quantity
-//         self.amount = amount
-//         self.commission = commission
-//         self.operation_id = operation_id
-//         self.order_id = order_id
-//         self.trade_id = trade_id
-//         self.meta = meta
-//
-//     # }}}
-//     def __str__(self):  # {{{
-//         usr_dt = self.dt + Usr.TIME_DIF
-//         str_dt = usr_dt.strftime("%Y-%m-%d %H:%M")
-//         string = (
-//             f"{str_dt} {self.direction.name} {self.instrument.ticker} "
-//             f"{self.quantity} * {self.price} = {self.amount} "
-//             f"+ {self.commission}"
-//         )
-//         return string
-//
-//     # }}}
-//     def pretty(self) -> str:  # {{{
-//         logger.debug(f"{self.__class__.__name__}.pretty()")
-//
-//         text = f"""Operation:
-//     id:             {self.operation_id}
-//     account:        {self.account_name}
-//     dt:             {Usr.localTime(self.dt)}
-//     direction:      {self.direction.name}
-//     instrument:     {self.instrument}
-//     lots:           {self.lots}
-//     quantity:       {self.quantity}
-//     price:          {self.price}
-//     amount:         {self.amount}
-//     commission:     {self.commission}
-//     order_id:       {self.order_id}
-//     trade_it:       {self.trade_id}
-//     meta:           {self.meta}
-// """
-//         return text
-//
-//     # }}}
-//
-//     async def setParentTrade(self, trade):  # {{{
-//         logger.debug(f"Operation.setParentTrade({trade})")
-//         self.trade_id = trade.trade_id
-//         await Operation.update(self)
-//
-//     # }}}
-//     @classmethod  # fromRecord  # {{{
-//     async def fromRecord(cls, record: asyncpg.Record) -> Operation:
-//         logger.debug(f"Operation.fromRecord({record})")
-//
-//         instrument = await Instrument.fromFigi(record["figi"])
-//
-//         op = Operation(
-//             account_name=record["account"],
-//             dt=record["dt"],
-//             direction=Direction.fromStr(record["direction"]),
-//             instrument=instrument,
-//             lots=record["lots"],
-//             quantity=record["quantity"],
-//             price=record["price"],
-//             amount=record["amount"],
-//             commission=record["commission"],
-//             operation_id=Id.fromStr(record["operation_id"]),
-//             order_id=Id.fromStr(record["order_id"]),
-//             trade_id=Id.fromStr(record["trade_id"]),
-//             meta=record["meta"],
-//         )
-//         return op
-//
-//     # }}}
-//     @classmethod  # save  # {{{
-//     async def save(cls, operation: Operation) -> None:
-//         logger.debug(f"Operation.save({operation})")
-//         await Keeper.add(operation)
-//
-//     # }}}
-//     @classmethod  # load  # {{{
-//     async def load(cls, operation_id: Id) -> Operation:
-//         logger.debug(f"Operation.load({operation_id})")
-//         op = await Keeper.get(cls, operation_id=operation_id)
-//         return op
-//
-//     # }}}
-//     @classmethod  # delete  # {{{
-//     async def delete(cls, operation: Operation) -> None:
-//         logger.debug(f"Operation.delete({operation})")
-//         await Keeper.delete(operation)
-//
-//     # }}}
-//     @classmethod  # update  # {{{
-//     async def update(cls, operation: Operation) -> None:
-//         logger.debug(f"Operation.update({operation})")
-//         await Keeper.update(operation)
-//
-//     # }}}
+        let csv = op.to_csv();
+        assert_eq!(csv, "1743941940000000000;10;3200;1.6;");
+
+        let from_csv = Operation::from_csv(&csv);
+        assert_eq!(op, from_csv);
+    }
+    #[test]
+    fn bin() {
+        let dt = Utc.with_ymd_and_hms(2025, 4, 6, 12, 19, 0).unwrap();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let t1 = Transaction::new(ts, 10, 320.0);
+        let op = Operation::from(&vec![t1], 320.0 * 10.0 * 0.0005);
+
+        let bytes = op.to_bin();
+        let decoded = Operation::from_bin(&bytes);
+        assert_eq!(op, decoded);
+    }
+}

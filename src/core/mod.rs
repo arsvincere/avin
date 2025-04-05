@@ -14,6 +14,7 @@ mod order;
 mod range;
 mod timeframe;
 mod trade;
+mod trade_list;
 mod transaction;
 
 pub use asset::Asset;
@@ -25,4 +26,5 @@ pub use order::*;
 pub use range::Range;
 pub use timeframe::TimeFrame;
 pub use trade::{ClosedTrade, NewTrade, OpenedTrade, Trade, TradeType};
+pub use trade_list::TradeList;
 pub use transaction::Transaction;

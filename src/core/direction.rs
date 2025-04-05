@@ -5,8 +5,18 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[derive(Debug, Clone, PartialEq)]
+use bitcode::{Decode, Encode};
+
+#[derive(Debug, Clone, PartialEq, Encode, Decode)]
 pub enum Direction {
     Buy,
     Sell,
+}
+impl Direction {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            Direction::Buy => "b",
+            Direction::Sell => "s",
+        }
+    }
 }
