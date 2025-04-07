@@ -7,7 +7,8 @@
 
 use crate::Cmd;
 use crate::conf::{DT_FMT, MSK_TIME_DIF};
-use crate::core::IID;
+use crate::data::Category;
+use crate::data::IID;
 use crate::data::market_data::MarketData;
 use chrono::prelude::*;
 use polars::prelude::*;
@@ -199,8 +200,8 @@ impl SourceMoex {
     ) -> Result<String, &'static str> {
         let mut url = self.service.clone();
 
-        assert_eq!(iid.category, "SHARE");
-        if iid.category == "SHARE" {
+        assert_eq!(iid.category(), Category::SHARE);
+        if iid.category() == Category::SHARE {
             url.push_str(
                 "/engines/stock/markets/shares/boards/tqbr/securities/",
             );
@@ -208,7 +209,7 @@ impl SourceMoex {
             panic!("unsupported category");
         }
 
-        let ticker = &iid.ticker;
+        let ticker = &iid.ticker();
         let data = "/candles.json?";
         let from = format!("from={begin}&"); // "from=2025-01-01 00:00&"
         let till = format!("till={end}&"); // "till=2025-03-27 14:35&"
@@ -311,7 +312,7 @@ impl SourceMoex {
         return last;
     }
     fn drop_duplicate(candles: DataFrame) -> DataFrame {
-        // INFO: во время загузки с мос.биржи в запросе идет
+        // NOTE: во время загузки с мос.биржи в запросе идет
         // from-till и на каждой итерации цикла получается дублируется
         // последняя свеча: сначала она идет последняя, а на следующем
         // шаге цикла она первая. Все потому что долбаная мосбиржа

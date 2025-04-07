@@ -17,19 +17,13 @@ pub struct TimeFrame {
 
 impl TimeFrame {
     pub fn new(name: &str) -> Self {
-        let valid_name = match name {
-            "1M" => name,
-            "5M" => name,
-            "10M" => name,
-            "1H" => name,
-            "D" => name,
-            "W" => name,
-            "M" => name,
-            _ => panic!("Invalid TimeFrame: {name}"),
-        };
+        let valid_name = "1M 5M 10M 1H D W M";
+        if !valid_name.contains(name) {
+            panic!("Invalid TimeFrame: {name}");
+        }
 
         TimeFrame {
-            name: valid_name.to_string(),
+            name: name.to_string(),
         }
     }
 
@@ -59,6 +53,12 @@ impl TimeFrame {
             "M" => MarketData::BAR_M,
             _ => panic!("Invalid TimeFrame: {}", self.name),
         }
+    }
+}
+
+impl std::fmt::Display for TimeFrame {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "TimeFrame={}", self.name)
     }
 }
 

@@ -6,8 +6,8 @@
  ****************************************************************************/
 
 use crate::core::direction::Direction;
-use crate::core::iid::IID;
 use crate::core::order::{Order, PostedStopOrder};
+use crate::data::IID;
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Utc};
 
@@ -106,7 +106,7 @@ impl OpenedTrade {
             orders: self.orders,
         };
 
-        // INFO: проверка что трейд действительно закрыт
+        // NOTE: проверка что трейд действительно закрыт
         // количество активов в позиции = 0
         if trade.quantity() != 0 {
             panic!("in closed trade quantity != 0");
@@ -290,16 +290,16 @@ impl ClosedTrade {
 
     pub fn open_dt(&self) -> DateTime<Utc> {
         let o = self.orders.first().unwrap();
-        match o.transactions() {
-            Some(transactions) => transactions.first().unwrap().dt(),
-            None => panic!("closed trade without transactions in order"),
+        match o.operation() {
+            Some(operation) => operation.dt(),
+            None => panic!("closed trade without operation in order"),
         }
     }
     pub fn close_dt(&self) -> DateTime<Utc> {
         let o = self.orders.last().unwrap();
-        match o.transactions() {
-            Some(transactions) => transactions.last().unwrap().dt(),
-            None => panic!("closed trade without transactions in order"),
+        match o.operation() {
+            Some(operation) => operation.dt(),
+            None => panic!("closed trade without operation in order"),
         }
     }
     pub fn timedelta(&self) -> TimeDelta {
@@ -312,7 +312,7 @@ impl ClosedTrade {
         self.result() / self.buy_value() * 100.0
     }
     pub fn speed(&self) -> f64 {
-        // INFO: если таймдельту перевести сразу в дни то
+        // NOTE: если таймдельту перевести сразу в дни то
         // для трейдов короче одного дня там будет 0.
         // поэтому смотрю на количество минут трейда, делю на 60 и 24
         // получается например 600 / 60 / 24 = 0.42 дня.
@@ -323,10 +323,10 @@ impl ClosedTrade {
         self.result() / (self.timedelta().num_minutes() as f64 / 60.0 / 24.0)
     }
     pub fn speed_p(&self) -> f64 {
-        // INFO: если таймдельту перевести сразу в дни то
+        // NOTE: если таймдельту перевести сразу в дни то
         // для трейдов короче одного дня там будет 0.
         // поэтому смотрю на количество минут трейда, делю на 60 и 24
-        // получается например 600 / 60 / 24 = 0.42 дня.
+        // получается например 600m трейд / 60 / 24 = 0.42 дня.
         // Беру результат трейда в процентах и делю на это число
         // в итоге получается количество процентов в день
         // используется для сравнения эффективности трейдов с учетом
@@ -340,48 +340,42 @@ impl ClosedTrade {
 mod tests {
     use crate::*;
     use chrono::{TimeZone, Utc};
+    use std::collections::HashMap;
 
     #[test]
     fn statuses() {
         // create trade
-        let iid = IID::from("moex_share_sber").unwrap();
+        let mut info = HashMap::new();
+        info.insert("exchange".to_string(), "MOEX".to_string());
+        info.insert("category".to_string(), "Share".to_string());
+        info.insert("ticker".to_string(), "SBER".to_string());
+        info.insert("figi".to_string(), "BBG004730N88".to_string());
+        let iid = IID::new(info);
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
             Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
         assert_eq!(trade.ts_nanos, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
-        assert_eq!(trade.iid.ticker, "SBER");
+        assert_eq!(trade.iid.ticker(), "SBER");
 
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);
         let mut order = order.post("broker_id=100500");
-        let tr = Transaction::new(
-            Utc.with_ymd_and_hms(2025, 4, 5, 14, 57, 0)
-                .unwrap()
-                .timestamp_nanos_opt()
-                .unwrap(),
-            100,
-            301.0,
-        );
+        let tr = Transaction::new(100, 301.0);
         order.add_transaction(tr);
-        let order = order.fill(3.0);
+        let ts = 0;
+        let order = order.fill(ts, 3.0);
         let mut trade = trade.open(Order::Limit(LimitOrder::Filled(order)));
         assert_eq!(trade.orders.len(), 1);
 
         // add second filled order
         let order = LimitOrder::new(Direction::Sell, 10, 311.0);
         let mut order = order.post("broker_id=100501");
-        let tr = Transaction::new(
-            Utc.with_ymd_and_hms(2025, 4, 6, 14, 57, 0)
-                .unwrap()
-                .timestamp_nanos_opt()
-                .unwrap(),
-            100,
-            311.0,
-        );
+        let tr = Transaction::new(100, 311.0);
         order.add_transaction(tr);
-        let order = order.fill(3.0);
+        let ts = time_unit::TimeUnit::Days.get_unit_nanoseconds() as i64;
+        let order = order.fill(ts, 3.0);
         trade.add_order(Order::Limit(LimitOrder::Filled(order)));
         assert_eq!(trade.orders.len(), 2);
 
@@ -397,28 +391,26 @@ mod tests {
     #[should_panic]
     fn close_unclosed_trade() {
         // create trade
-        let iid = IID::from("moex_share_sber").unwrap();
+        let mut info = HashMap::new();
+        info.insert("exchange".to_string(), "MOEX".to_string());
+        info.insert("category".to_string(), "Share".to_string());
+        info.insert("ticker".to_string(), "SBER".to_string());
+        info.insert("figi".to_string(), "BBG004730N88".to_string());
+        let iid = IID::new(info);
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
             Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
         assert_eq!(trade.ts_nanos, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
-        assert_eq!(trade.iid.ticker, "SBER");
+        assert_eq!(trade.iid.ticker(), "SBER");
 
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);
         let mut order = order.post("broker_id=100500");
-        let tr = Transaction::new(
-            Utc.with_ymd_and_hms(2025, 4, 5, 14, 57, 0)
-                .unwrap()
-                .timestamp_nanos_opt()
-                .unwrap(),
-            100,
-            301.0,
-        );
+        let tr = Transaction::new(100, 301.0);
         order.add_transaction(tr);
-        let order = order.fill(3.0);
+        let order = order.fill(100500, 3.0);
         let trade = trade.open(Order::Limit(LimitOrder::Filled(order)));
         assert_eq!(trade.orders.len(), 1);
 

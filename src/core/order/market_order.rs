@@ -10,7 +10,7 @@ use crate::core::operation::Operation;
 use crate::core::transaction::Transaction;
 use bitcode::{Decode, Encode};
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub enum MarketOrder {
     New(NewMarketOrder),
     Posted(PostedMarketOrder),
@@ -23,7 +23,7 @@ impl MarketOrder {
     }
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct NewMarketOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -46,7 +46,7 @@ impl NewMarketOrder {
     }
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct PostedMarketOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -57,8 +57,9 @@ impl PostedMarketOrder {
     pub fn add_transaction(&mut self, t: Transaction) {
         self.transactions.push(t);
     }
-    pub fn fill(self, commission: f64) -> FilledMarketOrder {
-        let operation = Operation::from(&self.transactions, commission);
+    pub fn fill(self, ts_nanos: i64, commission: f64) -> FilledMarketOrder {
+        let operation =
+            Operation::from(ts_nanos, &self.transactions, commission);
         FilledMarketOrder {
             direction: self.direction,
             lots: self.lots,
@@ -69,7 +70,7 @@ impl PostedMarketOrder {
     }
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct FilledMarketOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -78,7 +79,7 @@ pub struct FilledMarketOrder {
     pub operation: Operation,
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct RejectedMarketOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -97,27 +98,20 @@ mod tests {
         let mut posted = new.post("order_id=100500");
         assert_eq!(posted.broker_id, "order_id=100500");
 
-        let t1 = Transaction::new(
-            Utc::now().timestamp_nanos_opt().unwrap(),
-            5,
-            320.0,
-        );
+        let t1 = Transaction::new(5, 320.0);
         posted.add_transaction(t1);
         assert_eq!(posted.broker_id, "order_id=100500");
         assert_eq!(posted.transactions.len(), 1);
 
-        let t2_dt = Utc::now();
-        let t2 = Transaction::new(
-            t2_dt.clone().timestamp_nanos_opt().unwrap(),
-            5,
-            320.0,
-        );
+        let t2 = Transaction::new(5, 320.0);
         posted.add_transaction(t2);
         assert_eq!(posted.broker_id, "order_id=100500");
         assert_eq!(posted.transactions.len(), 2);
 
-        let order = posted.fill(3.2);
-        assert_eq!(order.operation.dt(), t2_dt);
+        let dt = Utc::now();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let order = posted.fill(ts, 3.2);
+        assert_eq!(order.operation.dt(), dt);
         assert_eq!(order.operation.quantity, 10);
         assert_eq!(order.operation.value, 3200.0);
         assert_eq!(order.operation.commission, 3.2);

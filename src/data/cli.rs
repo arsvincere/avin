@@ -5,7 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::IID;
 use crate::data::manager::Manager;
 use crate::data::market_data::MarketData;
 use crate::data::source::Source;
@@ -30,6 +29,9 @@ impl Command {
         Ok(command)
     }
     pub async fn execute(&self) -> Result<(), &'static str> {
+        if self.args[1] == "cache" {
+            self.try_cache().await?;
+        }
         if self.args[1] == "download" {
             self.try_download().await?;
         }
@@ -40,6 +42,21 @@ impl Command {
         Ok(())
     }
 
+    async fn try_cache(&self) -> Result<(), &'static str> {
+        // Command example:
+        // a-data cache -s tinkoff
+        if self.args.len() < 4 {
+            panic!("Маловато аргументов для кеширования")
+        };
+
+        assert_eq!(self.args[2], "-s");
+        assert_eq!(self.args[3], "tinkoff");
+        let source = Source::TINKOFF;
+
+        Manager::cache(&source).await?;
+
+        Ok(())
+    }
     async fn try_download(&self) -> Result<(), &'static str> {
         // Command example:
         // avin download -s moex -i moex_share_sber --data_type bar_d
@@ -52,7 +69,7 @@ impl Command {
         let source = Source::MOEX;
 
         assert_eq!(self.args[4], "-i");
-        let iid = IID::from(&self.args[5])?;
+        let iid = Manager::find(&self.args[5])?;
 
         assert_eq!(self.args[6], "--data_type");
         let data_type = MarketData::from(&self.args[7])?;
@@ -75,7 +92,7 @@ impl Command {
         };
 
         assert_eq!(self.args[2], "-i");
-        let iid = IID::from(&self.args[3])?;
+        let iid = Manager::find(&self.args[3])?;
 
         let in_t = MarketData::from(&self.args[4])?;
         let out_t = MarketData::from(&self.args[5])?;

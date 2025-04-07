@@ -11,7 +11,7 @@ use bitcode::{Decode, Encode};
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Encode, Decode)]
+#[derive(Debug, PartialEq, Encode, Decode, Clone)]
 pub struct Operation {
     pub ts_nanos: i64,
     pub quantity: i32,
@@ -19,7 +19,24 @@ pub struct Operation {
     pub commission: f64,
 }
 impl Operation {
-    pub fn from(transactions: &Vec<Transaction>, commission: f64) -> Self {
+    pub fn new(
+        ts_nanos: i64,
+        quantity: i32,
+        value: f64,
+        commission: f64,
+    ) -> Self {
+        Self {
+            ts_nanos,
+            quantity,
+            value,
+            commission,
+        }
+    }
+    pub fn from(
+        ts_nanos: i64,
+        transactions: &Vec<Transaction>,
+        commission: f64,
+    ) -> Self {
         if transactions.is_empty() {
             panic!("Empty transactions list! Fail to create operation!");
         }
@@ -32,7 +49,7 @@ impl Operation {
         }
 
         Self {
-            ts_nanos: transactions.last().unwrap().ts_nanos,
+            ts_nanos,
             quantity,
             value,
             commission,
@@ -100,13 +117,12 @@ mod tests {
 
     #[test]
     fn new() {
-        let ts_1 = 100500;
-        let t1 = Transaction::new(ts_1, 10, 320.0);
-        let ts_2 = 100600;
-        let t2 = Transaction::new(ts_2, 10, 330.0);
+        let ts = 100500;
+        let t1 = Transaction::new(10, 320.0);
+        let t2 = Transaction::new(10, 330.0);
 
-        let op = Operation::from(&vec![t1, t2], 6500.0 * 0.001);
-        assert_eq!(op.ts_nanos, ts_2);
+        let op = Operation::from(ts, &vec![t1, t2], 6500.0 * 0.001);
+        assert_eq!(op.ts_nanos, ts);
         assert_eq!(op.quantity, 20);
         assert_eq!(op.value, 6500.0);
         assert_eq!(op.commission, 6.5);
@@ -114,10 +130,11 @@ mod tests {
     }
     #[test]
     fn csv() {
+        let t1 = Transaction::new(10, 320.0);
+
         let dt = Utc.with_ymd_and_hms(2025, 4, 6, 12, 19, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
-        let t1 = Transaction::new(ts, 10, 320.0);
-        let op = Operation::from(&vec![t1], 320.0 * 10.0 * 0.0005);
+        let op = Operation::from(ts, &vec![t1], 320.0 * 10.0 * 0.0005);
 
         let csv = op.to_csv();
         assert_eq!(csv, "1743941940000000000;10;3200;1.6;");
@@ -127,10 +144,11 @@ mod tests {
     }
     #[test]
     fn bin() {
+        let t1 = Transaction::new(10, 320.0);
+
         let dt = Utc.with_ymd_and_hms(2025, 4, 6, 12, 19, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
-        let t1 = Transaction::new(ts, 10, 320.0);
-        let op = Operation::from(&vec![t1], 320.0 * 10.0 * 0.0005);
+        let op = Operation::from(ts, &vec![t1], 320.0 * 10.0 * 0.0005);
 
         let bytes = op.to_bin();
         let decoded = Operation::from_bin(&bytes);

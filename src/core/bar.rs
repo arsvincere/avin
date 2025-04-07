@@ -20,49 +20,8 @@ pub struct Bar {
     pub c: f64,
     pub v: u64,
 }
+
 impl Bar {
-    pub fn display(&self) -> String {
-        format!(
-            "Bar: dt={} o={} h={} l={} c={} v={}",
-            self.dt(),
-            self.o,
-            self.h,
-            self.l,
-            self.c,
-            self.v
-        )
-    }
-
-    pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
-    }
-    pub fn is_bear(&self) -> bool {
-        self.o > self.c
-    }
-    pub fn is_bull(&self) -> bool {
-        self.o < self.c
-    }
-    pub fn full(&self) -> Range {
-        Range::new(self.l, self.h)
-    }
-    pub fn body(&self) -> Range {
-        Range::new(self.o, self.c)
-    }
-    pub fn lower(&self) -> Range {
-        if self.is_bull() {
-            Range::new(self.l, self.o)
-        } else {
-            Range::new(self.l, self.c)
-        }
-    }
-    pub fn upper(&self) -> Range {
-        if self.is_bull() {
-            Range::new(self.c, self.h)
-        } else {
-            Range::new(self.o, self.h)
-        }
-    }
-
     pub fn new(
         ts_nanos: i64,
         o: f64,
@@ -130,6 +89,51 @@ impl Bar {
         }
 
         return Ok(bars);
+    }
+
+    pub fn dt(&self) -> DateTime<Utc> {
+        DateTime::from_timestamp_nanos(self.ts_nanos)
+    }
+    pub fn is_bear(&self) -> bool {
+        self.o > self.c
+    }
+    pub fn is_bull(&self) -> bool {
+        self.o < self.c
+    }
+    pub fn full(&self) -> Range {
+        Range::new(self.l, self.h)
+    }
+    pub fn body(&self) -> Range {
+        Range::new(self.o, self.c)
+    }
+    pub fn lower(&self) -> Range {
+        if self.is_bull() {
+            Range::new(self.l, self.o)
+        } else {
+            Range::new(self.l, self.c)
+        }
+    }
+    pub fn upper(&self) -> Range {
+        if self.is_bull() {
+            Range::new(self.c, self.h)
+        } else {
+            Range::new(self.o, self.h)
+        }
+    }
+}
+
+impl std::fmt::Display for Bar {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "Bar: dt={} o={} h={} l={} c={} v={}",
+            self.dt(),
+            self.o,
+            self.h,
+            self.l,
+            self.c,
+            self.v
+        )
     }
 }
 

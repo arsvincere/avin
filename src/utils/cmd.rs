@@ -14,9 +14,9 @@ use std::path::{Path, PathBuf};
 #[derive(Debug)]
 pub struct Cmd {}
 impl Cmd {
-    // pub fn is_exist(path: &Path) -> bool {
-    //     todo!("is exist file path");
-    // }
+    pub fn is_exist(path: &Path) -> bool {
+        path.exists()
+    }
     // pub fn path(parts: &Vec<&Path>) {
     //     todo!("join path from Vec")
     // }
@@ -27,7 +27,7 @@ impl Cmd {
     }
 
     pub fn get_files(
-        dir_path: &PathBuf,
+        dir_path: &Path,
     ) -> Result<Vec<PathBuf>, Box<dyn Error>> {
         let mut files = Vec::new();
         if dir_path.is_dir() {
@@ -41,6 +41,16 @@ impl Cmd {
 
         files.sort();
         Ok(files)
+    }
+    pub fn name(path: &Path) -> Result<String, Box<dyn Error>> {
+        let file_name = path
+            .file_stem()
+            .unwrap()
+            .to_os_string()
+            .into_string()
+            .unwrap();
+
+        Ok(file_name)
     }
 
     pub fn read(path: &Path) -> Result<String, Box<dyn Error>> {
@@ -92,7 +102,7 @@ impl Cmd {
         // write bytes
         match file.write_all(bytes) {
             Err(why) => panic!("Error save {}: {}", display, why),
-            Ok(_) => println!("Saved: {}", display),
+            Ok(_) => println!(":: Cmd save: {}", display),
         }
 
         Ok(())
@@ -120,6 +130,11 @@ impl Cmd {
     }
     pub fn delete_dir(path: &Path) -> Result<(), Box<dyn Error>> {
         std::fs::remove_dir_all(path)?;
+
+        Ok(())
+    }
+    pub fn replace(from: &Path, to: &Path) -> Result<(), Box<dyn Error>> {
+        std::fs::rename(from, to)?;
 
         Ok(())
     }

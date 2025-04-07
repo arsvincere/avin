@@ -16,8 +16,8 @@ use bitcode::{Decode, Encode};
 use std::collections::HashMap;
 
 pub use limit_order::{
-    FilledLimitOrder, LimitOrder, NewLimitOrder, PostedLimitOrder,
-    RejectedLimitOrder,
+    CanceledLimitOrder, FilledLimitOrder, LimitOrder, NewLimitOrder,
+    PostedLimitOrder, RejectedLimitOrder,
 };
 pub use market_order::{
     FilledMarketOrder, MarketOrder, NewMarketOrder, PostedMarketOrder,
@@ -87,11 +87,13 @@ impl Order {
                 LimitOrder::Posted(o) => &o.direction,
                 LimitOrder::Filled(o) => &o.direction,
                 LimitOrder::Rejected(o) => &o.direction,
+                LimitOrder::Canceled(o) => &o.direction,
             },
             Order::Stop(stop) => match stop {
                 StopOrder::New(o) => &o.direction,
                 StopOrder::Posted(o) => &o.direction,
                 StopOrder::Rejected(o) => &o.direction,
+                StopOrder::Canceled(o) => &o.direction,
                 StopOrder::Triggered(o) => match o {
                     TriggeredStopOrder::Market(o) => &o.direction,
                     TriggeredStopOrder::Limit(o) => &o.direction,
@@ -112,11 +114,13 @@ impl Order {
                 LimitOrder::Posted(o) => o.lots,
                 LimitOrder::Filled(o) => o.lots,
                 LimitOrder::Rejected(o) => o.lots,
+                LimitOrder::Canceled(o) => o.lots,
             },
             Order::Stop(stop) => match stop {
                 StopOrder::New(o) => o.lots,
                 StopOrder::Posted(o) => o.lots,
                 StopOrder::Rejected(o) => o.lots,
+                StopOrder::Canceled(o) => o.lots,
                 StopOrder::Triggered(o) => match o {
                     TriggeredStopOrder::Market(o) => o.lots,
                     TriggeredStopOrder::Limit(o) => o.lots,
@@ -137,6 +141,7 @@ impl Order {
                 LimitOrder::Posted(o) => Some(&o.transactions),
                 LimitOrder::Filled(o) => Some(&o.transactions),
                 LimitOrder::Rejected(_) => None,
+                LimitOrder::Canceled(o) => Some(&o.transactions),
             },
             Order::Stop(stop) => match stop {
                 _ => None,
@@ -158,6 +163,33 @@ impl Order {
             },
         }
     }
+    pub fn broker_id(&self) -> Option<&String> {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::New(_) => None,
+                MarketOrder::Posted(o) => Some(&o.broker_id),
+                MarketOrder::Filled(o) => Some(&o.broker_id),
+                MarketOrder::Rejected(_) => None,
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::New(_) => None,
+                LimitOrder::Posted(o) => Some(&o.broker_id),
+                LimitOrder::Filled(o) => Some(&o.broker_id),
+                LimitOrder::Rejected(_) => None,
+                LimitOrder::Canceled(o) => Some(&o.broker_id),
+            },
+            Order::Stop(stop) => match stop {
+                StopOrder::New(_) => None,
+                StopOrder::Posted(o) => Some(&o.broker_id),
+                StopOrder::Rejected(_) => None,
+                StopOrder::Canceled(o) => Some(&o.broker_id),
+                StopOrder::Triggered(o) => match o {
+                    TriggeredStopOrder::Market(o) => Some(&o.broker_id),
+                    TriggeredStopOrder::Limit(o) => Some(&o.broker_id),
+                },
+            },
+        }
+    }
 }
 
 #[cfg(test)]
@@ -171,22 +203,15 @@ mod tests {
 
         let mut posted = new.post("order_id=100500");
 
-        let t1 = Transaction::new(
-            Utc::now().timestamp_nanos_opt().unwrap(),
-            1,
-            4500.0,
-        );
+        let t1 = Transaction::new(1, 4500.0);
         posted.add_transaction(t1);
 
-        let t2_dt = Utc::now();
-        let t2 = Transaction::new(
-            t2_dt.clone().timestamp_nanos_opt().unwrap(),
-            1,
-            4510.0,
-        );
+        let t2 = Transaction::new(1, 4510.0);
         posted.add_transaction(t2);
 
-        let order = posted.fill(4.5);
+        let dt = Utc::now();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let order = posted.fill(ts, 4.5);
 
         // wrap
         let order = Order::Limit(LimitOrder::Filled(order));

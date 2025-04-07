@@ -93,15 +93,20 @@ impl TradeList {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
     use crate::*;
     use chrono::{TimeZone, Utc};
+    use std::collections::HashMap;
+    use std::path::Path;
 
     #[test]
     fn save_load() {
         // create trade
-        let iid = IID::from("moex_share_sber").unwrap();
+        let mut info = HashMap::new();
+        info.insert("exchange".to_string(), "MOEX".to_string());
+        info.insert("category".to_string(), "Share".to_string());
+        info.insert("ticker".to_string(), "SBER".to_string());
+        info.insert("figi".to_string(), "BBG004730N88".to_string());
+        let iid = IID::new(info);
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
@@ -110,31 +115,17 @@ mod tests {
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);
         let mut order = order.post("broker_id=100500");
-        let tr = Transaction::new(
-            Utc.with_ymd_and_hms(2025, 4, 5, 14, 57, 0)
-                .unwrap()
-                .timestamp_nanos_opt()
-                .unwrap(),
-            100,
-            301.0,
-        );
+        let tr = Transaction::new(100, 301.0);
         order.add_transaction(tr);
-        let order = order.fill(3.0);
+        let order = order.fill(100500, 3.0);
         let mut trade = trade.open(Order::Limit(LimitOrder::Filled(order)));
 
         // add second filled order
         let order = LimitOrder::new(Direction::Sell, 10, 311.0);
         let mut order = order.post("broker_id=100501");
-        let tr = Transaction::new(
-            Utc.with_ymd_and_hms(2025, 4, 6, 14, 57, 0)
-                .unwrap()
-                .timestamp_nanos_opt()
-                .unwrap(),
-            100,
-            311.0,
-        );
+        let tr = Transaction::new(100, 311.0);
         order.add_transaction(tr);
-        let order = order.fill(3.0);
+        let order = order.fill(100600, 3.0);
         trade.add_order(Order::Limit(LimitOrder::Filled(order)));
 
         // close trade

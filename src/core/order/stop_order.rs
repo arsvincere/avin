@@ -10,12 +10,13 @@ use crate::core::order::limit_order::PostedLimitOrder;
 use crate::core::order::market_order::PostedMarketOrder;
 use bitcode::{Decode, Encode};
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub enum StopOrder {
     New(NewStopOrder),
     Posted(PostedStopOrder),
     Triggered(TriggeredStopOrder),
     Rejected(RejectedStopOrder),
+    Canceled(CanceledStopOrder),
 }
 impl StopOrder {
     pub fn new(
@@ -33,7 +34,7 @@ impl StopOrder {
     }
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct NewStopOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -61,7 +62,7 @@ impl NewStopOrder {
     }
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct PostedStopOrder {
     pub direction: Direction,
     pub lots: u32,
@@ -93,21 +94,39 @@ impl PostedStopOrder {
             }
         }
     }
+    pub fn cancel(self) -> CanceledStopOrder {
+        CanceledStopOrder {
+            direction: self.direction,
+            lots: self.lots,
+            stop_price: self.stop_price,
+            exec_price: self.exec_price,
+            broker_id: self.broker_id,
+        }
+    }
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub enum TriggeredStopOrder {
     Market(PostedMarketOrder),
     Limit(PostedLimitOrder),
 }
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct RejectedStopOrder {
     pub direction: Direction,
     pub lots: u32,
     pub stop_price: f64,
     pub exec_price: Option<f64>,
     pub meta: String,
+}
+
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
+pub struct CanceledStopOrder {
+    pub direction: Direction,
+    pub lots: u32,
+    pub stop_price: f64,
+    pub exec_price: Option<f64>,
+    pub broker_id: String,
 }
 
 #[cfg(test)]

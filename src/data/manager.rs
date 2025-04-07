@@ -5,16 +5,29 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::IID;
+use crate::core::Asset;
+use crate::data::category::Category;
 use crate::data::data_file_bar::DataFileBar;
+use crate::data::iid::IID;
+use crate::data::iid_cache::IidCache;
 use crate::data::market_data::MarketData;
 use crate::data::source::Source;
 use crate::data::source_moex::SourceMoex;
+use crate::tinkoff::Tinkoff;
 use chrono::prelude::*;
 use polars::prelude::*;
 
 pub struct Manager {}
 impl Manager {
+    pub async fn cache(source: &Source) -> Result<(), &'static str> {
+        println!(":: Caching {}", source.to_string());
+
+        match source {
+            Source::TINKOFF => Manager::cache_tinkoff().await,
+            Source::MOEX => todo!(),
+            Source::CONVERTER => panic!(),
+        }
+    }
     pub async fn download(
         source: &Source,
         iid: &IID,
@@ -26,7 +39,7 @@ impl Manager {
             Source::TINKOFF => panic!("Нахер с Тинькофф качать?"),
             Source::CONVERTER => panic!(),
         };
-        println!(":: Download {} {}", iid.ticker, market_data.name());
+        println!(":: Download {} {}", iid.ticker(), market_data.name());
 
         match year {
             Some(year) => {
@@ -39,6 +52,32 @@ impl Manager {
             }
         }
     }
+    pub fn find(s: &str) -> Result<IID, &'static str> {
+        let parts: Vec<&str> = s.split('_').collect();
+        if parts.len() != 3 {
+            eprintln!("Fail to create IID from str: {s}");
+            return Err("Invalid IID");
+        };
+
+        // TODO: пока работает только биржа MOEX
+        let exchange = parts[0].to_uppercase();
+        assert_eq!(exchange, "MOEX");
+
+        // TODO: пока работает только тип инструмента SHARE
+        let category = parts[1].to_uppercase();
+        assert_eq!(category, "SHARE");
+        let category = Category::SHARE;
+
+        let ticker = parts[2].to_uppercase();
+
+        // loading instruments cache
+        let iid = IidCache::find(&exchange, &category, &ticker);
+
+        match iid {
+            Some(iid) => Ok(iid),
+            None => Err("instrument not found"),
+        }
+    }
     pub fn convert(
         iid: &IID,
         in_t: &MarketData,
@@ -46,7 +85,7 @@ impl Manager {
     ) -> Result<(), &'static str> {
         println!(
             ":: Convert {} {} -> {}",
-            iid.ticker,
+            iid.ticker(),
             in_t.name(),
             out_t.name(),
         );
@@ -100,6 +139,23 @@ impl Manager {
         Ok(df)
     }
 
+    async fn cache_tinkoff() -> Result<(), &'static str> {
+        let source = Tinkoff::new().await;
+        let shares = source.get_shares().await.unwrap();
+
+        let mut iids = Vec::new();
+        for share in shares {
+            iids.push(share.iid());
+        }
+
+        let source = Source::TINKOFF;
+        let category = Category::SHARE;
+        let cache = IidCache::new(source, category, iids);
+
+        IidCache::save(&cache)?;
+
+        Ok(())
+    }
     async fn download_one_year(
         source: &SourceMoex,
         iid: &IID,
@@ -114,7 +170,7 @@ impl Manager {
             return Err("   - no data for {year}");
         }
 
-        // INFO: ParquetWriter требует &mut df для сохранения...
+        // NOTE: ParquetWriter требует &mut df для сохранения...
         // по факту никто data_file не меняет перед записью
         let mut data_file =
             DataFileBar::new(iid, market_data.clone(), df, year).unwrap();
@@ -143,7 +199,7 @@ impl Manager {
                 continue;
             }
 
-            // INFO: ParquetWriter требует &mut df для сохранения...
+            // NOTE: ParquetWriter требует &mut df для сохранения...
             // по факту никто data_file не меняет перед записью
             let mut data_file =
                 DataFileBar::new(iid, market_data.clone(), df, year).unwrap();
@@ -250,7 +306,7 @@ mod tests {
     // }
     #[test]
     fn request_10m() {
-        let instr = IID::from("moex_share_sber").unwrap();
+        let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_10M;
         let begin = Usr::dt("2023-08-01 10:00:00");
         let end = Usr::dt("2023-08-01 11:00:00");
@@ -268,7 +324,7 @@ mod tests {
     }
     #[test]
     fn request_1h() {
-        let instr = IID::from("moex_share_sber").unwrap();
+        let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_1H;
         let begin = Usr::dt("2023-08-01 10:00:00");
         let end = Usr::dt("2023-08-01 13:00:00");
@@ -287,7 +343,7 @@ mod tests {
     }
     #[test]
     fn request_d() {
-        let instr = IID::from("moex_share_sber").unwrap();
+        let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_D;
         let begin = Usr::date("2023-08-01");
         let end = Usr::date("2023-09-01");
@@ -305,7 +361,7 @@ mod tests {
     }
     #[test]
     fn request_w() {
-        let instr = IID::from("moex_share_sber").unwrap();
+        let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_W;
         let begin = Usr::date("2024-01-01");
         let end = Usr::date("2025-01-01");
@@ -323,7 +379,7 @@ mod tests {
     }
     #[test]
     fn request_m() {
-        let instr = IID::from("moex_share_sber").unwrap();
+        let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_M;
         let begin = Usr::date("2024-01-01");
         let end = Usr::date("2025-01-01");

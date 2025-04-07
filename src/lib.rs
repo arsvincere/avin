@@ -13,10 +13,12 @@ mod conf;
 mod core;
 mod data;
 mod tester;
+mod tinkoff;
 mod utils;
 
 pub use conf::*;
 pub use core::*;
 pub use data::*;
 pub use tester::*;
+pub use tinkoff::*;
 pub use utils::*;

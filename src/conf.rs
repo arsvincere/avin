@@ -15,6 +15,11 @@ pub const DEFAULT_BARS_COUNT: i32 = 5000;
 
 // Dir
 pub const DATA_DIR: &str = "/home/alex/avin/usr/data";
+pub const CACHE_DIR: &str = "/home/alex/avin/usr/cache";
+
+// Connect
+pub const TINKOFF_TOKEN: &str =
+    "/home/alex/avin/usr/connect/tinkoff/token.txt";
 
 // Datetime
 pub const DT_FMT: &str = "%Y-%m-%d %H:%M:%S";

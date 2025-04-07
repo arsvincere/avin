@@ -12,6 +12,7 @@ pub enum Direction {
     Buy,
     Sell,
 }
+
 impl Direction {
     pub fn to_str(&self) -> &'static str {
         match self {
