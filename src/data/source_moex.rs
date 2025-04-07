@@ -7,7 +7,7 @@
 
 use crate::Cmd;
 use crate::conf::{DT_FMT, MSK_TIME_DIF};
-use crate::core::Asset;
+use crate::core::IID;
 use crate::data::market_data::MarketData;
 use chrono::prelude::*;
 use polars::prelude::*;
@@ -119,7 +119,7 @@ impl SourceMoex {
     // }
     pub async fn get_bars(
         &self,
-        asset: &Asset,
+        iid: &IID,
         market_data: &MarketData,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
@@ -131,7 +131,7 @@ impl SourceMoex {
         while from < till {
             println!("   from {from}");
             let response = self
-                .try_request(asset, market_data, &from, &till)
+                .try_request(iid, market_data, &from, &till)
                 .await
                 .unwrap();
             let json: serde_json::Value = match response.json().await {
@@ -174,12 +174,12 @@ impl SourceMoex {
     }
     async fn try_request(
         &self,
-        asset: &Asset,
+        iid: &IID,
         market_data: &MarketData,
         from: &NaiveDateTime,
         till: &NaiveDateTime,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        let url = self.get_url(asset, market_data, from, till).unwrap();
+        let url = self.get_url(iid, market_data, from, till).unwrap();
         let request = self
             .client
             .get(&url)
@@ -192,23 +192,23 @@ impl SourceMoex {
     }
     fn get_url(
         &self,
-        asset: &Asset,
+        iid: &IID,
         market_data: &MarketData,
         begin: &NaiveDateTime,
         end: &NaiveDateTime,
     ) -> Result<String, &'static str> {
         let mut url = self.service.clone();
 
-        assert_eq!(asset.itype, "SHARE");
-        if asset.itype == "SHARE" {
+        assert_eq!(iid.category, "SHARE");
+        if iid.category == "SHARE" {
             url.push_str(
                 "/engines/stock/markets/shares/boards/tqbr/securities/",
             );
         } else {
-            panic!("unsupported itype");
+            panic!("unsupported category");
         }
 
-        let ticker = &asset.ticker;
+        let ticker = &iid.ticker;
         let data = "/candles.json?";
         let from = format!("from={begin}&"); // "from=2025-01-01 00:00&"
         let till = format!("till={end}&"); // "till=2025-03-27 14:35&"

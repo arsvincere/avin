@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::Asset;
+use crate::core::IID;
 use crate::data::manager::Manager;
 use crate::data::market_data::MarketData;
 use crate::data::source::Source;
@@ -52,7 +52,7 @@ impl Command {
         let source = Source::MOEX;
 
         assert_eq!(self.args[4], "-i");
-        let asset = Asset::from(&self.args[5])?;
+        let iid = IID::from(&self.args[5])?;
 
         assert_eq!(self.args[6], "--data_type");
         let data_type = MarketData::from(&self.args[7])?;
@@ -60,10 +60,9 @@ impl Command {
         if let Some(year_flag) = self.args.get(8) {
             assert_eq!(year_flag, "--year");
             let year: i32 = self.args[9].parse().unwrap();
-            Manager::download(&source, &asset, &data_type, Some(year))
-                .await?;
+            Manager::download(&source, &iid, &data_type, Some(year)).await?;
         } else {
-            Manager::download(&source, &asset, &data_type, None).await?;
+            Manager::download(&source, &iid, &data_type, None).await?;
         }
 
         Ok(())
@@ -76,12 +75,12 @@ impl Command {
         };
 
         assert_eq!(self.args[2], "-i");
-        let asset = Asset::from(&self.args[3])?;
+        let iid = IID::from(&self.args[3])?;
 
         let in_t = MarketData::from(&self.args[4])?;
         let out_t = MarketData::from(&self.args[5])?;
 
-        Manager::convert(&asset, &in_t, &out_t)?;
+        Manager::convert(&iid, &in_t, &out_t)?;
 
         Ok(())
     }

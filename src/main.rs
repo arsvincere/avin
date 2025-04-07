@@ -10,17 +10,23 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 use avin::*;
-use chrono::Utc;
 
 #[tokio::main]
 async fn main() {
-    let dt = Utc::now();
-    let ts = dt.timestamp();
-    let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
-    assert_eq!(b.dt(), dt);
-    assert_eq!(b.o, 10.0);
-    assert_eq!(b.h, 11.1);
-    assert_eq!(b.l, 9.9);
-    assert_eq!(b.c, 10.5);
-    assert_eq!(b.v, 5000);
+    let mut asset = Asset::from_str("moex_share_sber").unwrap();
+    let tf = TimeFrame::new("D");
+    asset.load_chart(&tf).unwrap();
+
+    let bar = Bar::new(100500, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
+    let bar_event = BarEvent::new(bar, tf);
+    let e = Event::Bar(bar_event);
+
+    let tx = asset.sender();
+    tx.send(e.clone()).unwrap();
+    tx.send(e.clone()).unwrap();
+    tx.send(e.clone()).unwrap();
+
+    let handle = tokio::spawn(async move { asset.listen().await });
+
+    handle.await.unwrap();
 }

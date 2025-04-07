@@ -101,11 +101,11 @@ mod tests {
     #[test]
     fn save_load() {
         // create trade
-        let asset = Asset::from("moex_share_sber").unwrap();
+        let iid = IID::from("moex_share_sber").unwrap();
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
-            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, &asset);
+            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
 
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);

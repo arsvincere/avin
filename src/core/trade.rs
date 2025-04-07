@@ -5,8 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::asset::Asset;
 use crate::core::direction::Direction;
+use crate::core::iid::IID;
 use crate::core::order::{Order, PostedStopOrder};
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Utc};
@@ -22,13 +22,13 @@ impl Trade {
         ts_nanos: i64,
         strategy: &str,
         typ: TradeType,
-        asset: &Asset,
+        iid: IID,
     ) -> NewTrade {
         NewTrade {
             ts_nanos,
             strategy: strategy.to_string(),
             typ,
-            asset: asset.copy_id(),
+            iid,
         }
     }
 }
@@ -52,7 +52,7 @@ pub struct NewTrade {
     pub ts_nanos: i64,
     pub strategy: String,
     pub typ: TradeType,
-    pub asset: Asset,
+    pub iid: IID,
 }
 impl NewTrade {
     pub fn open(self, filled_order: Order) -> OpenedTrade {
@@ -63,7 +63,7 @@ impl NewTrade {
             ts_nanos: self.ts_nanos,
             strategy: self.strategy,
             typ: self.typ,
-            asset: self.asset,
+            iid: self.iid,
             orders: vec![filled_order],
 
             stop_loss: None,
@@ -77,7 +77,7 @@ pub struct OpenedTrade {
     pub ts_nanos: i64,
     pub strategy: String,
     pub typ: TradeType,
-    pub asset: Asset,
+    pub iid: IID,
     pub orders: Vec<Order>,
 
     pub stop_loss: Option<PostedStopOrder>,
@@ -102,7 +102,7 @@ impl OpenedTrade {
             ts_nanos: self.ts_nanos,
             strategy: self.strategy,
             typ: self.typ,
-            asset: self.asset,
+            iid: self.iid,
             orders: self.orders,
         };
 
@@ -120,7 +120,7 @@ pub struct ClosedTrade {
     pub ts_nanos: i64,
     pub strategy: String,
     pub typ: TradeType,
-    pub asset: Asset,
+    pub iid: IID,
     pub orders: Vec<Order>,
 }
 impl ClosedTrade {
@@ -344,14 +344,14 @@ mod tests {
     #[test]
     fn statuses() {
         // create trade
-        let asset = Asset::from("moex_share_sber").unwrap();
+        let iid = IID::from("moex_share_sber").unwrap();
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
-            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, &asset);
+            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
         assert_eq!(trade.ts_nanos, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
-        assert_eq!(trade.asset.ticker, "SBER");
+        assert_eq!(trade.iid.ticker, "SBER");
 
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);
@@ -397,14 +397,14 @@ mod tests {
     #[should_panic]
     fn close_unclosed_trade() {
         // create trade
-        let asset = Asset::from("moex_share_sber").unwrap();
+        let iid = IID::from("moex_share_sber").unwrap();
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
-            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, &asset);
+            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
         assert_eq!(trade.ts_nanos, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
-        assert_eq!(trade.asset.ticker, "SBER");
+        assert_eq!(trade.iid.ticker, "SBER");
 
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);

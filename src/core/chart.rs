@@ -5,8 +5,9 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::asset::Asset;
 use crate::core::bar::Bar;
+use crate::core::event::BarEvent;
+use crate::core::iid::IID;
 use crate::core::timeframe::TimeFrame;
 use crate::data::Manager;
 use bitcode::{Decode, Encode};
@@ -20,6 +21,37 @@ pub struct Chart {
 }
 
 impl Chart {
+    pub fn new(_asset: &IID, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
+        Self {
+            tf: tf.clone(),
+            bars,
+            now: None,
+        }
+    }
+    pub fn empty(_asset: &IID, tf: TimeFrame) -> Self {
+        Self {
+            tf,
+            bars: Vec::new(),
+            now: None,
+        }
+    }
+    pub fn load(
+        iid: &IID,
+        tf: &TimeFrame,
+        begin: &DateTime<Utc>,
+        end: &DateTime<Utc>,
+    ) -> Result<Self, &'static str> {
+        let df = Manager::request(&iid, &tf.to_market_data(), begin, end)?;
+        let bars = Bar::from_df(df).unwrap();
+
+        let chart = Self {
+            tf: tf.clone(),
+            bars,
+            now: None,
+        };
+        Ok(chart)
+    }
+
     /// Return chart timeframe
     pub fn tf(&self) -> &TimeFrame {
         &self.tf
@@ -48,35 +80,8 @@ impl Chart {
         }
     }
 
-    pub fn new(_asset: &Asset, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
-        Self {
-            tf: tf.clone(),
-            bars,
-            now: None,
-        }
-    }
-    pub fn empty(_asset: &Asset, tf: TimeFrame) -> Self {
-        Self {
-            tf,
-            bars: Vec::new(),
-            now: None,
-        }
-    }
-    pub fn load(
-        asset: &Asset,
-        tf: &TimeFrame,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
-    ) -> Result<Self, &'static str> {
-        let df = Manager::request(&asset, &tf.to_market_data(), begin, end)?;
-        let bars = Bar::from_df(df).unwrap();
-
-        let chart = Self {
-            tf: tf.clone(),
-            bars,
-            now: None,
-        };
-        Ok(chart)
+    pub fn receive(&mut self, e: BarEvent) {
+        println!("chart got = {:?}", e);
     }
 }
 impl AsRef<Chart> for Chart {
@@ -93,37 +98,37 @@ mod tests {
 
     #[test]
     fn new() {
-        let asset = Asset::from("moex_share_sber").unwrap();
+        let iid = IID::from("moex_share_sber").unwrap();
         let tf = TimeFrame::new("D");
         let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
-        let df = Manager::request(&asset, &tf.to_market_data(), &begin, &end)
+        let df = Manager::request(&iid, &tf.to_market_data(), &begin, &end)
             .unwrap();
         let bars = Bar::from_df(df).unwrap();
 
-        let chart = Chart::new(&asset, &tf, bars);
+        let chart = Chart::new(&iid, &tf, bars);
         assert_eq!(chart.tf, tf);
         assert_eq!(chart.bars.len(), 256);
         assert!(chart.now.is_none());
     }
     #[test]
     fn empty() {
-        let asset = Asset::from("moex_share_sber").unwrap();
+        let iid = IID::from("moex_share_sber").unwrap();
         let tf = TimeFrame::new("D");
 
-        let chart = Chart::empty(&asset, tf.clone());
+        let chart = Chart::empty(&iid, tf.clone());
         assert_eq!(chart.tf, tf);
         assert_eq!(chart.bars.len(), 0);
         assert!(chart.now.is_none());
     }
     #[test]
     fn load() {
-        let asset = Asset::from("moex_share_sber").unwrap();
+        let iid = IID::from("moex_share_sber").unwrap();
         let tf = TimeFrame::new("D");
         let begin = Usr::date("2023-08-01");
         let end = Usr::date("2023-09-01");
 
-        let chart = Chart::load(&asset, &tf, &begin, &end).unwrap();
+        let chart = Chart::load(&iid, &tf, &begin, &end).unwrap();
         assert_eq!(chart.tf(), &tf);
         assert_eq!(chart.bars().len(), 23);
         assert!(chart.now().is_none());
