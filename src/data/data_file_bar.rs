@@ -6,6 +6,7 @@
  ****************************************************************************/
 
 use crate::data::IID;
+use crate::data::error::DataError;
 use crate::data::market_data::MarketData;
 use crate::utils::Cmd;
 use polars::prelude::*;
@@ -59,14 +60,24 @@ impl<'a> DataFileBar<'a> {
         iid: &IID,
         market_data: &MarketData,
         year: i32,
-    ) -> Result<DataFrame, &'static str> {
+    ) -> Result<DataFrame, DataError> {
         // get path
         let mut path = iid.path();
         path.push(&market_data.name());
         path.push(format!("{year}.pqt"));
 
-        let df = Cmd::read_pqt(&path).unwrap();
-        return Ok(df);
+        if !Cmd::is_exist(&path) {
+            let msg = format!("{} {}", iid, market_data);
+            return Err(DataError::NotFound(msg.to_string()));
+        }
+
+        match Cmd::read_pqt(&path) {
+            Ok(df) => Ok(df),
+            Err(why) => {
+                let msg = format!("read {} - {}", path.display(), why);
+                Err(DataError::ReadError(msg.to_string()))
+            }
+        }
 
         // let data_file = DataFileBar::new(
         //     iid.clone(),
@@ -82,7 +93,7 @@ impl<'a> DataFileBar<'a> {
         iid: &'a IID,
         market_data: &MarketData,
     ) -> Result<Vec<DataFileBar<'a>>, &'static str> {
-        // get dir path
+        // dir path
         let mut dir_path = iid.path();
         dir_path.push(&market_data.name());
 

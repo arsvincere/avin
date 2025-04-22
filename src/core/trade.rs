@@ -17,6 +17,7 @@ pub enum Trade {
     Opened(OpenedTrade),
     Closed(ClosedTrade),
 }
+
 impl Trade {
     pub fn new(
         ts_nanos: i64,
@@ -33,6 +34,16 @@ impl Trade {
     }
 }
 
+impl std::fmt::Display for Trade {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::New(t) => write!(f, "{t}"),
+            Self::Opened(t) => write!(f, "{t}"),
+            Self::Closed(t) => write!(f, "{t}"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Encode, Decode)]
 pub enum TradeType {
     Long,
@@ -43,6 +54,14 @@ impl TradeType {
         match self {
             TradeType::Long => "l",
             TradeType::Short => "s",
+        }
+    }
+}
+impl std::fmt::Display for TradeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            TradeType::Long => write!(f, "Long"),
+            TradeType::Short => write!(f, "Short"),
         }
     }
 }
@@ -69,6 +88,15 @@ impl NewTrade {
             stop_loss: None,
             take_profit: None,
         }
+    }
+}
+impl std::fmt::Display for NewTrade {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "NewTrade={} {} {} {}",
+            self.ts_nanos, self.strategy, self.typ, self.iid
+        )
     }
 }
 
@@ -112,6 +140,15 @@ impl OpenedTrade {
             panic!("in closed trade quantity != 0");
         }
         trade
+    }
+}
+impl std::fmt::Display for OpenedTrade {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "OpenedTrade={} {} {} {}",
+            self.ts_nanos, self.strategy, self.typ, self.iid
+        )
     }
 }
 
@@ -333,6 +370,15 @@ impl ClosedTrade {
         // времени которое деньги были заняты в этом трейде.
         self.result_p()
             / (self.timedelta().num_minutes() as f64 / 60.0 / 24.0)
+    }
+}
+impl std::fmt::Display for ClosedTrade {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "ClosedTrade={} {} {} {}",
+            self.ts_nanos, self.strategy, self.typ, self.iid
+        )
     }
 }
 

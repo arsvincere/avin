@@ -1,10 +1,11 @@
 use crate::conf::TINKOFF_TOKEN;
 use crate::core::{
-    Account, Asset, Bar, BarEvent, Direction, Event, FilledMarketOrder,
-    LimitOrder, MarketOrder, NewLimitOrder, NewMarketOrder, NewStopOrder,
-    Operation, Order, PostedLimitOrder, PostedMarketOrder, PostedStopOrder,
-    RejectedLimitOrder, RejectedMarketOrder, Share, StopOrder, Tic, TicEvent,
-    TimeFrame, Transaction,
+    Account, Action, Asset, Bar, BarEvent, Direction, Event,
+    FilledMarketOrder, LimitOrder, MarketOrder, NewLimitOrder,
+    NewMarketOrder, NewStopOrder, Operation, Order, PostOrderAction,
+    PostedLimitOrder, PostedMarketOrder, PostedStopOrder, RejectedLimitOrder,
+    RejectedMarketOrder, Share, StopOrder, Tic, TicEvent, TimeFrame,
+    Transaction,
 };
 use crate::data::{Category, IID};
 use crate::tinkoff::interceptor::DefaultInterceptor;
@@ -32,52 +33,91 @@ use std::path::Path;
 use chrono::{DateTime, Datelike, Timelike, Utc};
 use tonic::transport::{Channel, ClientTlsConfig};
 
+type T = tonic::service::interceptor::InterceptedService<
+    Channel,
+    DefaultInterceptor,
+>;
 pub struct Tinkoff {
+    users: UsersServiceClient<T>,
+    instruments: InstrumentsServiceClient<T>,
+    orders: OrdersServiceClient<T>,
+    stoporders: StopOrdersServiceClient<T>,
+    operations: OperationsServiceClient<T>,
+    marketdata: MarketDataServiceClient<T>,
+    marketdata_stream: MarketDataStreamServiceClient<T>,
+
+    data_stream: Option<tonic::codec::Streaming<MarketDataResponse>>,
+    data_stream_tx: Option<flume::Sender<MarketDataRequest>>,
+
     iid_cache: HashMap<String, IID>,
-    interceptor: DefaultInterceptor,
-    channel: Channel,
-
-    marketdata_stream_client: MarketDataStreamServiceClient<
-        tonic::service::interceptor::InterceptedService<
-            Channel,
-            DefaultInterceptor,
-        >,
-    >,
-    marketdata_stream: Option<tonic::codec::Streaming<MarketDataResponse>>,
-    marketdata_stream_tx: Option<flume::Sender<MarketDataRequest>>,
-
-    event_tx: tokio::sync::broadcast::Sender<Event>,
-    _event_rx: tokio::sync::broadcast::Receiver<Event>,
+    in_tx: tokio::sync::mpsc::UnboundedSender<Action>,
+    in_rx: tokio::sync::mpsc::UnboundedReceiver<Action>,
+    out_tx: tokio::sync::broadcast::Sender<Event>,
+    _out_rx: tokio::sync::broadcast::Receiver<Event>,
 }
 
 impl Tinkoff {
     pub async fn new() -> Self {
-        let iid_cache = HashMap::new();
-        let interceptor = Tinkoff::create_intercepter();
+        let interceptor = Tinkoff::create_interceptor();
         let channel = Tinkoff::create_channel().await;
 
         // create clients
-        let marketdata_stream_client =
+        let users = UsersServiceClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        );
+        let instruments = InstrumentsServiceClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        );
+        let orders = OrdersServiceClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        );
+        let stoporders = StopOrdersServiceClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        );
+        let operations = OperationsServiceClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        );
+        let marketdata = MarketDataServiceClient::with_interceptor(
+            channel.clone(),
+            interceptor.clone(),
+        );
+        let marketdata_stream =
             MarketDataStreamServiceClient::with_interceptor(
                 channel.clone(),
                 interceptor.clone(),
             );
 
-        // create channel for sending events
-        let (event_tx, _event_rx) = tokio::sync::broadcast::channel(10);
+        // instruments info cache
+        let iid_cache = HashMap::new();
+
+        // create in channel for receiving events
+        let (in_tx, in_rx) = tokio::sync::mpsc::unbounded_channel();
+        // create out channel for sending events
+        let (out_tx, _out_rx) = tokio::sync::broadcast::channel(10);
 
         // create self
         let mut tinkoff = Self {
+            users,
+            instruments,
+            orders,
+            stoporders,
+            operations,
+            marketdata,
+            marketdata_stream,
+
+            data_stream: None,
+            data_stream_tx: None,
+
             iid_cache,
-            interceptor,
-            channel,
-
-            marketdata_stream_client,
-            marketdata_stream: None,
-            marketdata_stream_tx: None,
-
-            event_tx,
-            _event_rx, // сохранен выход, чтобы канал не закрылся никогда
+            in_tx,
+            in_rx,
+            out_tx,
+            _out_rx, // сохранен выход, чтобы канал не закрылся никогда
         };
 
         // create market data stream
@@ -87,13 +127,7 @@ impl Tinkoff {
     }
 
     // instrument info
-    pub async fn get_shares(&self) -> Result<Vec<Share>, &'static str> {
-        // get client
-        let mut client = InstrumentsServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
+    pub async fn get_shares(&mut self) -> Result<Vec<Share>, &'static str> {
         // create request
         // api::instrument::InstrumentStatus = 1 - это инструменты
         // доступные для торговли через TINKOFF INVEST API, то есть
@@ -104,7 +138,7 @@ impl Tinkoff {
             });
 
         // send request
-        let response = client.shares(request).await.unwrap();
+        let response = self.instruments.shares(request).await.unwrap();
         // api::instruments::SharesResponse
         let message = response.into_parts();
         // api::instruments::Share
@@ -125,120 +159,15 @@ impl Tinkoff {
         Ok(a_shares)
     }
 
-    // market data
-    pub async fn get_bars(
-        &self,
-        iid: &IID,
-        tf: &TimeFrame,
-        from: &DateTime<Utc>,
-        till: &DateTime<Utc>,
-    ) -> Result<Vec<Bar>, &'static str> {
-        // get client
-        let mut client = MarketDataServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
-        // create request
-        let from = {
-            let ts = prost_types::Timestamp::date_time(
-                from.year() as i64,
-                from.month() as u8,
-                from.day() as u8,
-                from.hour() as u8,
-                from.minute() as u8,
-                from.second() as u8,
-            )
-            .unwrap();
-            Some(ts)
-        };
-        let to = {
-            let ts = prost_types::Timestamp::date_time(
-                till.year() as i64,
-                till.month() as u8,
-                till.day() as u8,
-                till.hour() as u8,
-                till.minute() as u8,
-                till.second() as u8,
-            )
-            .unwrap();
-            Some(ts)
-        };
-        let interval: api::marketdata::CandleInterval = tf.clone().into();
-        let request =
-            tonic::Request::new(api::marketdata::GetCandlesRequest {
-                figi: "".to_string(),
-                from,
-                to,
-                interval: interval as i32,
-                instrument_id: iid.figi().clone(),
-            });
-
-        // send request
-        let response = client.get_candles(request).await.unwrap();
-        // api::marketdata::GetCandlesResponse
-        let message = response.into_parts();
-        // vec[api::marketdata::HistoricCandle]
-        let t_candles = message.1.candles;
-
-        // convert api::marketdata::HistoricCandle -> crate::Bar
-        let mut bars = Vec::new();
-        for candle in t_candles {
-            if candle.is_complete {
-                let bar: Bar = candle.into();
-                bars.push(bar);
-            }
-        }
-
-        Ok(bars)
-    }
-    pub async fn get_last_price(
-        &self,
-        iid: &IID,
-    ) -> Result<f64, &'static str> {
-        // get client
-        let mut client = MarketDataServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
-        // create request
-        let request =
-            tonic::Request::new(api::marketdata::GetLastPricesRequest {
-                figi: vec!["".to_string()],
-                instrument_id: vec![iid.figi().clone()],
-            });
-
-        // send request
-        let response = client.get_last_prices(request).await.unwrap();
-        // api::marketdata::GetLastPricesResponse
-        let message = response.into_parts();
-        // vec[api::marketdata::LastPrice]
-        let mut t_prices = message.1.last_prices;
-
-        if t_prices.len() == 1 {
-            let t_price = t_prices.pop().unwrap(); // LastPrice
-            let t_price = t_price.price.unwrap(); // Quotation
-            let price: f64 = t_price.into();
-            return Ok(price);
-        }
-
-        Err("Fail to get last price")
-    }
-
     // account
-    pub async fn get_accounts(&self) -> Result<Vec<Account>, &'static str> {
-        // get client
-        let mut client = UsersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
+    pub async fn get_accounts(
+        &mut self,
+    ) -> Result<Vec<Account>, &'static str> {
         // create request
         let request = tonic::Request::new(api::users::GetAccountsRequest {});
 
         // send request
-        let response = client.get_accounts(request).await.unwrap();
+        let response = self.users.get_accounts(request).await.unwrap();
         // api::users::GetAccountsResponse
         let message = response.into_parts();
         // vec[api::users::Account]
@@ -254,20 +183,14 @@ impl Tinkoff {
         Ok(accounts)
     }
     pub async fn get_account(
-        &self,
+        &mut self,
         name: &str,
     ) -> Result<Account, &'static str> {
-        // get client
-        let mut client = UsersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let request = tonic::Request::new(api::users::GetAccountsRequest {});
 
         // send request
-        let response = client.get_accounts(request).await.unwrap();
+        let response = self.users.get_accounts(request).await.unwrap();
         let message = response.into_parts();
         let t_accounts = message.1.accounts; // api::users::Account
 
@@ -282,23 +205,17 @@ impl Tinkoff {
         Err("account not found")
     }
     pub async fn get_limit_orders(
-        &self,
+        &mut self,
         a: &Account,
         iid: &IID,
     ) -> Result<Vec<LimitOrder>, &'static str> {
-        // get client
-        let mut client = OrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let request = tonic::Request::new(api::orders::GetOrdersRequest {
             account_id: a.id().to_string(),
         });
 
         // send request
-        let response = client.get_orders(request).await.unwrap();
+        let response = self.orders.get_orders(request).await.unwrap();
         // api::orders::GetOrdersResponse
         let message = response.into_parts();
         // vec[api::orders::OrderState]
@@ -316,16 +233,10 @@ impl Tinkoff {
         Ok(a_orders)
     }
     pub async fn get_stop_orders(
-        &self,
+        &mut self,
         a: &Account,
         iid: &IID,
     ) -> Result<Vec<StopOrder>, &'static str> {
-        // get client
-        let mut client = StopOrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let request =
             tonic::Request::new(api::stoporders::GetStopOrdersRequest {
@@ -333,7 +244,8 @@ impl Tinkoff {
             });
 
         // send request
-        let response = client.get_stop_orders(request).await.unwrap();
+        let response =
+            self.stoporders.get_stop_orders(request).await.unwrap();
         // api::stoporders::GetStopOrdersResponse
         let message = response.into_parts();
         // vec[api::stoporders::StopOrder]
@@ -351,16 +263,10 @@ impl Tinkoff {
         Ok(a_orders)
     }
     pub async fn get_operation(
-        &self,
+        &mut self,
         a: &Account,
         order: &Order,
     ) -> Result<Operation, &'static str> {
-        // get client
-        let mut client = OrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let request =
             tonic::Request::new(api::orders::GetOrderStateRequest {
@@ -369,7 +275,7 @@ impl Tinkoff {
             });
 
         // send request
-        let response = client.get_order_state(request).await.unwrap();
+        let response = self.orders.get_order_state(request).await.unwrap();
         // api::orders::GetOrderStateResponse
         let message = response.into_parts();
         // api::orders::OrderState
@@ -381,18 +287,12 @@ impl Tinkoff {
         Ok(operation)
     }
     pub async fn get_operations(
-        &self,
+        &mut self,
         a: &Account,
         iid: &IID,
         from: Option<&DateTime<Utc>>,
         till: Option<&DateTime<Utc>>,
     ) -> Result<Vec<Operation>, &'static str> {
-        // get client
-        let mut client = OperationsServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let from = match from {
             Some(from) => {
@@ -434,7 +334,7 @@ impl Tinkoff {
             });
 
         // send request
-        let response = client.get_operations(request).await.unwrap();
+        let response = self.operations.get_operations(request).await.unwrap();
         // api::operations::OperationsResponse
         let message = response.into_parts();
         // vec[api::operations::Operation]
@@ -454,17 +354,11 @@ impl Tinkoff {
 
     // orders
     pub async fn post_market(
-        &self,
+        &mut self,
         a: &Account,
         iid: &IID,
         order: NewMarketOrder,
     ) -> Result<MarketOrder, &'static str> {
-        // get client
-        let mut client = OrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let direction: api::orders::OrderDirection =
             order.direction.clone().into();
@@ -480,7 +374,7 @@ impl Tinkoff {
         });
 
         // send request
-        let response = match client.post_order(request).await {
+        let response = match self.orders.post_order(request).await {
             Ok(response) => response,
             Err(why) => {
                 dbg!(why); // TODO: logger.error
@@ -505,7 +399,7 @@ impl Tinkoff {
             });
 
         // send request
-        let response = client.get_order_state(request).await.unwrap();
+        let response = self.orders.get_order_state(request).await.unwrap();
         let message = response.into_parts();
         // api::orders::OrderState
         let t_order = message.1;
@@ -516,17 +410,11 @@ impl Tinkoff {
         Ok(order)
     }
     pub async fn post_limit(
-        &self,
+        &mut self,
         a: &Account,
         iid: &IID,
         order: NewLimitOrder,
     ) -> Result<LimitOrder, &'static str> {
-        // get client
-        let mut client = OrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let direction: api::orders::OrderDirection =
             order.direction.clone().into();
@@ -542,7 +430,7 @@ impl Tinkoff {
         });
 
         // send request
-        let response = match client.post_order(request).await {
+        let response = match self.orders.post_order(request).await {
             Ok(response) => response,
             Err(why) => {
                 dbg!(why);
@@ -559,17 +447,11 @@ impl Tinkoff {
         Ok(a_order)
     }
     pub async fn post_stop(
-        &self,
+        &mut self,
         a: &Account,
         iid: &IID,
         order: NewStopOrder,
     ) -> Result<StopOrder, &'static str> {
-        // get client
-        let mut client = StopOrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let last_price = self.get_last_price(iid).await.unwrap();
         let t_order_type = t_stop_order_type(&order, last_price);
@@ -601,7 +483,7 @@ impl Tinkoff {
             });
 
         // send request
-        let response = match client.post_stop_order(request).await {
+        let response = match self.stoporders.post_stop_order(request).await {
             Ok(response) => response,
             Err(why) => {
                 dbg!(why);
@@ -620,16 +502,10 @@ impl Tinkoff {
         Ok(order)
     }
     pub async fn cancel_limit(
-        &self,
+        &mut self,
         a: &Account,
         order: PostedLimitOrder,
     ) -> Result<LimitOrder, &'static str> {
-        // get client
-        let mut client = OrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let request = tonic::Request::new(api::orders::CancelOrderRequest {
             account_id: a.id().to_string(),
@@ -637,7 +513,7 @@ impl Tinkoff {
         });
 
         // send request
-        let tonic_resp = match client.cancel_order(request).await {
+        let tonic_resp = match self.orders.cancel_order(request).await {
             Ok(response) => response,
             Err(why) => {
                 dbg!(why);
@@ -660,16 +536,10 @@ impl Tinkoff {
         Ok(order)
     }
     pub async fn cancel_stop(
-        &self,
+        &mut self,
         a: &Account,
         order: PostedStopOrder,
     ) -> Result<StopOrder, &'static str> {
-        // get client
-        let mut client = StopOrdersServiceClient::with_interceptor(
-            self.channel.clone(),
-            self.interceptor.clone(),
-        );
-
         // create request
         let request =
             tonic::Request::new(api::stoporders::CancelStopOrderRequest {
@@ -678,13 +548,14 @@ impl Tinkoff {
             });
 
         // send request
-        let tonic_resp = match client.cancel_stop_order(request).await {
-            Ok(response) => response,
-            Err(why) => {
-                dbg!(why);
-                return Err("cancel stop order failed");
-            }
-        };
+        let tonic_resp =
+            match self.stoporders.cancel_stop_order(request).await {
+                Ok(response) => response,
+                Err(why) => {
+                    dbg!(why);
+                    return Err("cancel stop order failed");
+                }
+            };
         // api::orders::CancelOrderResponse
         let response = tonic_resp.into_parts().1;
 
@@ -701,7 +572,95 @@ impl Tinkoff {
         Ok(order)
     }
 
-    // stream
+    // market data
+    pub async fn get_bars(
+        &mut self,
+        iid: &IID,
+        tf: &TimeFrame,
+        from: &DateTime<Utc>,
+        till: &DateTime<Utc>,
+    ) -> Result<Vec<Bar>, &'static str> {
+        // create request
+        let from = {
+            let ts = prost_types::Timestamp::date_time(
+                from.year() as i64,
+                from.month() as u8,
+                from.day() as u8,
+                from.hour() as u8,
+                from.minute() as u8,
+                from.second() as u8,
+            )
+            .unwrap();
+            Some(ts)
+        };
+        let to = {
+            let ts = prost_types::Timestamp::date_time(
+                till.year() as i64,
+                till.month() as u8,
+                till.day() as u8,
+                till.hour() as u8,
+                till.minute() as u8,
+                till.second() as u8,
+            )
+            .unwrap();
+            Some(ts)
+        };
+        let interval: api::marketdata::CandleInterval = tf.clone().into();
+        let request =
+            tonic::Request::new(api::marketdata::GetCandlesRequest {
+                figi: "".to_string(),
+                from,
+                to,
+                interval: interval as i32,
+                instrument_id: iid.figi().clone(),
+            });
+
+        // send request
+        let response = self.marketdata.get_candles(request).await.unwrap();
+        // api::marketdata::GetCandlesResponse
+        let message = response.into_parts();
+        // vec[api::marketdata::HistoricCandle]
+        let t_candles = message.1.candles;
+
+        // convert api::marketdata::HistoricCandle -> crate::Bar
+        let mut bars = Vec::new();
+        for candle in t_candles {
+            if candle.is_complete {
+                let bar: Bar = candle.into();
+                bars.push(bar);
+            }
+        }
+
+        Ok(bars)
+    }
+    pub async fn get_last_price(
+        &mut self,
+        iid: &IID,
+    ) -> Result<f64, &'static str> {
+        // create request
+        let request =
+            tonic::Request::new(api::marketdata::GetLastPricesRequest {
+                figi: vec!["".to_string()],
+                instrument_id: vec![iid.figi().clone()],
+            });
+
+        // send request
+        let response =
+            self.marketdata.get_last_prices(request).await.unwrap();
+        // api::marketdata::GetLastPricesResponse
+        let message = response.into_parts();
+        // vec[api::marketdata::LastPrice]
+        let mut t_prices = message.1.last_prices;
+
+        if t_prices.len() == 1 {
+            let t_price = t_prices.pop().unwrap(); // LastPrice
+            let t_price = t_price.price.unwrap(); // Quotation
+            let price: f64 = t_price.into();
+            return Ok(price);
+        }
+
+        Err("Fail to get last price")
+    }
     pub async fn subscribe_info(
         &mut self,
         iid: &IID,
@@ -719,11 +678,7 @@ impl Tinkoff {
         };
 
         // send request in existed stream
-        self.marketdata_stream_tx
-            .as_mut()
-            .unwrap()
-            .send(request)
-            .unwrap();
+        self.data_stream_tx.as_mut().unwrap().send(request).unwrap();
 
         Ok(())
     }
@@ -748,11 +703,7 @@ impl Tinkoff {
         };
 
         // send request in existed stream
-        self.marketdata_stream_tx
-            .as_mut()
-            .unwrap()
-            .send(request)
-            .unwrap();
+        self.data_stream_tx.as_mut().unwrap().send(request).unwrap();
 
         Ok(())
     }
@@ -778,11 +729,7 @@ impl Tinkoff {
         };
 
         // send request in existed stream
-        self.marketdata_stream_tx
-            .as_mut()
-            .unwrap()
-            .send(request)
-            .unwrap();
+        self.data_stream_tx.as_mut().unwrap().send(request).unwrap();
 
         Ok(())
     }
@@ -807,47 +754,45 @@ impl Tinkoff {
             )),
         };
 
-        match self.marketdata_stream {
+        match self.data_stream {
             None => {
                 println!(":: WARNING market data stream not started")
             }
             Some(_) => {
-                self.marketdata_stream_tx
-                    .as_mut()
-                    .unwrap()
-                    .send(request)
-                    .unwrap();
+                self.data_stream_tx.as_mut().unwrap().send(request).unwrap();
             }
         }
 
         Ok(())
     }
-
+    pub async fn unsubscribe_tic(
+        &mut self,
+        iid: &IID,
+    ) -> Result<(), &'static str> {
+        dbg!(&iid);
+        todo!();
+    }
     // start loop
     pub async fn start_marketdata_stream(&mut self) {
         // receive market data
-        while let Some(msg) = self
-            .marketdata_stream
-            .as_mut()
-            .unwrap()
-            .message()
-            .await
-            .unwrap()
+        while let Some(msg) =
+            self.data_stream.as_mut().unwrap().message().await.unwrap()
         {
             match msg.payload.unwrap() {
                 // market data
                 Res::Candle(candle) => {
                     let e: BarEvent = candle.into();
-                    self.event_tx.send(Event::Bar(e)).unwrap();
+                    self.out_tx.send(Event::Bar(e)).unwrap();
                 }
                 Res::Trade(tic) => {
                     let lot = self.iid_cache.get(&tic.figi).unwrap().lot();
                     let e = tic_event_from_trade(tic, lot);
-                    self.event_tx.send(Event::Tic(e)).unwrap();
+                    self.out_tx.send(Event::Tic(e)).unwrap();
                 }
                 Res::Orderbook(_) => todo!(),
                 Res::TradingStatus(i) => {
                     println!("{:#?}", i);
+                    log::warn!("Сделать обработку смены статуса актива!")
                 }
                 Res::LastPrice(_) => todo!(),
 
@@ -869,16 +814,30 @@ impl Tinkoff {
                 }
                 Res::Ping(_) => {}
             }
+
+            while let Ok(a) = self.in_rx.try_recv() {
+                match a {
+                    Action::Post(a) => {
+                        log::info!("Broker get action {}", a);
+                        self.post_order(a).await;
+                    }
+                    other => {
+                        todo!("Broker get action {}", other);
+                    }
+                }
+            }
         }
     }
-
     /// Return receiver for market data events <crate::Event>
+    pub fn get_sender(&self) -> tokio::sync::mpsc::UnboundedSender<Action> {
+        self.in_tx.clone()
+    }
     pub fn get_receiver(&self) -> tokio::sync::broadcast::Receiver<Event> {
-        self.event_tx.subscribe()
+        self.out_tx.subscribe()
     }
 
     // private
-    fn create_intercepter() -> DefaultInterceptor {
+    fn create_interceptor() -> DefaultInterceptor {
         // load token
         let path = Path::new(TINKOFF_TOKEN);
         let token = Cmd::read(path).unwrap().trim().to_string();
@@ -925,7 +884,7 @@ impl Tinkoff {
         // send request
         tx.send(request).unwrap();
         let response = self
-            .marketdata_stream_client
+            .marketdata_stream
             .market_data_stream(rx.into_stream())
             .await
             .unwrap();
@@ -934,10 +893,27 @@ impl Tinkoff {
         let stream = response.into_inner();
 
         // save stream and sender
-        self.marketdata_stream = Some(stream);
-        self.marketdata_stream_tx = Some(tx);
+        self.data_stream = Some(stream);
+        self.data_stream_tx = Some(tx);
 
         Ok(())
+    }
+    async fn post_order(&mut self, e: PostOrderAction) {
+        match e.order {
+            Order::Market(order) => match order {
+                MarketOrder::New(new_order) => {
+                    let posted_order = self
+                        .post_market(&e.account, &e.iid, new_order)
+                        .await
+                        .unwrap();
+                    let posted_order = Order::Market(posted_order);
+                    e.tx.send(posted_order).unwrap();
+                }
+                _ => todo!(),
+            },
+            Order::Limit(_order) => todo!(),
+            Order::Stop(_order) => todo!(),
+        }
     }
 }
 
@@ -1641,6 +1617,26 @@ impl From<api::marketdata::SubscriptionInterval> for crate::TimeFrame {
         //     OneMinute = 1,
         //     FiveMinutes = 2,
         // }
+
+        // HACK: однако в python SDK вроде работает подписка на другие
+        // интервалы... Может попробовать подставлять прямо i32 напрямую
+        // вдруг сработает???
+        //
+        // class SubscriptionInterval(_grpc_helpers.Enum):
+        //     SUBSCRIPTION_INTERVAL_UNSPECIFIED = 0
+        //     SUBSCRIPTION_INTERVAL_ONE_MINUTE = 1
+        //     SUBSCRIPTION_INTERVAL_FIVE_MINUTES = 2
+        //     SUBSCRIPTION_INTERVAL_FIFTEEN_MINUTES = 3
+        //     SUBSCRIPTION_INTERVAL_ONE_HOUR = 4
+        //     SUBSCRIPTION_INTERVAL_ONE_DAY = 5
+        //     SUBSCRIPTION_INTERVAL_2_MIN = 6
+        //     SUBSCRIPTION_INTERVAL_3_MIN = 7
+        //     SUBSCRIPTION_INTERVAL_10_MIN = 8
+        //     SUBSCRIPTION_INTERVAL_30_MIN = 9
+        //     SUBSCRIPTION_INTERVAL_2_HOUR = 10
+        //     SUBSCRIPTION_INTERVAL_4_HOUR = 11
+        //     SUBSCRIPTION_INTERVAL_WEEK = 12
+        //     SUBSCRIPTION_INTERVAL_MONTH = 13
         use api::marketdata::SubscriptionInterval as si;
         match value {
             si::OneMinute => TimeFrame::new("1M"),
@@ -1861,7 +1857,7 @@ mod tests {
     #[ignore]
     async fn get_shares() {
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         let shares = b.get_shares().await.unwrap();
         assert!(shares.len() > 100);
@@ -1871,7 +1867,7 @@ mod tests {
     #[ignore]
     async fn get_account() {
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         let a = b.get_account("Agni").await.unwrap();
         assert_eq!(a.name(), "Agni");
@@ -1882,7 +1878,7 @@ mod tests {
     #[ignore]
     async fn get_accounts() {
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         let acc = b.get_accounts().await.unwrap();
         assert!(acc.len() >= 4);
@@ -1896,7 +1892,7 @@ mod tests {
         let iid = share.iid();
 
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         let price = b.get_last_price(&iid).await.unwrap();
         assert!(price > 0.0);
@@ -1911,7 +1907,7 @@ mod tests {
         let iid = share.iid();
 
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         // timeframe
         let tf = TimeFrame::new("D");
@@ -1934,7 +1930,7 @@ mod tests {
         let iid = share.iid();
 
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         // get account
         let a = b.get_account("Agni").await.unwrap();
@@ -1966,7 +1962,7 @@ mod tests {
         let iid = share.iid();
 
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         // get account
         let a = b.get_account("Agni").await.unwrap();
@@ -2002,7 +1998,7 @@ mod tests {
         let iid = share.iid();
 
         // connect broker
-        let b = Tinkoff::new().await;
+        let mut b = Tinkoff::new().await;
 
         // get account
         let a = b.get_account("Agni").await.unwrap();
@@ -2034,7 +2030,7 @@ mod tests {
 
     #[tokio::test]
     #[ignore]
-    async fn stream() {
+    async fn data_stream() {
         // share, iid
         let sber = Share::from_str("moex_share_sber").unwrap();
 

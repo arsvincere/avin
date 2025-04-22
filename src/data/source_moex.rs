@@ -19,7 +19,7 @@ pub struct SourceMoex {
     service: String,
     api_key: String,
     client: reqwest::Client,
-    candle_schema: Schema,
+    bar_schema: Schema,
 }
 impl SourceMoex {
     pub fn new() -> Self {
@@ -30,7 +30,7 @@ impl SourceMoex {
         let api_key = Cmd::read(key_path).unwrap().trim().to_string();
         let client = reqwest::Client::new();
 
-        let candle_schema = Schema::from_iter(vec![
+        let bar_schema = Schema::from_iter(vec![
             Field::new("dt".into(), DataType::String),
             Field::new("open".into(), DataType::Float64),
             Field::new("high".into(), DataType::Float64),
@@ -44,7 +44,7 @@ impl SourceMoex {
             service: service.to_string(),
             api_key,
             client,
-            candle_schema,
+            bar_schema,
         }
     }
     // pub async fn cache(&self) -> Result<(), &'static str> {
@@ -128,7 +128,7 @@ impl SourceMoex {
         let mut from = Self::utc_to_msk(begin);
         let till = Self::utc_to_msk(end);
 
-        let mut candles = DataFrame::empty_with_schema(&self.candle_schema);
+        let mut candles = DataFrame::empty_with_schema(&self.bar_schema);
         while from < till {
             println!("   from {from}");
             let response = self

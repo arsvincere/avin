@@ -10,47 +10,15 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 use avin::*;
+use log::LevelFilter;
 
 #[tokio::main]
 async fn main() {
-    // share, iid
-    let sber = Share::from_str("moex_share_sber").unwrap();
+    log::set_logger(&LOGGER).unwrap();
+    log::set_max_level(LevelFilter::Trace);
 
-    // connect broker
-    let mut b = Tinkoff::new().await;
-
-    // subscribe bar 1M
-    b.subscribe_bar(&sber.iid()).await.unwrap();
-    b.subscribe_tic(&sber.iid()).await.unwrap();
-
-    // get event receiver
-    let mut r = b.get_receiver();
-
-    // create task - broker start data stream loop
-    tokio::spawn(async move { b.start_marketdata_stream().await });
-
-    // event receiving loop
-    println!("== start");
-    let mut bar = 2;
-    let mut tic = 2;
-    while let Ok(e) = r.recv().await {
-        match e {
-            Event::Bar(e) => {
-                println!("receive {}", e);
-                assert_eq!(e.figi, *sber.figi());
-                bar -= 1;
-            }
-            Event::Tic(e) => {
-                println!("receive {}", e);
-                assert_eq!(e.figi, *sber.figi());
-                tic -= 1;
-            }
-        }
-        if bar == 0 && tic == 0 {
-            break;
-        }
-    }
-    println!("== end");
+    let mut t = Trader::new();
+    t.start().await;
 
     // NOTE:
     // BarEvent, канал, сендер ресейвер...

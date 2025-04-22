@@ -10,6 +10,30 @@ use chrono::{
     TimeZone, Utc,
 };
 
+use log::{Level, Metadata, Record};
+
+// log
+pub static LOGGER: ConsoleLogger = ConsoleLogger;
+pub struct ConsoleLogger;
+impl log::Log for ConsoleLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= Level::Info
+    }
+
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            println!(
+                "{} [{}] {}",
+                Local::now().format("%H:%M:%S"),
+                record.level(),
+                record.args()
+            );
+        }
+    }
+
+    fn flush(&self) {}
+}
+
 // Settings
 pub const DEFAULT_BARS_COUNT: i32 = 5000;
 

@@ -7,15 +7,15 @@
 
 use crate::conf::DEFAULT_BARS_COUNT;
 use crate::core::chart::Chart;
-use crate::core::event::{BarEvent, Event};
+use crate::core::event::Event;
 use crate::core::timeframe::TimeFrame;
 use crate::data::Category;
 use crate::data::IID;
 use crate::data::Manager;
 use chrono::prelude::*;
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::path::PathBuf;
-use tokio::sync::mpsc;
 
 pub trait Asset {
     fn iid(&self) -> IID;
@@ -40,32 +40,22 @@ pub trait Asset {
 pub struct Share {
     iid: IID,
     charts: HashMap<TimeFrame, Chart>,
-    sender: mpsc::UnboundedSender<Event>,
-    receiver: mpsc::UnboundedReceiver<Event>,
 }
 
 impl Share {
-    pub fn new(iid: IID) -> Share {
-        let (sender, receiver) = mpsc::unbounded_channel();
+    pub fn new(iid: IID) -> Self {
+        assert!(iid.category() == Category::SHARE);
 
-        let share = Share {
+        Self {
             iid,
             charts: HashMap::new(),
-            sender,
-            receiver,
-        };
-
-        share
+        }
     }
     pub fn from_str(s: &str) -> Result<Share, &'static str> {
         let iid = Manager::find(s)?;
         let share = Share::new(iid);
 
         Ok(share)
-
-        // let iid = IID::from(s)?;
-        //
-        // Ok(Share::from_iid(iid))
     }
     pub fn from_info(info: HashMap<String, String>) -> Share {
         let iid = IID::new(info);
@@ -77,25 +67,13 @@ impl Share {
         self.iid.to_string()
     }
 
-    pub fn sender(&self) -> mpsc::UnboundedSender<Event> {
-        self.sender.clone()
-    }
-
-    /// Run event loop - receiving new <Event>
-    pub async fn start(&mut self) {
-        while let Some(e) = self.receiver.recv().await {
-            self.receive(e);
-        }
-    }
-
-    fn receive(&mut self, e: Event) {
+    pub fn receive(&mut self, e: Event) {
         match e {
-            Event::Bar(bar_event) => self.receive_bar_event(bar_event),
-            Event::Tic(_tic_event) => todo!(),
+            Event::Bar(e) => {
+                self.charts.get_mut(&e.tf).unwrap().receive_bar(e.bar);
+            }
+            Event::Tic(_e) => todo!(),
         }
-    }
-    fn receive_bar_event(&mut self, e: BarEvent) {
-        self.charts.get_mut(&e.tf).unwrap().receive(e);
     }
 }
 impl Asset for Share {
@@ -147,6 +125,17 @@ impl std::fmt::Display for Share {
         write!(f, "Share={} {}", self.exchange(), self.ticker())
     }
 }
+impl Hash for Share {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.figi().hash(state);
+    }
+}
+impl PartialEq for Share {
+    fn eq(&self, other: &Self) -> bool {
+        self.figi() == other.figi()
+    }
+}
+impl Eq for Share {}
 
 #[cfg(test)]
 mod tests {

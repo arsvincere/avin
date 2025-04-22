@@ -6,12 +6,13 @@
  ****************************************************************************/
 
 use crate::core::bar::Bar;
-use crate::core::event::BarEvent;
 use crate::core::timeframe::TimeFrame;
 use crate::data::IID;
 use crate::data::Manager;
 use chrono::prelude::*;
 use tokio::sync::broadcast;
+
+const CHANNEL_CAPACITY: usize = 10;
 
 #[derive(Debug)]
 pub struct Chart {
@@ -20,26 +21,21 @@ pub struct Chart {
     bars: Vec<Bar>,
     now: Option<Bar>,
 
-    new_bar_tx: broadcast::Sender<Bar>,
-    upd_bar_tx: broadcast::Sender<Bar>,
-    _new_bar_rx: broadcast::Receiver<Bar>,
-    _upd_bar_rx: broadcast::Receiver<Bar>,
+    out_tx: broadcast::Sender<Bar>,
+    _out_rx: broadcast::Receiver<Bar>,
 }
 
 impl Chart {
     pub fn new(iid: &IID, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
-        let (new_bar_tx, _new_bar_rx) = broadcast::channel(10);
-        let (upd_bar_tx, _upd_bar_rx) = broadcast::channel(10);
+        let (out_tx, _out_rx) = broadcast::channel(CHANNEL_CAPACITY);
 
         Self {
             iid: iid.clone(),
             tf: tf.clone(),
             bars,
             now: None,
-            new_bar_tx,
-            upd_bar_tx,
-            _new_bar_rx,
-            _upd_bar_rx,
+            out_tx,
+            _out_rx,
         }
     }
     pub fn empty(iid: &IID, tf: &TimeFrame) -> Self {
@@ -51,11 +47,18 @@ impl Chart {
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<Self, &'static str> {
-        let df = Manager::request(&iid, &tf.to_market_data(), begin, end)?;
-        let bars = Bar::from_df(df).unwrap();
-        let chart = Self::new(iid, tf, bars);
+        match Manager::request(&iid, &tf.to_market_data(), begin, end) {
+            Ok(df) => {
+                let bars = Bar::from_df(df).unwrap();
+                let chart = Self::new(iid, tf, bars);
 
-        Ok(chart)
+                Ok(chart)
+            }
+            Err(e) => {
+                log::warn!("{}, using empty chart", e);
+                Ok(Self::empty(iid, tf))
+            }
+        }
     }
 
     /// Return chart instrument id
@@ -91,13 +94,8 @@ impl Chart {
     }
 
     /// Receive bar event
-    pub fn receive(&mut self, e: BarEvent) {
-        assert_eq!(e.tf, self.tf);
-
-        let new_bar = e.bar;
-        let now_bar = self.now.clone();
-
-        match now_bar {
+    pub fn receive_bar(&mut self, new_bar: Bar) {
+        match self.now.take() {
             None => {
                 // receive first real time bar
                 self.now = Some(new_bar.clone());
@@ -110,12 +108,11 @@ impl Chart {
                 } else if now_bar.ts_nanos < new_bar.ts_nanos {
                     self.bars.push(now_bar.clone());
                     self.now = Some(new_bar.clone());
-                    self.new_bar_tx.send(now_bar.clone()).unwrap();
                 }
             }
         }
 
-        self.upd_bar_tx.send(new_bar).unwrap();
+        self.out_tx.send(new_bar).unwrap();
 
         // # 4. Тинькоф иногда в поток докидывает старые бары исторические
         // # но исправленные, пересчитанные. В пизду их пока даже внимание
@@ -128,13 +125,9 @@ impl Chart {
         //
         // assert False, "WTF???"
     }
-    /// Return receiver for new historical bars
-    pub fn subscribe_new_bar(&self) -> broadcast::Receiver<Bar> {
-        self.new_bar_tx.subscribe()
-    }
     /// Return receiver for update real-time bar
-    pub fn subscribe_upd_bar(&self) -> broadcast::Receiver<Bar> {
-        self.upd_bar_tx.subscribe()
+    pub fn get_receiver(&self) -> broadcast::Receiver<Bar> {
+        self.out_tx.subscribe()
     }
 }
 

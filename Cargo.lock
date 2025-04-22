@@ -377,6 +377,7 @@ dependencies = [
  "chrono",
  "flume",
  "iced",
+ "log",
  "polars",
  "prost 0.12.6",
  "prost-types 0.12.6",

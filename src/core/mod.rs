@@ -6,6 +6,7 @@
  ****************************************************************************/
 
 mod account;
+mod action;
 mod asset;
 mod bar;
 mod chart;
@@ -22,6 +23,7 @@ mod trade_list;
 mod transaction;
 
 pub use account::Account;
+pub use action::{Action, PostOrderAction};
 pub use asset::{Asset, Share};
 pub use bar::Bar;
 pub use chart::Chart;

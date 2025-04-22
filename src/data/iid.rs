@@ -76,9 +76,9 @@ impl std::fmt::Display for IID {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "IID={} {} {}",
+            "IID={}_{}_{}",
             self.exchange(),
-            self.category(),
+            self.category().to_string(),
             self.ticker()
         )
     }

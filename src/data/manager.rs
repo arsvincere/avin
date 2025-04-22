@@ -8,6 +8,7 @@
 use crate::core::Asset;
 use crate::data::category::Category;
 use crate::data::data_file_bar::DataFileBar;
+use crate::data::error::DataError;
 use crate::data::iid::IID;
 use crate::data::iid_cache::IidCache;
 use crate::data::market_data::MarketData;
@@ -111,19 +112,38 @@ impl Manager {
         market_data: &MarketData,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
-    ) -> Result<DataFrame, &'static str> {
+    ) -> Result<DataFrame, DataError> {
+        let bar_schema = Schema::from_iter(vec![
+            Field::new("ts_nanos".into(), DataType::Int64),
+            Field::new("open".into(), DataType::Float64),
+            Field::new("high".into(), DataType::Float64),
+            Field::new("low".into(), DataType::Float64),
+            Field::new("close".into(), DataType::Float64),
+            Field::new("volume".into(), DataType::UInt64),
+        ]);
+        let mut df = DataFrame::empty_with_schema(&bar_schema);
+
         let mut year = begin.year();
         let end_year = end.year();
-
-        let mut df = DataFileBar::load(iid, market_data, year).unwrap();
-        year = year + 1;
         while year <= end_year {
-            let file_df = DataFileBar::load(iid, market_data, year).unwrap();
-            df.extend(&file_df).unwrap();
-            year += 1;
+            match DataFileBar::load(iid, market_data, year) {
+                Ok(data) => {
+                    df.extend(&data).unwrap();
+                    year += 1;
+                }
+                Err(e) => match e {
+                    DataError::NotFound(_) => {
+                        year += 1;
+                    }
+                    DataError::ReadError(e) => {
+                        log::error!("{}", e);
+                        panic!();
+                    }
+                },
+            }
         }
 
-        let begin = begin.timestamp_nanos_opt().unwrap();
+        let begin = begin.timestamp_nanos_opt().unwrap_or(0);
         let end = end.timestamp_nanos_opt().unwrap();
         let df = df
             .clone()
@@ -136,11 +156,16 @@ impl Manager {
             .collect()
             .unwrap();
 
+        if df.is_empty() {
+            let msg = format!("{} {}", iid, market_data);
+            return Err(DataError::NotFound(msg));
+        }
+
         Ok(df)
     }
 
     async fn cache_tinkoff() -> Result<(), &'static str> {
-        let source = Tinkoff::new().await;
+        let mut source = Tinkoff::new().await;
         let shares = source.get_shares().await.unwrap();
 
         let mut iids = Vec::new();

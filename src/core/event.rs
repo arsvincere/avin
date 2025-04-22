@@ -9,10 +9,19 @@ use crate::core::bar::Bar;
 use crate::core::tic::Tic;
 use crate::core::timeframe::TimeFrame;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub enum Event {
     Bar(BarEvent),
     Tic(TicEvent),
+}
+
+impl Event {
+    pub fn figi(&self) -> &String {
+        match self {
+            Self::Bar(e) => &e.figi,
+            Self::Tic(e) => &e.figi,
+        }
+    }
 }
 
 impl std::fmt::Display for Event {
@@ -24,7 +33,7 @@ impl std::fmt::Display for Event {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct BarEvent {
     pub figi: String,
     pub tf: TimeFrame,
@@ -32,7 +41,7 @@ pub struct BarEvent {
 }
 impl BarEvent {
     pub fn new(figi: String, tf: TimeFrame, bar: Bar) -> Self {
-        BarEvent { figi, tf, bar }
+        Self { figi, tf, bar }
     }
 }
 impl std::fmt::Display for BarEvent {
@@ -41,14 +50,14 @@ impl std::fmt::Display for BarEvent {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct TicEvent {
     pub figi: String,
     pub tic: Tic,
 }
 impl TicEvent {
     pub fn new(figi: String, tic: Tic) -> Self {
-        TicEvent { figi, tic }
+        Self { figi, tic }
     }
 }
 impl std::fmt::Display for TicEvent {

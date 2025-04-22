@@ -28,7 +28,7 @@ pub use stop_order::{
     TriggeredStopOrder,
 };
 
-#[derive(Debug, PartialEq, Decode, Encode)]
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub enum Order {
     Market(MarketOrder),
     Limit(LimitOrder),
@@ -186,6 +186,40 @@ impl Order {
                 StopOrder::Triggered(o) => match o {
                     TriggeredStopOrder::Market(o) => Some(&o.broker_id),
                     TriggeredStopOrder::Limit(o) => Some(&o.broker_id),
+                },
+            },
+        }
+    }
+}
+
+impl std::fmt::Display for Order {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Order::Market(market) => match market {
+                MarketOrder::New(_) => write!(f, "MarketOrder-New"),
+                MarketOrder::Posted(_) => write!(f, "MarketOrder-Posted"),
+                MarketOrder::Filled(_) => write!(f, "MarketOrder-Filled"),
+                MarketOrder::Rejected(_) => write!(f, "MarketOrder-Rejected"),
+            },
+            Order::Limit(limit) => match limit {
+                LimitOrder::New(_) => write!(f, "Limit-New"),
+                LimitOrder::Posted(_) => write!(f, "Limit-Posted"),
+                LimitOrder::Filled(_) => write!(f, "Limit-Filled"),
+                LimitOrder::Rejected(_) => write!(f, "Limit-Rejected"),
+                LimitOrder::Canceled(_) => write!(f, "Limit-Canceled"),
+            },
+            Order::Stop(stop) => match stop {
+                StopOrder::New(_) => write!(f, "Stop-New"),
+                StopOrder::Posted(_) => write!(f, "Stop-Posted"),
+                StopOrder::Rejected(_) => write!(f, "Stop-Rejected"),
+                StopOrder::Canceled(_) => write!(f, "Stop-Canceled"),
+                StopOrder::Triggered(o) => match o {
+                    TriggeredStopOrder::Market(_) => {
+                        write!(f, "Stop-Triggered-Market")
+                    }
+                    TriggeredStopOrder::Limit(_) => {
+                        write!(f, "Stop-Triggered-Limit")
+                    }
                 },
             },
         }

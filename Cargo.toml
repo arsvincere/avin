@@ -44,4 +44,5 @@ prost = "0.12"
 prost-types = "0.12"
 # prost-types = "0.13.5"
 flume = "0.11.1"
+log = "0.4.27"
 

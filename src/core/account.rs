@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Account {
     name: String,
     broker_id: String,

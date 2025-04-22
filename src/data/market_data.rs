@@ -19,6 +19,7 @@ pub enum MarketData {
     BAR_W,
     BAR_M,
 }
+
 impl MarketData {
     pub fn name(&self) -> String {
         match self {
@@ -50,6 +51,12 @@ impl MarketData {
             "BAR_M" => Ok(MarketData::BAR_M),
             _ => Err("Invalid data type"),
         }
+    }
+}
+
+impl std::fmt::Display for MarketData {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "MarketData={}", self.name())
     }
 }
 
