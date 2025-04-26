@@ -22,6 +22,16 @@ impl MarketOrder {
         NewMarketOrder { direction, lots }
     }
 }
+impl std::fmt::Display for MarketOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::New(order) => write!(f, "{order}"),
+            Self::Posted(order) => write!(f, "{order}"),
+            Self::Filled(order) => write!(f, "{order}"),
+            Self::Rejected(order) => write!(f, "{order}"),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct NewMarketOrder {
@@ -43,6 +53,11 @@ impl NewMarketOrder {
             lots: self.lots,
             meta: meta.to_string(),
         }
+    }
+}
+impl std::fmt::Display for NewMarketOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "MarketOrder::New={} {}", self.direction, self.lots)
     }
 }
 
@@ -69,6 +84,15 @@ impl PostedMarketOrder {
         }
     }
 }
+impl std::fmt::Display for PostedMarketOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "MarketOrder::Posted={} {} id={} t={:?}",
+            self.direction, self.lots, self.broker_id, self.transactions
+        )
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct FilledMarketOrder {
@@ -78,12 +102,34 @@ pub struct FilledMarketOrder {
     pub transactions: Vec<Transaction>,
     pub operation: Operation,
 }
+impl std::fmt::Display for FilledMarketOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "MarketOrder::Filled={} {} id={} t={:?} {}",
+            self.direction,
+            self.lots,
+            self.broker_id,
+            self.transactions,
+            self.operation
+        )
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct RejectedMarketOrder {
     pub direction: Direction,
     pub lots: u32,
     pub meta: String,
+}
+impl std::fmt::Display for RejectedMarketOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "MarketOrder::Rejected={} {} meta={}",
+            self.direction, self.lots, self.meta
+        )
+    }
 }
 
 #[cfg(test)]

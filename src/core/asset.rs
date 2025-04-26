@@ -5,20 +5,24 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::conf::DEFAULT_BARS_COUNT;
-use crate::core::chart::Chart;
-use crate::core::event::Event;
-use crate::core::timeframe::TimeFrame;
-use crate::data::Category;
-use crate::data::IID;
-use crate::data::Manager;
-use chrono::prelude::*;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::path::PathBuf;
 
+use chrono::prelude::*;
+
+use crate::conf::DEFAULT_BARS_COUNT;
+use crate::data::Category;
+use crate::data::IID;
+use crate::data::Manager;
+
+use super::BarEvent;
+use super::Chart;
+use super::TicEvent;
+use super::TimeFrame;
+
 pub trait Asset {
-    fn iid(&self) -> IID;
+    fn iid(&self) -> &IID;
     fn exchange(&self) -> &String;
     fn category(&self) -> Category;
     fn ticker(&self) -> &String;
@@ -34,6 +38,7 @@ pub trait Asset {
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<&Chart, &'static str>;
+    fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart;
 }
 
 #[derive(Debug)]
@@ -63,22 +68,21 @@ impl Share {
 
         share
     }
-    pub fn to_string(&self) -> String {
-        self.iid.to_string()
-    }
+    // pub fn to_string(&self) -> String {
+    //     self.iid.to_string()
+    // }
 
-    pub fn receive(&mut self, e: Event) {
-        match e {
-            Event::Bar(e) => {
-                self.charts.get_mut(&e.tf).unwrap().receive_bar(e.bar);
-            }
-            Event::Tic(_e) => todo!(),
-        }
+    pub fn bar_event(&mut self, e: BarEvent) {
+        let chart = self.charts.get_mut(&e.tf).unwrap();
+        chart.swallow_bar(e.bar);
+    }
+    pub fn tic_event(&mut self, _e: TicEvent) {
+        todo!();
     }
 }
 impl Asset for Share {
-    fn iid(&self) -> IID {
-        self.iid.clone()
+    fn iid(&self) -> &IID {
+        &self.iid
     }
     fn exchange(&self) -> &String {
         &self.iid.exchange()
@@ -118,6 +122,12 @@ impl Asset for Share {
         self.charts.insert(tf.clone(), chart);
 
         Ok(self.charts[tf].as_ref())
+    }
+    fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
+        let chart = Chart::empty(&self.iid, &tf);
+        self.charts.insert(tf.clone(), chart);
+
+        self.charts[tf].as_ref()
     }
 }
 impl std::fmt::Display for Share {

@@ -79,6 +79,15 @@ impl Manager {
             None => Err("instrument not found"),
         }
     }
+    pub fn find_figi(s: &str) -> Result<IID, &'static str> {
+        // loading instruments cache
+        let iid = IidCache::find_figi(s);
+
+        match iid {
+            Some(iid) => Ok(iid),
+            None => Err("instrument not found"),
+        }
+    }
     pub fn convert(
         iid: &IID,
         in_t: &MarketData,
@@ -170,7 +179,7 @@ impl Manager {
 
         let mut iids = Vec::new();
         for share in shares {
-            iids.push(share.iid());
+            iids.push(share.iid().clone());
         }
 
         let source = Source::TINKOFF;

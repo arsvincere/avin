@@ -10,14 +10,15 @@ use chrono::{
     TimeZone, Utc,
 };
 
-use log::{Level, Metadata, Record};
+use log::{Metadata, Record};
 
 // log
 pub static LOGGER: ConsoleLogger = ConsoleLogger;
 pub struct ConsoleLogger;
 impl log::Log for ConsoleLogger {
-    fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= Level::Info
+    fn enabled(&self, _metadata: &Metadata) -> bool {
+        // metadata.level() <= log::Level::Info
+        true
     }
 
     fn log(&self, record: &Record) {
@@ -36,10 +37,12 @@ impl log::Log for ConsoleLogger {
 
 // Settings
 pub const DEFAULT_BARS_COUNT: i32 = 5000;
+pub const DEFAULT_COMMISSION: f64 = 0.0005;
 
 // Dir
-pub const DATA_DIR: &str = "/home/alex/avin/usr/data";
 pub const CACHE_DIR: &str = "/home/alex/avin/usr/cache";
+pub const DATA_DIR: &str = "/home/alex/avin/usr/data";
+pub const TEST_DIR: &str = "/home/alex/avin/usr/test";
 
 // Connect
 pub const TINKOFF_TOKEN: &str =

@@ -10,11 +10,11 @@ use crate::core::order::Order;
 use crate::core::trade::Trade;
 use crate::data::IID;
 
+#[derive(Debug)]
 pub enum Action {
     Post(PostOrderAction),
     TradeClosed(Trade),
 }
-
 impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -28,21 +28,21 @@ impl std::fmt::Display for Action {
 pub struct PostOrderAction {
     pub account: Account,
     pub iid: IID,
+    pub strategy_name: String,
     pub order: Order,
-    pub tx: tokio::sync::oneshot::Sender<Order>,
 }
 impl PostOrderAction {
     pub fn new(
         account: Account,
         iid: IID,
+        strategy_name: String,
         order: Order,
-        tx: tokio::sync::oneshot::Sender<Order>,
     ) -> Self {
         Self {
             account,
             iid,
+            strategy_name,
             order,
-            tx,
         }
     }
 }

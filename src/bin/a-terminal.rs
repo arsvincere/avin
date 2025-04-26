@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use iced::widget::{
     Column, button, column, container, row, scrollable, text, text_input,
 };

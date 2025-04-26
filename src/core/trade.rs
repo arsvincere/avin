@@ -5,11 +5,35 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::direction::Direction;
-use crate::core::order::{Order, PostedStopOrder};
-use crate::data::IID;
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Utc};
+
+use crate::data::IID;
+
+use super::direction::Direction;
+use super::order::{Order, PostedStopOrder};
+
+#[derive(Debug, Clone, PartialEq, Encode, Decode)]
+pub enum TradeKind {
+    Long,
+    Short,
+}
+impl TradeKind {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            TradeKind::Long => "l",
+            TradeKind::Short => "s",
+        }
+    }
+}
+impl std::fmt::Display for TradeKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            TradeKind::Long => write!(f, "Long"),
+            TradeKind::Short => write!(f, "Short"),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub enum Trade {
@@ -17,23 +41,21 @@ pub enum Trade {
     Opened(OpenedTrade),
     Closed(ClosedTrade),
 }
-
 impl Trade {
     pub fn new(
         ts_nanos: i64,
         strategy: &str,
-        typ: TradeType,
+        kind: TradeKind,
         iid: IID,
     ) -> NewTrade {
         NewTrade {
             ts_nanos,
             strategy: strategy.to_string(),
-            typ,
+            kind,
             iid,
         }
     }
 }
-
 impl std::fmt::Display for Trade {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -44,33 +66,11 @@ impl std::fmt::Display for Trade {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Encode, Decode)]
-pub enum TradeType {
-    Long,
-    Short,
-}
-impl TradeType {
-    pub fn to_str(&self) -> &'static str {
-        match self {
-            TradeType::Long => "l",
-            TradeType::Short => "s",
-        }
-    }
-}
-impl std::fmt::Display for TradeType {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            TradeType::Long => write!(f, "Long"),
-            TradeType::Short => write!(f, "Short"),
-        }
-    }
-}
-
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub struct NewTrade {
     pub ts_nanos: i64,
     pub strategy: String,
-    pub typ: TradeType,
+    pub kind: TradeKind,
     pub iid: IID,
 }
 impl NewTrade {
@@ -81,7 +81,7 @@ impl NewTrade {
         OpenedTrade {
             ts_nanos: self.ts_nanos,
             strategy: self.strategy,
-            typ: self.typ,
+            kind: self.kind,
             iid: self.iid,
             orders: vec![filled_order],
 
@@ -95,7 +95,7 @@ impl std::fmt::Display for NewTrade {
         write!(
             f,
             "NewTrade={} {} {} {}",
-            self.ts_nanos, self.strategy, self.typ, self.iid
+            self.ts_nanos, self.strategy, self.kind, self.iid
         )
     }
 }
@@ -104,7 +104,7 @@ impl std::fmt::Display for NewTrade {
 pub struct OpenedTrade {
     pub ts_nanos: i64,
     pub strategy: String,
-    pub typ: TradeType,
+    pub kind: TradeKind,
     pub iid: IID,
     pub orders: Vec<Order>,
 
@@ -129,7 +129,7 @@ impl OpenedTrade {
         let trade = ClosedTrade {
             ts_nanos: self.ts_nanos,
             strategy: self.strategy,
-            typ: self.typ,
+            kind: self.kind,
             iid: self.iid,
             orders: self.orders,
         };
@@ -147,7 +147,7 @@ impl std::fmt::Display for OpenedTrade {
         write!(
             f,
             "OpenedTrade={} {} {} {}",
-            self.ts_nanos, self.strategy, self.typ, self.iid
+            self.ts_nanos, self.strategy, self.kind, self.iid
         )
     }
 }
@@ -156,16 +156,16 @@ impl std::fmt::Display for OpenedTrade {
 pub struct ClosedTrade {
     pub ts_nanos: i64,
     pub strategy: String,
-    pub typ: TradeType,
+    pub kind: TradeKind,
     pub iid: IID,
     pub orders: Vec<Order>,
 }
 impl ClosedTrade {
     pub fn is_long(&self) -> bool {
-        self.typ == TradeType::Long
+        self.kind == TradeKind::Long
     }
     pub fn is_short(&self) -> bool {
-        self.typ == TradeType::Short
+        self.kind == TradeKind::Short
     }
     pub fn is_win(&self) -> bool {
         todo!();
@@ -175,9 +175,8 @@ impl ClosedTrade {
     }
 
     pub fn lots(&self) -> i32 {
-        todo!();
+        self.quantity() / self.iid.lot() as i32
     }
-
     pub fn quantity(&self) -> i32 {
         let mut total: i32 = 0;
 
@@ -325,6 +324,9 @@ impl ClosedTrade {
         self.sell_value() / self.sell_quantity() as f64
     }
 
+    pub fn dt(&self) -> DateTime<Utc> {
+        DateTime::from_timestamp_nanos(self.ts_nanos)
+    }
     pub fn open_dt(&self) -> DateTime<Utc> {
         let o = self.orders.first().unwrap();
         match o.operation() {
@@ -376,8 +378,12 @@ impl std::fmt::Display for ClosedTrade {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "ClosedTrade={} {} {} {}",
-            self.ts_nanos, self.strategy, self.typ, self.iid
+            "ClosedTrade={} {} {} {} = {}",
+            self.dt(),
+            self.strategy,
+            self.kind,
+            self.iid.ticker(),
+            self.result()
         )
     }
 }
@@ -400,7 +406,7 @@ mod tests {
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
-            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
+            Trade::new(ts, "Trend T3 Posterior v1", TradeKind::Long, iid);
         assert_eq!(trade.ts_nanos, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
         assert_eq!(trade.iid.ticker(), "SBER");
@@ -446,7 +452,7 @@ mod tests {
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
-            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
+            Trade::new(ts, "Trend T3 Posterior v1", TradeKind::Long, iid);
         assert_eq!(trade.ts_nanos, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
         assert_eq!(trade.iid.ticker(), "SBER");

@@ -58,6 +58,19 @@ impl IidCache {
 
         None
     }
+    pub fn find_figi(figi: &str) -> Option<IID> {
+        let source = Source::TINKOFF;
+        let category = Category::SHARE;
+        let cache = IidCache::load(&source, &category).unwrap();
+
+        for i in cache.iids {
+            if i.figi() == figi {
+                return Some(i);
+            }
+        }
+
+        None
+    }
 
     pub fn save(cache: &IidCache) -> Result<(), &'static str> {
         let bytes = cache.to_bin();

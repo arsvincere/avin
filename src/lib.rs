@@ -16,7 +16,7 @@ mod strategy;
 mod tester;
 mod tinkoff;
 mod trader;
-mod utils;
+pub mod utils;
 
 pub use conf::*;
 pub use core::*;
@@ -25,4 +25,4 @@ pub use strategy::*;
 pub use tester::*;
 pub use tinkoff::*;
 pub use trader::*;
-pub use utils::*;
+pub use utils::Cmd;

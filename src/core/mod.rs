@@ -21,20 +21,25 @@ mod timeframe;
 mod trade;
 mod trade_list;
 mod transaction;
+mod work;
 
 pub use account::Account;
 pub use action::{Action, PostOrderAction};
 pub use asset::{Asset, Share};
 pub use bar::Bar;
 pub use chart::Chart;
-pub use direction::Direction;
-pub use event::{BarEvent, Event, TicEvent};
+pub use direction::{Direction, Direction::Buy, Direction::Sell};
+pub use event::{BarEvent, Event, OrderEvent, TicEvent};
 pub use operation::Operation;
 pub use order::*;
 pub use range::Range;
 pub use summary::Summary;
 pub use tic::Tic;
 pub use timeframe::TimeFrame;
-pub use trade::{ClosedTrade, NewTrade, OpenedTrade, Trade, TradeType};
+pub use trade::{
+    ClosedTrade, NewTrade, OpenedTrade, Trade, TradeKind, TradeKind::Long,
+    TradeKind::Short,
+};
 pub use trade_list::TradeList;
 pub use transaction::Transaction;
+pub use work::Work;

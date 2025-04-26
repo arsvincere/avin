@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use avin::Cmd;
 use std::path::Path;
 
@@ -21,29 +28,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Path::new(&module_path),
         )?;
     }
-
-    // tonic_build::configure()
-    //     .build_client(true)
-    //     .build_server(false)
-    //     .out_dir("tmp")
-    //     .compile(
-    //         &[
-    //             // "proto/common.proto",
-    //             // "proto/instruments.proto",
-    //             // "proto/marketdata.proto",
-    //             // "proto/operations.proto",
-    //             // "proto/orders.proto",
-    //             // "proto/sandbox.proto",
-    //             // "proto/stoporders.proto",
-    //             "proto/users.proto",
-    //         ],
-    //         &["proto/"],
-    //     )?;
-    //
-    // Cmd::replace(
-    //     Path::new("tmp/tinkoff.public.invest.api.contract.v1.rs"),
-    //     Path::new("src/tinkoff/api.rs"),
-    // )?;
 
     Ok(())
 }

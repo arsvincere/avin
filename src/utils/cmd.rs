@@ -17,15 +17,27 @@ impl Cmd {
     pub fn is_exist(path: &Path) -> bool {
         path.exists()
     }
-    // pub fn path(parts: &Vec<&Path>) {
-    //     todo!("join path from Vec")
-    // }
+    pub fn is_empty(dir_path: &Path) -> bool {
+        let files = Cmd::get_files(dir_path).unwrap();
+
+        files.len() == 0
+    }
+
+    pub fn name(path: &Path) -> Result<String, Box<dyn Error>> {
+        let file_name = path
+            .file_stem()
+            .unwrap()
+            .to_os_string()
+            .into_string()
+            .unwrap();
+
+        Ok(file_name)
+    }
     pub fn make_dirs(path: &Path) -> Result<(), Box<dyn Error>> {
         std::fs::create_dir_all(path)?;
 
         Ok(())
     }
-
     pub fn get_files(
         dir_path: &Path,
     ) -> Result<Vec<PathBuf>, Box<dyn Error>> {
@@ -41,16 +53,6 @@ impl Cmd {
 
         files.sort();
         Ok(files)
-    }
-    pub fn name(path: &Path) -> Result<String, Box<dyn Error>> {
-        let file_name = path
-            .file_stem()
-            .unwrap()
-            .to_os_string()
-            .into_string()
-            .unwrap();
-
-        Ok(file_name)
     }
 
     pub fn read(path: &Path) -> Result<String, Box<dyn Error>> {
@@ -91,18 +93,24 @@ impl Cmd {
         bytes: &Vec<u8>,
         path: &Path,
     ) -> Result<(), Box<dyn Error>> {
-        let display = path.display();
+        // check dir, create if not exist
+        let dir_path = path.parent().unwrap();
+        if !Cmd::is_exist(dir_path) {
+            Cmd::make_dirs(dir_path).unwrap();
+        }
+
+        let str_path = path.display();
 
         // open file in write mode
         let mut file = match File::create(&path) {
-            Err(why) => panic!("Error create {}: {}", display, why),
+            Err(why) => panic!("Error create {}: {}", str_path, why),
             Ok(file) => file,
         };
 
         // write bytes
         match file.write_all(bytes) {
-            Err(why) => panic!("Error save {}: {}", display, why),
-            Ok(_) => println!(":: Cmd save: {}", display),
+            Err(why) => panic!("Error save {}: {}", str_path, why),
+            Ok(_) => (),
         }
 
         Ok(())
@@ -112,16 +120,15 @@ impl Cmd {
         path: &PathBuf,
     ) -> Result<(), Box<dyn Error>> {
         let dir_path = path.parent().unwrap();
-        std::fs::create_dir_all(dir_path)?;
+        if !Cmd::is_exist(dir_path) {
+            Cmd::make_dirs(dir_path).unwrap();
+        }
 
         let mut file = File::create(path)?;
         ParquetWriter::new(&mut file).finish(df).unwrap();
 
         Ok(())
     }
-    // pub fn write_lines(lines: Vector<&str>) -> Result<(), Box<dyn Error>> {
-    //     // ...
-    // }
 
     pub fn delete(path: &Path) -> Result<(), Box<dyn Error>> {
         std::fs::remove_file(path)?;
@@ -139,19 +146,3 @@ impl Cmd {
         Ok(())
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     fn test_read_write() {
-//         let string = String::from("Hello!");
-//         let path = Path::new("./tmp/cmd_read_write.txt");
-//
-//         let _ = Cmd::write(&string, &path).expect("WTF?");
-//
-//         let readed = Cmd::read(&path).expect("WTF?");
-//         assert_eq!(string, readed);
-//     }
-// }

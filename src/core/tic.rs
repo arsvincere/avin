@@ -17,7 +17,6 @@ pub struct Tic {
     pub price: f64,
     pub value: f64,
 }
-
 impl Tic {
     pub fn new(
         ts_nanos: i64,
@@ -39,7 +38,6 @@ impl Tic {
         DateTime::from_timestamp_nanos(self.ts_nanos)
     }
 }
-
 impl std::fmt::Display for Tic {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(

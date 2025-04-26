@@ -11,6 +11,12 @@ use crate::core::order::market_order::PostedMarketOrder;
 use bitcode::{Decode, Encode};
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
+pub enum StopOrderKind {
+    StopLoss,
+    TakeProfit,
+}
+
+#[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub enum StopOrder {
     New(NewStopOrder),
     Posted(PostedStopOrder),
@@ -18,14 +24,17 @@ pub enum StopOrder {
     Rejected(RejectedStopOrder),
     Canceled(CanceledStopOrder),
 }
+
 impl StopOrder {
     pub fn new(
+        kind: StopOrderKind,
         direction: Direction,
         lots: u32,
         stop_price: f64,
         exec_price: Option<f64>,
     ) -> NewStopOrder {
         NewStopOrder {
+            kind,
             direction,
             lots,
             stop_price,
@@ -33,9 +42,21 @@ impl StopOrder {
         }
     }
 }
+impl std::fmt::Display for StopOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::New(order) => write!(f, "{order}"),
+            Self::Posted(order) => write!(f, "{order}"),
+            Self::Triggered(order) => write!(f, "{order}"),
+            Self::Rejected(order) => write!(f, "{order}"),
+            Self::Canceled(order) => write!(f, "{order}"),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct NewStopOrder {
+    pub kind: StopOrderKind,
     pub direction: Direction,
     pub lots: u32,
     pub stop_price: f64,
@@ -44,6 +65,7 @@ pub struct NewStopOrder {
 impl NewStopOrder {
     pub fn post(self, broker_id: &str) -> PostedStopOrder {
         PostedStopOrder {
+            kind: self.kind,
             direction: self.direction,
             lots: self.lots,
             stop_price: self.stop_price,
@@ -53,6 +75,7 @@ impl NewStopOrder {
     }
     pub fn reject(self, meta: &str) -> RejectedStopOrder {
         RejectedStopOrder {
+            kind: self.kind,
             direction: self.direction,
             lots: self.lots,
             stop_price: self.stop_price,
@@ -61,9 +84,22 @@ impl NewStopOrder {
         }
     }
 }
+impl std::fmt::Display for NewStopOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "StopOrder::New={} {} stop_price={} exec_price={}",
+            self.direction,
+            self.lots,
+            self.stop_price,
+            self.exec_price.unwrap_or(0.0),
+        )
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct PostedStopOrder {
+    pub kind: StopOrderKind,
     pub direction: Direction,
     pub lots: u32,
     pub stop_price: f64,
@@ -96,6 +132,7 @@ impl PostedStopOrder {
     }
     pub fn cancel(self) -> CanceledStopOrder {
         CanceledStopOrder {
+            kind: self.kind,
             direction: self.direction,
             lots: self.lots,
             stop_price: self.stop_price,
@@ -104,29 +141,78 @@ impl PostedStopOrder {
         }
     }
 }
+impl std::fmt::Display for PostedStopOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "StopOrder::Posted={} {} stop_price={} exec_price={} id={}",
+            self.direction,
+            self.lots,
+            self.stop_price,
+            self.exec_price.unwrap_or(0.0),
+            self.broker_id
+        )
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub enum TriggeredStopOrder {
     Market(PostedMarketOrder),
     Limit(PostedLimitOrder),
 }
+impl std::fmt::Display for TriggeredStopOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Market(order) => write!(f, "Triggered={order}"),
+            Self::Limit(order) => write!(f, "Triggered={order}"),
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct RejectedStopOrder {
+    pub kind: StopOrderKind,
     pub direction: Direction,
     pub lots: u32,
     pub stop_price: f64,
     pub exec_price: Option<f64>,
     pub meta: String,
 }
+impl std::fmt::Display for RejectedStopOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "StopOrder::Posted={} {} stop_price={} exec_price={} meta={}",
+            self.direction,
+            self.lots,
+            self.stop_price,
+            self.exec_price.unwrap_or(0.0),
+            self.meta
+        )
+    }
+}
 
 #[derive(Debug, PartialEq, Decode, Encode, Clone)]
 pub struct CanceledStopOrder {
+    pub kind: StopOrderKind,
     pub direction: Direction,
     pub lots: u32,
     pub stop_price: f64,
     pub exec_price: Option<f64>,
     pub broker_id: String,
+}
+impl std::fmt::Display for CanceledStopOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "StopOrder::Posted={} {} stop_price={} exec_price={} id={}",
+            self.direction,
+            self.lots,
+            self.stop_price,
+            self.exec_price.unwrap_or(0.0),
+            self.broker_id
+        )
+    }
 }
 
 #[cfg(test)]
@@ -135,7 +221,13 @@ mod tests {
 
     #[test]
     fn trigger_market() {
-        let new = StopOrder::new(Direction::Buy, 2, 4500.0, None);
+        let new = StopOrder::new(
+            StopOrderKind::TakeProfit,
+            Direction::Buy,
+            2,
+            4500.0,
+            None,
+        );
         assert_eq!(new.direction, Direction::Buy);
         assert_eq!(new.lots, 2);
         assert_eq!(new.stop_price, 4500.0);
@@ -156,7 +248,13 @@ mod tests {
     }
     #[test]
     fn trigger_limit() {
-        let new = StopOrder::new(Direction::Buy, 2, 4500.0, Some(4510.0));
+        let new = StopOrder::new(
+            StopOrderKind::TakeProfit,
+            Direction::Buy,
+            2,
+            4500.0,
+            Some(4510.0),
+        );
         assert_eq!(new.direction, Direction::Buy);
         assert_eq!(new.lots, 2);
         assert_eq!(new.stop_price, 4500.0);
@@ -178,7 +276,13 @@ mod tests {
     }
     #[test]
     fn reject() {
-        let new = StopOrder::new(Direction::Sell, 4, 444.000003, Some(444.0));
+        let new = StopOrder::new(
+            StopOrderKind::StopLoss,
+            Direction::Sell,
+            4,
+            444.000003,
+            Some(444.0),
+        );
         assert_eq!(new.direction, Direction::Sell);
         assert_eq!(new.lots, 4);
         assert_eq!(new.stop_price, 444.000003);

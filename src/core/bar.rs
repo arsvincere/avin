@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::range::Range;
+use crate::{core::range::Range, utils};
 use bitcode::{Decode, Encode};
 use chrono::prelude::*;
 use polars::frame::DataFrame;
@@ -20,71 +20,61 @@ pub struct Bar {
     pub c: f64,
     pub v: u64,
 }
-
 impl Bar {
-    pub fn new(
-        ts_nanos: i64,
-        o: f64,
-        h: f64,
-        l: f64,
-        c: f64,
-        v: u64,
-    ) -> Result<Bar, Box<dyn Error>> {
-        let bar = Bar {
+    pub fn new(ts_nanos: i64, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
+        Bar {
             ts_nanos,
             o,
             h,
             l,
             c,
             v,
-        };
-        Ok(bar)
+        }
     }
     pub fn from_df(df: DataFrame) -> Result<Vec<Bar>, Box<dyn Error>> {
-        let timestamp = df
+        let ts = df
             .column("ts_nanos")
             .unwrap()
             .i64()
             .unwrap()
             .into_no_null_iter();
-        let mut open = df
+        let mut o = df
             .column("open")
             .unwrap()
             .f64()
             .unwrap()
             .into_no_null_iter();
-        let mut high = df
+        let mut h = df
             .column("high")
             .unwrap()
             .f64()
             .unwrap()
             .into_no_null_iter();
-        let mut low =
+        let mut l =
             df.column("low").unwrap().f64().unwrap().into_no_null_iter();
-        let mut close = df
+        let mut c = df
             .column("close")
             .unwrap()
             .f64()
             .unwrap()
             .into_no_null_iter();
-        let mut volume = df
+        let mut v = df
             .column("volume")
             .unwrap()
             .u64()
             .unwrap()
             .into_no_null_iter();
 
-        let mut bars: Vec<Bar> = Vec::new();
-        for ts in timestamp {
+        let mut bars: Vec<Bar> = Vec::with_capacity(df.height());
+        for t in ts {
             let bar = Bar::new(
-                ts,
-                open.next().unwrap(),
-                high.next().unwrap(),
-                low.next().unwrap(),
-                close.next().unwrap(),
-                volume.next().unwrap(),
-            )
-            .unwrap();
+                t,
+                o.next().unwrap(),
+                h.next().unwrap(),
+                l.next().unwrap(),
+                c.next().unwrap(),
+                v.next().unwrap(),
+            );
             bars.push(bar);
         }
 
@@ -120,8 +110,20 @@ impl Bar {
             Range::new(self.o, self.h)
         }
     }
+    pub fn contains(&self, price: f64) -> bool {
+        self.l <= price && price <= self.h
+    }
+    pub fn join(&self, other: Bar) -> Bar {
+        Bar {
+            ts_nanos: self.ts_nanos,
+            o: self.o,
+            h: utils::max(self.h, other.h),
+            l: utils::min(self.l, other.l),
+            c: other.c,
+            v: utils::sum(self.v, other.v),
+        }
+    }
 }
-
 impl std::fmt::Display for Bar {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -145,7 +147,7 @@ mod tests {
     fn ohlcv() {
         let dt = Utc::now();
         let ts = dt.timestamp_nanos_opt().unwrap();
-        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
+        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
         assert_eq!(b.dt(), dt);
         assert_eq!(b.o, 10.0);
         assert_eq!(b.h, 11.1);
@@ -157,12 +159,25 @@ mod tests {
     fn bear_bull() {
         let dt = Utc::now();
         let ts = dt.timestamp_nanos_opt().unwrap();
-        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000).unwrap();
+        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
         assert!(b.is_bull());
         assert!(!b.is_bear());
 
-        let b = Bar::new(ts, 10.0, 11.1, 9.0, 9.5, 5000).unwrap();
+        let b = Bar::new(ts, 10.0, 11.1, 9.0, 9.5, 5000);
         assert!(!b.is_bull());
         assert!(b.is_bear());
+    }
+    #[test]
+    fn join() {
+        let b1 = Bar::new(100500, 100.0, 101.0, 99.0, 100.5, 5000);
+        let b2 = Bar::new(100550, 100.5, 101.2, 99.7, 100.8, 4000);
+
+        let bar = b1.join(b2);
+        assert_eq!(bar.ts_nanos, 100500);
+        assert_eq!(bar.o, 100.0);
+        assert_eq!(bar.h, 101.2);
+        assert_eq!(bar.l, 99.0);
+        assert_eq!(bar.c, 100.8);
+        assert_eq!(bar.v, 9000);
     }
 }

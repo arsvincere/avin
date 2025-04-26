@@ -62,7 +62,7 @@ impl std::fmt::Display for MarketData {
 
 impl From<TimeFrame> for MarketData {
     fn from(tf: TimeFrame) -> MarketData {
-        match tf.name().as_str() {
+        match tf.name() {
             "1M" => MarketData::BAR_1M,
             "5M" => MarketData::BAR_5M,
             "10M" => MarketData::BAR_10M,

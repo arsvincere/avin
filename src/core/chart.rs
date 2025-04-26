@@ -10,9 +10,6 @@ use crate::core::timeframe::TimeFrame;
 use crate::data::IID;
 use crate::data::Manager;
 use chrono::prelude::*;
-use tokio::sync::broadcast;
-
-const CHANNEL_CAPACITY: usize = 10;
 
 #[derive(Debug)]
 pub struct Chart {
@@ -20,22 +17,14 @@ pub struct Chart {
     tf: TimeFrame,
     bars: Vec<Bar>,
     now: Option<Bar>,
-
-    out_tx: broadcast::Sender<Bar>,
-    _out_rx: broadcast::Receiver<Bar>,
 }
-
 impl Chart {
     pub fn new(iid: &IID, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
-        let (out_tx, _out_rx) = broadcast::channel(CHANNEL_CAPACITY);
-
         Self {
             iid: iid.clone(),
             tf: tf.clone(),
             bars,
             now: None,
-            out_tx,
-            _out_rx,
         }
     }
     pub fn empty(iid: &IID, tf: &TimeFrame) -> Self {
@@ -93,44 +82,38 @@ impl Chart {
         }
     }
 
-    /// Receive bar event
-    pub fn receive_bar(&mut self, new_bar: Bar) {
+    /// Swallow new bar.
+    /// Depending on datetime of 'new_bar' this function do:
+    ///  - only update real-time bar
+    ///  - add new historical bar and update real-time
+    pub fn swallow_bar(&mut self, new_bar: Bar) {
         match self.now.take() {
             None => {
                 // receive first real time bar
-                self.now = Some(new_bar.clone());
+                self.now = Some(new_bar);
             }
-            Some(now_bar) => {
+            Some(old_bar) => {
                 // only update now bar
-                if now_bar.ts_nanos == new_bar.ts_nanos {
-                    self.now = Some(new_bar.clone());
+                if old_bar.ts_nanos == new_bar.ts_nanos {
+                    self.now = Some(new_bar);
                 // new historical bar and update now bar
-                } else if now_bar.ts_nanos < new_bar.ts_nanos {
-                    self.bars.push(now_bar.clone());
-                    self.now = Some(new_bar.clone());
+                } else if old_bar.ts_nanos < new_bar.ts_nanos {
+                    self.bars.push(old_bar);
+                    self.now = Some(new_bar);
+                }
+                // Тинькофф бывает прокидывает в дата стриме
+                // исторические бары законченные уже после новых
+                // реал-тайм баров. По факту же - последний
+                // реал-тайм бар который был в потоке как незаконченный
+                // он равен этому законченному историческому бару
+                // так что в моем алгоритме приема баров он не нужен, игнор.
+                else if old_bar.ts_nanos > new_bar.ts_nanos {
+                    return;
                 }
             }
         }
-
-        self.out_tx.send(new_bar).unwrap();
-
-        // # 4. Тинькоф иногда в поток докидывает старые бары исторические
-        // # но исправленные, пересчитанные. В пизду их пока даже внимание
-        // # не буду обращать, там не большое отличие
-        // if self.__now.dt > new_bar.dt:
-        //     logger.warning(f"Receiving event={e}")
-        //     logger.warning(f"self.now={self.now}")
-        //     logger.warning(f"self.last={self.last}")
-        //     return
-        //
-        // assert False, "WTF???"
-    }
-    /// Return receiver for update real-time bar
-    pub fn get_receiver(&self) -> broadcast::Receiver<Bar> {
-        self.out_tx.subscribe()
     }
 }
-
 impl AsRef<Chart> for Chart {
     fn as_ref(&self) -> &Chart {
         &self

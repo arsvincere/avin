@@ -35,24 +35,6 @@ impl TradeList {
     pub fn to_bin(&self) -> Vec<u8> {
         bitcode::encode(self)
     }
-
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-    pub fn trades(&self) -> &Vec<Trade> {
-        &self.trades
-    }
-    pub fn len(&self) -> usize {
-        self.trades.len()
-    }
-
-    pub fn add_trade(&mut self, trade: Trade) {
-        self.trades.push(trade);
-    }
-    pub fn clear_trades(&mut self) {
-        self.trades.clear();
-    }
-
     pub fn save(
         trade_list: &TradeList,
         path: &Path,
@@ -69,26 +51,22 @@ impl TradeList {
         Ok(trade_list)
     }
 
-    // pub fn save(trade_list: TradeList) -> Result<(), &'static str> {
-    //     // let n = trade_list.len();
-    //     // let mut dt: Vec<NaiveDateTime> = Vec::with_capacity(n);
-    //     // let mut strategy: Vec<String> = Vec::with_capacity(n);
-    //     // let mut typ: Vec<String> = Vec::with_capacity(n);
-    //     // let mut asset: Vec<String> = Vec::with_capacity(n);
-    //     // let mut orders: Vec<HashMap<String, String>> = Vec::with_capacity(n);
-    //     //
-    //     // for trade in trade_list.trades.borrow().iter() {
-    //     //     if let Trade::Closed(t) = trade {
-    //     //         dt.push(t.dt.naive_utc());
-    //     //         strategy.push(t.strategy.clone());
-    //     //         typ.push(t.typ.to_string());
-    //     //         asset.push(t.asset.to_string());
-    //     //         // orders.push(t.export_orders());
-    //     //     }
-    //     // }
-    //
-    //     todo!();
-    // }
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+    pub fn trades(&self) -> &Vec<Trade> {
+        &self.trades
+    }
+    pub fn len(&self) -> usize {
+        self.trades.len()
+    }
+
+    pub fn add(&mut self, trade: Trade) {
+        self.trades.push(trade);
+    }
+    pub fn clear(&mut self) {
+        self.trades.clear();
+    }
 }
 
 #[cfg(test)]
@@ -110,7 +88,7 @@ mod tests {
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
-            Trade::new(ts, "Trend T3 Posterior v1", TradeType::Long, iid);
+            Trade::new(ts, "Trend T3 Posterior v1", TradeKind::Long, iid);
 
         // open trade - add first filled order
         let order = LimitOrder::new(Direction::Buy, 10, 301.0);
@@ -135,7 +113,7 @@ mod tests {
         let mut trade_list = TradeList::new("unit_test");
 
         // wrap & add trade
-        trade_list.add_trade(Trade::Closed(trade));
+        trade_list.add(Trade::Closed(trade));
 
         // save trade list
         let path = Path::new("tmp/trades.bin");

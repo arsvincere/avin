@@ -104,7 +104,7 @@ impl std::fmt::Display for Operation {
         let dt = format!("{}", self.dt().format(DT_FMT));
         write!(
             f,
-            "Operation={} {}={}{}",
+            "Operation={} {}={}+{}",
             dt, self.quantity, self.value, self.commission
         )
     }
