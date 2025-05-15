@@ -31,6 +31,7 @@ pub trait Asset {
     fn path(&self) -> PathBuf;
 
     fn chart(&self, tf: &TimeFrame) -> Option<&Chart>;
+    fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart>;
     fn load_chart(&mut self, tf: &TimeFrame) -> Result<&Chart, &'static str>;
     fn load_chart_period(
         &mut self,
@@ -48,7 +49,13 @@ pub struct Share {
 }
 
 impl Share {
-    pub fn new(iid: IID) -> Self {
+    pub fn new(s: &str) -> Result<Share, &'static str> {
+        let iid = Manager::find(s)?;
+        let share = Share::from_iid(iid);
+
+        Ok(share)
+    }
+    pub fn from_iid(iid: IID) -> Self {
         assert!(iid.category() == Category::SHARE);
 
         Self {
@@ -56,15 +63,9 @@ impl Share {
             charts: HashMap::new(),
         }
     }
-    pub fn from_str(s: &str) -> Result<Share, &'static str> {
-        let iid = Manager::find(s)?;
-        let share = Share::new(iid);
-
-        Ok(share)
-    }
     pub fn from_info(info: HashMap<String, String>) -> Share {
         let iid = IID::new(info);
-        let share = Share::new(iid);
+        let share = Share::from_iid(iid);
 
         share
     }
@@ -105,6 +106,9 @@ impl Asset for Share {
 
     fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
         self.charts.get(tf)
+    }
+    fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
+        self.charts.get_mut(tf)
     }
     fn load_chart(&mut self, tf: &TimeFrame) -> Result<&Chart, &'static str> {
         let end = Utc::now();
@@ -153,7 +157,7 @@ mod tests {
 
     #[test]
     fn share_from_str() {
-        let share = Share::from_str("moex_share_sber").unwrap();
+        let share = Share::new("moex_share_sber").unwrap();
         assert_eq!(share.exchange(), "MOEX");
         assert_eq!(share.category(), Category::SHARE);
         assert_eq!(share.ticker(), "SBER");
@@ -161,7 +165,7 @@ mod tests {
     }
     #[test]
     fn load_chart() {
-        let mut share = Share::from_str("moex_share_sber").unwrap();
+        let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::new("1H");
         let begin = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 2, 1, 0, 0, 0).unwrap();
@@ -180,7 +184,7 @@ mod tests {
     }
     #[test]
     fn load_chart_no_args() {
-        let mut share = Share::from_str("moex_share_sber").unwrap();
+        let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::new("D");
 
         let chart = share.load_chart(&tf).unwrap();

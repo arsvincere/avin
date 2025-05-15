@@ -5,15 +5,13 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use std::hash::Hash;
-
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Timelike};
 use time_unit::TimeUnit;
 
 use crate::data::MarketData;
 
-#[derive(Debug, Eq, PartialEq, Clone, Encode, Decode)]
+#[derive(Debug, Eq, PartialEq, Clone, Hash, Encode, Decode)]
 pub struct TimeFrame {
     name: &'static str,
 }
@@ -114,11 +112,11 @@ impl std::fmt::Display for TimeFrame {
         write!(f, "TimeFrame={}", self.name)
     }
 }
-impl Hash for TimeFrame {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-    }
-}
+// impl std::hash::Hash for TimeFrame {
+//     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+//         self.name.hash(state);
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

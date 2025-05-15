@@ -41,7 +41,7 @@ impl Tester {
         let account = broker.get_virtual_account();
 
         log::info!(":: Tester load share");
-        let mut share = Share::new(test.iid.clone());
+        let mut share = Share::from_iid(test.iid.clone());
         self.load_charts(&mut share);
 
         log::info!(":: Tester load strategys");
@@ -106,7 +106,7 @@ mod tests {
 
     #[tokio::test]
     async fn run_test() {
-        let share = Share::from_str("moex_share_sber").unwrap();
+        let share = Share::new("moex_share_sber").unwrap();
         let mut test = Test::new("Every", share.iid());
         test.set_begin(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap());
         test.set_end(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 10, 0).unwrap());

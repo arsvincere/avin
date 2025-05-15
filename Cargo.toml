@@ -1,6 +1,6 @@
 [package]
 name = "avin"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2021"
 description = "A great future awaits me!"
 license = "MIT"
@@ -33,7 +33,6 @@ polars = { version = "0.46", features = [
     "is_between",
     "polars-ops",
 ] }
-iced = { version = "0.13", features = ["debug"]}
 uuid = {version = "1.16.0", features = [ "v4", ]}
 tonic = { version = "0.11", features = ["tls", "tls-roots", "gzip"] }
 # tonic = { version = "0.13", features = ["transport", "channel", "tls-ring"] }
@@ -45,4 +44,4 @@ prost-types = "0.12"
 # prost-types = "0.13.5"
 flume = "0.11.1"
 log = "0.4.27"
-
+iced = { version = "0.13", features = ["debug"]}

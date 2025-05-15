@@ -1988,7 +1988,7 @@ mod tests {
     #[ignore]
     async fn get_last_price() {
         // share, iid
-        let share = Share::from_str("moex_share_vtbr").unwrap();
+        let share = Share::new("moex_share_vtbr").unwrap();
         let iid = share.iid();
 
         // connect broker
@@ -2003,7 +2003,7 @@ mod tests {
     #[ignore]
     async fn get_bars() {
         // share, iid
-        let share = Share::from_str("moex_share_vtbr").unwrap();
+        let share = Share::new("moex_share_vtbr").unwrap();
         let iid = share.iid();
 
         // connect broker
@@ -2026,7 +2026,7 @@ mod tests {
     #[ignore]
     async fn post_market_order() {
         // share, iid
-        let share = Share::from_str("moex_share_vtbr").unwrap();
+        let share = Share::new("moex_share_vtbr").unwrap();
         let iid = share.iid();
 
         // connect broker
@@ -2058,7 +2058,7 @@ mod tests {
     #[ignore]
     async fn post_limit_order() {
         // share, iid
-        let share = Share::from_str("moex_share_vtbr").unwrap();
+        let share = Share::new("moex_share_vtbr").unwrap();
         let iid = share.iid();
 
         // connect broker
@@ -2094,7 +2094,7 @@ mod tests {
     #[ignore]
     async fn post_stop_order() {
         // share, iid
-        let share = Share::from_str("moex_share_vtbr").unwrap();
+        let share = Share::new("moex_share_vtbr").unwrap();
         let iid = share.iid();
 
         // connect broker
@@ -2137,7 +2137,7 @@ mod tests {
     #[ignore]
     async fn data_stream() {
         // share, iid
-        let sber = Share::from_str("moex_share_sber").unwrap();
+        let sber = Share::new("moex_share_sber").unwrap();
 
         // connect broker
         let mut b = Tinkoff::new().await;

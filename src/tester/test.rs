@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn new() {
-        let share = Share::from_str("moex_share_sber").unwrap();
+        let share = Share::new("moex_share_sber").unwrap();
         let test = Test::new("Every", share.iid());
 
         assert_eq!(test.name(), "Every_SBER");
@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn save_load_delete() {
         // save
-        let share = Share::from_str("moex_share_sber").unwrap();
+        let share = Share::new("moex_share_sber").unwrap();
         let test = Test::new("Every", share.iid());
         Test::save(&test).unwrap();
 

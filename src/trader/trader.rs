@@ -31,7 +31,7 @@ impl Trader {
         let broker_tx = broker.get_sender();
 
         log::info!(":: Trader load shares");
-        let mut share = Share::from_str("moex_share_vtbr").unwrap();
+        let mut share = Share::new("moex_share_vtbr").unwrap();
         self.load_charts(&mut share);
         broker.subscribe_bar(&share.iid()).await.unwrap();
 

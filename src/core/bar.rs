@@ -84,6 +84,12 @@ impl Bar {
     pub fn dt(&self) -> DateTime<Utc> {
         DateTime::from_timestamp_nanos(self.ts_nanos)
     }
+    pub fn dt_local(&self) -> NaiveDateTime {
+        let utc = DateTime::from_timestamp_nanos(self.ts_nanos);
+        let local: DateTime<Local> = DateTime::from(utc);
+
+        local.naive_local()
+    }
     pub fn is_bear(&self) -> bool {
         self.o > self.c
     }
@@ -129,7 +135,7 @@ impl std::fmt::Display for Bar {
         write!(
             f,
             "Bar: dt={} o={} h={} l={} c={} v={}",
-            self.dt(),
+            self.dt_local(),
             self.o,
             self.h,
             self.l,

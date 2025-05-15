@@ -280,7 +280,7 @@ mod tests {
 
     #[test]
     fn stream() {
-        let share = Share::from_str("moex_share_sber").unwrap();
+        let share = Share::new("moex_share_sber").unwrap();
         let iid = share.iid();
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 8, 1, 10, 10, 0).unwrap();
