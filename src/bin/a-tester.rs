@@ -15,10 +15,8 @@ async fn main() {
 
     let share = Share::new("MOEX_SHARE_SBER").unwrap();
     let mut test = Test::new("Every", share.iid());
-    test.set_begin(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap());
-    test.set_end(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 10, 0).unwrap());
-    // test.set_begin(&Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap());
-    // test.set_end(&Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap());
+    test.set_begin(&Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap());
+    test.set_end(&Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap());
     let mut tester = Tester::new();
 
     let t = utils::Timer::start();

@@ -57,14 +57,14 @@ pub const MINUTES_IN_DAY: i32 = 24 * 60 * 60;
 
 pub struct Usr {}
 impl Usr {
-    /// return DateTime<Utc> from user local datetime
+    /// Return UTC datetime from user local datetime
     pub fn dt(dt: &str) -> DateTime<Utc> {
         let dt = NaiveDateTime::parse_from_str(dt, DT_FMT).unwrap();
         let dt = Local.from_local_datetime(&dt).unwrap();
 
         dt.to_utc()
     }
-    /// return DateTime<Utc> from user local date
+    /// Return UTC datetime from user local date
     pub fn date(d: &str) -> DateTime<Utc> {
         let dt = NaiveDate::parse_from_str(d, "%Y-%m-%d")
             .unwrap()

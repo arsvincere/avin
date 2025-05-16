@@ -5,16 +5,19 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-//! # AVIN - Ars Vincere
-//! ==========================================================================
-//!   __   _____   ____     _    _  ___  __   _  _____  _____   ____  _____
-//!  /__\  |___/  |___       \  /    |   | \  |  |      |___   |___/  |___
-//! |    | |  \_  ____|       \/    _|_  |  \_|  |____  |____  |  \_  |____
+//! # AVIN  -  Ars Vincere
+//! ```text
+//!                               Open source cross-platform trading system
+//!                             ,.               ,.   , .
+//!                            / |   ,-. ,-.     `|  /  . ,-. ,-. ,-. ,-. ,-.
+//!                           /~~|-. |   `-.      | /   | | | |   |-' |   |-'
+//!                         ,'   `-' '   `-'      `'    ' ' ' `-' `-' '   `-'
+//!                                       (лат. искусство побеждать)
+//! ```
 //!
-//! ============== Open source cross-platform trading system =================
-//!
-//! A great future awaits us!
+//! A great future awaits me!
 
+mod analytic;
 mod conf;
 mod core;
 mod data;
@@ -25,6 +28,7 @@ mod tinkoff;
 mod trader;
 pub mod utils;
 
+pub use analytic::*;
 pub use conf::*;
 pub use core::*;
 pub use data::*;

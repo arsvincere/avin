@@ -54,6 +54,20 @@ impl Cmd {
         files.sort();
         Ok(files)
     }
+    pub fn get_dirs(dir_path: &Path) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+        let mut dirs = Vec::new();
+        if dir_path.is_dir() {
+            for entry in std::fs::read_dir(dir_path)? {
+                let path = entry?.path();
+                if path.is_dir() {
+                    dirs.push(path.to_path_buf());
+                }
+            }
+        }
+
+        dirs.sort();
+        Ok(dirs)
+    }
 
     pub fn read(path: &Path) -> Result<String, Box<dyn Error>> {
         let mut file = File::open(&path)?;

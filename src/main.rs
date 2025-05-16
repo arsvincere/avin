@@ -15,28 +15,15 @@ use avin::*;
 async fn main() {
     log::set_logger(&LOGGER).unwrap();
     log::set_max_level(log::LevelFilter::Debug);
+    log::info!("Welcome to AVIN Trade System!");
 
-    let mut share = Share::new("moex_share_sber").unwrap();
-
-    let tf = TimeFrame::new("D");
-    let begin = Usr::date("2024-12-20");
-    let end = Usr::date("2025-01-01");
-    share.load_chart_period(&tf, &begin, &end).unwrap();
-
-    let chart = share.mut_chart(&tf).unwrap();
-    chart.features(Features::Extremum, true);
-
-    // real-time trend
-    let trend = chart.trend(&T1, 0).unwrap();
-    println!("{}", trend);
-
-    // last historical trend
-    let trend = chart.trend(&T1, 1).unwrap();
-    println!("{}", trend);
-
-    let trend = chart.trend(&T1, 2).unwrap();
-    println!("{}", trend);
-
-    let trend = chart.trend(&T1, 3).unwrap();
-    println!("{}", trend);
+    // let share = Share::new("moex_share_sber").unwrap();
+    // let tf = TimeFrame::new("1M");
+    //
+    // TrendAnalytic::analyse(&share, &tf).unwrap();
+    //
+    let shares = Share::all();
+    for i in shares.iter() {
+        println!("Share: {}", i);
+    }
 }

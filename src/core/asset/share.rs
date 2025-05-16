@@ -11,36 +11,18 @@ use std::path::PathBuf;
 
 use chrono::prelude::*;
 
+use crate::BarEvent;
+use crate::Chart;
+use crate::Cmd;
+use crate::DATA_DIR;
+use crate::TicEvent;
+use crate::TimeFrame;
 use crate::conf::DEFAULT_BARS_COUNT;
 use crate::data::Category;
 use crate::data::IID;
 use crate::data::Manager;
 
-use super::BarEvent;
-use super::Chart;
-use super::TicEvent;
-use super::TimeFrame;
-
-pub trait Asset {
-    fn iid(&self) -> &IID;
-    fn exchange(&self) -> &String;
-    fn category(&self) -> Category;
-    fn ticker(&self) -> &String;
-    fn figi(&self) -> &String;
-    fn info(&self) -> &HashMap<String, String>;
-    fn path(&self) -> PathBuf;
-
-    fn chart(&self, tf: &TimeFrame) -> Option<&Chart>;
-    fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart>;
-    fn load_chart(&mut self, tf: &TimeFrame) -> Result<&Chart, &'static str>;
-    fn load_chart_period(
-        &mut self,
-        tf: &TimeFrame,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
-    ) -> Result<&Chart, &'static str>;
-    fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart;
-}
+use super::Asset;
 
 #[derive(Debug)]
 pub struct Share {
@@ -49,6 +31,32 @@ pub struct Share {
 }
 
 impl Share {
+    pub fn all() -> Vec<Share> {
+        let mut shares: Vec<Share> = Vec::new();
+
+        // shares dir path
+        let mut dir_path = std::path::PathBuf::new();
+        dir_path.push(&DATA_DIR);
+        dir_path.push("MOEX");
+        dir_path.push("SHARE");
+
+        // shares dirs: dir name == ticker
+        let dirs = Cmd::get_dirs(&dir_path).unwrap();
+        if dirs.is_empty() {
+            log::warn!("Shares not found! Dir empty: {}", dir_path.display());
+            return shares;
+        }
+
+        // create shares from dir name (ticker)
+        for dir in dirs.iter() {
+            let ticker = Cmd::name(dir).unwrap();
+            let s = format!("MOEX_SHARE_{}", ticker);
+            let share = Share::new(&s).unwrap();
+            shares.push(share);
+        }
+
+        shares
+    }
     pub fn new(s: &str) -> Result<Share, &'static str> {
         let iid = Manager::find(s)?;
         let share = Share::from_iid(iid);

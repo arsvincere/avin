@@ -11,7 +11,7 @@ use time_unit::TimeUnit;
 
 use crate::data::MarketData;
 
-#[derive(Debug, Eq, PartialEq, Clone, Hash, Encode, Decode)]
+#[derive(Debug, Eq, PartialEq, Clone, Encode, Decode)]
 pub struct TimeFrame {
     name: &'static str,
 }
@@ -40,6 +40,7 @@ impl TimeFrame {
         ]
     }
 
+    // TODO: delete it? use only Display?
     pub fn name(&self) -> &str {
         self.name
     }
@@ -109,14 +110,14 @@ impl TimeFrame {
 }
 impl std::fmt::Display for TimeFrame {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "TimeFrame={}", self.name)
+        write!(f, "{}", self.name)
     }
 }
-// impl std::hash::Hash for TimeFrame {
-//     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-//         self.name.hash(state);
-//     }
-// }
+impl std::hash::Hash for TimeFrame {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
 
 #[cfg(test)]
 mod tests {

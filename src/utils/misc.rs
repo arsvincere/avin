@@ -58,7 +58,7 @@ impl Timer {
     }
     pub fn stop(&self, msg: &str) {
         let duration = self.start.elapsed();
-        println!("Timer '{}': {:?}", msg, duration);
+        println!("Timer {}: {:?}", msg, duration);
     }
 }
 

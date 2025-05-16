@@ -61,13 +61,12 @@ impl IID {
 
         min_price_step
     }
-
     pub fn path(&self) -> PathBuf {
         let mut p = std::path::PathBuf::new();
         p.push(&DATA_DIR);
-        p.push(&self.exchange());
+        p.push(self.exchange());
         p.push(self.category().to_string());
-        p.push(&self.ticker());
+        p.push(self.ticker());
 
         return p;
     }

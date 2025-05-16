@@ -45,8 +45,8 @@ impl<'a> Trend<'a> {
     pub fn is_bull(&self) -> bool {
         self.e2.price > self.e1.price
     }
-    pub fn period(&self) -> usize {
-        self.bars.len()
+    pub fn period(&self) -> u32 {
+        self.bars.len() as u32
     }
     pub fn abs(&self) -> f64 {
         (self.e2.price - self.e1.price).abs()
