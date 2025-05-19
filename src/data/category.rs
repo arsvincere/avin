@@ -7,28 +7,19 @@
 
 use bitcode::{Decode, Encode};
 
-#[derive(Debug, PartialEq, Encode, Decode, Clone)]
+#[derive(Debug, PartialEq, Encode, Decode, Clone, strum::Display)]
 pub enum Category {
     SHARE,
 }
 
-impl Category {
-    pub fn from(s: &str) -> Result<Category, &'static str> {
-        let s = s.to_uppercase();
-        match s.as_str() {
-            "SHARE" => Ok(Category::SHARE),
-            _ => Err("Invalid category"),
+impl From<&str> for Category {
+    fn from(value: &str) -> Self {
+        let value = value.to_uppercase();
+
+        match value.as_str() {
+            "SHARE" => Category::SHARE,
+            _ => panic!("Invalid category: {}", value),
         }
-    }
-    pub fn to_string(&self) -> String {
-        match self {
-            Category::SHARE => String::from("SHARE"),
-        }
-    }
-}
-impl std::fmt::Display for Category {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Category={}", self.to_string())
     }
 }
 

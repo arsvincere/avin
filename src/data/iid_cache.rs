@@ -35,17 +35,12 @@ impl IidCache {
         bitcode::encode(self)
     }
 
-    pub fn find(
-        exchange: &str,
-        category: &Category,
-        ticker: &str,
-    ) -> Option<IID> {
+    pub fn find(exchange: &str, category: &str, ticker: &str) -> Option<IID> {
         assert_eq!(exchange, "MOEX");
-        assert_eq!(category, &Category::SHARE);
+        assert_eq!(category, "SHARE");
 
         let source = Source::TINKOFF;
-        let category = Category::SHARE;
-        let cache = IidCache::load(&source, &category).unwrap();
+        let cache = IidCache::load(&source, &Category::SHARE).unwrap();
 
         for i in cache.iids {
             if i.exchange() == exchange

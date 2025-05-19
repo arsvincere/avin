@@ -16,6 +16,17 @@ pub struct TimeFrame {
     name: &'static str,
 }
 impl TimeFrame {
+    pub fn all() -> Vec<TimeFrame> {
+        vec![
+            TimeFrame::new("1M"),
+            TimeFrame::new("5M"),
+            TimeFrame::new("10M"),
+            TimeFrame::new("1H"),
+            TimeFrame::new("D"),
+            TimeFrame::new("W"),
+            TimeFrame::new("M"),
+        ]
+    }
     pub fn new(name: &str) -> Self {
         match name {
             "1M" => Self { name: "1M" },
@@ -27,17 +38,6 @@ impl TimeFrame {
             "M" => Self { name: "M" },
             _ => panic!("Invalid TimeFrame: {}", name),
         }
-    }
-    pub fn all() -> Vec<TimeFrame> {
-        vec![
-            TimeFrame::new("1M"),
-            TimeFrame::new("5M"),
-            TimeFrame::new("10M"),
-            TimeFrame::new("1H"),
-            TimeFrame::new("D"),
-            TimeFrame::new("W"),
-            TimeFrame::new("M"),
-        ]
     }
 
     // TODO: delete it? use only Display?

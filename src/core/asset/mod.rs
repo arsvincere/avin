@@ -6,7 +6,9 @@
  ****************************************************************************/
 
 mod asset;
+mod asset_list;
 mod share;
 
 pub use asset::Asset;
+pub use asset_list::AssetList;
 pub use share::Share;

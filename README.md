@@ -1,9 +1,11 @@
 # AVIN - Open source cross-platform trading system
+[![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=lines)](https://github.com/arsvincere/avin-rs)
+[![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=files)](https://github.com/arsvincere/avin-rs)
 
 ![image](https://github.com/arsvincere/avin-rs/blob/master/res/splash/splash.png)
 
 AVIN (от лат. Ars Vincere  -  искусство побеждать)  —  это кросплатформенная
-трейдинговая система, написана на Rust, с GUI на Iced.
+трейдинговая система, написана на Rust, с GUI на egui/eframe.
 
 ## Модули и возможности:
 

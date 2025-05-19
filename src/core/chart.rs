@@ -555,7 +555,7 @@ mod tests {
     fn new() {
         let mut info = HashMap::new();
         info.insert("exchange".to_string(), "MOEX".to_string());
-        info.insert("category".to_string(), "Share".to_string());
+        info.insert("category".to_string(), "SHARE".to_string());
         info.insert("ticker".to_string(), "SBER".to_string());
         info.insert("figi".to_string(), "BBG004730N88".to_string());
         let iid = IID::new(info);
@@ -592,7 +592,7 @@ mod tests {
     fn load() {
         let mut info = HashMap::new();
         info.insert("exchange".to_string(), "MOEX".to_string());
-        info.insert("category".to_string(), "Share".to_string());
+        info.insert("category".to_string(), "SHARE".to_string());
         info.insert("ticker".to_string(), "SBER".to_string());
         info.insert("figi".to_string(), "BBG004730N88".to_string());
         let iid = IID::new(info);

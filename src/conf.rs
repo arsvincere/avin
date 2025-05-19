@@ -12,6 +12,7 @@ use chrono::{
 
 use log::{Metadata, Record};
 
+// TODO: move to separate mod
 // log
 pub static LOGGER: ConsoleLogger = ConsoleLogger;
 pub struct ConsoleLogger;
@@ -35,11 +36,15 @@ impl log::Log for ConsoleLogger {
     fn flush(&self) {}
 }
 
+// GUI
+pub const APP_ID: &str = "com.arsvincere.AVIN";
+
 // Settings
 pub const DEFAULT_BARS_COUNT: i32 = 5000;
 pub const DEFAULT_COMMISSION: f64 = 0.0005;
 
 // Dir
+pub const ASSET_DIR: &str = "/home/alex/avin/usr/asset";
 pub const CACHE_DIR: &str = "/home/alex/avin/usr/cache";
 pub const DATA_DIR: &str = "/home/alex/avin/usr/data";
 pub const TEST_DIR: &str = "/home/alex/avin/usr/test";
@@ -55,6 +60,7 @@ pub const DAY_END: NaiveTime = NaiveTime::from_hms_opt(23, 59, 59).unwrap();
 pub const MSK_TIME_DIF: TimeDelta = TimeDelta::hours(3);
 pub const MINUTES_IN_DAY: i32 = 24 * 60 * 60;
 
+// TODO: move to utils
 pub struct Usr {}
 impl Usr {
     /// Return UTC datetime from user local datetime

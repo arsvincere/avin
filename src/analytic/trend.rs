@@ -11,7 +11,6 @@ use polars::df;
 use polars::frame::DataFrame;
 use strum::IntoEnumIterator;
 
-use crate::Asset;
 use crate::Chart;
 use crate::Features;
 use crate::Share;

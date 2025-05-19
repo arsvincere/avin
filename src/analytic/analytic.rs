@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use polars::frame::DataFrame;
 
-use crate::{Asset, Cmd, Share, TimeFrame};
+use crate::{Cmd, Share, TimeFrame};
 
 pub trait Analytic {
     fn name() -> &'static str;

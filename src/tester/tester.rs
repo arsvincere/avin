@@ -8,7 +8,6 @@
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::Action;
-use crate::Asset;
 use crate::Event;
 use crate::Share;
 use crate::Strategy;

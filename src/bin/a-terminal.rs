@@ -5,110 +5,78 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use iced::widget::{
-    Column, button, column, container, row, scrollable, text, text_input,
-};
-use iced::{Alignment, Element, Length, Padding, Theme};
+#![warn(clippy::all, rust_2018_idioms)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-fn main() -> iced::Result {
-    iced::application("AVIN - Terminal", Terminal::update, Terminal::view)
-        .theme(Terminal::theme)
-        .centered()
-        .run()
-}
+// When compiling natively:
+#[cfg(not(target_arch = "wasm32"))]
+fn main() -> eframe::Result {
+    // env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
 
-struct Terminal {
-    // asset: impl Asset,
-    grocery_items: Vec<String>,
-    input_value: String,
-}
-
-impl Default for Terminal {
-    fn default() -> Self {
-        todo!();
-        // let asset = Asset::from_str("moex_share_sber").unwrap();
-        // Self {
-        //     // asset,
-        //     grocery_items: vec![
-        //         "Eggs".to_owned(),
-        //         "Milk".to_owned(),
-        //         "Flour".to_owned(),
-        //     ],
-        //     input_value: String::default(),
-        // }
-    }
-}
-
-#[derive(Debug, Clone)]
-enum Message {
-    InputValue(String),
-    Submitted,
-    DeleteItem(usize),
-}
-
-impl Terminal {
-    fn view(&self) -> Element<Message> {
-        container(
-            column!(
-                Self::items_list_view(&self.grocery_items),
-                row!(
-                    text_input("Input grocery item", &self.input_value)
-                        .on_input(Message::InputValue)
-                        .on_submit(Message::Submitted),
-                    button("Submit").on_press(Message::Submitted),
+    let native_options = eframe::NativeOptions {
+        viewport: eframe::egui::ViewportBuilder::default()
+            .with_inner_size([400.0, 300.0])
+            .with_min_inner_size([300.0, 220.0])
+            .with_icon(
+                // NOTE: Adding an icon is optional
+                eframe::icon_data::from_png_bytes(
+                    &include_bytes!("../../res/assets/icon-256.png")[..],
                 )
-                .spacing(30)
-                .padding(Padding::from(30)),
-            )
-            .align_x(Alignment::Center),
-        )
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .align_x(Alignment::Center)
-        .align_y(Alignment::Center)
-        .into()
-    }
-
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::InputValue(value) => self.input_value = value,
-            Message::Submitted => {
-                self.grocery_items.push(self.input_value.clone());
-                self.input_value = String::default();
-            }
-            Message::DeleteItem(item) => {
-                self.grocery_items.remove(item);
-            }
-        }
-    }
-
-    fn theme(&self) -> Theme {
-        Theme::KanagawaDragon
-    }
-
-    fn items_list_view(items: &[String]) -> Element<Message> {
-        let mut column = Column::new()
-            .spacing(20)
-            .align_x(Alignment::Center)
-            .width(Length::Fill);
-
-        for (index, item) in items.iter().enumerate() {
-            column = column.push(Self::grocery_item(index, item));
-        }
-
-        scrollable(container(column))
-            .width(250.0)
-            .height(300)
-            .into()
-    }
-
-    fn grocery_item(index: usize, value: &str) -> Element<Message> {
-        row![
-            text(value),
-            button("Delete").on_press(Message::DeleteItem(index))
-        ]
-        .align_y(Alignment::Center)
-        .spacing(30)
-        .into()
-    }
+                .expect("Failed to load icon"),
+            ),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "eframe template",
+        native_options,
+        Box::new(|cc| Ok(Box::new(avin::gui::Terminal::new(cc)))),
+    )
 }
+
+// // When compiling to web using trunk:
+// #[cfg(target_arch = "wasm32")]
+// fn main() {
+//     use eframe::wasm_bindgen::JsCast as _;
+//
+//     // Redirect `log` message to `console.log` and friends:
+//     eframe::WebLogger::init(log::LevelFilter::Debug).ok();
+//
+//     let web_options = eframe::WebOptions::default();
+//
+//     wasm_bindgen_futures::spawn_local(async {
+//         let document = web_sys::window()
+//             .expect("No window")
+//             .document()
+//             .expect("No document");
+//
+//         let canvas = document
+//             .get_element_by_id("the_canvas_id")
+//             .expect("Failed to find the_canvas_id")
+//             .dyn_into::<web_sys::HtmlCanvasElement>()
+//             .expect("the_canvas_id was not a HtmlCanvasElement");
+//
+//         let start_result = eframe::WebRunner::new()
+//             .start(
+//                 canvas,
+//                 web_options,
+//                 Box::new(|cc| Ok(Box::new(avin::TemplateApp::new(cc)))),
+//             )
+//             .await;
+//
+//         // Remove the loading text and spinner:
+//         if let Some(loading_text) = document.get_element_by_id("loading_text")
+//         {
+//             match start_result {
+//                 Ok(_) => {
+//                     loading_text.remove();
+//                 }
+//                 Err(e) => {
+//                     loading_text.set_inner_html(
+//                         "<p> The app has crashed. See the developer console for details. </p>",
+//                     );
+//                     panic!("Failed to start eframe: {e:?}");
+//                 }
+//             }
+//         }
+//     });
+// }

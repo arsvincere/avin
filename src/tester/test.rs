@@ -123,7 +123,7 @@ impl Test {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Asset, Share};
+    use crate::Share;
 
     #[test]
     fn new() {

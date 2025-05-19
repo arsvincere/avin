@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::{Asset, Event, Share};
+use crate::core::{Event, Share};
 use crate::strategy::Strategy;
 
 pub struct Work {

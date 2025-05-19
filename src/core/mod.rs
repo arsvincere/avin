@@ -25,7 +25,7 @@ mod work;
 
 pub use account::Account;
 pub use action::{Action, PostOrderAction};
-pub use asset::{Asset, Share};
+pub use asset::*;
 pub use bar::Bar;
 pub use chart::{Chart, Features};
 pub use direction::{Direction, Direction::Buy, Direction::Sell};

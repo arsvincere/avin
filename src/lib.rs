@@ -15,7 +15,7 @@
 //!                                       (лат. искусство побеждать)
 //! ```
 //!
-//! A great future awaits me!
+//! Coming soon...
 
 mod analytic;
 mod conf;
@@ -26,6 +26,8 @@ mod strategy;
 mod tester;
 mod tinkoff;
 mod trader;
+
+pub mod gui;
 pub mod utils;
 
 pub use analytic::*;

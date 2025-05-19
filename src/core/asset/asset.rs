@@ -5,36 +5,116 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use std::collections::HashMap;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
-use chrono::prelude::*;
+use chrono::{DateTime, Utc};
 
-use crate::data::Category;
-use crate::data::IID;
+use crate::{Chart, IID, Manager, TimeFrame};
 
-use crate::Chart;
-use crate::TimeFrame;
+use super::Share;
 
-// TODO: make it enum, with Share, Bond, Future...
-// and call functions through match
-pub trait Asset {
-    fn iid(&self) -> &IID;
-    fn exchange(&self) -> &String;
-    fn category(&self) -> Category;
-    fn ticker(&self) -> &String;
-    fn figi(&self) -> &String;
-    fn info(&self) -> &HashMap<String, String>;
-    fn path(&self) -> PathBuf;
+#[derive(Debug)]
+pub enum Asset {
+    SHARE(Share),
+}
+impl Asset {
+    // build
+    pub fn from_iid(iid: IID) -> Self {
+        assert!(iid.category() == "SHARE");
+        let share = Share::from_iid(iid);
 
-    fn chart(&self, tf: &TimeFrame) -> Option<&Chart>;
-    fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart>;
-    fn load_chart(&mut self, tf: &TimeFrame) -> Result<&Chart, &'static str>;
-    fn load_chart_period(
+        Asset::SHARE(share)
+    }
+    pub fn from_csv(line: &str) -> Result<Self, String> {
+        // line example: 'MOEX;SHARE;SBER;'
+        let parts: Vec<&str> = line.split(';').collect();
+        let exchange = parts.get(0).expect("invalid line");
+        let category = parts.get(1).expect("invalid line");
+        let ticker = parts.get(2).expect("invalid line");
+
+        let query = format!("{}_{}_{}", exchange, category, ticker);
+        let result = Manager::find(&query);
+
+        match result {
+            Ok(iid) => {
+                let asset = Asset::from_iid(iid);
+                return Ok(asset);
+            }
+            Err(why) => {
+                let msg = format!("fail create from csv {}, {}", line, why);
+                return Err(msg);
+            }
+        }
+    }
+    // identification
+    pub fn iid(&self) -> &IID {
+        match self {
+            Self::SHARE(share) => share.iid(),
+        }
+    }
+    pub fn exchange(&self) -> &String {
+        match self {
+            Self::SHARE(share) => share.exchange(),
+        }
+    }
+    pub fn category(&self) -> &String {
+        match self {
+            Self::SHARE(share) => share.category(),
+        }
+    }
+    pub fn ticker(&self) -> &String {
+        match self {
+            Self::SHARE(share) => share.ticker(),
+        }
+    }
+    pub fn figi(&self) -> &String {
+        match self {
+            Self::SHARE(share) => share.figi(),
+        }
+    }
+    pub fn info(&self) -> &HashMap<String, String> {
+        match self {
+            Self::SHARE(share) => share.info(),
+        }
+    }
+    pub fn path(&self) -> PathBuf {
+        match self {
+            Self::SHARE(share) => share.path(),
+        }
+    }
+
+    // chart
+    pub fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
+        match self {
+            Self::SHARE(share) => share.chart(tf),
+        }
+    }
+    pub fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
+        match self {
+            Self::SHARE(share) => share.mut_chart(tf),
+        }
+    }
+    pub fn load_chart(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Result<&Chart, &'static str> {
+        match self {
+            Self::SHARE(share) => share.load_chart(tf),
+        }
+    }
+    pub fn load_chart_period(
         &mut self,
         tf: &TimeFrame,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
-    ) -> Result<&Chart, &'static str>;
-    fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart;
+    ) -> Result<&Chart, &'static str> {
+        match self {
+            Self::SHARE(share) => share.load_chart_period(tf, begin, end),
+        }
+    }
+    pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
+        match self {
+            Self::SHARE(share) => share.load_chart_empty(tf),
+        }
+    }
 }

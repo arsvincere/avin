@@ -7,7 +7,6 @@
 
 use crate::Cmd;
 use crate::conf::{DT_FMT, MSK_TIME_DIF};
-use crate::data::Category;
 use crate::data::IID;
 use crate::data::market_data::MarketData;
 use chrono::prelude::*;
@@ -200,8 +199,8 @@ impl SourceMoex {
     ) -> Result<String, &'static str> {
         let mut url = self.service.clone();
 
-        assert_eq!(iid.category(), Category::SHARE);
-        if iid.category() == Category::SHARE {
+        assert_eq!(iid.category(), "SHARE");
+        if iid.category() == "SHARE" {
             url.push_str(
                 "/engines/stock/markets/shares/boards/tqbr/securities/",
             );

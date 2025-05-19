@@ -5,7 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::core::Asset;
 use crate::data::category::Category;
 use crate::data::data_file_bar::DataFileBar;
 use crate::data::error::DataError;
@@ -67,7 +66,6 @@ impl Manager {
         // TODO: пока работает только тип инструмента SHARE
         let category = parts[1].to_uppercase();
         assert_eq!(category, "SHARE");
-        let category = Category::SHARE;
 
         let ticker = parts[2].to_uppercase();
 

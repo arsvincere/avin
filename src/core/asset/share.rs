@@ -18,11 +18,8 @@ use crate::DATA_DIR;
 use crate::TicEvent;
 use crate::TimeFrame;
 use crate::conf::DEFAULT_BARS_COUNT;
-use crate::data::Category;
 use crate::data::IID;
 use crate::data::Manager;
-
-use super::Asset;
 
 #[derive(Debug)]
 pub struct Share {
@@ -64,7 +61,7 @@ impl Share {
         Ok(share)
     }
     pub fn from_iid(iid: IID) -> Self {
-        assert!(iid.category() == Category::SHARE);
+        assert!(iid.category() == "SHARE");
 
         Self {
             iid,
@@ -77,54 +74,47 @@ impl Share {
 
         share
     }
-    // pub fn to_string(&self) -> String {
-    //     self.iid.to_string()
-    // }
 
-    pub fn bar_event(&mut self, e: BarEvent) {
-        let chart = self.charts.get_mut(&e.tf).unwrap();
-        chart.swallow_bar(e.bar);
-    }
-    pub fn tic_event(&mut self, _e: TicEvent) {
-        todo!();
-    }
-}
-impl Asset for Share {
-    fn iid(&self) -> &IID {
+    // identification
+    pub fn iid(&self) -> &IID {
         &self.iid
     }
-    fn exchange(&self) -> &String {
+    pub fn exchange(&self) -> &String {
         &self.iid.exchange()
     }
-    fn category(&self) -> Category {
+    pub fn category(&self) -> &String {
         self.iid.category()
     }
-    fn ticker(&self) -> &String {
+    pub fn ticker(&self) -> &String {
         &self.iid.ticker()
     }
-    fn figi(&self) -> &String {
+    pub fn figi(&self) -> &String {
         &self.iid.figi()
     }
-    fn info(&self) -> &HashMap<String, String> {
+    pub fn info(&self) -> &HashMap<String, String> {
         &self.iid.info()
     }
-    fn path(&self) -> PathBuf {
+    pub fn path(&self) -> PathBuf {
         self.iid.path()
     }
 
-    fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
+    // chart
+    pub fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
         self.charts.get(tf)
     }
-    fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
+    pub fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
         self.charts.get_mut(tf)
     }
-    fn load_chart(&mut self, tf: &TimeFrame) -> Result<&Chart, &'static str> {
+    pub fn load_chart(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Result<&Chart, &'static str> {
         let end = Utc::now();
         let begin = end - tf.timedelta() * DEFAULT_BARS_COUNT;
 
         return self.load_chart_period(tf, &begin, &end);
     }
-    fn load_chart_period(
+    pub fn load_chart_period(
         &mut self,
         tf: &TimeFrame,
         begin: &DateTime<Utc>,
@@ -135,11 +125,20 @@ impl Asset for Share {
 
         Ok(self.charts[tf].as_ref())
     }
-    fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
+    pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
         let chart = Chart::empty(&self.iid, &tf);
         self.charts.insert(tf.clone(), chart);
 
         self.charts[tf].as_ref()
+    }
+
+    // events
+    pub fn bar_event(&mut self, e: BarEvent) {
+        let chart = self.charts.get_mut(&e.tf).unwrap();
+        chart.swallow_bar(e.bar);
+    }
+    pub fn tic_event(&mut self, _e: TicEvent) {
+        todo!();
     }
 }
 impl std::fmt::Display for Share {
@@ -167,7 +166,7 @@ mod tests {
     fn share_from_str() {
         let share = Share::new("moex_share_sber").unwrap();
         assert_eq!(share.exchange(), "MOEX");
-        assert_eq!(share.category(), Category::SHARE);
+        assert_eq!(share.category(), "SHARE");
         assert_eq!(share.ticker(), "SBER");
         assert_eq!(share.figi(), "BBG004730N88");
     }

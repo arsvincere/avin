@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::core::{Action, Asset, Event, Share, TimeFrame, TradeList};
+use crate::core::{Action, Event, Share, TimeFrame, TradeList};
 use crate::strategy::Strategy;
 use crate::{Tinkoff, Work};
 

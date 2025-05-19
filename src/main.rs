@@ -17,13 +17,8 @@ async fn main() {
     log::set_max_level(log::LevelFilter::Debug);
     log::info!("Welcome to AVIN Trade System!");
 
-    // let share = Share::new("moex_share_sber").unwrap();
-    // let tf = TimeFrame::new("1M");
-    //
-    // TrendAnalytic::analyse(&share, &tf).unwrap();
-    //
-    let shares = Share::all();
-    for i in shares.iter() {
-        println!("Share: {}", i);
-    }
+    let csv = "MOEX;SHARE;SBER;\n\
+               MOEX;SHARE;GAZP;";
+
+    println!("{}", csv);
 }
