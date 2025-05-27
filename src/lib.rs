@@ -40,3 +40,4 @@ pub use tester::*;
 pub use tinkoff::*;
 pub use trader::*;
 pub use utils::Cmd;
+pub use utils::LOGGER;

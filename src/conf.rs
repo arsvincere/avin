@@ -10,37 +10,54 @@ use chrono::{
     TimeZone, Utc,
 };
 
-use log::{Metadata, Record};
-
-// TODO: move to separate mod
-// log
-pub static LOGGER: ConsoleLogger = ConsoleLogger;
-pub struct ConsoleLogger;
-impl log::Log for ConsoleLogger {
-    fn enabled(&self, _metadata: &Metadata) -> bool {
-        // metadata.level() <= log::Level::Info
-        true
-    }
-
-    fn log(&self, record: &Record) {
-        if self.enabled(record.metadata()) {
-            println!(
-                "{} [{}] {}",
-                Local::now().format("%H:%M:%S"),
-                record.level(),
-                record.args()
-            );
-        }
-    }
-
-    fn flush(&self) {}
-}
-
 // GUI
 pub const APP_ID: &str = "com.arsvincere.AVIN";
 
-// Settings
+// Chart
 pub const DEFAULT_BARS_COUNT: i32 = 5000;
+pub const CROSS: &str = "#393836";
+pub const BEAR: &str = "#FF5D62";
+pub const BULL: &str = "#98BB6C";
+pub const UNDEFINE: &str = "#FFFFFF";
+
+// BG = QtGui.QColor(Color.dragonBlack0)  # #0d0c0c
+// BG_FOOTER = QtGui.QColor(Color.dragonBlack5)
+// CROSS = QtGui.QColor(Color.dragonBlack6)
+//
+// BULL_BEHIND = QtGui.QColor("#98BB6C")
+// BEAR_BEHIND = QtGui.QColor("#FF5D62")
+// UNDEFINE_BEHIND = QtGui.QColor("#FFFFFF")
+//
+// VOL_BEAR = QtGui.QColor("#33FF5D62")
+// VOL_BULL = QtGui.QColor("#3398BB6C")
+// VOL_UNDEFINE = QtGui.QColor("#33FFFFFF")
+// VOL_FRAME = QtGui.QColor(Color.dragonBlack1)
+//
+// # Trade
+// STOP = QtGui.QColor("#c84053")
+// TAKE = QtGui.QColor("#6f894e")
+// OPEN = QtGui.QColor("#8a8980")
+// TRADE_WIN = QtGui.QColor("#00AA00")
+// TRADE_LOSS = QtGui.QColor("#AA0000")
+// TRADE_UNDEFINE = QtGui.QColor("#888888")
+//
+// # Extremum
+// TREND_T1 = QtGui.QColor("#FFFFFF")
+// TREND_T2 = QtGui.QColor("#658594")
+// TREND_T3 = QtGui.QColor("#7E9CD8")  # #00FFFF
+// TREND_T4 = QtGui.QColor("#957FB8")
+// TREND_T5 = QtGui.QColor("#DCA561")
+// VAWE_BEAR = QtGui.QColor("#AA0000")
+// VAWE_BULL = QtGui.QColor("#00AA00")
+// INSIDE_BG = QtGui.QColor("#000000")
+// OUTSIDE_BG = QtGui.QColor("#FFFFFF")
+//
+// # Posterior
+// POSTERIOR_BULL = QtGui.QColor("#98BB6C")
+// POSTERIOR_BEAR = QtGui.QColor("#FF5D62")
+// POSTERIOR_NOW = QtGui.QColor("#848388")
+
+// Settings
 pub const DEFAULT_COMMISSION: f64 = 0.0005;
 
 // Dir

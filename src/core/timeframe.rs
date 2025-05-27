@@ -7,68 +7,31 @@
 
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Timelike};
+use strum::EnumIter;
 use time_unit::TimeUnit;
 
 use crate::data::MarketData;
 
-#[derive(Debug, Eq, PartialEq, Clone, Encode, Decode)]
-pub struct TimeFrame {
-    name: &'static str,
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Encode, Decode, EnumIter)]
+pub enum TimeFrame {
+    M1,
+    M10,
+    H1,
+    Day,
+    Week,
+    Month,
 }
 impl TimeFrame {
     pub fn all() -> Vec<TimeFrame> {
         vec![
-            TimeFrame::new("1M"),
-            TimeFrame::new("5M"),
-            TimeFrame::new("10M"),
-            TimeFrame::new("1H"),
-            TimeFrame::new("D"),
-            TimeFrame::new("W"),
-            TimeFrame::new("M"),
+            TimeFrame::M1,
+            TimeFrame::M10,
+            TimeFrame::H1,
+            TimeFrame::Day,
+            TimeFrame::Week,
+            TimeFrame::Month,
         ]
     }
-    pub fn new(name: &str) -> Self {
-        match name {
-            "1M" => Self { name: "1M" },
-            "5M" => Self { name: "5M" },
-            "10M" => Self { name: "10M" },
-            "1H" => Self { name: "1H" },
-            "D" => Self { name: "D" },
-            "W" => Self { name: "W" },
-            "M" => Self { name: "M" },
-            _ => panic!("Invalid TimeFrame: {}", name),
-        }
-    }
-
-    // TODO: delete it? use only Display?
-    pub fn name(&self) -> &str {
-        self.name
-    }
-    pub fn timedelta(&self) -> TimeDelta {
-        match self.name {
-            "1M" => TimeDelta::new(60, 0).unwrap(),
-            "5M" => TimeDelta::new(5 * 60, 0).unwrap(),
-            "10M" => TimeDelta::new(10 * 60, 0).unwrap(),
-            "1H" => TimeDelta::new(60 * 60, 0).unwrap(),
-            "D" => TimeDelta::new(24 * 60 * 60, 0).unwrap(),
-            "W" => TimeDelta::new(7 * 24 * 60 * 60, 0).unwrap(),
-            "M" => TimeDelta::new(31 * 24 * 60 * 60, 0).unwrap(),
-            _ => panic!("Invalid TimeFrame: {}", self.name),
-        }
-    }
-    pub fn to_market_data(&self) -> MarketData {
-        match self.name {
-            "1M" => MarketData::BAR_1M,
-            "5M" => MarketData::BAR_5M,
-            "10M" => MarketData::BAR_10M,
-            "1H" => MarketData::BAR_1H,
-            "D" => MarketData::BAR_D,
-            "W" => MarketData::BAR_W,
-            "M" => MarketData::BAR_M,
-            _ => panic!("Invalid TimeFrame: {}", self.name),
-        }
-    }
-
     pub fn next_ts(ts: i64, tf: &str) -> i64 {
         let dt = DateTime::from_timestamp_nanos(ts);
         let dt = dt.with_nanosecond(0).unwrap();
@@ -107,15 +70,54 @@ impl TimeFrame {
             other => todo!("TimeFrame::next_ts({}, {})", ts, other),
         }
     }
+
+    pub fn timedelta(&self) -> TimeDelta {
+        match self {
+            Self::M1 => TimeDelta::new(60, 0).unwrap(),
+            // "5M" => TimeDelta::new(5 * 60, 0).unwrap(),
+            Self::M10 => TimeDelta::new(10 * 60, 0).unwrap(),
+            Self::H1 => TimeDelta::new(60 * 60, 0).unwrap(),
+            Self::Day => TimeDelta::new(24 * 60 * 60, 0).unwrap(),
+            Self::Week => TimeDelta::new(7 * 24 * 60 * 60, 0).unwrap(),
+            Self::Month => TimeDelta::new(31 * 24 * 60 * 60, 0).unwrap(),
+        }
+    }
+    pub fn nanos(&self) -> i64 {
+        let nanos = match self {
+            Self::M1 => TimeUnit::Minutes.get_unit_nanoseconds(),
+            // "5M" => TimeUnit::Minutes.get_unit_nanoseconds() * 5,
+            Self::M10 => TimeUnit::Minutes.get_unit_nanoseconds() * 10,
+            Self::H1 => TimeUnit::Hours.get_unit_nanoseconds(),
+            Self::Day => TimeUnit::Days.get_unit_nanoseconds(),
+            Self::Week => TimeUnit::Weeks.get_unit_nanoseconds(),
+            Self::Month => TimeUnit::Days.get_unit_nanoseconds() * 31,
+        };
+
+        nanos as i64
+    }
+    pub fn market_data(&self) -> MarketData {
+        match self {
+            Self::M1 => MarketData::BAR_1M,
+            // "5M" => MarketData::BAR_5M,
+            Self::M10 => MarketData::BAR_10M,
+            Self::H1 => MarketData::BAR_1H,
+            Self::Day => MarketData::BAR_D,
+            Self::Week => MarketData::BAR_W,
+            Self::Month => MarketData::BAR_M,
+        }
+    }
 }
 impl std::fmt::Display for TimeFrame {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.name)
-    }
-}
-impl std::hash::Hash for TimeFrame {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
+        match self {
+            Self::M1 => write!(f, "1M"),
+            // Self::M5 => write!(f, "5M"),
+            Self::M10 => write!(f, "10M"),
+            Self::H1 => write!(f, "1H"),
+            Self::Day => write!(f, "D"),
+            Self::Week => write!(f, "W"),
+            Self::Month => write!(f, "M"),
+        }
     }
 }
 
@@ -125,22 +127,13 @@ mod tests {
     use chrono::{DateTime, TimeZone, Utc};
 
     #[test]
-    #[should_panic]
-    fn invalid_timeframe() {
-        TimeFrame::new("7M");
-    }
-    #[test]
     fn to_market_data() {
-        assert_eq!(TimeFrame::new("1M").to_market_data(), MarketData::BAR_1M);
-        assert_eq!(TimeFrame::new("5M").to_market_data(), MarketData::BAR_5M);
-        assert_eq!(
-            TimeFrame::new("10M").to_market_data(),
-            MarketData::BAR_10M
-        );
-        assert_eq!(TimeFrame::new("1H").to_market_data(), MarketData::BAR_1H);
-        assert_eq!(TimeFrame::new("D").to_market_data(), MarketData::BAR_D);
-        assert_eq!(TimeFrame::new("W").to_market_data(), MarketData::BAR_W);
-        assert_eq!(TimeFrame::new("M").to_market_data(), MarketData::BAR_M);
+        assert_eq!(TimeFrame::M1.market_data(), MarketData::BAR_1M);
+        assert_eq!(TimeFrame::M10.market_data(), MarketData::BAR_10M);
+        assert_eq!(TimeFrame::H1.market_data(), MarketData::BAR_1H);
+        assert_eq!(TimeFrame::Day.market_data(), MarketData::BAR_D);
+        assert_eq!(TimeFrame::Week.market_data(), MarketData::BAR_W);
+        assert_eq!(TimeFrame::Month.market_data(), MarketData::BAR_M);
     }
     #[test]
     fn next_ts() {

@@ -16,7 +16,7 @@ use crate::{
     Event, IID, LimitOrder, MarketOrder, Order, OrderEvent, PostOrderAction,
     PostedLimitOrder, PostedMarketOrder, PostedStopOrder, StopOrder,
     StopOrderKind::{StopLoss, TakeProfit},
-    Transaction, TriggeredStopOrder,
+    TimeFrame, Transaction, TriggeredStopOrder,
 };
 
 use super::{DataStream, Test};
@@ -105,7 +105,7 @@ impl VirtualBroker {
                     // будет сразу исполнен - что будет ошибкой. Поэтому
                     // тут проверяется таймфрейм бар эвента и current_bar
                     // обновляется только на 1М
-                    if e.tf.name() == "1M" {
+                    if e.tf == TimeFrame::M1 {
                         self.current_bar = e.bar;
                         self.need_check_orders = true;
                     } else {

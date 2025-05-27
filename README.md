@@ -1,6 +1,11 @@
 # AVIN - Open source cross-platform trading system
-[![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=lines)](https://github.com/arsvincere/avin-rs)
-[![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=files)](https://github.com/arsvincere/avin-rs)
+<!-- [![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=lines)](https://github.com/arsvincere/avin-rs) -->
+<!-- [![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=files)](https://github.com/arsvincere/avin-rs) -->
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
+[![Size](https://img.shields.io/crates/size/avin)]()
+[![lines](https://sloc.xyz/github/arsvincere/avin-rs/)]()
+[![Documentation](https://docs.rs/avin/badge.svg)](https://docs.rs/avin/)
+[![Downloads crates.io](https://img.shields.io/crates/d/avin?label=downloads%20%28crates.io%29)](https://crates.io/crates/avin)
 
 ![image](https://github.com/arsvincere/avin-rs/blob/master/res/splash/splash.png)
 

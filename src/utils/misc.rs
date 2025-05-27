@@ -23,6 +23,10 @@ pub fn round(num: f64, precision: u8) -> f64 {
     }
 }
 pub fn round_price(price: f64, step: f64) -> f64 {
+    // сохраняем только 9 знаков максимум
+    let price = round(price, 9);
+
+    // теперь берем предварительно округленную дробную часть
     let frac = price % step;
 
     // если мусорная часть меньше половины шага цены -> trunc

@@ -11,7 +11,7 @@ use chrono::prelude::*;
 use polars::frame::DataFrame;
 use std::error::Error;
 
-#[derive(Debug, PartialEq, Encode, Decode, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
 pub struct Bar {
     pub ts_nanos: i64,
     pub o: f64,

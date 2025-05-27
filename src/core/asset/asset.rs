@@ -89,9 +89,9 @@ impl Asset {
             Self::SHARE(share) => share.chart(tf),
         }
     }
-    pub fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
+    pub fn chart_mut(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
         match self {
-            Self::SHARE(share) => share.mut_chart(tf),
+            Self::SHARE(share) => share.chart_mut(tf),
         }
     }
     pub fn load_chart(
@@ -100,6 +100,14 @@ impl Asset {
     ) -> Result<&Chart, &'static str> {
         match self {
             Self::SHARE(share) => share.load_chart(tf),
+        }
+    }
+    pub fn load_chart_mut(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Result<&mut Chart, &'static str> {
+        match self {
+            Self::SHARE(share) => share.load_chart_mut(tf),
         }
     }
     pub fn load_chart_period(

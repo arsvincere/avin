@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use crate::utils;
+
 #[derive(Debug)]
 pub struct Range {
     pub from: f64,
@@ -49,7 +51,9 @@ impl Range {
         let mn = self.min();
         let mx = self.max();
 
-        (mx - mn) / mx * 100.0
+        let value = (mx - mn) / mx * 100.0;
+
+        utils::round(value, 2)
     }
     /// delta
     pub fn delta(&self) -> f64 {
@@ -61,7 +65,9 @@ impl Range {
     }
     /// percent delta
     pub fn delta_p(&self) -> f64 {
-        (self.till - self.from) / self.from * 100.0
+        let value = (self.till - self.from) / self.from * 100.0;
+
+        utils::round(value, 2)
     }
 
     pub fn new(from: f64, till: f64) -> Self {

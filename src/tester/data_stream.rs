@@ -14,7 +14,7 @@ pub struct DataStream {
     pub iid: IID,
     bars_1m: VecDeque<Bar>,
     queue: VecDeque<Event>,
-    bar_5m: Option<Bar>,
+    // bar_5m: Option<Bar>,
     bar_10m: Option<Bar>,
     bar_1h: Option<Bar>,
     bar_d: Option<Bar>,
@@ -32,7 +32,7 @@ impl DataStream {
             iid: iid.clone(),
             bars_1m,
             queue: VecDeque::new(),
-            bar_5m: None,
+            // bar_5m: None,
             bar_10m: None,
             bar_1h: None,
             bar_d: None,
@@ -49,7 +49,6 @@ impl DataStream {
         // Иначе: достать 1М бар
         if let Some(bar) = self.bars_1m.pop_front() {
             self.create_event_1m(bar.clone());
-            self.create_event_5m(bar.clone());
             self.create_event_10m(bar.clone());
             self.create_event_1h(bar.clone());
             self.create_event_d(bar);
@@ -123,45 +122,10 @@ impl DataStream {
     }
     fn create_event_1m(&mut self, bar_1m: Bar) {
         let figi = self.iid.figi().clone();
-        let tf = TimeFrame::new("1M");
+        let tf = TimeFrame::M1;
         let event = BarEvent::new(figi, tf, bar_1m);
 
         self.queue.push_back(Event::Bar(event));
-    }
-    fn create_event_5m(&mut self, bar_1m: Bar) {
-        // first bar
-        if self.bar_5m.is_none() {
-            self.bar_5m = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("5M");
-            let event = BarEvent::new(figi, tf, self.bar_5m.clone().unwrap());
-            self.queue.push_back(Event::Bar(event));
-            return;
-        }
-
-        // else
-        let bar_5m = self.bar_5m.take().unwrap();
-        let next_ts = TimeFrame::next_ts(bar_5m.ts_nanos, "5M");
-
-        // only update
-        if bar_1m.ts_nanos < next_ts {
-            self.bar_5m = Some(bar_5m.join(bar_1m));
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("5M");
-            let event = BarEvent::new(figi, tf, self.bar_5m.clone().unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-        // create new
-        else {
-            self.bar_5m = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("5M");
-            let event = BarEvent::new(figi, tf, self.bar_5m.clone().unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
     }
     fn create_event_10m(&mut self, bar_1m: Bar) {
         // first bar
@@ -169,7 +133,7 @@ impl DataStream {
             self.bar_10m = Some(bar_1m);
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("10M");
+            let tf = TimeFrame::M10;
             let event =
                 BarEvent::new(figi, tf, self.bar_10m.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
@@ -185,7 +149,7 @@ impl DataStream {
             self.bar_10m = Some(bar_10m.join(bar_1m));
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("10M");
+            let tf = TimeFrame::M10;
             let event =
                 BarEvent::new(figi, tf, self.bar_10m.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
@@ -195,7 +159,7 @@ impl DataStream {
             self.bar_10m = Some(bar_1m);
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("10M");
+            let tf = TimeFrame::M10;
             let event =
                 BarEvent::new(figi, tf, self.bar_10m.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
@@ -207,7 +171,7 @@ impl DataStream {
             self.bar_1h = Some(bar_1m);
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("1H");
+            let tf = TimeFrame::H1;
             let event = BarEvent::new(figi, tf, self.bar_1h.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
             return;
@@ -222,7 +186,7 @@ impl DataStream {
             self.bar_1h = Some(bar_1h.join(bar_1m));
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("1H");
+            let tf = TimeFrame::H1;
             let event = BarEvent::new(figi, tf, self.bar_1h.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
         }
@@ -231,7 +195,7 @@ impl DataStream {
             self.bar_1h = Some(bar_1m);
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("1H");
+            let tf = TimeFrame::H1;
             let event = BarEvent::new(figi, tf, self.bar_1h.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
         }
@@ -242,7 +206,7 @@ impl DataStream {
             self.bar_d = Some(bar_1m);
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("D");
+            let tf = TimeFrame::Day;
             let event = BarEvent::new(figi, tf, self.bar_d.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
             return;
@@ -257,7 +221,7 @@ impl DataStream {
             self.bar_d = Some(bar_d.join(bar_1m));
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("D");
+            let tf = TimeFrame::Day;
             let event = BarEvent::new(figi, tf, self.bar_d.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
         }
@@ -266,7 +230,7 @@ impl DataStream {
             self.bar_d = Some(bar_1m);
 
             let figi = self.iid.figi().clone();
-            let tf = TimeFrame::new("D");
+            let tf = TimeFrame::Day;
             let event = BarEvent::new(figi, tf, self.bar_d.clone().unwrap());
             self.queue.push_back(Event::Bar(event));
         }
@@ -287,20 +251,20 @@ mod tests {
         let mut ds = DataStream::new(iid, &begin, &end);
 
         let mut bars_1m_count = 0;
-        let mut bars_5m_count = 0;
+        let mut bars_10m_count = 0;
         while let Some(e) = ds.next() {
             match e {
                 Event::Bar(e) => {
-                    if e.tf == TimeFrame::new("1M") {
+                    if e.tf == TimeFrame::M1 {
                         bars_1m_count += 1;
-                    } else if e.tf == TimeFrame::new("5M") {
-                        bars_5m_count += 1;
+                    } else if e.tf == TimeFrame::M10 {
+                        bars_10m_count += 1;
                     }
                 }
                 _ => todo!(),
             }
         }
         assert_eq!(bars_1m_count, 10);
-        assert_eq!(bars_5m_count, 10);
+        assert_eq!(bars_10m_count, 10);
     }
 }

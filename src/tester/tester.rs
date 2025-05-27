@@ -57,7 +57,7 @@ impl Tester {
                     // после 1М, 5М, 10М, 1Н... дергаю ее только на обновлении
                     // 1М бара, чаще все равно смысла нет, а вызовов в 5 раз
                     // меньше.
-                    if e.tf.name() == "1M" {
+                    if e.tf == TimeFrame::M1 {
                         share.bar_event(e);
                         strategy.process(&share);
                     } else {
@@ -91,7 +91,7 @@ impl Tester {
         log::info!(":: Tester load charts {share}");
 
         for tf in TimeFrame::all() {
-            log::info!("   {}", tf.name());
+            log::info!("   {}", tf);
             share.load_chart_empty(&tf);
         }
     }

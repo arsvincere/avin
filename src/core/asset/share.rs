@@ -102,7 +102,7 @@ impl Share {
     pub fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
         self.charts.get(tf)
     }
-    pub fn mut_chart(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
+    pub fn chart_mut(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
         self.charts.get_mut(tf)
     }
     pub fn load_chart(
@@ -113,6 +113,17 @@ impl Share {
         let begin = end - tf.timedelta() * DEFAULT_BARS_COUNT;
 
         return self.load_chart_period(tf, &begin, &end);
+    }
+    pub fn load_chart_mut(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Result<&mut Chart, &'static str> {
+        let end = Utc::now();
+        let begin = end - tf.timedelta() * DEFAULT_BARS_COUNT;
+
+        self.load_chart_period(tf, &begin, &end).unwrap();
+
+        Ok(self.charts.get_mut(tf).unwrap())
     }
     pub fn load_chart_period(
         &mut self,
@@ -173,7 +184,7 @@ mod tests {
     #[test]
     fn load_chart() {
         let mut share = Share::new("moex_share_sber").unwrap();
-        let tf = TimeFrame::new("1H");
+        let tf = TimeFrame::H1;
         let begin = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 2, 1, 0, 0, 0).unwrap();
 
@@ -192,7 +203,7 @@ mod tests {
     #[test]
     fn load_chart_no_args() {
         let mut share = Share::new("moex_share_sber").unwrap();
-        let tf = TimeFrame::new("D");
+        let tf = TimeFrame::Day;
 
         let chart = share.load_chart(&tf).unwrap();
         assert_eq!(chart.tf(), &tf);

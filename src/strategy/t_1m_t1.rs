@@ -43,7 +43,8 @@ impl T1mT1 {
             return;
         }
 
-        let chart = share.chart(&TimeFrame::new("1M")).unwrap();
+        let tf = TimeFrame::M1;
+        let chart = share.chart(&tf).unwrap();
         let bar = chart.last();
         if bar.is_none() {
             return;

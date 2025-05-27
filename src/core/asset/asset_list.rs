@@ -67,8 +67,17 @@ impl AssetList {
     pub fn name(&self) -> &String {
         &self.name
     }
+    pub fn len(&self) -> usize {
+        return self.assets().len();
+    }
     pub fn assets(&self) -> &Vec<Asset> {
         &self.assets
+    }
+    pub fn get(&self, index: usize) -> Option<&Asset> {
+        self.assets.get(index)
+    }
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut Asset> {
+        self.assets.get_mut(index)
     }
 }
 

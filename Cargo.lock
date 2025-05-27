@@ -521,6 +521,7 @@ dependencies = [
  "eframe",
  "egui-file-dialog",
  "egui_extras",
+ "egui_plot",
  "flume",
  "log",
  "polars",
@@ -1338,6 +1339,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_plot"
+version = "0.32.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14ae092b46ea532f6c69d3e71036fb3b688fd00fd09c2a1e43d17051a8ae43e6"
+dependencies = [
+ "ahash",
+ "egui",
+ "emath",
+]
+
+[[package]]
 name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1910,9 +1922,9 @@ dependencies = [
 
 [[package]]
 name = "gpu-descriptor"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcf29e94d6d243368b7a56caa16bc213e4f9f8ed38c4d9557069527b5d5281ca"
+checksum = "b89c83349105e3732062a895becfc71a8f921bb71ecbbdd8ff99263e3b53a0ca"
 dependencies = [
  "bitflags 2.9.0",
  "gpu-descriptor-types",
@@ -5777,9 +5789,9 @@ checksum = "a751b3277700db47d3e574514de2eced5e54dc8a5436a3bf7a0b248b2cee16f3"
 
 [[package]]
 name = "wgpu"
-version = "24.0.3"
+version = "24.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35904fb00ba2d2e0a4d002fcbbb6e1b89b574d272a50e5fc95f6e81cf281c245"
+checksum = "6b0b3436f0729f6cdf2e6e9201f3d39dc95813fad61d826c1ed07918b4539353"
 dependencies = [
  "arrayvec",
  "bitflags 2.9.0",
@@ -5802,9 +5814,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-core"
-version = "24.0.2"
+version = "24.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "671c25545d479b47d3f0a8e373aceb2060b67c6eb841b24ac8c32348151c7a0c"
+checksum = "7f0aa306497a238d169b9dc70659105b4a096859a34894544ca81719242e1499"
 dependencies = [
  "arrayvec",
  "bit-vec",

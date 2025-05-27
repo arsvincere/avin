@@ -1733,8 +1733,8 @@ impl From<api::marketdata::SubscriptionInterval> for crate::TimeFrame {
         //     SUBSCRIPTION_INTERVAL_MONTH = 13
         use api::marketdata::SubscriptionInterval as si;
         match value {
-            si::OneMinute => TimeFrame::new("1M"),
-            si::FiveMinutes => TimeFrame::new("5M"),
+            si::OneMinute => TimeFrame::M1,
+            si::FiveMinutes => todo!(),
             si::Unspecified => panic!("WTF???"),
         }
     }
@@ -1875,15 +1875,14 @@ impl From<TimeFrame> for api::marketdata::CandleInterval {
     fn from(value: TimeFrame) -> Self {
         use api::marketdata::CandleInterval as ci;
 
-        match value.name() {
-            "1M" => ci::CandleInterval1Min,
-            "5M" => ci::CandleInterval5Min,
-            "10M" => ci::CandleInterval10Min,
-            "1H" => ci::Hour,
-            "D" => ci::Day,
-            "W" => ci::Week,
-            "M" => ci::Month,
-            _ => todo!(),
+        match value {
+            TimeFrame::M1 => ci::CandleInterval1Min,
+            // TimeFrame::M5 => ci::CandleInterval5Min,
+            TimeFrame::M10 => ci::CandleInterval10Min,
+            TimeFrame::H1 => ci::Hour,
+            TimeFrame::Day => ci::Day,
+            TimeFrame::Week => ci::Week,
+            TimeFrame::Month => ci::Month,
         }
     }
 }
@@ -2010,7 +2009,7 @@ mod tests {
         let mut b = Tinkoff::new().await;
 
         // timeframe
-        let tf = TimeFrame::new("D");
+        let tf = TimeFrame::Day;
 
         // from till
         let seconds_in_year = 365 * 24 * 60 * 60;

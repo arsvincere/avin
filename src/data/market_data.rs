@@ -32,7 +32,7 @@ impl MarketData {
             MarketData::BAR_M => String::from("BAR_M"),
         }
     }
-    pub fn from(s: &String) -> Result<MarketData, &'static str> {
+    pub fn from(s: &str) -> Result<MarketData, &'static str> {
         let market_data = s.to_uppercase();
         match market_data.as_str() {
             "1M" => Ok(MarketData::BAR_1M),
@@ -53,24 +53,20 @@ impl MarketData {
         }
     }
 }
-
 impl std::fmt::Display for MarketData {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "MarketData={}", self.name())
     }
 }
-
 impl From<TimeFrame> for MarketData {
     fn from(tf: TimeFrame) -> MarketData {
-        match tf.name() {
-            "1M" => MarketData::BAR_1M,
-            "5M" => MarketData::BAR_5M,
-            "10M" => MarketData::BAR_10M,
-            "1H" => MarketData::BAR_1H,
-            "D" => MarketData::BAR_D,
-            "W" => MarketData::BAR_W,
-            "M" => MarketData::BAR_M,
-            _ => panic!("Invalid TimeFrame: {}", tf.name()),
+        match tf {
+            TimeFrame::M1 => MarketData::BAR_1M,
+            TimeFrame::M10 => MarketData::BAR_10M,
+            TimeFrame::H1 => MarketData::BAR_1H,
+            TimeFrame::Day => MarketData::BAR_D,
+            TimeFrame::Week => MarketData::BAR_W,
+            TimeFrame::Month => MarketData::BAR_M,
         }
     }
 }

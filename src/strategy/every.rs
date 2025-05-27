@@ -57,7 +57,8 @@ impl Every {
         &self.name
     }
     pub fn process(&mut self, share: &Share) {
-        let chart = share.chart(&TimeFrame::new("1M")).unwrap();
+        let tf = TimeFrame::M1;
+        let chart = share.chart(&tf).unwrap();
         let bar = chart.now().unwrap();
 
         // log::debug!("Every.process {}", bar);
