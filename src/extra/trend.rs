@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::{Bar, utils};
+use crate::{Bar, Chart, IID, TimeFrame, utils};
 
 use super::extremum::Extremum;
 use super::term::Term;
@@ -14,16 +14,18 @@ use super::term::Term;
 pub struct Trend<'a> {
     e1: Extremum,
     e2: Extremum,
+    chart: &'a Chart,
     bars: &'a [Bar],
 }
 impl<'a> Trend<'a> {
-    pub fn new(e1: &Extremum, e2: &Extremum, bars: &'a [Bar]) -> Trend<'a> {
+    pub fn new(e1: &Extremum, e2: &Extremum, chart: &'a Chart) -> Trend<'a> {
         assert!(e1.ts_nanos < e2.ts_nanos);
 
         Trend {
             e1: e1.clone(),
             e2: e2.clone(),
-            bars,
+            chart,
+            bars: chart.select(e1.ts_nanos, e2.ts_nanos),
         }
     }
     pub fn begin(&self) -> &Extremum {
@@ -32,11 +34,20 @@ impl<'a> Trend<'a> {
     pub fn end(&self) -> &Extremum {
         &self.e2
     }
+    pub fn tf(&self) -> &TimeFrame {
+        self.chart.tf()
+    }
     pub fn term(&self) -> &Term {
         return utils::min(&self.e1.term, &self.e2.term);
     }
     pub fn bars(&self) -> &[Bar] {
         self.bars
+    }
+    pub fn chart(&self) -> &Chart {
+        self.chart
+    }
+    pub fn iid(&self) -> &IID {
+        self.chart().iid()
     }
 
     pub fn is_bear(&self) -> bool {
@@ -45,8 +56,8 @@ impl<'a> Trend<'a> {
     pub fn is_bull(&self) -> bool {
         self.e2.price > self.e1.price
     }
-    pub fn period(&self) -> u32 {
-        self.bars.len() as u32
+    pub fn len(&self) -> u32 {
+        self.bars().len() as u32
     }
     pub fn abs(&self) -> f64 {
         (self.e2.price - self.e1.price).abs()
@@ -65,18 +76,18 @@ impl<'a> Trend<'a> {
     pub fn speed(&self) -> f64 {
         let abs = (self.e2.price - self.e1.price).abs();
 
-        abs / self.period() as f64
+        abs / self.len() as f64
     }
     pub fn speed_n(&self) -> f64 {
         let abs = (self.e2.price - self.e1.price).abs();
         let abs_n = abs / self.e1.price;
 
-        abs_n / self.period() as f64
+        abs_n / self.len() as f64
     }
     pub fn speed_p(&self) -> f64 {
         let abs = (self.e2.price - self.e1.price).abs();
         let abs_p = abs / self.e1.price * 100.0;
-        let speed_p = abs_p / self.period() as f64;
+        let speed_p = abs_p / self.len() as f64;
 
         utils::round(speed_p, 2)
     }
@@ -120,7 +131,7 @@ impl std::fmt::Display for Trend<'_> {
             "Trend: {}{} / {} = {} [ {}  {} = {}] ({} -> {})",
             kind,
             self.abs_p(),
-            self.period(),
+            self.len(),
             self.speed_p(),
             self.vol_bull(),
             self.vol_bear(),

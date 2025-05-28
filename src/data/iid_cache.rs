@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use cached::proc_macro::cached;
+
 use crate::conf::CACHE_DIR;
 use crate::data::category::Category;
 use crate::data::iid::IID;
@@ -19,7 +21,6 @@ pub struct IidCache {
     category: Category,
     iids: Vec<IID>,
 }
-
 impl IidCache {
     pub fn new(source: Source, category: Category, iids: Vec<IID>) -> Self {
         Self {
@@ -80,19 +81,16 @@ impl IidCache {
         category: &Category,
     ) -> Result<IidCache, &'static str> {
         let file_name = format!("{}.bin", category.to_string());
-        let mut p = std::path::PathBuf::new();
-        p.push(&CACHE_DIR);
-        p.push(source.to_string());
-        p.push(file_name);
+        let mut path = std::path::PathBuf::new();
+        path.push(&CACHE_DIR);
+        path.push(source.to_string());
+        path.push(file_name);
 
-        if !Cmd::is_exist(&p) {
+        if !Cmd::is_exist(&path) {
             return Err("cache file not found");
         }
 
-        let bytes = Cmd::read_bin(&p).unwrap();
-        let cache = IidCache::from_bin(&bytes);
-
-        Ok(cache)
+        load_file(path)
     }
 
     fn path(&self) -> PathBuf {
@@ -111,7 +109,6 @@ impl IidCache {
         return p;
     }
 }
-
 impl std::fmt::Display for IidCache {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -121,6 +118,14 @@ impl std::fmt::Display for IidCache {
             self.category.to_string(),
         )
     }
+}
+
+#[cached]
+fn load_file(path: PathBuf) -> Result<IidCache, &'static str> {
+    let bytes = Cmd::read_bin(&path).unwrap();
+    let cache = IidCache::from_bin(&bytes);
+
+    Ok(cache)
 }
 
 #[cfg(test)]

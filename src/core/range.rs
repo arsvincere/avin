@@ -34,6 +34,9 @@ impl Range {
 
         min + half
     }
+    pub fn contains(&self, value: f64) -> bool {
+        self.from <= value && value <= self.till
+    }
 
     /// abs of range
     pub fn abs(&self) -> f64 {

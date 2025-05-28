@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// IID - Instrument ID
-#[derive(Debug, PartialEq, Encode, Decode, Clone)]
+#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone)]
 pub struct IID {
     info: HashMap<String, String>,
 }

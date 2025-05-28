@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use eframe::egui;
 
 use super::asset::AssetWidget;
@@ -43,6 +50,8 @@ impl Terminal {
 }
 impl eframe::App for Terminal {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui_extras::install_image_loaders(ctx);
+
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 // NOTE: no File->Quit on web pages!

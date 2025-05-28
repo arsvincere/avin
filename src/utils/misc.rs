@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 static POW_VEC: &'static [f64] = &[
     0.0,
     10.0,
@@ -10,6 +17,7 @@ static POW_VEC: &'static [f64] = &[
     100000000.0,
     1000000000.0,
 ];
+
 pub fn round(num: f64, precision: u8) -> f64 {
     assert!(precision <= 9);
 
@@ -23,20 +31,20 @@ pub fn round(num: f64, precision: u8) -> f64 {
     }
 }
 pub fn round_price(price: f64, step: f64) -> f64 {
-    // сохраняем только 9 знаков максимум
-    let price = round(price, 9);
-
-    // теперь берем предварительно округленную дробную часть
+    let price = (price * POW_VEC[9]).round() as u64;
+    let step = (step * POW_VEC[9]).round() as u64;
     let frac = price % step;
 
-    // если мусорная часть меньше половины шага цены -> trunc
-    if frac < step / 2.0 {
+    // если дробная часть меньше половины шага цены -> trunc
+    let tmp = if frac < step / 2 {
         price - price % step
     }
-    // если мусорная часть больше половины шага цены -> trunc + step
+    // если дробная часть больше половины шага цены -> trunc + step
     else {
         price - price % step + step
-    }
+    };
+
+    tmp as f64 / POW_VEC[9]
 }
 pub fn max<T: PartialOrd>(left: T, right: T) -> T {
     if left > right { left } else { right }
@@ -49,21 +57,6 @@ pub fn sum<T: std::ops::Add>(
     right: T,
 ) -> <T as std::ops::Add<T>>::Output {
     left + right
-}
-
-pub struct Timer {
-    start: std::time::Instant,
-}
-impl Timer {
-    pub fn start() -> Self {
-        Self {
-            start: std::time::Instant::now(),
-        }
-    }
-    pub fn stop(&self, msg: &str) {
-        let duration = self.start.elapsed();
-        println!("Timer {}: {:?}", msg, duration);
-    }
 }
 
 #[cfg(test)]
@@ -108,27 +101,27 @@ mod tests {
         let step = 0.01;
 
         let buy = price * 0.999;
-        let buy_price = round_price(buy, step);
+        let rounded = round_price(buy, step);
         assert_eq!(buy, 87.912);
-        assert_eq!(buy_price, 87.91);
+        assert_eq!(rounded, 87.91);
 
         let sell = price * 1.001;
-        let sell_price = round_price(sell, step);
+        let rounded = round_price(sell, step);
         assert_eq!(sell, 88.088);
-        assert_eq!(sell_price, 88.09);
+        assert_eq!(rounded, 88.09);
 
         // округление цены до шага цены 0.5
         let step = 0.5;
 
         let buy = price * 0.99;
-        let buy_price = round_price(buy, step);
+        let rounded = round_price(buy, step);
         assert_eq!(buy, 87.12);
-        assert_eq!(buy_price, 87.0);
+        assert_eq!(rounded, 87.0);
 
         let sell = price * 1.01;
-        let sell_price = round_price(sell, step);
+        let rounded = round_price(sell, step);
         assert_eq!(sell, 88.88);
-        assert_eq!(sell_price, 89.0);
+        assert_eq!(rounded, 89.0);
     }
 
     #[test]

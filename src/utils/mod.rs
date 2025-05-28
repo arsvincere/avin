@@ -8,7 +8,9 @@
 mod cmd;
 mod logger;
 mod misc;
+mod timer;
 
 pub use cmd::Cmd;
 pub use logger::LOGGER;
-pub use misc::{Timer, max, min, round, round_price, sum};
+pub use misc::{max, min, round, round_price, sum};
+pub use timer::Timer;

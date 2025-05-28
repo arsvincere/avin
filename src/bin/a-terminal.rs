@@ -5,7 +5,13 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin::utils;
+
 fn main() -> eframe::Result {
+    log::set_logger(&utils::LOGGER).unwrap();
+    log::set_max_level(log::LevelFilter::Debug);
+    log::info!("Welcome to AVIN Trade System!");
+
     eframe::run_native(
         "AVIN - Terminal",
         eframe::NativeOptions::default(),

@@ -135,7 +135,7 @@ impl Chart {
         }
 
         // Иначе время где-то в пределах имеющихся баров, делаем поиск
-        let index = Chart::bisect_left(&self.bars, &ts);
+        let index = bisect_left(&self.bars, &ts).unwrap();
         self.bars.get(index)
     }
     /// Return fist historical bar of chart
@@ -164,8 +164,8 @@ impl Chart {
     pub fn select(&self, from: i64, till: i64) -> &[Bar] {
         assert!(from <= till);
 
-        let f = Chart::bisect_right(&self.bars, &from);
-        let t = Chart::bisect_left(&self.bars, &till);
+        let f = bisect_right(&self.bars, &from).unwrap();
+        let t = bisect_left(&self.bars, &till).unwrap();
 
         &self.bars[f..=t]
     }
@@ -207,80 +207,85 @@ impl Chart {
             }
         }
     }
+}
 
-    // private
-    pub fn bisect_left(bars: &Vec<Bar>, ts: &i64) -> usize {
-        // NOTE:
-        // если пустой вектор -> 0
-        // если меньше первого -> первый
-        // если больше последнего -> последний
-        // если есть == ts вернет его индекс
-        // если между ts то вернет индекс СЛЕВА от ts
+fn bisect_left(bars: &Vec<Bar>, ts: &i64) -> Option<usize> {
+    // NOTE:
+    // если пустой вектор -> None
+    // если меньше первого -> None
+    // если больше последнего -> последний
+    // если есть == ts вернет его индекс
+    // если между ts то вернет индекс СЛЕВА от ts
 
-        let mut left = 0;
-        let mut right = bars.len();
-        let mut mid;
+    let mut left = 0;
+    let mut right = bars.len();
+    let mut mid;
 
-        // начальные проверки на пустой вектор и значение за пределами
-        if right == 0 {
-            return 0;
-        } else if ts < &bars.first().unwrap().ts_nanos {
-            return 0; // искомый меньше всех в векторе
-        } else if ts > &bars.last().unwrap().ts_nanos {
-            return right - 1; // искомый больше всех в векторе
-        }
-
-        while left < right {
-            mid = left + (right - left) / 2;
-            let current = &bars[mid].ts_nanos;
-
-            if current == ts {
-                return mid;
-            } else if current < ts {
-                left = mid + 1;
-            } else {
-                right = mid;
-            }
-        }
-
-        left - 1
+    // начальные проверки
+    if right == 0 {
+        // пустой вектор
+        return None;
+    } else if ts < &bars.first().unwrap().ts_nanos {
+        // искомый меньше всех в векторе
+        return None;
+    } else if ts > &bars.last().unwrap().ts_nanos {
+        // искомый больше всех в векторе
+        return Some(right - 1);
     }
-    pub fn bisect_right(bars: &Vec<Bar>, ts: &i64) -> usize {
-        // NOTE:
-        // если пустой вектор -> 0
-        // если меньше первого -> первый
-        // если больше последнего -> последний
-        // если есть == ts вернет его индекс
-        // если между ts то вернет индекс СПРАВА от ts
 
-        let mut left = 0;
-        let mut right = bars.len();
-        let mut mid;
+    while left < right {
+        mid = left + (right - left) / 2;
+        let current = &bars[mid].ts_nanos;
 
-        // начальные проверки на пустой вектор и значение за пределами
-        if right == 0 {
-            return 0;
-        } else if ts < &bars.first().unwrap().ts_nanos {
-            return 0; // искомый меньше всех в векторе
-        } else if ts > &bars.last().unwrap().ts_nanos {
-            return right; // искомый больше всех в векторе
+        if current == ts {
+            return Some(mid);
+        } else if current < ts {
+            left = mid + 1;
+        } else {
+            right = mid;
         }
-
-        while left < right {
-            mid = left + (right - left) / 2;
-            let current = &bars[mid].ts_nanos;
-
-            if current == ts {
-                return mid;
-            } else if current < ts {
-                left = mid + 1;
-            } else {
-                right = mid;
-            }
-        }
-
-        left
     }
+
+    Some(left - 1)
+}
+fn bisect_right(bars: &Vec<Bar>, ts: &i64) -> Option<usize> {
+    // NOTE:
+    // если пустой вектор -> None
+    // если больше последнего -> None
+    // если меньше первого -> первый
+    // если есть == ts вернет его индекс
+    // если между ts то вернет индекс СПРАВА от ts
+
+    let mut left = 0;
+    let mut right = bars.len();
+    let mut mid;
+
+    // начальные проверки
+    if right == 0 {
+        // пустой вектор
+        return None;
+    } else if ts < &bars.first().unwrap().ts_nanos {
+        // искомый меньше всех в векторе
+        return Some(0);
+    } else if ts > &bars.last().unwrap().ts_nanos {
+        // искомый больше всех в векторе
+        return None;
+    }
+
+    while left < right {
+        mid = left + (right - left) / 2;
+        let current = &bars[mid].ts_nanos;
+
+        if current == ts {
+            return Some(mid);
+        } else if current < ts {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+
+    Some(left)
 }
 impl AsRef<Chart> for Chart {
     fn as_ref(&self) -> &Chart {
@@ -296,13 +301,13 @@ use Term::T2;
 use Term::T3;
 use Term::T4;
 use Term::T5;
-pub enum Features {
+pub enum ChartFeatures {
     Extremum,
 }
 impl Chart {
-    pub fn features(&mut self, feat: Features, enable: bool) {
+    pub fn features(&mut self, feat: ChartFeatures, enable: bool) {
         match feat {
-            Features::Extremum => {
+            ChartFeatures::Extremum => {
                 self.feat_extremum = enable;
                 if self.feat_extremum {
                     self.calc_extr();
@@ -374,8 +379,7 @@ impl Chart {
         if e1.is_some() && e2.is_some() {
             let e1 = e1.unwrap();
             let e2 = e2.unwrap();
-            let bars = self.select(e1.ts_nanos, e2.ts_nanos);
-            let t = Trend::new(e1, e2, bars);
+            let t = Trend::new(e1, e2, &self);
             return Some(t);
         }
 
@@ -470,11 +474,13 @@ impl Chart {
 
         // cacl extremums high term
         for in_cur in in_extr.iter() {
+            // skip not equal kind
             if in_cur.kind != out_now.kind {
                 in_prev = in_cur;
                 continue;
             }
 
+            // now bull trend
             if out_now.is_max() {
                 if in_cur.price > out_now.price {
                     out_now = in_cur;
@@ -484,8 +490,8 @@ impl Chart {
                     in_prev = in_cur;
                 }
             }
-
-            if out_now.is_min() {
+            // now bear trend
+            else if out_now.is_min() {
                 if in_cur.price < out_now.price {
                     out_now = in_cur;
                 } else {
@@ -643,6 +649,8 @@ mod tests {
 
     use crate::*;
 
+    use super::*;
+
     #[test]
     fn new() {
         let mut info = HashMap::new();
@@ -704,7 +712,7 @@ mod tests {
         )
     }
     #[test]
-    fn bisect_left() {
+    fn bisect_left_test() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
         let begin = Usr::date("2024-12-20");
@@ -730,24 +738,24 @@ mod tests {
         // assert_eq!(s.len(), 3);
 
         // test == value
-        assert_eq!(Chart::bisect_left(v, &1734642000000000000), 0); // x == 0
-        assert_eq!(Chart::bisect_left(v, &1734901200000000000), 1); // x == 1
-        assert_eq!(Chart::bisect_left(v, &1734987600000000000), 2); // x == 2
-        assert_eq!(Chart::bisect_left(v, &1735074000000000000), 3); // x == 3
-        assert_eq!(Chart::bisect_left(v, &1735160400000000000), 4); // x == 4
-        assert_eq!(Chart::bisect_left(v, &1735246800000000000), 5); // x == 5
-        assert_eq!(Chart::bisect_left(v, &1735333200000000000), 6); // x == 6
-        assert_eq!(Chart::bisect_left(v, &1735506000000000000), 7); // x == 7
+        assert_eq!(bisect_left(v, &1734642000000000000), Some(0)); // x == 0
+        assert_eq!(bisect_left(v, &1734901200000000000), Some(1)); // x == 1
+        assert_eq!(bisect_left(v, &1734987600000000000), Some(2)); // x == 2
+        assert_eq!(bisect_left(v, &1735074000000000000), Some(3)); // x == 3
+        assert_eq!(bisect_left(v, &1735160400000000000), Some(4)); // x == 4
+        assert_eq!(bisect_left(v, &1735246800000000000), Some(5)); // x == 5
+        assert_eq!(bisect_left(v, &1735333200000000000), Some(6)); // x == 6
+        assert_eq!(bisect_left(v, &1735506000000000000), Some(7)); // x == 7
 
         // test out of vector values
-        assert_eq!(Chart::bisect_left(v, &1000000000000000000), 0); // x < 0
-        assert_eq!(Chart::bisect_left(v, &1999999999999999999), 7); // 7 < x
+        assert_eq!(bisect_left(v, &1000000000000000000), None); // x < 0
+        assert_eq!(bisect_left(v, &1999999999999999999), Some(7)); // 7 < x
 
         // test between values
-        assert_eq!(Chart::bisect_left(v, &1734642000000000001), 0); // 0<x<1
+        assert_eq!(bisect_left(v, &1734642000000000001), Some(0)); // 0<x<1
     }
     #[test]
-    fn bisect_right() {
+    fn bisect_right_test() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
         let begin = Usr::date("2024-12-20");
@@ -773,21 +781,21 @@ mod tests {
         // assert_eq!(s.len(), 3);
 
         // test == value
-        assert_eq!(Chart::bisect_right(v, &1734642000000000000), 0); // x == 0
-        assert_eq!(Chart::bisect_right(v, &1734901200000000000), 1); // x == 1
-        assert_eq!(Chart::bisect_right(v, &1734987600000000000), 2); // x == 2
-        assert_eq!(Chart::bisect_right(v, &1735074000000000000), 3); // x == 3
-        assert_eq!(Chart::bisect_right(v, &1735160400000000000), 4); // x == 4
-        assert_eq!(Chart::bisect_right(v, &1735246800000000000), 5); // x == 5
-        assert_eq!(Chart::bisect_right(v, &1735333200000000000), 6); // x == 6
-        assert_eq!(Chart::bisect_right(v, &1735506000000000000), 7); // x == 7
+        assert_eq!(bisect_right(v, &1734642000000000000), Some(0)); // x == 0
+        assert_eq!(bisect_right(v, &1734901200000000000), Some(1)); // x == 1
+        assert_eq!(bisect_right(v, &1734987600000000000), Some(2)); // x == 2
+        assert_eq!(bisect_right(v, &1735074000000000000), Some(3)); // x == 3
+        assert_eq!(bisect_right(v, &1735160400000000000), Some(4)); // x == 4
+        assert_eq!(bisect_right(v, &1735246800000000000), Some(5)); // x == 5
+        assert_eq!(bisect_right(v, &1735333200000000000), Some(6)); // x == 6
+        assert_eq!(bisect_right(v, &1735506000000000000), Some(7)); // x == 7
 
         // test out of vector values
-        assert_eq!(Chart::bisect_right(v, &1000000000000000000), 0); // x < 0
-        assert_eq!(Chart::bisect_right(v, &1999999999999999999), 8); // 7 < x
+        assert_eq!(bisect_right(v, &1000000000000000000), Some(0)); // x < 0
+        assert_eq!(bisect_right(v, &1999999999999999999), None); // 7 < x
 
         // test between values
-        assert_eq!(Chart::bisect_right(v, &1734642000000000001), 1); // 0<x<1
+        assert_eq!(bisect_right(v, &1734642000000000001), Some(1)); // 0<x<1
     }
     #[test]
     fn select_on_d() {
@@ -834,7 +842,7 @@ mod tests {
         share.load_chart_period(&tf, &begin, &end).unwrap();
 
         let chart = share.chart_mut(&tf).unwrap();
-        chart.features(Features::Extremum, true);
+        chart.features(ChartFeatures::Extremum, true);
 
         // one real-time extremum
         let extr = chart.extr(&T1, 0).unwrap();
@@ -865,7 +873,7 @@ mod tests {
         share.load_chart_period(&tf, &begin, &end).unwrap();
 
         let chart = share.chart_mut(&tf).unwrap();
-        chart.features(Features::Extremum, true);
+        chart.features(ChartFeatures::Extremum, true);
 
         // last 3 extremums
         let e2 = chart.extr(&T1, 2).unwrap();
@@ -874,23 +882,23 @@ mod tests {
 
         // trend 0 = real-time trend
         let trend = chart.trend(&T1, 0).unwrap();
-        assert_eq!(trend.period(), 3);
+        assert_eq!(trend.len(), 3);
         assert_eq!(trend.begin(), e1);
         assert_eq!(trend.end(), e0);
 
         // trend 1 = last historical trend
         let trend = chart.trend(&T1, 1).unwrap();
-        assert_eq!(trend.period(), 2);
+        assert_eq!(trend.len(), 2);
         assert_eq!(trend.begin(), e2);
         assert_eq!(trend.end(), e1);
 
         // trend 2
         let trend = chart.trend(&T1, 2).unwrap();
-        assert_eq!(trend.period(), 2);
+        assert_eq!(trend.len(), 2);
         assert_eq!(trend.end(), e2);
 
         // trend 3
         let trend = chart.trend(&T1, 3).unwrap();
-        assert_eq!(trend.period(), 3);
+        assert_eq!(trend.len(), 3);
     }
 }

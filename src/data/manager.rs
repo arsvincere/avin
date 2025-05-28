@@ -15,7 +15,12 @@ use crate::data::source::Source;
 use crate::data::source_moex::SourceMoex;
 use crate::tinkoff::Tinkoff;
 use chrono::prelude::*;
-use polars::prelude::*;
+use polars::prelude::{
+    DataFrame, DataType, Duration, Field, IntoLazy, NamedFrom, Schema,
+    Series, col, df,
+};
+use polars::time::ClosedWindow;
+// use polars::prelude::*;
 
 pub struct Manager {}
 impl Manager {
@@ -120,6 +125,7 @@ impl Manager {
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<DataFrame, DataError> {
+        // create empty df
         let bar_schema = Schema::from_iter(vec![
             Field::new("ts_nanos".into(), DataType::Int64),
             Field::new("open".into(), DataType::Float64),
@@ -130,6 +136,7 @@ impl Manager {
         ]);
         let mut df = DataFrame::empty_with_schema(&bar_schema);
 
+        // load data by years
         let mut year = begin.year();
         let end_year = end.year();
         while year <= end_year {
@@ -150,19 +157,17 @@ impl Manager {
             }
         }
 
+        // filter begin end datetime
         let begin = begin.timestamp_nanos_opt().unwrap_or(0);
         let end = end.timestamp_nanos_opt().unwrap();
         let df = df
-            .clone()
             .lazy()
-            .filter(col("ts_nanos").is_between(
-                begin,
-                end,
-                ClosedInterval::Left,
-            ))
+            .filter(col("ts_nanos").gt_eq(begin))
+            .filter(col("ts_nanos").lt(end))
             .collect()
             .unwrap();
 
+        // check empty
         if df.is_empty() {
             let msg = format!("{} {}", iid, market_data);
             return Err(DataError::NotFound(msg));

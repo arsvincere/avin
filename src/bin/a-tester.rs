@@ -19,7 +19,7 @@ async fn main() {
     test.set_end(&Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap());
     let mut tester = Tester::new();
 
-    let t = utils::Timer::start();
+    let t = utils::Timer::new();
     tester.run(&mut test).await;
     t.stop("");
 }

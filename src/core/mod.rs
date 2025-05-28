@@ -27,7 +27,7 @@ pub use account::Account;
 pub use action::{Action, PostOrderAction};
 pub use asset::*;
 pub use bar::Bar;
-pub use chart::{Chart, Features};
+pub use chart::{Chart, ChartFeatures};
 pub use direction::{Direction, Direction::Buy, Direction::Sell};
 pub use event::{BarEvent, Event, OrderEvent, TicEvent};
 pub use operation::Operation;

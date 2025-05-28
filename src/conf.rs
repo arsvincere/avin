@@ -11,14 +11,30 @@ use chrono::{
 };
 
 // GUI
-pub const APP_ID: &str = "com.arsvincere.AVIN";
+pub const APP_ID: &str = "com.arsvincere.avin";
+pub const DEFAULT_ASSET_LIST: &str = "xxx.csv";
 
 // Chart
 pub const DEFAULT_BARS_COUNT: i32 = 5000;
-pub const CROSS: &str = "#393836";
+pub const CROSS: &str = "#282727";
+
 pub const BEAR: &str = "#FF5D62";
 pub const BULL: &str = "#98BB6C";
-pub const UNDEFINE: &str = "#FFFFFF";
+pub const UNDEFINE: &str = "#CCCCCC";
+pub const BEAR_OPACITY: f32 = 0.3;
+pub const BULL_OPACITY: f32 = 0.3;
+pub const UNDEFINE_OPACITY: f32 = 0.3;
+
+pub const TREND_T1: &str = "#AAAAAA";
+pub const TREND_T2: &str = "#658594";
+pub const TREND_T3: &str = "#7E9CD8";
+pub const TREND_T4: &str = "#957FB8";
+pub const TREND_T5: &str = "#DCA561";
+pub const TREND_T1_OPACITY: f32 = 0.2;
+pub const TREND_T2_OPACITY: f32 = 0.4;
+pub const TREND_T3_OPACITY: f32 = 0.6;
+pub const TREND_T4_OPACITY: f32 = 0.8;
+pub const TREND_T5_OPACITY: f32 = 1.0;
 
 // BG = QtGui.QColor(Color.dragonBlack0)  # #0d0c0c
 // BG_FOOTER = QtGui.QColor(Color.dragonBlack5)
@@ -42,11 +58,6 @@ pub const UNDEFINE: &str = "#FFFFFF";
 // TRADE_UNDEFINE = QtGui.QColor("#888888")
 //
 // # Extremum
-// TREND_T1 = QtGui.QColor("#FFFFFF")
-// TREND_T2 = QtGui.QColor("#658594")
-// TREND_T3 = QtGui.QColor("#7E9CD8")  # #00FFFF
-// TREND_T4 = QtGui.QColor("#957FB8")
-// TREND_T5 = QtGui.QColor("#DCA561")
 // VAWE_BEAR = QtGui.QColor("#AA0000")
 // VAWE_BULL = QtGui.QColor("#00AA00")
 // INSIDE_BG = QtGui.QColor("#000000")

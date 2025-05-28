@@ -6,11 +6,16 @@
  ****************************************************************************/
 
 use avin::Command;
+use avin::utils;
 use std::env;
 use std::process;
 
 #[tokio::main]
 async fn main() {
+    log::set_logger(&utils::LOGGER).unwrap();
+    log::set_max_level(log::LevelFilter::Debug);
+    log::info!("Welcome to AVIN Trade System!");
+
     let args: Vec<String> = env::args().collect();
 
     let command: Command = match Command::build(&args) {

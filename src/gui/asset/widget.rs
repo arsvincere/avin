@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use std::path::PathBuf;
 
 use eframe::egui;
@@ -7,6 +14,8 @@ use egui_file_dialog::FileDialog;
 use crate::ASSET_DIR;
 use crate::Asset;
 use crate::AssetList;
+use crate::Cmd;
+use crate::DEFAULT_ASSET_LIST;
 
 pub struct AssetWidget {
     asset_list: AssetList,
@@ -16,8 +25,13 @@ pub struct AssetWidget {
 impl Default for AssetWidget {
     fn default() -> Self {
         let mut path = PathBuf::from(&ASSET_DIR);
-        path.push("xxx.csv");
-        let asset_list = AssetList::load(&path).unwrap();
+        path.push(DEFAULT_ASSET_LIST);
+
+        let asset_list = if Cmd::is_exist(&path) {
+            AssetList::load(&path).unwrap()
+        } else {
+            AssetList::new("Load")
+        };
 
         let path = PathBuf::from(&ASSET_DIR);
         let file_dialog = FileDialog::new().initial_directory(path);
@@ -35,7 +49,6 @@ impl AssetWidget {
         AssetWidget::default()
     }
     pub fn ui(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
-        ui.heading("Asset list widget");
         ui.horizontal(|ui| {
             if ui.button(self.asset_list.name()).clicked() {
                 self.file_dialog.pick_file();

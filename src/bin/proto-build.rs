@@ -5,10 +5,14 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin::Cmd;
+use avin::{Cmd, utils};
 use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    log::set_logger(&utils::LOGGER).unwrap();
+    log::set_max_level(log::LevelFilter::Debug);
+    log::info!("Welcome to AVIN Trade System!");
+
     let protos_path = Path::new("proto");
     let files = Cmd::get_files(protos_path).unwrap();
 

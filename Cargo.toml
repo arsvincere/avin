@@ -9,6 +9,7 @@ repository = "https://github.com/arsvincere/avin-rs"
 
 [dependencies]
 bitcode = "0.6.5"
+cached = "0.55.1"
 chrono = "0.4.41"
 eframe = { version = "0.31", default-features = false, features = [
     "accesskit",     # Make egui compatible with screen readers.
@@ -19,7 +20,7 @@ eframe = { version = "0.31", default-features = false, features = [
     "x11",           # To support older Linux distributions
 ] }
 egui-file-dialog = "0.10.0"
-egui_extras = "0.31.1"
+egui_extras = { version= "0.31.1", features = ["all_loaders", "image", "svg"]}
 egui_plot = "0.32.1"
 flume = "0.11.1"
 log = "0.4.27"
@@ -32,10 +33,14 @@ polars = { version = "0.46", features = [
     "dtype-datetime",
     "strings",
     "is_between",
+    "is_in",
+    "polars-ops", # for Series.cum_sum()
+    "cum_agg", # for Expr.cum_sum()
 ] }
 prost = "0.12"
 prost-types = "0.12"
 reqwest = { version = "0.12", features = ["json"] }
+rust_decimal = {version = "1.37.1", features = ["macros"]}
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0"
 strum = { version = "0.27.1", features = ["derive", "strum_macros"]}
@@ -45,6 +50,9 @@ tonic = { version = "0.11", features = ["tls", "tls-roots", "gzip"] }
 tonic-build = "0.8.0"
 uuid = {version = "1.16.0", features = [ "v4" ]}
 
+[[bin]]
+name = "analytic"
+path = "src/bin/a-analytic.rs"
 [[bin]]
 name = "data"
 path = "src/bin/a-data.rs"
@@ -57,3 +65,4 @@ path = "src/bin/a-tester.rs"
 [[bin]]
 name = "trader"
 path = "src/bin/a-trader.rs"
+

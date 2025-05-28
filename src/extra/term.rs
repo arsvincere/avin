@@ -4,8 +4,7 @@
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
-// use strum::IntoEnumIterator;
-// use strum_macros::EnumIter;
+
 use strum::EnumIter;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, EnumIter)]

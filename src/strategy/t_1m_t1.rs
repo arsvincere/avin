@@ -1,3 +1,10 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 use crate::{
     Account, Action, Direction, IID, LimitOrder, Order, OrderEvent,
     PostOrderAction, Share, TimeFrame, Trade, TradeKind, utils,
