@@ -17,7 +17,6 @@ use crate::Cmd;
 use crate::DATA_DIR;
 use crate::TicEvent;
 use crate::TimeFrame;
-use crate::Usr;
 use crate::conf::DEFAULT_BARS_COUNT;
 use crate::data::IID;
 use crate::data::Manager;
@@ -119,10 +118,10 @@ impl Share {
         &mut self,
         tf: &TimeFrame,
     ) -> Result<&mut Chart, &'static str> {
-        // let end = Utc::now();
-        // let begin = end - tf.timedelta() * DEFAULT_BARS_COUNT;
-        let begin = Usr::date("2025-03-10");
-        let end = Usr::date("2025-03-13");
+        let end = Utc::now();
+        let begin = end - tf.timedelta() * DEFAULT_BARS_COUNT;
+        // let begin = utils::date("2025-03-10");
+        // let end = utils::date("2025-03-13");
 
         self.load_chart_period(tf, &begin, &end).unwrap();
 

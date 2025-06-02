@@ -7,6 +7,7 @@
 
 use chrono::{DateTime, Local};
 use eframe::egui;
+use eframe::egui::Key;
 use egui_plot::Corner;
 use egui_plot::Line;
 use egui_plot::LineStyle;
@@ -26,6 +27,8 @@ use crate::utils;
 use super::palette::Palette;
 
 pub struct ChartWidget {
+    scale_x: bool,
+    scale_y: bool,
     palette: Palette,
     tf: TimeFrame,
     bars: bool,
@@ -38,6 +41,8 @@ pub struct ChartWidget {
 impl Default for ChartWidget {
     fn default() -> Self {
         Self {
+            scale_x: false,
+            scale_y: false,
             palette: Palette::default(),
             tf: TimeFrame::H1,
             bars: true,
@@ -115,17 +120,73 @@ impl ChartWidget {
             .show_grid(false)
             .show(ui, |_plot_ui| {});
     }
-    fn show_chart(&self, ui: &mut egui::Ui, asset: &mut Asset) {
+    fn show_chart(&mut self, ui: &mut egui::Ui, asset: &mut Asset) {
         let chart = get_chart(asset, &self.tf);
 
-        Plot::new("chart_plot")
+        ui.input(|i| {
+            i.events.iter().find_map(|e| match e {
+                //
+            }}));
+
+            // if i.key_pressed(Key::D) {
+            //     self.scale_x = true;
+            //     self.scale_y = false;
+            // } else if i.key_pressed(Key::F) {
+            //     self.scale_x = false;
+            //     self.scale_y = true;
+            // } else {
+            //     self.scale_x = true;
+            //     self.scale_y = true;
+            // }
+
+        //             let delta = ui.input(|i| {
+        //                 i.events.iter().find_map(|e| match e {
+        //                     egui::Event::MouseWheel {
+        //                         unit: _,
+        //                         delta,
+        //                         modifiers,
+        //                     } if modifiers.command_only() => Some(*delta),
+        //                     _ => None,
+        //                 })
+        //             });
+
+        // });
+
+        let _plot = Plot::new("chart_plot")
             .show_grid(false)
             .show_axes([false, false])
+            .allow_zoom([self.scale_x, self.scale_y])
             .cursor_color(self.palette.cross)
             .coordinates_formatter(Corner::LeftTop, bar_info(chart))
             .label_formatter(|name, value| price_info(chart, name, value))
             .show(ui, |plot_ui| self.draw_all(plot_ui, chart));
+
+        // fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        //     egui::CentralPanel::default().show(ctx, |ui| {
+        //         ui.label(format!("N = {}", self.age));
+        //         let response = ui.image(egui::include_image!(
+        //             "../../../crates/egui/assets/ferris.png"
+        //         ));
+        //         if response.hovered() {
+        //             let delta = ui.input(|i| {
+        //                 i.events.iter().find_map(|e| match e {
+        //                     egui::Event::MouseWheel {
+        //                         unit: _,
+        //                         delta,
+        //                         modifiers,
+        //                     } if modifiers.command_only() => Some(*delta),
+        //                     _ => None,
+        //                 })
+        //             });
+        //             if let Some(delta) = delta {
+        //                 self.age = self
+        //                     .age
+        //                     .wrapping_add_signed(delta.max_elem().signum() as i32);
+        //             }
+        //         }
+        //     });
     }
+
     fn draw_all(&self, plot_ui: &mut PlotUi, chart: &Chart) {
         // draw bars
         if self.bars {
@@ -188,7 +249,7 @@ fn bar_info(chart: &Chart) -> egui_plot::CoordinatesFormatter {
             Some(bar) => {
                 format!(
                     "{}  O: {} H: {} L: {} C: {} Vol: {}  \
-                        [Full: {}% Body: {}%]",
+                        [Body: {}% | Full: {}%]",
                     bar.dt_local().format("%Y-%m-%d %H:%M %a"),
                     bar.o,
                     bar.h,
@@ -216,7 +277,6 @@ fn price_info(chart: &Chart, name: &str, value: &PlotPoint) -> String {
         }
     }
 }
-
 fn draw_bars(plot: &mut PlotUi, palette: &Palette, chart: &Chart) {
     for bar in chart.bars().iter() {
         // select color
@@ -341,11 +401,11 @@ fn draw_posterior_1(
 
     // get median len
     let median = match term {
-        T1 => 3,
-        T2 => 6,
-        T3 => 12,
-        T4 => 24,
-        T5 => 48,
+        T1 => 4,
+        T2 => 8,
+        T3 => 16,
+        T4 => 32,
+        T5 => 64,
     };
 
     // eval coordinates
@@ -359,16 +419,24 @@ fn draw_posterior_1(
     let (a, b) = solve(x0, y0, x1, y1);
 
     let prices = p.column("price").unwrap().f64().unwrap();
+    let mut abs = p.column("abs").unwrap().f64().unwrap().into_no_null_iter();
     let mut p = p.column("p").unwrap().f64().unwrap().into_no_null_iter();
 
     for price in prices.into_no_null_iter() {
-        let info = format!("{} {:.2}%", term, p.next().unwrap());
+        let info = format!(
+            "{}  abs={}  p={:.2}%",
+            term,
+            abs.next().unwrap(),
+            p.next().unwrap()
+        );
         let x = x(a, b, price);
+
         let points = Points::new(info, vec![[x, price]])
             .color(color)
             .filled(true)
             .radius(3.0)
             .shape(MarkerShape::Circle);
+
         plot.points(points);
     }
 }
@@ -420,12 +488,20 @@ fn draw_posterior_0(
     let (a, b) = solve(x0, y0, x1, y1);
 
     let prices = p.column("price").unwrap().f64().unwrap();
+    let mut abs = p.column("abs").unwrap().f64().unwrap().into_no_null_iter();
     let mut p = p.column("p").unwrap().f64().unwrap().into_no_null_iter();
 
     for price in prices.into_no_null_iter() {
-        let info = format!("{} {:.2}%", term, p.next().unwrap());
+        let info = format!(
+            "{}  abs={}  p={:.2}%",
+            term,
+            abs.next().unwrap(),
+            p.next().unwrap()
+        );
         let x = x(a, b, price);
+
         let points = Points::new(info, vec![[x, price]]).color(color);
+
         plot.points(points);
     }
 }

@@ -1079,6 +1079,7 @@ impl From<api::instruments::Share> for crate::Share {
 
         let mut info = HashMap::new();
         info.insert("exchange".to_string(), std_exchange_name(&t.exchange));
+        info.insert("exchange_specific".to_string(), t.exchange);
         info.insert("category".to_string(), Category::SHARE.to_string());
         info.insert("ticker".to_string(), t.ticker);
         info.insert("figi".to_string(), t.figi);
@@ -1086,7 +1087,6 @@ impl From<api::instruments::Share> for crate::Share {
         info.insert("currency".to_string(), t.currency);
         info.insert("sector".to_string(), t.sector);
         info.insert("class_code".to_string(), t.class_code);
-        info.insert("exchange_specific".to_string(), t.exchange);
         info.insert("isin".to_string(), t.isin);
         info.insert("uid".to_string(), t.uid);
         info.insert("name".to_string(), t.name);

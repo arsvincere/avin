@@ -1,0 +1,3 @@
+source ~/avin/src_py/.venv/bin/activate
+alacritty -e nvim
+deactivate

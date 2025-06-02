@@ -132,7 +132,8 @@ impl Manager {
             Field::new("high".into(), DataType::Float64),
             Field::new("low".into(), DataType::Float64),
             Field::new("close".into(), DataType::Float64),
-            Field::new("volume".into(), DataType::UInt64),
+            Field::new("volume".into(), DataType::Int64),
+            Field::new("value".into(), DataType::Float64),
         ]);
         let mut df = DataFrame::empty_with_schema(&bar_schema);
 
@@ -320,8 +321,7 @@ impl Manager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Usr;
-    use crate::core::Bar;
+    use crate::*;
 
     // #[test]
     // fn request_1m() {
@@ -345,8 +345,8 @@ mod tests {
     fn request_10m() {
         let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_10M;
-        let begin = Usr::dt("2023-08-01 10:00:00");
-        let end = Usr::dt("2023-08-01 11:00:00");
+        let begin = utils::datetime("2023-08-01 10:00:00");
+        let end = utils::datetime("2023-08-01 11:00:00");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
         let bars = Bar::from_df(df).unwrap();
@@ -363,8 +363,8 @@ mod tests {
     fn request_1h() {
         let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_1H;
-        let begin = Usr::dt("2023-08-01 10:00:00");
-        let end = Usr::dt("2023-08-01 13:00:00");
+        let begin = utils::datetime("2023-08-01 10:00:00");
+        let end = utils::datetime("2023-08-01 13:00:00");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
         dbg!(&df);
@@ -382,8 +382,8 @@ mod tests {
     fn request_d() {
         let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_D;
-        let begin = Usr::date("2023-08-01");
-        let end = Usr::date("2023-09-01");
+        let begin = utils::date("2023-08-01");
+        let end = utils::date("2023-09-01");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
         let bars = Bar::from_df(df).unwrap();
@@ -400,8 +400,8 @@ mod tests {
     fn request_w() {
         let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_W;
-        let begin = Usr::date("2024-01-01");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-01-01");
+        let end = utils::date("2025-01-01");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
         let bars = Bar::from_df(df).unwrap();
@@ -418,8 +418,8 @@ mod tests {
     fn request_m() {
         let instr = Manager::find("moex_share_sber").unwrap();
         let data = MarketData::BAR_M;
-        let begin = Usr::date("2024-01-01");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-01-01");
+        let end = utils::date("2025-01-01");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
         let bars = Bar::from_df(df).unwrap();

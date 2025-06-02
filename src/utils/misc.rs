@@ -5,6 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use chrono::{
+    DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc,
+};
+
+use crate::conf::DT_FMT;
+
 static POW_VEC: &'static [f64] = &[
     0.0,
     10.0,
@@ -18,6 +24,22 @@ static POW_VEC: &'static [f64] = &[
     1000000000.0,
 ];
 
+/// Return UTC datetime from user local datetime
+pub fn datetime(dt: &str) -> DateTime<Utc> {
+    let dt = NaiveDateTime::parse_from_str(dt, DT_FMT).unwrap();
+    let dt = Local.from_local_datetime(&dt).unwrap();
+
+    dt.to_utc()
+}
+/// Return UTC datetime from user local date
+pub fn date(d: &str) -> DateTime<Utc> {
+    let dt = NaiveDate::parse_from_str(d, "%Y-%m-%d")
+        .unwrap()
+        .and_time(NaiveTime::MIN);
+    let dt = Local.from_local_datetime(&dt).unwrap();
+
+    dt.to_utc()
+}
 pub fn round(num: f64, precision: u8) -> f64 {
     assert!(precision <= 9);
 
@@ -64,6 +86,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn local_datetime() {
+        let dt = datetime("2025-01-01 10:00:00");
+        let utc_dt = Utc.with_ymd_and_hms(2025, 1, 1, 7, 0, 0).unwrap();
+        assert_eq!(utc_dt, dt);
+    }
+    #[test]
+    fn local_date() {
+        let dt = date("2025-01-01");
+        let utc_dt = Utc.with_ymd_and_hms(2024, 12, 31, 21, 0, 0).unwrap();
+        assert_eq!(utc_dt, dt);
+    }
+    #[test]
     fn g_round() {
         let x: f64 = 123.456789;
 
@@ -76,7 +110,6 @@ mod tests {
 
         assert_eq!(round(123.9_f64, 0), 124.0);
     }
-
     #[test]
     fn l_round() {
         let x: f64 = 123.111111111;
@@ -92,7 +125,6 @@ mod tests {
         assert_eq!(round(x, 8), 123.11111111);
         assert_eq!(round(x, 9), 123.111111111);
     }
-
     #[test]
     fn rounding_prices() {
         let price = 88.0;
@@ -123,7 +155,6 @@ mod tests {
         assert_eq!(sell, 88.88);
         assert_eq!(rounded, 89.0);
     }
-
     #[test]
     fn min_max_sum() {
         assert_eq!(8, max(2, 8));

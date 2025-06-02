@@ -61,7 +61,7 @@ impl Bar {
         let mut v = df
             .column("volume")
             .unwrap()
-            .u64()
+            .i64()
             .unwrap()
             .into_no_null_iter();
 
@@ -73,7 +73,7 @@ impl Bar {
                 h.next().unwrap(),
                 l.next().unwrap(),
                 c.next().unwrap(),
-                v.next().unwrap(),
+                v.next().unwrap() as u64,
             );
             bars.push(bar);
         }

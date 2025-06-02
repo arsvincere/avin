@@ -61,7 +61,7 @@ impl Chart {
             now: None,
 
             // XXX: extra features
-            feat_extremum: true,
+            feat_extremum: false,
             t1: Vec::new(),
             t2: Vec::new(),
             t3: Vec::new(),
@@ -73,7 +73,7 @@ impl Chart {
             t4_now: None,
             t5_now: None,
 
-            feat_posterior: true,
+            feat_posterior: false,
             p_t1: None,
             p_t2: None,
             p_t3: None,
@@ -801,8 +801,8 @@ mod tests {
         info.insert("figi".to_string(), "BBG004730N88".to_string());
         let iid = IID::new(info);
         let tf = TimeFrame::Day;
-        let begin = Usr::date("2023-08-01");
-        let end = Usr::date("2023-09-01");
+        let begin = utils::date("2023-08-01");
+        let end = utils::date("2023-09-01");
 
         let chart = Chart::load(&iid, &tf, &begin, &end).unwrap();
         assert_eq!(chart.tf(), &tf);
@@ -819,8 +819,8 @@ mod tests {
     fn bisect_left_test() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
-        let begin = Usr::date("2024-12-20");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-12-20");
+        let end = utils::date("2025-01-01");
         let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
 
         let v = chart.bars();
@@ -862,8 +862,8 @@ mod tests {
     fn bisect_right_test() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
-        let begin = Usr::date("2024-12-20");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-12-20");
+        let end = utils::date("2025-01-01");
         let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
 
         let v = chart.bars();
@@ -905,12 +905,12 @@ mod tests {
     fn select_on_d() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
-        let begin = Usr::date("2024-12-20");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-12-20");
+        let end = utils::date("2025-01-01");
         let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
 
-        let from = Usr::date("2024-12-23").timestamp_nanos_opt().unwrap();
-        let till = Usr::date("2024-12-25").timestamp_nanos_opt().unwrap();
+        let from = utils::date("2024-12-23").timestamp_nanos_opt().unwrap();
+        let till = utils::date("2024-12-25").timestamp_nanos_opt().unwrap();
 
         let selected = chart.select(from, till);
         assert_eq!(selected.len(), 3);
@@ -920,16 +920,16 @@ mod tests {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::H1;
 
-        let begin = Usr::date("2023-08-01");
-        let end = Usr::date("2023-08-02");
+        let begin = utils::date("2023-08-01");
+        let end = utils::date("2023-08-02");
         let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
 
         // выборка с 12:30 до 15:30
         // должно войти 3 бара 13:00 14:00 15:00
-        let from = Usr::dt("2023-08-01 12:30:00")
+        let from = utils::datetime("2023-08-01 12:30:00")
             .timestamp_nanos_opt()
             .unwrap();
-        let till = Usr::dt("2023-08-01 15:30:00")
+        let till = utils::datetime("2023-08-01 15:30:00")
             .timestamp_nanos_opt()
             .unwrap();
 
@@ -941,8 +941,8 @@ mod tests {
     fn extremum_t1() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
-        let begin = Usr::date("2024-12-20");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-12-20");
+        let end = utils::date("2025-01-01");
         share.load_chart_period(&tf, &begin, &end).unwrap();
 
         let chart = share.chart_mut(&tf).unwrap();
@@ -972,8 +972,8 @@ mod tests {
     fn trend_t1() {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
-        let begin = Usr::date("2024-12-20");
-        let end = Usr::date("2025-01-01");
+        let begin = utils::date("2024-12-20");
+        let end = utils::date("2025-01-01");
         share.load_chart_period(&tf, &begin, &end).unwrap();
 
         let chart = share.chart_mut(&tf).unwrap();

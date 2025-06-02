@@ -127,7 +127,7 @@ impl SourceMoex {
         let mut from = Self::utc_to_msk(begin);
         let till = Self::utc_to_msk(end);
 
-        let mut candles = DataFrame::empty_with_schema(&self.bar_schema);
+        let mut bars = DataFrame::empty_with_schema(&self.bar_schema);
         while from < till {
             println!("   from {from}");
             let response = self
@@ -147,7 +147,7 @@ impl SourceMoex {
             if part.height() <= 1 {
                 break;
             }
-            candles.extend(&part).unwrap();
+            bars.extend(&part).unwrap();
 
             let last = Self::get_last_dt(&part);
             if last < till {
@@ -157,10 +157,10 @@ impl SourceMoex {
             }
         }
 
-        candles = Self::drop_duplicate(candles);
-        candles = Self::dt_to_timestamp(candles);
+        bars = Self::drop_duplicate(bars);
+        bars = Self::dt_to_timestamp(bars);
 
-        return Ok(candles);
+        return Ok(bars);
     }
 
     fn utc_to_msk(dt: &DateTime<Utc>) -> NaiveDateTime {

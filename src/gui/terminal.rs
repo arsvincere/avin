@@ -54,18 +54,12 @@ impl eframe::App for Terminal {
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
-                // NOTE: no File->Quit on web pages!
-                let is_web = cfg!(target_arch = "wasm32");
-                if !is_web {
-                    ui.menu_button("File", |ui| {
-                        if ui.button("Quit").clicked() {
-                            ctx.send_viewport_cmd(
-                                egui::ViewportCommand::Close,
-                            );
-                        }
-                    });
-                    ui.add_space(16.0);
-                }
+                ui.menu_button("File", |ui| {
+                    if ui.button("Quit").clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
+                ui.add_space(16.0);
 
                 egui::widgets::global_theme_preference_buttons(ui);
             });
@@ -75,18 +69,18 @@ impl eframe::App for Terminal {
             self.asset_widget.ui(ctx, ui);
         });
 
-        egui::SidePanel::right("right_panel").show(ctx, |ui| {
-            ui.heading("Right...");
-        });
+        // egui::SidePanel::right("right_panel").show(ctx, |ui| {
+        //     ui.heading("Right...");
+        // });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             let asset = self.asset_widget.current_asset();
             self.chart_widget.ui(ui, asset);
         });
 
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            ui.heading("Console");
-        });
+        // egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+        //     ui.heading("Console");
+        // });
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {

@@ -45,7 +45,7 @@ impl Size {
             90.0..95.0 => Size::VeryBig,
             95.0..97.0 => Size::ExtraBig,
             97.0..99.0 => Size::AnomalBig,
-            99.0..=100.01 => Size::GreatestBig, // 100.01 - погрешность f64...
+            99.0..100.01 => Size::GreatestBig, // 100.01 - погрешность f64...
             _ => {
                 dbg!(&value);
                 panic!();
@@ -165,16 +165,16 @@ pub enum Sz {
 }
 impl Sz {
     pub fn from_cdf(value: f64) -> Self {
-        if Self::XS.range().contains(value) {
-            return Self::XS;
-        } else if Self::S.range().contains(value) {
-            return Self::S;
-        } else if Self::M.range().contains(value) {
-            return Self::M;
-        } else if Self::L.range().contains(value) {
-            return Self::L;
-        } else {
-            return Self::XL;
+        match value {
+            0.0..10.0 => Sz::XS,
+            10.0..30.0 => Sz::S,
+            30.0..70.0 => Sz::M,
+            70.0..90.0 => Sz::L,
+            90.0..100.01 => Sz::XL, // 100.01 - погрешность f64...
+            _ => {
+                dbg!(&value);
+                panic!();
+            }
         }
     }
     pub fn range(&self) -> Range {

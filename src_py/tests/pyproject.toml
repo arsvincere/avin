@@ -1,0 +1,12 @@
+# pyproject.toml
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "/home/alex/avin/src_py/tests/",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::pytest.PytestCollectionWarning",
+    ]
+asyncio_mode="auto"
+asyncio_default_fixture_loop_scope="session"

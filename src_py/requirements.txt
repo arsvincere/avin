@@ -1,0 +1,9 @@
+pytest
+pytest-asyncio
+moexalgo
+tinkoff-investments
+pandas
+plotly
+polars
+polars-lts-cpu
+pyarrow

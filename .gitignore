@@ -1,7 +1,22 @@
+/.mypy_cache
+/log
+/src_py/.mypy_cache
+/src_py/.venv
+/src_py/__pycache__
 /target
+/tmp
 /usr
-Session.vim
+__pycache__
 
+Session.vim*
 /src/bin/1.rs
 /src/bin/2.rs
+/src/bin/3.rs
+/src/bin/4.rs
+/src/bin/5.rs
 tmp.*
+1.py
+2.py
+3.py
+4.py
+5.py

@@ -5,10 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use chrono::{
-    DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeDelta,
-    TimeZone, Utc,
-};
+use chrono::{NaiveTime, TimeDelta};
 
 // GUI
 pub const APP_ID: &str = "com.arsvincere.avin";
@@ -87,42 +84,3 @@ pub const DAY_BEGIN: NaiveTime = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
 pub const DAY_END: NaiveTime = NaiveTime::from_hms_opt(23, 59, 59).unwrap();
 pub const MSK_TIME_DIF: TimeDelta = TimeDelta::hours(3);
 pub const MINUTES_IN_DAY: i32 = 24 * 60 * 60;
-
-// TODO: move to utils
-pub struct Usr {}
-impl Usr {
-    /// Return UTC datetime from user local datetime
-    pub fn dt(dt: &str) -> DateTime<Utc> {
-        let dt = NaiveDateTime::parse_from_str(dt, DT_FMT).unwrap();
-        let dt = Local.from_local_datetime(&dt).unwrap();
-
-        dt.to_utc()
-    }
-    /// Return UTC datetime from user local date
-    pub fn date(d: &str) -> DateTime<Utc> {
-        let dt = NaiveDate::parse_from_str(d, "%Y-%m-%d")
-            .unwrap()
-            .and_time(NaiveTime::MIN);
-        let dt = Local.from_local_datetime(&dt).unwrap();
-
-        dt.to_utc()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn dt() {
-        let dt = Usr::dt("2025-01-01 10:00:00");
-        let utc_dt = Utc.with_ymd_and_hms(2025, 1, 1, 7, 0, 0).unwrap();
-        assert_eq!(utc_dt, dt);
-    }
-    #[test]
-    fn date() {
-        let dt = Usr::date("2025-01-01");
-        let utc_dt = Utc.with_ymd_and_hms(2024, 12, 31, 21, 0, 0).unwrap();
-        assert_eq!(utc_dt, dt);
-    }
-}

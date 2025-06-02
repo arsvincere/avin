@@ -21,8 +21,8 @@ async fn main() {
     let share = Share::new("MOEX_SHARE_GAZP").unwrap();
     let tf = TimeFrame::M1;
     let term = Term::T1;
-    let begin = Usr::date("2025-01-01");
-    let end = Usr::date("2025-02-01");
+    let begin = utils::date("2025-01-01");
+    let end = utils::date("2025-02-01");
     let mut chart = Chart::load(share.iid(), &tf, &begin, &end).unwrap();
     chart.features(ChartFeatures::Extremum, true);
 
