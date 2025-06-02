@@ -7,13 +7,21 @@
 
 use chrono::{DateTime, Local};
 use eframe::egui;
-use egui_plot::{Corner, Line, LineStyle, Plot, PlotPoint, PlotUi};
+use egui_plot::Corner;
+use egui_plot::Line;
+use egui_plot::LineStyle;
+use egui_plot::MarkerShape;
+use egui_plot::Plot;
+use egui_plot::PlotPoint;
+use egui_plot::PlotUi;
+use egui_plot::Points;
 
-use crate::{
-    Asset, Chart, ChartFeatures,
-    Term::{self, T1, T2, T3, T4, T5},
-    TimeFrame, utils,
-};
+use crate::Asset;
+use crate::Chart;
+use crate::ChartFeatures;
+use crate::Term::{self, T1, T2, T3, T4, T5};
+use crate::TimeFrame;
+use crate::utils;
 
 use super::palette::Palette;
 
@@ -31,7 +39,7 @@ impl Default for ChartWidget {
     fn default() -> Self {
         Self {
             palette: Palette::default(),
-            tf: TimeFrame::Day,
+            tf: TimeFrame::H1,
             bars: true,
             t1: false,
             t2: false,
@@ -62,9 +70,6 @@ impl ChartWidget {
     fn show_toolbar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             // timeframes
-            if ui.selectable_label(self.bars, "Bar").clicked() {
-                self.bars = !self.bars;
-            };
             ui.selectable_value(&mut self.tf, TimeFrame::M1, "1M");
             ui.selectable_value(&mut self.tf, TimeFrame::M10, "10M");
             ui.selectable_value(&mut self.tf, TimeFrame::H1, "1H");
@@ -73,7 +78,13 @@ impl ChartWidget {
             ui.selectable_value(&mut self.tf, TimeFrame::Month, "M");
             ui.separator();
 
-            // trends
+            // show bars
+            if ui.selectable_label(self.bars, "Bar").clicked() {
+                self.bars = !self.bars;
+            };
+            ui.separator();
+
+            // show trends
             if ui.selectable_label(self.t1, "T1").clicked() {
                 self.t1 = !self.t1
             };
@@ -116,24 +127,36 @@ impl ChartWidget {
             .show(ui, |plot_ui| self.draw_all(plot_ui, chart));
     }
     fn draw_all(&self, plot_ui: &mut PlotUi, chart: &Chart) {
+        // draw bars
         if self.bars {
             draw_bars(plot_ui, &self.palette, chart);
         }
 
+        // draw trends
         if self.t1 {
             draw_trends(plot_ui, &self.palette, chart, &T1);
+            draw_posterior_1(plot_ui, &self.palette, chart, 1, &T1);
+            draw_posterior_0(plot_ui, &self.palette, chart, 0, &T1);
         }
         if self.t2 {
             draw_trends(plot_ui, &self.palette, chart, &T2);
+            draw_posterior_1(plot_ui, &self.palette, chart, 1, &T2);
+            draw_posterior_0(plot_ui, &self.palette, chart, 0, &T2);
         }
         if self.t3 {
             draw_trends(plot_ui, &self.palette, chart, &T3);
+            draw_posterior_1(plot_ui, &self.palette, chart, 1, &T3);
+            draw_posterior_0(plot_ui, &self.palette, chart, 0, &T3);
         }
         if self.t4 {
             draw_trends(plot_ui, &self.palette, chart, &T4);
+            draw_posterior_1(plot_ui, &self.palette, chart, 1, &T4);
+            draw_posterior_0(plot_ui, &self.palette, chart, 0, &T4);
         }
         if self.t5 {
             draw_trends(plot_ui, &self.palette, chart, &T5);
+            draw_posterior_1(plot_ui, &self.palette, chart, 1, &T5);
+            draw_posterior_0(plot_ui, &self.palette, chart, 0, &T5);
         }
     }
 }
@@ -146,6 +169,7 @@ fn get_chart<'a>(asset: &'a mut Asset, tf: &TimeFrame) -> &'a mut Chart {
         false => {
             let chart = asset.load_chart_mut(tf).unwrap();
             chart.features(ChartFeatures::Extremum, true);
+            chart.features(ChartFeatures::Posterior, true);
 
             chart
         }
@@ -204,7 +228,7 @@ fn draw_bars(plot: &mut PlotUi, palette: &Palette, chart: &Chart) {
             palette.undef
         };
 
-        // calc coordinate X
+        // eval coordinate X
         let x0 = bar.ts_nanos as f64;
         let x1 = x0 + chart.tf().nanos() as f64;
         let x = (x1 + x0) / 2.0;
@@ -238,7 +262,7 @@ fn draw_trends(
             T5 => palette.t5,
         };
 
-        // calc coordinates
+        // eval coordinates
         let x0 =
             trend.begin().ts_nanos as f64 + chart.tf().nanos() as f64 / 2.0;
         let y0 = trend.begin().price;
@@ -269,7 +293,7 @@ fn draw_trends(
             T5 => palette.t5,
         };
 
-        // calc coordinates
+        // eval coordinates
         let x0 =
             trend.begin().ts_nanos as f64 + chart.tf().nanos() as f64 / 2.0;
         let y0 = trend.begin().price;
@@ -286,4 +310,148 @@ fn draw_trends(
 
         n += 1;
     }
+}
+fn draw_posterior_1(
+    plot: &mut PlotUi,
+    palette: &Palette,
+    chart: &Chart,
+    n: usize,
+    term: &Term,
+) {
+    // select color
+    let color = match term {
+        T1 => palette.t1,
+        T2 => palette.t2,
+        T3 => palette.t3,
+        T4 => palette.t4,
+        T5 => palette.t5,
+    };
+
+    // trend
+    let trend = match chart.trend(&term, n) {
+        Some(t) => t,
+        None => return,
+    };
+
+    // posterior
+    let p = match chart.posterior(&term, n) {
+        Some(p) => p,
+        None => return,
+    };
+
+    // get median len
+    let median = match term {
+        T1 => 3,
+        T2 => 6,
+        T3 => 12,
+        T4 => 24,
+        T5 => 48,
+    };
+
+    // eval coordinates
+    let x0 = (trend.end().ts_nanos + chart.tf().nanos() / 2) as f64;
+    let y0 = trend.end().price;
+    let shift = chart.tf().nanos() * median;
+    let x1 = (trend.end().ts_nanos + shift) as f64;
+    let y1 = p.column("price").unwrap().f64().unwrap().last().unwrap();
+
+    // line equation
+    let (a, b) = solve(x0, y0, x1, y1);
+
+    let prices = p.column("price").unwrap().f64().unwrap();
+    let mut p = p.column("p").unwrap().f64().unwrap().into_no_null_iter();
+
+    for price in prices.into_no_null_iter() {
+        let info = format!("{} {:.2}%", term, p.next().unwrap());
+        let x = x(a, b, price);
+        let points = Points::new(info, vec![[x, price]])
+            .color(color)
+            .filled(true)
+            .radius(3.0)
+            .shape(MarkerShape::Circle);
+        plot.points(points);
+    }
+}
+fn draw_posterior_0(
+    plot: &mut PlotUi,
+    palette: &Palette,
+    chart: &Chart,
+    n: usize,
+    term: &Term,
+) {
+    // select color
+    let color = match term {
+        T1 => palette.t1, // .gamma_multiply(0.5),
+        T2 => palette.t2, // .gamma_multiply(0.5),
+        T3 => palette.t3, // .gamma_multiply(0.5),
+        T4 => palette.t4, // .gamma_multiply(0.5),
+        T5 => palette.t5, // .gamma_multiply(0.5),
+    };
+
+    // trend
+    let trend = match chart.trend(term, n) {
+        Some(t) => t,
+        None => return,
+    };
+
+    // posterior
+    let p = match chart.posterior(term, n) {
+        Some(p) => p,
+        None => return,
+    };
+
+    // get median len
+    let median = match term {
+        T1 => 3,
+        T2 => 6,
+        T3 => 12,
+        T4 => 24,
+        T5 => 48,
+    };
+
+    // eval coordinates
+    let x0 = (trend.end().ts_nanos + chart.tf().nanos() / 2) as f64;
+    let y0 = trend.end().price;
+    let shift = chart.tf().nanos() * median;
+    let x1 = (trend.end().ts_nanos + shift) as f64;
+    let y1 = p.column("price").unwrap().f64().unwrap().last().unwrap();
+
+    // line equation
+    let (a, b) = solve(x0, y0, x1, y1);
+
+    let prices = p.column("price").unwrap().f64().unwrap();
+    let mut p = p.column("p").unwrap().f64().unwrap().into_no_null_iter();
+
+    for price in prices.into_no_null_iter() {
+        let info = format!("{} {:.2}%", term, p.next().unwrap());
+        let x = x(a, b, price);
+        let points = Points::new(info, vec![[x, price]]).color(color);
+        plot.points(points);
+    }
+}
+
+fn solve(x0: f64, y0: f64, x1: f64, y1: f64) -> (f64, f64) {
+    // y = ax + b
+    //
+    // y0 = ax0 + b
+    // y1 = ax1 + b
+    //
+    // b = y0 - ax0
+    //
+    // y1 = ax1 + y0 - ax0
+    // y1 - y0 = ax1 - ax0
+    // y1 - y0 = a(x1 -x0)
+    // a = (y1 - y0) / (x1 - x0)
+
+    let a = (y1 - y0) / (x1 - x0);
+    let b = y0 - a * x0;
+
+    (a, b)
+}
+fn x(a: f64, b: f64, y: f64) -> f64 {
+    // y = ax + b
+    // ax = y - b
+    // x = (y - b) / a
+
+    (y - b) / a
 }

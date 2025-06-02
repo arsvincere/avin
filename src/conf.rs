@@ -21,9 +21,9 @@ pub const CROSS: &str = "#282727";
 pub const BEAR: &str = "#FF5D62";
 pub const BULL: &str = "#98BB6C";
 pub const UNDEFINE: &str = "#CCCCCC";
-pub const BEAR_OPACITY: f32 = 0.3;
-pub const BULL_OPACITY: f32 = 0.3;
-pub const UNDEFINE_OPACITY: f32 = 0.3;
+pub const BEAR_OPACITY: f32 = 0.5;
+pub const BULL_OPACITY: f32 = 0.5;
+pub const UNDEFINE_OPACITY: f32 = 0.5;
 
 pub const TREND_T1: &str = "#AAAAAA";
 pub const TREND_T2: &str = "#658594";

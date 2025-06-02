@@ -97,6 +97,24 @@ impl TrendAnalytic {
     }
 
     pub fn posterior(trend: &Trend) -> Option<DataFrame> {
+        // ┌──────┬───────────┬────────────┐
+        // │ abs  ┆ p         ┆ price      │
+        // │ ---  ┆ ---       ┆ ---        │
+        // │ f64  ┆ f64       ┆ f64        │
+        // ╞══════╪═══════════╪════════════╡
+        // │ 0.0  ┆ 99.87545  ┆ 140.75     │
+        // │ 0.01 ┆ 97.467479 ┆ 140.764075 │
+        // │ 0.02 ┆ 92.928314 ┆ 140.77815  │
+        // │ 0.03 ┆ 71.436479 ┆ 140.792225 │
+        // │ 0.04 ┆ 62.413507 ┆ 140.8063   │
+        // │ …    ┆ …         ┆ …          │
+        // │ 0.24 ┆ 1.632992  ┆ 141.0878   │
+        // │ 0.25 ┆ 1.480764  ┆ 141.101875 │
+        // │ 0.26 ┆ 1.328536  ┆ 141.11595  │
+        // │ 0.27 ┆ 1.079435  ┆ 141.130025 │
+        // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
+        // └──────┴───────────┴────────────┘
+
         // try get abs size for this trend
         if Self::abs_size(trend).is_none() {
             return None;
@@ -415,6 +433,7 @@ fn get_sizes_df(trend: &Trend, feat: &Feat) -> Result<DataFrame, String> {
 
 // posterior
 const MIN_SAMPLE: usize = 1000;
+const MIN_P: f64 = 10.0;
 fn get_obs(trend: &Trend, all: &DataFrame) -> DataFrame {
     // stage 1 - abs size
     let value = TrendAnalytic::abs_size(trend).unwrap().name();
@@ -481,7 +500,7 @@ fn get_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     let mut x: f64 = 0.0;
     let mut p: f64 = 100.0;
     let mut combo = all;
-    while p >= 1.0 {
+    while p >= MIN_P {
         combo = combo
             .lazy()
             .filter(col("id").is_in(lit(h_id.clone())))

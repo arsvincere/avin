@@ -7,7 +7,10 @@
 
 use chrono::DateTime;
 use chrono::Utc;
+use polars::frame::DataFrame;
+use strum::IntoEnumIterator;
 
+use crate::TrendAnalytic;
 use crate::data::IID;
 use crate::data::Manager;
 use crate::extra::Extremum;
@@ -36,6 +39,18 @@ pub struct Chart {
     t3_now: Option<Extremum>,
     t4_now: Option<Extremum>,
     t5_now: Option<Extremum>,
+
+    feat_posterior: bool,
+    p_t1: Option<DataFrame>,
+    p_t2: Option<DataFrame>,
+    p_t3: Option<DataFrame>,
+    p_t4: Option<DataFrame>,
+    p_t5: Option<DataFrame>,
+    p_t1_now: Option<DataFrame>,
+    p_t2_now: Option<DataFrame>,
+    p_t3_now: Option<DataFrame>,
+    p_t4_now: Option<DataFrame>,
+    p_t5_now: Option<DataFrame>,
 }
 impl Chart {
     pub fn new(iid: &IID, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
@@ -46,7 +61,7 @@ impl Chart {
             now: None,
 
             // XXX: extra features
-            feat_extremum: false,
+            feat_extremum: true,
             t1: Vec::new(),
             t2: Vec::new(),
             t3: Vec::new(),
@@ -57,6 +72,18 @@ impl Chart {
             t3_now: None,
             t4_now: None,
             t5_now: None,
+
+            feat_posterior: true,
+            p_t1: None,
+            p_t2: None,
+            p_t3: None,
+            p_t4: None,
+            p_t5: None,
+            p_t1_now: None,
+            p_t2_now: None,
+            p_t3_now: None,
+            p_t4_now: None,
+            p_t5_now: None,
         }
     }
     pub fn empty(iid: &IID, tf: &TimeFrame) -> Self {
@@ -193,6 +220,9 @@ impl Chart {
                     if self.feat_extremum {
                         self.upd_extr(&old_bar);
                     }
+                    if self.feat_posterior {
+                        self.upd_posterior();
+                    }
                 }
                 // old_bar.ts_nanos > new_bar.ts_nanos
                 // Тинькофф бывает прокидывает в дата стриме
@@ -303,17 +333,14 @@ use Term::T4;
 use Term::T5;
 pub enum ChartFeatures {
     Extremum,
+    Posterior,
 }
 impl Chart {
     pub fn features(&mut self, feat: ChartFeatures, enable: bool) {
         match feat {
-            ChartFeatures::Extremum => {
-                self.feat_extremum = enable;
-                if self.feat_extremum {
-                    self.calc_extr();
-                }
-            }
-        };
+            ChartFeatures::Extremum => self.set_feat_extremum(enable),
+            ChartFeatures::Posterior => self.set_feat_posterior(enable),
+        }
     }
     pub fn t1(&self) -> &Vec<Extremum> {
         &self.t1
@@ -399,6 +426,39 @@ impl Chart {
         all_trends
     }
 
+    pub fn posterior(&self, term: &Term, n: usize) -> Option<&DataFrame> {
+        // real-time
+        if n == 0 {
+            match term {
+                T1 => return self.p_t1_now.as_ref(),
+                T2 => return self.p_t2_now.as_ref(),
+                T3 => return self.p_t3_now.as_ref(),
+                T4 => return self.p_t4_now.as_ref(),
+                T5 => return self.p_t5_now.as_ref(),
+            };
+        }
+        // historical
+        else if n == 1 {
+            match term {
+                T1 => return self.p_t1.as_ref(),
+                T2 => return self.p_t2.as_ref(),
+                T3 => return self.p_t3.as_ref(),
+                T4 => return self.p_t4.as_ref(),
+                T5 => return self.p_t5.as_ref(),
+            };
+        } else {
+            panic!();
+        }
+    }
+
+    // private
+    fn set_feat_extremum(&mut self, enable: bool) {
+        self.feat_extremum = enable;
+
+        if self.feat_extremum {
+            self.calc_extr();
+        }
+    }
     fn calc_extr(&mut self) {
         let (t1, t1_now) = self.calc_extr_t1();
         let (t2, t2_now) = self.calc_extr_next(&t1, T2);
@@ -638,6 +698,50 @@ impl Chart {
         };
 
         has_new_extr
+    }
+
+    fn set_feat_posterior(&mut self, enable: bool) {
+        self.feat_posterior = enable;
+
+        if self.feat_posterior {
+            self.eval_posterior();
+        }
+    }
+    fn eval_posterior(&mut self) {
+        assert!(self.feat_extremum);
+
+        self.upd_posterior();
+    }
+    fn upd_posterior(&mut self) {
+        // historical
+        for term in Term::iter() {
+            let trend_1 = match self.trend(&term, 1) {
+                Some(t) => t,
+                None => continue,
+            };
+            match term {
+                T1 => self.p_t1 = TrendAnalytic::posterior(&trend_1),
+                T2 => self.p_t2 = TrendAnalytic::posterior(&trend_1),
+                T3 => self.p_t3 = TrendAnalytic::posterior(&trend_1),
+                T4 => self.p_t4 = TrendAnalytic::posterior(&trend_1),
+                T5 => self.p_t5 = TrendAnalytic::posterior(&trend_1),
+            }
+        }
+
+        // real-time
+        for term in Term::iter() {
+            let trend_0 = match self.trend(&term, 0) {
+                Some(t) => t,
+                None => continue,
+            };
+            match term {
+                T1 => self.p_t1_now = TrendAnalytic::posterior(&trend_0),
+                T2 => self.p_t2_now = TrendAnalytic::posterior(&trend_0),
+                T3 => self.p_t3_now = TrendAnalytic::posterior(&trend_0),
+                T4 => self.p_t4_now = TrendAnalytic::posterior(&trend_0),
+                T5 => self.p_t5_now = TrendAnalytic::posterior(&trend_0),
+            }
+        }
     }
 }
 
