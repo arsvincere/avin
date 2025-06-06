@@ -97,7 +97,7 @@ impl DataStream {
         let mut v = df
             .column("volume")
             .unwrap()
-            .u64()
+            .i64()
             .unwrap()
             .into_no_null_iter();
 
@@ -109,7 +109,7 @@ impl DataStream {
                 h.next().unwrap(),
                 l.next().unwrap(),
                 c.next().unwrap(),
-                v.next().unwrap(),
+                v.next().unwrap() as u64,
             );
             bars_1m.push_back(bar);
         }

@@ -45,7 +45,7 @@ class MarketData(enum.Enum):
             "1H": TimeDelta(hours=1),
             "D": TimeDelta(days=1),
             "W": TimeDelta(weeks=1),
-            "M": TimeDelta(days=30),
+            # "M": TimeDelta(days=30),  # don't use it! it dangerous
             "TRADE_STATS": TimeDelta(minutes=5),
             "ORDER_STATS": TimeDelta(minutes=5),
             "OB_STATS": TimeDelta(minutes=5),
@@ -108,6 +108,18 @@ class MarketData(enum.Enum):
                 next += TimeDelta(minutes=1)
 
             case MarketData.BAR_5M:
+                next = dt.replace(second=0, microsecond=0)
+                need_minutes = 5 - (dt.minute % 5)
+                next += TimeDelta(minutes=need_minutes)
+            case MarketData.TRADE_STATS:
+                next = dt.replace(second=0, microsecond=0)
+                need_minutes = 5 - (dt.minute % 5)
+                next += TimeDelta(minutes=need_minutes)
+            case MarketData.ORDER_STATS:
+                next = dt.replace(second=0, microsecond=0)
+                need_minutes = 5 - (dt.minute % 5)
+                next += TimeDelta(minutes=need_minutes)
+            case MarketData.OB_STATS:
                 next = dt.replace(second=0, microsecond=0)
                 need_minutes = 5 - (dt.minute % 5)
                 next += TimeDelta(minutes=need_minutes)
@@ -178,8 +190,17 @@ class MarketData(enum.Enum):
             "BAR_M": MarketData.BAR_M,
             "TIC": MarketData.TIC,
             "BOOK": MarketData.BOOK,
+            "TRADE_STATS": MarketData.TRADE_STATS,
+            "ORDER_STATS": MarketData.ORDER_STATS,
+            "OB_STATS": MarketData.OB_STATS,
         }
-        return types[string.upper()]
+
+        result = types.get(string.upper())
+        if result is None:
+            log.error(f"Invalid market data name: {string}")
+            exit(1)
+
+        return result
 
 
 if __name__ == "__main__":

@@ -12,18 +12,28 @@ use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
 use crate::ASSET_DIR;
+use crate::Action;
 use crate::Asset;
 use crate::AssetList;
+use crate::ChartFeatures;
 use crate::Cmd;
 use crate::DEFAULT_ASSET_LIST;
+use crate::Event;
+use crate::SubscribeAction;
+use crate::TimeFrame;
 
 pub struct AssetWidget {
     asset_list: AssetList,
     current_index: usize,
     file_dialog: FileDialog,
+    event_rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
+    action_tx: tokio::sync::mpsc::UnboundedSender<Action>,
 }
-impl Default for AssetWidget {
-    fn default() -> Self {
+impl AssetWidget {
+    pub fn new(
+        event_rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
+        action_tx: tokio::sync::mpsc::UnboundedSender<Action>,
+    ) -> Self {
         let mut path = PathBuf::from(&ASSET_DIR);
         path.push(DEFAULT_ASSET_LIST);
 
@@ -40,15 +50,25 @@ impl Default for AssetWidget {
             asset_list,
             current_index: 0,
             file_dialog,
+            event_rx,
+            action_tx,
         }
-    }
-}
-impl AssetWidget {
-    pub fn new() -> Self {
+
         // TODO: save/load state
-        AssetWidget::default()
+        // AssetWidget::default()
     }
+
     pub fn ui(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
+        self.ui_toolbar(ctx, ui);
+        self.ui_table(ui);
+        self.receive_market_data();
+    }
+    pub fn current_asset(&mut self) -> Option<&mut Asset> {
+        self.asset_list.get_mut(self.current_index)
+    }
+
+    // private
+    fn ui_toolbar(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button(self.asset_list.name()).clicked() {
                 self.file_dialog.pick_file();
@@ -66,12 +86,12 @@ impl AssetWidget {
         });
 
         ui.separator();
-
+    }
+    fn ui_table(&mut self, ui: &mut egui::Ui) {
         let text_height = egui::TextStyle::Body
             .resolve(ui.style())
             .size
             .max(ui.spacing().interact_size.y);
-
         let available_height = ui.available_height();
         let mut table = TableBuilder::new(ui)
             .striped(false) // чередующаяся подсветка строк
@@ -80,9 +100,7 @@ impl AssetWidget {
             .column(Column::remainder())
             .min_scrolled_height(0.0)
             .max_scroll_height(available_height);
-
         table = table.sense(egui::Sense::click());
-
         table
             .header(20.0, |mut header| {
                 header.col(|ui| {
@@ -102,10 +120,57 @@ impl AssetWidget {
                     if row.response().clicked() {
                         self.current_index = row.index();
                     };
+                    if row.response().double_clicked() {
+                        self.current_index = row.index();
+                        self.subscribe_market_data()
+                    }
                 });
             });
     }
-    pub fn current_asset(&mut self) -> Option<&mut Asset> {
-        self.asset_list.get_mut(self.current_index)
+
+    fn load_charts(&mut self) {
+        let asset = self.asset_list.get_mut(self.current_index).unwrap();
+
+        for tf in TimeFrame::all() {
+            match asset.chart(&tf).is_some() {
+                true => (),
+                false => {
+                    log::debug!("Asset widget loading {asset} {tf}");
+                    asset.load_chart(&tf).unwrap();
+                    let chart = asset.chart_mut(&tf).unwrap();
+                    chart.features(ChartFeatures::Extremum, true);
+                    chart.features(ChartFeatures::Posterior, true);
+                }
+            };
+        }
+    }
+    fn subscribe_market_data(&mut self) {
+        self.load_charts();
+
+        let asset = self.asset_list.get(self.current_index).unwrap();
+        let iid = asset.iid();
+
+        for tf in TimeFrame::all() {
+            let action = Action::Subscribe(SubscribeAction::new(
+                iid.clone(),
+                tf.market_data(),
+            ));
+            log::debug!("Asset widget send {action}");
+            match self.action_tx.send(action) {
+                Ok(_) => (),
+                Err(e) => log::error!("{e}"),
+            };
+        }
+    }
+    fn receive_market_data(&mut self) {
+        while let Ok(event) = self.event_rx.try_recv() {
+            log::debug!("Asset widget receive {event}");
+
+            match event {
+                Event::Bar(e) => self.current_asset().unwrap().bar_event(e),
+                Event::Tic(e) => todo!("{:?}", e),
+                Event::Order(e) => todo!("{:?}", e),
+            }
+        }
     }
 }

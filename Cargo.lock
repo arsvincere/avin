@@ -555,6 +555,7 @@ dependencies = [
  "strum 0.27.1",
  "time-unit",
  "tokio",
+ "tokio-stream",
  "tonic",
  "tonic-build",
  "uuid",

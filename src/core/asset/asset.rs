@@ -9,7 +9,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use chrono::{DateTime, Utc};
 
-use crate::{Chart, IID, Manager, TimeFrame};
+use crate::{BarEvent, Chart, IID, Manager, TicEvent, TimeFrame};
 
 use super::Share;
 
@@ -19,6 +19,13 @@ pub enum Asset {
 }
 impl Asset {
     // build
+    pub fn new(s: &str) -> Result<Asset, &'static str> {
+        let iid = Manager::find(s)?;
+        let share = Share::from_iid(iid);
+        let asset = Asset::SHARE(share);
+
+        Ok(asset)
+    }
     pub fn from_iid(iid: IID) -> Self {
         assert!(iid.category() == "SHARE");
         let share = Share::from_iid(iid);
@@ -46,6 +53,7 @@ impl Asset {
             }
         }
     }
+
     // identification
     pub fn iid(&self) -> &IID {
         match self {
@@ -123,6 +131,23 @@ impl Asset {
     pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
         match self {
             Self::SHARE(share) => share.load_chart_empty(tf),
+        }
+    }
+
+    // event
+    pub fn bar_event(&mut self, e: BarEvent) {
+        match self {
+            Self::SHARE(share) => share.bar_event(e),
+        }
+    }
+    pub fn tic_event(&mut self, _e: TicEvent) {
+        todo!();
+    }
+}
+impl std::fmt::Display for Asset {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::SHARE(s) => write!(f, "Asset={}", s.iid()),
         }
     }
 }

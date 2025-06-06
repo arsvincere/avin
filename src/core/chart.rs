@@ -238,6 +238,11 @@ impl Chart {
         }
     }
 }
+impl AsRef<Chart> for Chart {
+    fn as_ref(&self) -> &Chart {
+        &self
+    }
+}
 
 fn bisect_left(bars: &Vec<Bar>, ts: &i64) -> Option<usize> {
     // NOTE:
@@ -316,11 +321,6 @@ fn bisect_right(bars: &Vec<Bar>, ts: &i64) -> Option<usize> {
     }
 
     Some(left)
-}
-impl AsRef<Chart> for Chart {
-    fn as_ref(&self) -> &Chart {
-        &self
-    }
 }
 
 // XXX: extra features

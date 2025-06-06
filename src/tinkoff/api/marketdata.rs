@@ -1082,6 +1082,31 @@ pub enum SubscriptionInterval {
     OneMinute = 1,
     /// Пятиминутные свечи.
     FiveMinutes = 2,
+
+    // HACK:
+    // Добавлено.
+    // Значения взяты из официального python-sdk,
+    // вроде работают правильно, надо еще проверить.
+    // class SubscriptionInterval(_grpc_helpers.Enum):
+    //     SUBSCRIPTION_INTERVAL_UNSPECIFIED = 0
+    //     SUBSCRIPTION_INTERVAL_ONE_MINUTE = 1
+    //     SUBSCRIPTION_INTERVAL_FIVE_MINUTES = 2
+    //     SUBSCRIPTION_INTERVAL_FIFTEEN_MINUTES = 3
+    //     SUBSCRIPTION_INTERVAL_ONE_HOUR = 4
+    //     SUBSCRIPTION_INTERVAL_ONE_DAY = 5
+    //     SUBSCRIPTION_INTERVAL_2_MIN = 6
+    //     SUBSCRIPTION_INTERVAL_3_MIN = 7
+    //     SUBSCRIPTION_INTERVAL_10_MIN = 8
+    //     SUBSCRIPTION_INTERVAL_30_MIN = 9
+    //     SUBSCRIPTION_INTERVAL_2_HOUR = 10
+    //     SUBSCRIPTION_INTERVAL_4_HOUR = 11
+    //     SUBSCRIPTION_INTERVAL_WEEK = 12
+    //     SUBSCRIPTION_INTERVAL_MONTH = 13
+    TenMinutes = 8,
+    OneHour = 4,
+    Day = 5,
+    Week = 12,
+    Month = 13,
 }
 impl SubscriptionInterval {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -1099,6 +1124,32 @@ impl SubscriptionInterval {
             SubscriptionInterval::FiveMinutes => {
                 "SUBSCRIPTION_INTERVAL_FIVE_MINUTES"
             }
+            // HACK:
+            // Добавлено.
+            // Значения взяты из официального python-sdk,
+            // вроде работают правильно, надо еще проверить.
+            // class SubscriptionInterval(_grpc_helpers.Enum):
+            //     SUBSCRIPTION_INTERVAL_UNSPECIFIED = 0
+            //     SUBSCRIPTION_INTERVAL_ONE_MINUTE = 1
+            //     SUBSCRIPTION_INTERVAL_FIVE_MINUTES = 2
+            //     SUBSCRIPTION_INTERVAL_FIFTEEN_MINUTES = 3
+            //     SUBSCRIPTION_INTERVAL_ONE_HOUR = 4
+            //     SUBSCRIPTION_INTERVAL_ONE_DAY = 5
+            //     SUBSCRIPTION_INTERVAL_2_MIN = 6
+            //     SUBSCRIPTION_INTERVAL_3_MIN = 7
+            //     SUBSCRIPTION_INTERVAL_10_MIN = 8
+            //     SUBSCRIPTION_INTERVAL_30_MIN = 9
+            //     SUBSCRIPTION_INTERVAL_2_HOUR = 10
+            //     SUBSCRIPTION_INTERVAL_4_HOUR = 11
+            //     SUBSCRIPTION_INTERVAL_WEEK = 12
+            //     SUBSCRIPTION_INTERVAL_MONTH = 13
+            SubscriptionInterval::TenMinutes => {
+                "SUBSCRIPTION_INTERVAL_10_MIN"
+            }
+            SubscriptionInterval::OneHour => "SUBSCRIPTION_INTERVAL_ONE_HOUR",
+            SubscriptionInterval::Day => "SUBSCRIPTION_INTERVAL_ONE_DAY",
+            SubscriptionInterval::Week => "SUBSCRIPTION_INTERVAL_WEEK",
+            SubscriptionInterval::Month => "SUBSCRIPTION_INTERVAL_MONTH",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.

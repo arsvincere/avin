@@ -75,6 +75,7 @@ impl VirtualBroker {
             match a {
                 Action::Post(a) => self.post_action(a),
                 Action::TradeClosed(_) => panic!(),
+                Action::Subscribe(_) => panic!(),
             }
         }
 

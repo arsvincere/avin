@@ -24,7 +24,7 @@ mod transaction;
 mod work;
 
 pub use account::Account;
-pub use action::{Action, PostOrderAction};
+pub use action::{Action, PostOrderAction, SubscribeAction};
 pub use asset::*;
 pub use bar::Bar;
 pub use chart::{Chart, ChartFeatures};

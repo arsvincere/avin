@@ -9,7 +9,6 @@ use crate::{core::range::Range, utils};
 use bitcode::{Decode, Encode};
 use chrono::prelude::*;
 use polars::frame::DataFrame;
-use std::error::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
 pub struct Bar {
@@ -31,7 +30,7 @@ impl Bar {
             v,
         }
     }
-    pub fn from_df(df: DataFrame) -> Result<Vec<Bar>, Box<dyn Error>> {
+    pub fn from_df(df: DataFrame) -> Result<Vec<Bar>, String> {
         let ts = df
             .column("ts_nanos")
             .unwrap()

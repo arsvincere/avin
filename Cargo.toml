@@ -46,6 +46,7 @@ serde_json = "1.0"
 strum = { version = "0.27.1", features = ["derive", "strum_macros"]}
 time-unit = "0.1"
 tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1.17"
 tonic = { version = "0.11", features = ["tls", "tls-roots", "gzip"] }
 tonic-build = "0.8.0"
 uuid = {version = "1.16.0", features = [ "v4" ]}

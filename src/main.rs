@@ -10,7 +10,6 @@
  * * * * * * * * Open source cross-platform trading system * * * * * * * * */
 
 use avin::*;
-use utils::Timer;
 
 #[tokio::main]
 async fn main() {
@@ -18,20 +17,13 @@ async fn main() {
     log::set_max_level(log::LevelFilter::Debug);
     log::info!("Welcome to AVIN Trade System!");
 
-    let share = Share::new("MOEX_SHARE_GAZP").unwrap();
-    let tf = TimeFrame::M1;
-    let term = Term::T1;
-    let begin = utils::date("2025-01-01");
-    let end = utils::date("2025-02-01");
-    let mut chart = Chart::load(share.iid(), &tf, &begin, &end).unwrap();
-    chart.features(ChartFeatures::Extremum, true);
-
-    let trend = chart.trend(&term, 1).unwrap();
-    println!("{}", trend);
-
-    let t = Timer::new();
-    let p = TrendAnalytic::posterior(&trend).unwrap();
-    t.stop("Time:");
-
-    dbg!(p);
+    let (event_tx, _event_rx) = tokio::sync::mpsc::unbounded_channel();
+    let mut broker = Tinkoff::new(event_tx.clone());
+    broker.connect().await.unwrap();
+    dbg!("connected!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    let acc = broker.get_accounts().await.unwrap();
+    dbg!(&acc);
+    // broker.create_marketdata_stream().await.unwrap();
+    broker.create_transactions_stream().await.unwrap();
+    broker.start().await
 }

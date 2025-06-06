@@ -41,10 +41,10 @@ pub struct ChartWidget {
 impl Default for ChartWidget {
     fn default() -> Self {
         Self {
-            scale_x: false,
-            scale_y: false,
+            scale_x: true,
+            scale_y: true,
             palette: Palette::default(),
-            tf: TimeFrame::H1,
+            tf: TimeFrame::Day,
             bars: true,
             t1: false,
             t2: false,
@@ -123,34 +123,30 @@ impl ChartWidget {
     fn show_chart(&mut self, ui: &mut egui::Ui, asset: &mut Asset) {
         let chart = get_chart(asset, &self.tf);
 
-        ui.input(|i| {
+        let _ = ui.input(|i| {
             i.events.iter().find_map(|e| match e {
-                //
-            }}));
-
-            // if i.key_pressed(Key::D) {
-            //     self.scale_x = true;
-            //     self.scale_y = false;
-            // } else if i.key_pressed(Key::F) {
-            //     self.scale_x = false;
-            //     self.scale_y = true;
-            // } else {
-            //     self.scale_x = true;
-            //     self.scale_y = true;
-            // }
-
-        //             let delta = ui.input(|i| {
-        //                 i.events.iter().find_map(|e| match e {
-        //                     egui::Event::MouseWheel {
-        //                         unit: _,
-        //                         delta,
-        //                         modifiers,
-        //                     } if modifiers.command_only() => Some(*delta),
-        //                     _ => None,
-        //                 })
-        //             });
-
-        // });
+                egui::Event::Key {
+                    key,
+                    physical_key: _,
+                    pressed,
+                    repeat: _,
+                    modifiers: _,
+                } => {
+                    if *key == Key::D && *pressed {
+                        self.scale_x = true;
+                        self.scale_y = false;
+                    } else if *key == Key::F && *pressed {
+                        self.scale_x = false;
+                        self.scale_y = true;
+                    } else {
+                        self.scale_x = true;
+                        self.scale_y = true;
+                    };
+                    Some(())
+                }
+                _ => None,
+            })
+        });
 
         let _plot = Plot::new("chart_plot")
             .show_grid(false)
@@ -160,31 +156,6 @@ impl ChartWidget {
             .coordinates_formatter(Corner::LeftTop, bar_info(chart))
             .label_formatter(|name, value| price_info(chart, name, value))
             .show(ui, |plot_ui| self.draw_all(plot_ui, chart));
-
-        // fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        //     egui::CentralPanel::default().show(ctx, |ui| {
-        //         ui.label(format!("N = {}", self.age));
-        //         let response = ui.image(egui::include_image!(
-        //             "../../../crates/egui/assets/ferris.png"
-        //         ));
-        //         if response.hovered() {
-        //             let delta = ui.input(|i| {
-        //                 i.events.iter().find_map(|e| match e {
-        //                     egui::Event::MouseWheel {
-        //                         unit: _,
-        //                         delta,
-        //                         modifiers,
-        //                     } if modifiers.command_only() => Some(*delta),
-        //                     _ => None,
-        //                 })
-        //             });
-        //             if let Some(delta) = delta {
-        //                 self.age = self
-        //                     .age
-        //                     .wrapping_add_signed(delta.max_elem().signum() as i32);
-        //             }
-        //         }
-        //     });
     }
 
     fn draw_all(&self, plot_ui: &mut PlotUi, chart: &Chart) {
@@ -228,7 +199,8 @@ fn get_chart<'a>(asset: &'a mut Asset, tf: &TimeFrame) -> &'a mut Chart {
     match loaded {
         true => asset.chart_mut(tf).unwrap(),
         false => {
-            let chart = asset.load_chart_mut(tf).unwrap();
+            asset.load_chart(tf).unwrap();
+            let chart = asset.chart_mut(tf).unwrap();
             chart.features(ChartFeatures::Extremum, true);
             chart.features(ChartFeatures::Posterior, true);
 
@@ -279,6 +251,32 @@ fn price_info(chart: &Chart, name: &str, value: &PlotPoint) -> String {
 }
 fn draw_bars(plot: &mut PlotUi, palette: &Palette, chart: &Chart) {
     for bar in chart.bars().iter() {
+        // select color
+        let color = if bar.is_bull() {
+            palette.bull
+        } else if bar.is_bear() {
+            palette.bear
+        } else {
+            palette.undef
+        };
+
+        // eval coordinate X
+        let x0 = bar.ts_nanos as f64;
+        let x1 = x0 + chart.tf().nanos() as f64;
+        let x = (x1 + x0) / 2.0;
+
+        // create open/close/shadow lines
+        let open = Line::new("", vec![[x0, bar.o], [x, bar.o]]).color(color);
+        let close = Line::new("", vec![[x, bar.c], [x1, bar.c]]).color(color);
+        let shadow = Line::new("", vec![[x, bar.l], [x, bar.h]]).color(color);
+
+        // add lines on plot
+        plot.line(open);
+        plot.line(shadow);
+        plot.line(close);
+    }
+
+    if let Some(bar) = chart.now() {
         // select color
         let color = if bar.is_bull() {
             palette.bull
@@ -418,10 +416,10 @@ fn draw_posterior_1(
     // line equation
     let (a, b) = solve(x0, y0, x1, y1);
 
+    // create points
     let prices = p.column("price").unwrap().f64().unwrap();
     let mut abs = p.column("abs").unwrap().f64().unwrap().into_no_null_iter();
     let mut p = p.column("p").unwrap().f64().unwrap().into_no_null_iter();
-
     for price in prices.into_no_null_iter() {
         let info = format!(
             "{}  abs={}  p={:.2}%",
@@ -487,10 +485,10 @@ fn draw_posterior_0(
     // line equation
     let (a, b) = solve(x0, y0, x1, y1);
 
+    // create points
     let prices = p.column("price").unwrap().f64().unwrap();
     let mut abs = p.column("abs").unwrap().f64().unwrap().into_no_null_iter();
     let mut p = p.column("p").unwrap().f64().unwrap().into_no_null_iter();
-
     for price in prices.into_no_null_iter() {
         let info = format!(
             "{}  abs={}  p={:.2}%",

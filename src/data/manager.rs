@@ -178,8 +178,11 @@ impl Manager {
     }
 
     async fn cache_tinkoff() -> Result<(), &'static str> {
-        let mut source = Tinkoff::new().await;
-        let shares = source.get_shares().await.unwrap();
+        let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
+        let mut b = Tinkoff::new(tx);
+        b.connect().await.unwrap();
+
+        let shares = b.get_shares().await.unwrap();
 
         let mut iids = Vec::new();
         for share in shares {
