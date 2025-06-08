@@ -13,6 +13,15 @@ pub enum Direction {
     Sell,
 }
 impl Direction {
+    pub fn from_str(s: &str) -> Result<Direction, String> {
+        match s {
+            "b" => Ok(Direction::Buy),
+            "s" => Ok(Direction::Sell),
+            "B" => Ok(Direction::Buy),
+            "S" => Ok(Direction::Sell),
+            _ => Err(format!("Invalid direction: {}", s)),
+        }
+    }
     pub fn to_str(&self) -> &'static str {
         match self {
             Direction::Buy => "b",

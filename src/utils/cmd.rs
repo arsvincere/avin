@@ -131,7 +131,7 @@ impl Cmd {
     }
     pub fn write_pqt(
         df: &mut DataFrame,
-        path: &PathBuf,
+        path: &Path,
     ) -> Result<(), Box<dyn Error>> {
         let dir_path = path.parent().unwrap();
         if !Cmd::is_exist(dir_path) {

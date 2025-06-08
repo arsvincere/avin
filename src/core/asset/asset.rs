@@ -151,3 +151,8 @@ impl std::fmt::Display for Asset {
         }
     }
 }
+impl PartialEq for Asset {
+    fn eq(&self, other: &Self) -> bool {
+        self.figi() == other.figi()
+    }
+}

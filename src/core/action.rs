@@ -13,8 +13,11 @@ use crate::data::IID;
 
 #[derive(Debug)]
 pub enum Action {
-    Post(PostOrderAction),
-    Subscribe(SubscribeAction),
+    Post(PostOrderAction), // TODO: rename -> OrderAction
+    // Cancel(OrderAction),
+    Subscribe(SubscribeAction), // TODO: rename -> DataAction
+    //Unsubscribe(DataAction)
+    // TradeOpened(Trade),
     TradeClosed(Trade),
 }
 impl std::fmt::Display for Action {
@@ -58,6 +61,8 @@ impl std::fmt::Display for PostOrderAction {
 #[derive(Debug)]
 pub struct SubscribeAction {
     pub iid: IID,
+    // TODO: Vec<MarketData>
+    // тогда одним запросом можно будет подписаться на все таймфреймы
     pub market_data: MarketData,
 }
 impl SubscribeAction {
