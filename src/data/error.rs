@@ -5,6 +5,9 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+// TODO: rename -> AvinError
+// TODO: move -> utils
+
 #[derive(Debug)]
 pub enum DataError {
     NotFound(String),

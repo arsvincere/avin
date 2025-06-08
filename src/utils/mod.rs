@@ -12,5 +12,7 @@ mod timer;
 
 pub use cmd::Cmd;
 pub use logger::LOGGER;
-pub use misc::{date, datetime, max, min, round, round_price, sum};
+pub use misc::{
+    bisect_left, date, datetime, dt, max, min, round, round_price, sum, ts,
+};
 pub use timer::Timer;

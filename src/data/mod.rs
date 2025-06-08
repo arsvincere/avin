@@ -8,6 +8,7 @@
 mod category;
 mod cli;
 mod data_file_bar;
+mod data_file_tic;
 mod error;
 mod iid;
 mod iid_cache;

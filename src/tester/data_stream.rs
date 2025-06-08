@@ -142,7 +142,7 @@ impl DataStream {
 
         // else
         let bar_10m = self.bar_10m.take().unwrap();
-        let next_ts = TimeFrame::next_ts(bar_10m.ts_nanos, "10M");
+        let next_ts = TimeFrame::M10.next_ts(bar_10m.ts_nanos);
 
         // only update
         if bar_1m.ts_nanos < next_ts {
@@ -179,7 +179,7 @@ impl DataStream {
 
         // else
         let bar_1h = self.bar_1h.take().unwrap();
-        let next_ts = TimeFrame::next_ts(bar_1h.ts_nanos, "1H");
+        let next_ts = TimeFrame::H1.next_ts(bar_1h.ts_nanos);
 
         // only update
         if bar_1m.ts_nanos < next_ts {
@@ -214,7 +214,7 @@ impl DataStream {
 
         // else
         let bar_d = self.bar_d.take().unwrap();
-        let next_ts = TimeFrame::next_ts(bar_d.ts_nanos, "D");
+        let next_ts = TimeFrame::Day.next_ts(bar_d.ts_nanos);
 
         // only update
         if bar_1m.ts_nanos < next_ts {

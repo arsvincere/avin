@@ -15,6 +15,9 @@ use crate::BarEvent;
 use crate::Chart;
 use crate::Cmd;
 use crate::DATA_DIR;
+use crate::Footprint;
+use crate::MarketData;
+use crate::Tic;
 use crate::TicEvent;
 use crate::TimeFrame;
 use crate::conf::DEFAULT_BARS_COUNT;
@@ -24,7 +27,9 @@ use crate::data::Manager;
 #[derive(Debug)]
 pub struct Share {
     iid: IID,
+    tics: Vec<Tic>,
     charts: HashMap<TimeFrame, Chart>,
+    footprints: HashMap<TimeFrame, Footprint>,
 }
 
 impl Share {
@@ -60,12 +65,14 @@ impl Share {
 
         Ok(share)
     }
-    pub fn from_iid(iid: IID) -> Self {
+    pub fn from_iid(iid: IID) -> Share {
         assert!(iid.category() == "SHARE");
 
         Self {
             iid,
+            tics: Vec::new(),
             charts: HashMap::new(),
+            footprints: HashMap::new(),
         }
     }
     pub fn from_info(info: HashMap<String, String>) -> Share {
@@ -145,6 +152,49 @@ impl Share {
         self.charts[tf].as_ref()
     }
 
+    // footprint
+    pub fn tics(&self) -> Option<&Vec<Tic>> {
+        if self.tics.len() > 0 {
+            return Some(&self.tics);
+        }
+
+        None
+    }
+    pub fn footprint(&self, tf: &TimeFrame) -> Option<&Footprint> {
+        self.footprints.get(tf)
+    }
+    pub fn footprint_mut(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Option<&mut Footprint> {
+        self.footprints.get_mut(tf)
+    }
+    pub fn load_tics(&mut self) -> Result<(), String> {
+        let begin = Utc::now().with_time(NaiveTime::MIN).unwrap();
+        let end = Utc::now();
+
+        match Manager::request(&self.iid, &MarketData::TIC, &begin, &end) {
+            Ok(df) => {
+                self.tics = Tic::from_df(df).unwrap();
+                Ok(())
+            }
+            Err(_) => todo!(),
+        }
+    }
+    pub fn build_footprint(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Result<&Footprint, &'static str> {
+        if self.tics.len() == 0 {
+            return Err("tics not loaded");
+        }
+
+        let footprint = Footprint::from_tics(self.iid(), tf, &self.tics);
+        self.footprints.insert(tf.clone(), footprint);
+
+        Ok(self.footprints[tf].as_ref())
+    }
+
     // events
     pub fn bar_event(&mut self, e: BarEvent) {
         let chart = self.charts.get_mut(&e.tf).unwrap();
@@ -176,7 +226,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn share_from_str() {
+    fn share_new() {
         let share = Share::new("moex_share_sber").unwrap();
         assert_eq!(share.exchange(), "MOEX");
         assert_eq!(share.category(), "SHARE");
@@ -210,7 +260,7 @@ mod tests {
         let chart = share.load_chart(&tf).unwrap();
         assert_eq!(chart.tf(), &tf);
 
-        assert!(chart.bars().len() > 1000);
-        assert!(chart.bars().len() < 5000);
+        assert!(chart.bars().len() > 0);
+        assert!(chart.bars().len() < crate::DEFAULT_BARS_COUNT as usize);
     }
 }

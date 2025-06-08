@@ -40,6 +40,15 @@ pub fn date(d: &str) -> DateTime<Utc> {
 
     dt.to_utc()
 }
+/// Convert datetime UTC -> timestamp nanos
+pub fn ts(dt: &DateTime<Utc>) -> i64 {
+    dt.timestamp_nanos_opt().unwrap()
+}
+/// Convert timestamp nanos -> datetime UTC
+pub fn dt(ts_nanos: i64) -> DateTime<Utc> {
+    DateTime::from_timestamp_nanos(ts_nanos)
+}
+
 pub fn round(num: f64, precision: u8) -> f64 {
     assert!(precision <= 9);
 
@@ -68,6 +77,7 @@ pub fn round_price(price: f64, step: f64) -> f64 {
 
     tmp as f64 / POW_VEC[9]
 }
+
 pub fn max<T: PartialOrd>(left: T, right: T) -> T {
     if left > right { left } else { right }
 }
@@ -80,6 +90,75 @@ pub fn sum<T: std::ops::Add>(
 ) -> <T as std::ops::Add<T>>::Output {
     left + right
 }
+
+pub fn bisect_left<T, U>(list: &[T], x: U, key: fn(&T) -> U) -> Option<usize>
+where
+    U: PartialOrd,
+{
+    // NOTE:
+    // если пустой вектор -> None
+    // если меньше первого -> None
+    // если больше последнего -> последний
+    // если есть == x вернет его индекс
+    // если между x то вернет индекс СЛЕВА от x
+
+    let mut left = 0;
+    let mut right = list.len();
+    let mut mid;
+
+    // начальные проверки
+    if right == 0 {
+        // пустой вектор
+        return None;
+    // } else if x < &list.first().unwrap().ts_nanos {
+    } else if x < key(&list[left]) {
+        // искомый меньше всех в векторе
+        return None;
+    // } else if x > &list.last().unwrap().ts_nanos {
+    } else if x > key(&list[right - 1]) {
+        // искомый больше всех в векторе
+        return Some(right - 1);
+    }
+
+    while left < right {
+        mid = left + (right - left) / 2;
+        let mid_val = key(&list[mid]);
+
+        if mid_val == x {
+            return Some(mid);
+        } else if mid_val < x {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+
+    Some(left - 1)
+}
+// fn binary_search<T, X>(list: &[T], x: &X, key: fn(&T) -> &X) -> Option<usize>
+// where
+//     X: PartialOrd,
+// {
+//     let mut left = 0;
+//     let mut right = list.len() - 1;
+//     let mut mid;
+//     let mut mid_val: &X;
+//
+//     while left <= right {
+//         mid = (right - left) / 2 + left;
+//         mid_val = key(&list[mid]);
+//
+//         if mid_val == x {
+//             return Some(mid);
+//         } else if x < mid_val {
+//             right = mid - 1;
+//         } else {
+//             left = mid + 1;
+//         }
+//     }
+//
+//     None
+// }
 
 #[cfg(test)]
 mod tests {

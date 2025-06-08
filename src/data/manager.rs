@@ -5,22 +5,20 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::data::category::Category;
-use crate::data::data_file_bar::DataFileBar;
-use crate::data::error::DataError;
-use crate::data::iid::IID;
-use crate::data::iid_cache::IidCache;
-use crate::data::market_data::MarketData;
-use crate::data::source::Source;
-use crate::data::source_moex::SourceMoex;
-use crate::tinkoff::Tinkoff;
-use chrono::prelude::*;
-use polars::prelude::{
-    DataFrame, DataType, Duration, Field, IntoLazy, NamedFrom, Schema,
-    Series, col, df,
-};
-use polars::time::ClosedWindow;
-// use polars::prelude::*;
+use chrono::{Days, prelude::*};
+use polars::prelude::{DataFrame, DataType, Field, IntoLazy, Schema, col};
+
+use crate::Tinkoff;
+
+use super::category::Category;
+use super::data_file_bar::DataFileBar;
+use super::data_file_tic::DataFileTic;
+use super::error::DataError;
+use super::iid::IID;
+use super::iid_cache::IidCache;
+use super::market_data::MarketData;
+use super::source::Source;
+use super::source_moex::SourceMoex;
 
 pub struct Manager {}
 impl Manager {
@@ -28,7 +26,7 @@ impl Manager {
         println!(":: Caching {}", source.to_string());
 
         match source {
-            Source::TINKOFF => Manager::cache_tinkoff().await,
+            Source::TINKOFF => cache_tinkoff().await,
             Source::MOEX => todo!(),
             Source::CONVERTER => panic!(),
         }
@@ -48,13 +46,9 @@ impl Manager {
 
         match year {
             Some(year) => {
-                Self::download_one_year(&source, &iid, &market_data, year)
-                    .await
+                download_year(&source, &iid, &market_data, year).await
             }
-            None => {
-                Self::download_all_availible(&source, &iid, &market_data)
-                    .await
-            }
+            None => download_all_availible(&source, &iid, &market_data).await,
         }
     }
     pub fn find(s: &str) -> Result<IID, &'static str> {
@@ -111,7 +105,7 @@ impl Manager {
 
         // convert timeframe
         for i in data {
-            Manager::convert_timeframe(&i, in_t, out_t)?;
+            convert_timeframe(&i, in_t, out_t)?;
         }
 
         // сохранить
@@ -125,90 +119,121 @@ impl Manager {
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<DataFrame, DataError> {
-        // create empty df
-        let bar_schema = Schema::from_iter(vec![
-            Field::new("ts_nanos".into(), DataType::Int64),
-            Field::new("open".into(), DataType::Float64),
-            Field::new("high".into(), DataType::Float64),
-            Field::new("low".into(), DataType::Float64),
-            Field::new("close".into(), DataType::Float64),
-            Field::new("volume".into(), DataType::Int64),
-            Field::new("value".into(), DataType::Float64),
-        ]);
-        let mut df = DataFrame::empty_with_schema(&bar_schema);
-
-        // load data by years
-        let mut year = begin.year();
-        let end_year = end.year();
-        while year <= end_year {
-            match DataFileBar::load(iid, market_data, year) {
-                Ok(data) => {
-                    df.extend(&data).unwrap();
-                    year += 1;
-                }
-                Err(e) => match e {
-                    DataError::NotFound(_) => {
-                        year += 1;
-                    }
-                    DataError::ReadError(e) => {
-                        log::error!("{}", e);
-                        panic!();
-                    }
-                },
-            }
+        match market_data {
+            MarketData::TIC => request_tic(iid, market_data, begin, end),
+            MarketData::BAR_1M => request_bar(iid, market_data, begin, end),
+            MarketData::BAR_5M => todo!(),
+            MarketData::BAR_10M => request_bar(iid, market_data, begin, end),
+            MarketData::BAR_1H => request_bar(iid, market_data, begin, end),
+            MarketData::BAR_D => request_bar(iid, market_data, begin, end),
+            MarketData::BAR_W => request_bar(iid, market_data, begin, end),
+            MarketData::BAR_M => request_bar(iid, market_data, begin, end),
         }
+    }
+}
 
-        // filter begin end datetime
-        let begin = begin.timestamp_nanos_opt().unwrap_or(0);
-        let end = end.timestamp_nanos_opt().unwrap();
-        let df = df
-            .lazy()
-            .filter(col("ts_nanos").gt_eq(begin))
-            .filter(col("ts_nanos").lt(end))
-            .collect()
-            .unwrap();
+// private
+fn bar_schema() -> Schema {
+    Schema::from_iter(vec![
+        Field::new("ts_nanos".into(), DataType::Int64),
+        Field::new("open".into(), DataType::Float64),
+        Field::new("high".into(), DataType::Float64),
+        Field::new("low".into(), DataType::Float64),
+        Field::new("close".into(), DataType::Float64),
+        Field::new("volume".into(), DataType::Int64),
+        Field::new("value".into(), DataType::Float64),
+    ])
+}
+fn tic_schema() -> Schema {
+    Schema::from_iter(vec![
+        Field::new("ts_nanos".into(), DataType::Int64),
+        Field::new("direction".into(), DataType::String),
+        Field::new("lots".into(), DataType::Int64),
+        Field::new("price".into(), DataType::Float64),
+        Field::new("value".into(), DataType::Float64),
+        Field::new("session".into(), DataType::Int8),
+        Field::new("tradeno".into(), DataType::Int64),
+    ])
+}
+fn filter_dt(
+    begin: &DateTime<Utc>,
+    end: &DateTime<Utc>,
+    df: DataFrame,
+) -> DataFrame {
+    // filter begin end datetime by timestamp
+    let b = begin.timestamp_nanos_opt().unwrap_or(0);
+    let e = end.timestamp_nanos_opt().unwrap();
 
-        // check empty
-        if df.is_empty() {
-            let msg = format!("{} {}", iid, market_data);
-            return Err(DataError::NotFound(msg));
-        }
+    let df = df
+        .lazy()
+        .filter(col("ts_nanos").gt_eq(b))
+        .filter(col("ts_nanos").lt(e))
+        .collect()
+        .unwrap();
 
-        Ok(df)
+    df
+}
+
+async fn cache_tinkoff() -> Result<(), &'static str> {
+    let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
+    let mut b = Tinkoff::new(tx);
+    b.connect().await.unwrap();
+
+    let shares = b.get_shares().await.unwrap();
+
+    let mut iids = Vec::new();
+    for share in shares {
+        iids.push(share.iid().clone());
     }
 
-    async fn cache_tinkoff() -> Result<(), &'static str> {
-        let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
-        let mut b = Tinkoff::new(tx);
-        b.connect().await.unwrap();
+    let source = Source::TINKOFF;
+    let category = Category::SHARE;
+    let cache = IidCache::new(source, category, iids);
 
-        let shares = b.get_shares().await.unwrap();
+    IidCache::save(&cache)?;
 
-        let mut iids = Vec::new();
-        for share in shares {
-            iids.push(share.iid().clone());
-        }
+    Ok(())
+}
+async fn download_year(
+    source: &SourceMoex,
+    iid: &IID,
+    market_data: &MarketData,
+    year: i32,
+) -> Result<(), &'static str> {
+    let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
+    let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
+    let df = source.get_bars(&iid, &market_data, &begin, &end).await?;
 
-        let source = Source::TINKOFF;
-        let category = Category::SHARE;
-        let cache = IidCache::new(source, category, iids);
-
-        IidCache::save(&cache)?;
-
-        Ok(())
+    if df.is_empty() {
+        return Err("   - no data for {year}");
     }
-    async fn download_one_year(
-        source: &SourceMoex,
-        iid: &IID,
-        market_data: &MarketData,
-        year: i32,
-    ) -> Result<(), &'static str> {
+
+    // NOTE: ParquetWriter требует &mut df для сохранения...
+    // по факту никто data_file не меняет перед записью
+    let mut data_file =
+        DataFileBar::new(iid, market_data.clone(), df, year).unwrap();
+    DataFileBar::save(&mut data_file)?;
+
+    println!("Download complete!");
+    Ok(())
+}
+async fn download_all_availible(
+    source: &SourceMoex,
+    iid: &IID,
+    market_data: &MarketData,
+) -> Result<(), &'static str> {
+    let mut year: i32 = 1990; // суть - более старых данных точно нет
+    let now_year = Utc::now().year();
+
+    while year <= now_year {
         let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
         let df = source.get_bars(&iid, &market_data, &begin, &end).await?;
 
         if df.is_empty() {
-            return Err("   - no data for {year}");
+            println!("   - no data for {year}");
+            year += 1;
+            continue;
         }
 
         // NOTE: ParquetWriter требует &mut df для сохранения...
@@ -216,109 +241,123 @@ impl Manager {
         let mut data_file =
             DataFileBar::new(iid, market_data.clone(), df, year).unwrap();
         DataFileBar::save(&mut data_file)?;
-
-        println!("Download complete!");
-        Ok(())
+        year += 1;
     }
-    async fn download_all_availible(
-        source: &SourceMoex,
-        iid: &IID,
-        market_data: &MarketData,
-    ) -> Result<(), &'static str> {
-        let mut year: i32 = 1990; // суть - более старых данных точно нет
-        let now_year = Utc::now().year();
 
-        while year <= now_year {
-            let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
-            let end = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
-            let df =
-                source.get_bars(&iid, &market_data, &begin, &end).await?;
+    println!("Download complete!");
+    Ok(())
+}
+fn convert_timeframe(
+    _data: &DataFileBar,
+    _in_t: &MarketData,
+    _out_t: &MarketData,
+) -> Result<(), &'static str> {
+    todo!();
 
-            if df.is_empty() {
-                println!("   - no data for {year}");
+    // NOTE: old python code convert timeframe
+    //
+    // bars = cls.__fillVoid(bars, in_type)
+    // period = out_type.toTimeDelta()
+    //
+    // converted = list()
+    // i = 0
+    // while i < len(bars):
+    //     first = i
+    //     last = i
+    //     while last < len(bars):
+    //         time_dif = bars[last].dt - bars[first].dt
+    //         if time_dif < period:
+    //             last += 1
+    //         else:
+    //             break
+    //
+    //     new_bar = cls.__join(bars[first:last])
+    //     if new_bar is not None:
+    //         converted.append(new_bar)
+    //
+    //     i = last
+    //
+    // return converted
+}
+fn request_bar(
+    iid: &IID,
+    market_data: &MarketData,
+    begin: &DateTime<Utc>,
+    end: &DateTime<Utc>,
+) -> Result<DataFrame, DataError> {
+    // create empty df
+    let schema = bar_schema();
+    let mut df = DataFrame::empty_with_schema(&schema);
+
+    // load data by years
+    let mut year = begin.year();
+    let end_year = end.year();
+    while year <= end_year {
+        match DataFileBar::load(iid, market_data, year) {
+            Ok(data) => {
+                df.extend(&data).unwrap();
                 year += 1;
-                continue;
             }
-
-            // NOTE: ParquetWriter требует &mut df для сохранения...
-            // по факту никто data_file не меняет перед записью
-            let mut data_file =
-                DataFileBar::new(iid, market_data.clone(), df, year).unwrap();
-            DataFileBar::save(&mut data_file)?;
-            year += 1;
+            Err(e) => match e {
+                DataError::NotFound(_) => {
+                    year += 1;
+                }
+                DataError::ReadError(e) => {
+                    log::error!("{}", e);
+                    panic!();
+                }
+            },
         }
-
-        println!("Download complete!");
-        Ok(())
     }
-    fn convert_timeframe(
-        data: &DataFileBar,
-        in_t: &MarketData,
-        out_t: &MarketData,
-    ) -> Result<(), &'static str> {
-        let b = NaiveDate::from_ymd_opt(data.year, 1, 1)
-            .unwrap()
-            .and_hms_opt(0, 0, 0)
-            .unwrap();
-        let e = NaiveDate::from_ymd_opt(data.year, 12, 31)
-            .unwrap()
-            .and_hms_opt(23, 59, 0)
-            .unwrap();
-        let r = polars::prelude::date_range(
-            "dt".into(),
-            b,
-            e,
-            Duration::new(
-                time_unit::TimeUnit::Minutes.get_unit_nanoseconds() as i64,
-            ),
-            ClosedWindow::Both, // Both=[b,e], None=(b,e)...
-            polars::prelude::TimeUnit::Milliseconds,
-            None,
-        )
-        .unwrap();
-        let c = Series::new("name".into(), r);
-        let df = df!(
-            "dt" => c,
-        );
-        // TODO:
-        // пока получилось только создать датафрейм типо "__fillVoid" как
-        // раньше делал. Без пробелов по датам. Теперь его еще timezone
-        // Utc поставить. Потом надо объединить с реальными барама.
-        // Потом как то селектить по группам и сливать в один бар.
-        // Сейчас это слишком сложно для меня... нифига еще не понимаю
-        // как работать с датафреймами на расте, на питоне блин все было
-        // просто.
-        dbg!(&in_t);
-        dbg!(&out_t);
-        dbg!(&df);
 
-        todo!();
-
-        // NOTE: old python code convert timeframe
-        //
-        // bars = cls.__fillVoid(bars, in_type)
-        // period = out_type.toTimeDelta()
-        //
-        // converted = list()
-        // i = 0
-        // while i < len(bars):
-        //     first = i
-        //     last = i
-        //     while last < len(bars):
-        //         time_dif = bars[last].dt - bars[first].dt
-        //         if time_dif < period:
-        //             last += 1
-        //         else:
-        //             break
-        //
-        //     new_bar = cls.__join(bars[first:last])
-        //     if new_bar is not None:
-        //         converted.append(new_bar)
-        //
-        //     i = last
-        //
-        // return converted
+    // filter & check empty
+    let df = filter_dt(begin, end, df);
+    if df.is_empty() {
+        let msg = format!("{} {}", iid, market_data);
+        return Err(DataError::NotFound(msg));
     }
+
+    Ok(df)
+}
+fn request_tic(
+    iid: &IID,
+    market_data: &MarketData,
+    begin: &DateTime<Utc>,
+    end: &DateTime<Utc>,
+) -> Result<DataFrame, DataError> {
+    // create empty df
+    let schema = tic_schema();
+    let mut df = DataFrame::empty_with_schema(&schema);
+
+    // load data by days
+    let mut day = begin.date_naive();
+    let end_day = end.date_naive();
+    while day <= end_day {
+        match DataFileTic::load(iid, market_data, &day) {
+            Ok(data) => {
+                df.extend(&data.df()).unwrap();
+                day = day.checked_add_days(Days::new(1)).unwrap();
+            }
+            Err(e) => match e {
+                DataError::NotFound(_) => {
+                    day = day.checked_add_days(Days::new(1)).unwrap();
+                }
+                DataError::ReadError(e) => {
+                    log::error!("{}", e);
+                    panic!();
+                }
+            },
+        }
+    }
+
+    // filter & check empty
+    let df = filter_dt(begin, end, df);
+    if df.is_empty() {
+        let msg = format!("{} {}", iid, market_data);
+        return Err(DataError::NotFound(msg));
+    }
+
+    Ok(df)
 }
 
 #[cfg(test)]
@@ -370,7 +409,6 @@ mod tests {
         let end = utils::datetime("2023-08-01 13:00:00");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
-        dbg!(&df);
         let bars = Bar::from_df(df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();

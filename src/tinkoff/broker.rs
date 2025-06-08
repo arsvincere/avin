@@ -1000,6 +1000,7 @@ impl Tinkoff {
         log::debug!("Tinkoff.subscribe_action({a})");
 
         match a.market_data {
+            MarketData::TIC => todo!(),
             MarketData::BAR_1M => {
                 self.subscribe_bar(&a.iid, &TimeFrame::M1).await.unwrap()
             }

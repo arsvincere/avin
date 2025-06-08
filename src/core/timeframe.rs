@@ -32,40 +32,71 @@ impl TimeFrame {
             TimeFrame::Month,
         ]
     }
-    pub fn next_ts(ts: i64, tf: &str) -> i64 {
+    pub fn next_ts(&self, ts: i64) -> i64 {
         let dt = DateTime::from_timestamp_nanos(ts);
         let dt = dt.with_nanosecond(0).unwrap();
         let dt = dt.with_second(0).unwrap();
 
-        match tf {
-            "1M" => {
+        match self {
+            TimeFrame::M1 => {
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + TimeUnit::Minutes.get_unit_nanoseconds() as i64
             }
-            "5M" => {
-                let need_minutes = 5 - dt.minute() % 5;
-                let need_nano = need_minutes as i64
-                    * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
-                let ts = dt.timestamp_nanos_opt().unwrap();
-                ts + need_nano
-            }
-            "10M" => {
+            // "5M" => {
+            //     let need_minutes = 5 - dt.minute() % 5;
+            //     let need_nano = need_minutes as i64
+            //         * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
+            //     let ts = dt.timestamp_nanos_opt().unwrap();
+            //     ts + need_nano
+            // }
+            TimeFrame::M10 => {
                 let need_minutes = 10 - dt.minute() % 10;
                 let need_nano = need_minutes as i64
                     * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + need_nano
             }
-            "1H" => {
+            TimeFrame::H1 => {
                 let dt = dt.with_minute(0).unwrap();
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + TimeUnit::Hours.get_unit_nanoseconds() as i64
             }
-            "D" => {
+            TimeFrame::Day => {
                 let dt = dt.with_minute(0).unwrap();
                 let dt = dt.with_hour(0).unwrap();
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + TimeUnit::Days.get_unit_nanoseconds() as i64
+            }
+            other => todo!("TimeFrame::next_ts({}, {})", ts, other),
+        }
+    }
+    pub fn prev_ts(&self, ts: i64) -> i64 {
+        let dt = DateTime::from_timestamp_nanos(ts);
+        let dt = dt.with_nanosecond(0).unwrap();
+        let dt = dt.with_second(0).unwrap();
+
+        match self {
+            TimeFrame::M1 => {
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts
+            }
+            TimeFrame::M10 => {
+                let past_minutes = dt.minute() % 10;
+                let past_nano = past_minutes as i64
+                    * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts - past_nano
+            }
+            TimeFrame::H1 => {
+                let dt = dt.with_minute(0).unwrap();
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts
+            }
+            TimeFrame::Day => {
+                let dt = dt.with_minute(0).unwrap();
+                let dt = dt.with_hour(0).unwrap();
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts
             }
             other => todo!("TimeFrame::next_ts({}, {})", ts, other),
         }
@@ -140,39 +171,79 @@ mod tests {
         let dt = Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 5).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
 
-        let next_ts = TimeFrame::next_ts(ts, "1M");
+        let next_ts = TimeFrame::M1.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
             Utc.with_ymd_and_hms(2023, 8, 1, 10, 1, 0).unwrap()
         );
 
-        let next_ts = TimeFrame::next_ts(ts, "5M");
-        let next_dt = DateTime::from_timestamp_nanos(next_ts);
-        assert_eq!(
-            next_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 10, 5, 0).unwrap()
-        );
+        // let next_ts = TimeFrame::M5(ts);
+        // let next_dt = DateTime::from_timestamp_nanos(next_ts);
+        // assert_eq!(
+        //     next_dt,
+        //     Utc.with_ymd_and_hms(2023, 8, 1, 10, 5, 0).unwrap()
+        // );
 
-        let next_ts = TimeFrame::next_ts(ts, "10M");
+        let next_ts = TimeFrame::M10.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
             Utc.with_ymd_and_hms(2023, 8, 1, 10, 10, 0).unwrap()
         );
 
-        let next_ts = TimeFrame::next_ts(ts, "1H");
+        let next_ts = TimeFrame::H1.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
             Utc.with_ymd_and_hms(2023, 8, 1, 11, 0, 0).unwrap()
         );
 
-        let next_ts = TimeFrame::next_ts(ts, "D");
+        let next_ts = TimeFrame::Day.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
             Utc.with_ymd_and_hms(2023, 8, 2, 0, 0, 0).unwrap()
+        );
+    }
+    #[test]
+    fn prev_ts() {
+        let dt = Utc.with_ymd_and_hms(2023, 8, 1, 10, 3, 5).unwrap();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+
+        let prev_ts = TimeFrame::M1.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(
+            prev_dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 10, 3, 0).unwrap()
+        );
+
+        // let prev_ts = TimeFrame::M5(ts);
+        // let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        // assert_eq!(
+        //     prev_dt,
+        //     Utc.with_ymd_and_hms(2023, 8, 1, 10, 5, 0).unwrap()
+        // );
+
+        let prev_ts = TimeFrame::M10.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(
+            prev_dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 0).unwrap()
+        );
+
+        let prev_ts = TimeFrame::H1.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(
+            prev_dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 0).unwrap()
+        );
+
+        let prev_ts = TimeFrame::Day.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(
+            prev_dt,
+            Utc.with_ymd_and_hms(2023, 8, 1, 0, 0, 0).unwrap()
         );
     }
 }

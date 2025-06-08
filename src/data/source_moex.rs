@@ -226,6 +226,7 @@ impl SourceMoex {
             MarketData::BAR_W => Ok("interval=7"),
             MarketData::BAR_M => Ok("interval=31"),
 
+            MarketData::TIC => todo!(),
             MarketData::BAR_5M => Err("5M data is not availible at MOEX"),
             // _ => todo!(),
         }

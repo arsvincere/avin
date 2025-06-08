@@ -55,7 +55,7 @@ impl Default for Terminal {
     }
 }
 impl Terminal {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext) -> Self {
         // Called once before the first frame.
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
@@ -75,6 +75,7 @@ impl eframe::App for Terminal {
         egui_extras::install_image_loaders(ctx);
 
         ui_top(self, ctx);
+
         ui_left(self, ctx);
         ui_right(self, ctx);
 

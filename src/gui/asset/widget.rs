@@ -165,9 +165,10 @@ impl AssetWidget {
     fn receive_market_data(&mut self) {
         while let Ok(event) = self.event_rx.try_recv() {
             log::debug!("Asset widget receive {event}");
+            let asset = self.asset_list.get_mut(self.current_index).unwrap();
 
             match event {
-                Event::Bar(e) => self.current_asset().unwrap().bar_event(e),
+                Event::Bar(e) => asset.bar_event(e),
                 Event::Tic(e) => todo!("{:?}", e),
                 Event::Order(e) => todo!("{:?}", e),
             }

@@ -7,9 +7,9 @@
 
 use std::collections::HashMap;
 
-use crate::core::{Action, Event, Share, TimeFrame, TradeList};
-use crate::strategy::Strategy;
-use crate::{Tinkoff, Work};
+use crate::{Action, Event, Share, Strategy, TimeFrame, Tinkoff, TradeList};
+
+use super::work::Work;
 
 pub struct Trader {
     action_tx: tokio::sync::mpsc::UnboundedSender<Action>,

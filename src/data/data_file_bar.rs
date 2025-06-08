@@ -13,13 +13,13 @@ use polars::prelude::*;
 use std::path::PathBuf;
 
 #[derive(Debug)]
-pub struct DataFileBar<'a> {
-    pub iid: &'a IID,
+pub struct DataFileBar {
+    pub iid: IID,
     pub market_data: MarketData,
     pub data: DataFrame,
     pub year: i32,
 }
-impl<'a> DataFileBar<'a> {
+impl DataFileBar {
     pub fn path(&self) -> PathBuf {
         let mut path = self.iid.path();
         path.push(&self.market_data.name());
@@ -30,11 +30,11 @@ impl<'a> DataFileBar<'a> {
     }
 
     pub fn new(
-        iid: &'a IID,
+        iid: &IID,
         market_data: MarketData,
         data: DataFrame,
         year: i32,
-    ) -> Result<DataFileBar<'a>, &'static str> {
+    ) -> Result<DataFileBar, &'static str> {
         // TODO: проверка что begin end в пределах файла в одном году
         // находятся
         // let begin = data.column("dt").unwrap().get(0).unwrap();
@@ -42,7 +42,7 @@ impl<'a> DataFileBar<'a> {
         // let end = data.column("dt").unwrap().get(end - 1).unwrap();
 
         let data_file = DataFileBar {
-            iid,
+            iid: iid.clone(),
             market_data,
             data,
             year,
@@ -90,9 +90,9 @@ impl<'a> DataFileBar<'a> {
         // Ok(data_file)
     }
     pub fn request_all(
-        iid: &'a IID,
+        iid: &IID,
         market_data: &MarketData,
-    ) -> Result<Vec<DataFileBar<'a>>, &'static str> {
+    ) -> Result<Vec<DataFileBar>, &'static str> {
         // dir path
         let mut dir_path = iid.path();
         dir_path.push(&market_data.name());

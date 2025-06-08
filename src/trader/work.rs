@@ -15,10 +15,10 @@ pub struct Work {
     in_rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
 }
 impl Work {
-    pub fn new(share: Share) -> Self {
+    pub fn new(share: Share) -> Work {
         let (in_tx, in_rx) = tokio::sync::mpsc::unbounded_channel();
 
-        Self {
+        Work {
             share,
             strategys: Vec::new(),
             in_tx,

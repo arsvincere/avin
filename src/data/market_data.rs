@@ -18,6 +18,7 @@ pub enum MarketData {
     BAR_D,
     BAR_W,
     BAR_M,
+    TIC,
 }
 
 impl MarketData {
@@ -30,6 +31,7 @@ impl MarketData {
             MarketData::BAR_D => String::from("BAR_D"),
             MarketData::BAR_W => String::from("BAR_W"),
             MarketData::BAR_M => String::from("BAR_M"),
+            MarketData::TIC => String::from("TIC"),
         }
     }
     pub fn from(s: &str) -> Result<MarketData, &'static str> {
@@ -49,6 +51,7 @@ impl MarketData {
             "BAR_D" => Ok(MarketData::BAR_D),
             "BAR_W" => Ok(MarketData::BAR_W),
             "BAR_M" => Ok(MarketData::BAR_M),
+            "TIC" => Ok(MarketData::TIC),
             _ => Err("Invalid data type"),
         }
     }

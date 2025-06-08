@@ -9,7 +9,9 @@ use std::{collections::HashMap, path::PathBuf};
 
 use chrono::{DateTime, Utc};
 
-use crate::{BarEvent, Chart, IID, Manager, TicEvent, TimeFrame};
+use crate::{
+    BarEvent, Chart, Footprint, IID, Manager, Tic, TicEvent, TimeFrame,
+};
 
 use super::Share;
 
@@ -131,6 +133,39 @@ impl Asset {
     pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
         match self {
             Self::SHARE(share) => share.load_chart_empty(tf),
+        }
+    }
+
+    // footprint
+    pub fn tics(&self) -> Option<&Vec<Tic>> {
+        match self {
+            Self::SHARE(share) => share.tics(),
+        }
+    }
+    pub fn footprint(&self, tf: &TimeFrame) -> Option<&Footprint> {
+        match self {
+            Self::SHARE(share) => share.footprint(tf),
+        }
+    }
+    pub fn footprint_mut(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Option<&mut Footprint> {
+        match self {
+            Asset::SHARE(share) => share.footprint_mut(tf),
+        }
+    }
+    pub fn load_tics(&mut self) -> Result<(), String> {
+        match self {
+            Self::SHARE(share) => share.load_tics(),
+        }
+    }
+    pub fn build_footprint(
+        &mut self,
+        tf: &TimeFrame,
+    ) -> Result<&Footprint, &'static str> {
+        match self {
+            Self::SHARE(share) => share.build_footprint(tf),
         }
     }
 

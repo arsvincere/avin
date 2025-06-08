@@ -10,6 +10,8 @@ use bitcode::{Decode, Encode};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+// TODO: rename Iid
+
 /// IID - Instrument ID
 #[derive(Debug, PartialEq, Eq, Encode, Decode, Clone)]
 pub struct IID {

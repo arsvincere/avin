@@ -467,8 +467,8 @@ class SourceMoex:
             {
                 "ts_nanos": timestamps,
                 "direction": tics["buysell"],
-                "price": tics["price"],
                 "lots": tics["quantity"],
+                "price": tics["price"],
                 "value": tics["value"],
                 "session": tics["tradingsession"].cast(pl.Int8),
                 "tradeno": tics["tradeno"],
