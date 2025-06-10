@@ -184,7 +184,7 @@ impl Share {
     pub fn build_footprint(
         &mut self,
         tf: &TimeFrame,
-    ) -> Result<&Footprint, &'static str> {
+    ) -> Result<(), &'static str> {
         if self.tics.len() == 0 {
             return Err("tics not loaded");
         }
@@ -192,13 +192,18 @@ impl Share {
         let footprint = Footprint::from_tics(self.iid(), tf, &self.tics);
         self.footprints.insert(tf.clone(), footprint);
 
-        Ok(self.footprints[tf].as_ref())
+        Ok(())
     }
 
     // events
     pub fn bar_event(&mut self, e: BarEvent) {
-        let chart = self.charts.get_mut(&e.tf).unwrap();
-        chart.swallow_bar(e.bar);
+        match self.charts.get_mut(&e.tf) {
+            Some(chart) => chart.swallow_bar(e.bar),
+            None => {
+                log::error!("Chart not loaded: {}", e);
+                panic!();
+            }
+        }
     }
     pub fn tic_event(&mut self, _e: TicEvent) {
         todo!();

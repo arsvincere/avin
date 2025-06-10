@@ -215,11 +215,11 @@ fn analyse_name(
             analyse.unwrap().name(),
         )
     } else {
-        format!("{} {} {} trend", TrendAnalytic::name(), tf, term,)
+        format!("{} {} {} trend", TrendAnalytic::name(), tf, term)
     }
 }
 fn load_chart(iid: &IID, tf: &TimeFrame) -> Result<Chart, String> {
-    log::info!("   Load chart");
+    log::info!("Load chart {}", tf);
 
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();
@@ -230,7 +230,7 @@ fn load_chart(iid: &IID, tf: &TimeFrame) -> Result<Chart, String> {
 }
 fn create_trends_df(trends: &Vec<Trend>) -> DataFrame {
     let term = trends[0].term();
-    log::info!("   Create trends dataframe {}", term);
+    log::info!("Create trends dataframe {}", term);
 
     // tmp vectors for create df
     let mut begin = Vec::new();
@@ -285,6 +285,8 @@ fn analyse_feat(
     term: &Term,
     feat: &Feat,
 ) {
+    log::info!("Analyse feat {}", feat.name());
+
     let analyse = Analyse::CDF;
     let name = analyse_name(tf, term, Some(&feat), Some(&analyse));
     let mut cdf = TrendAnalytic::eval_cdf(
@@ -303,6 +305,8 @@ fn analyse_feat(
     TrendAnalytic::save(iid, &name, &mut sizes);
 }
 fn set_analyse_feat(trends: &Vec<Trend>, trends_df: &mut DataFrame) {
+    log::info!("Set analyse");
+
     // tmp vectors for columns
     let mut abs_cdf = Vec::new();
     let mut abs_size = Vec::new();

@@ -1,36 +1,42 @@
-# AVIN - Open source cross-platform trading system
-<!-- [![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=lines)](https://github.com/arsvincere/avin-rs) -->
-<!-- [![](https://tokei.rs/b1/github/arsvincere/avin-rs?category=files)](https://github.com/arsvincere/avin-rs) -->
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
-[![Size](https://img.shields.io/crates/size/avin)]()
-[![lines](https://sloc.xyz/github/arsvincere/avin-rs/)]()
-[![Documentation](https://docs.rs/avin/badge.svg)](https://docs.rs/avin/)
-[![Downloads crates.io](https://img.shields.io/crates/d/avin?label=downloads%20%28crates.io%29)](https://crates.io/crates/avin)
+<h1 align="center">
+  <img src="https://github.com/arsvincere/avin-rs/blob/master/res/splash/splash.png" alt="AVIN - Trade System">
+</h1>
 
-![image](https://github.com/arsvincere/avin-rs/blob/master/res/splash/splash.png)
+<div align="center">
 
+  [![version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
+  [![size](https://img.shields.io/crates/size/avin)]()
+  [![lines](https://sloc.xyz/github/arsvincere/avin-rs/?badge-bg-color=E82424&lower=true&label=lines)]()
+  [![doc](https://docs.rs/avin/badge.svg)](https://docs.rs/avin/)
+  [![downloads](https://img.shields.io/crates/d/avin?label=crates.io)](https://crates.io/crates/avin)
+
+</div>
+
+## AVIN - open source cross-platform trading system
 AVIN (от лат. Ars Vincere  -  искусство побеждать)  —  это кросплатформенная
 трейдинговая система, написана на Rust, с GUI на egui/eframe.
 
-## Модули и возможности:
+Содержит все, что нужно для алготрейдинга: от загрузки исторических данных и
+разработки стратегии, до запуска в боевой режим и построения отчетов.
 
-- **data:** Загрузка и обновление исторических данных. Пока только с Московской
-  биржи.
-- **core:** Cлой абстракций для высокоуровневой работы с данными на
-  "трейдерском языке": ордер, график, бар, таймфрейм... Интуитивные интерфейсы.
-- **extra:** Продвинутые абстракции (экстремум, тренд...), и место для
-  пользовательских структур.
-- **analytic:** Инструменты статистического анализа исторических данных.
-- **tester:** Простой, но очень быстрый бэк-тестер.
-- **trader:** Модуль управления роботами. Пока доступно подключение
-  только к Тинькофф брокеру (Т-банк).
-- **terminal:** GUI терминал для ручной торговли.
-- **report**: Построение отчетов.
-- **informer:** Уведомления в telegram.
-- **gui:** Утилиты для просмотра результатов тестов и др.
+## Модули и возможности
+
+- **data:** загрузка и обновление исторических данных. Пока только с Московской
+  биржи
+- **core:** структуры для удобной работы с данными на "трейдерском языке":
+  график, таймфрейм, ордер...
+- **extra:** продвинутые абстракции: экстремум, тренд, кластер...
+- **analytic:** инструменты статистического анализа исторических данных
+- **tester:** простой, но очень быстрый бэк-тестер
+- **trader:** модуль управления роботами. Пока доступно подключение
+  только к Тинькофф брокеру (Т-банк)
+- **terminal:** GUI терминал для ручной торговли
+- **report**: построение отчетов
+- **informer:** уведомления в telegram
+- **gui:** утилиты для просмотра результатов тестов и др.
 
 ## Цели проекта
-### 1. Open-source фреймворк для алготрейдера.
+### 1. Open-source фреймворк для алготрейдера
 
 Каждый алготрейдер, так или иначе, решает для себя задачи: получения и
 обновления исторических данных, проверки торговых гипотез, коннекторы к
@@ -42,7 +48,7 @@ AVIN (от лат. Ars Vincere  -  искусство побеждать)  —  
 В идеале должен получиться этакий фреймворк для трейдера, чтобы можно было
 сосредоточиться на анализе данных и разработке стратегий, а не служебном коде.
 
-### 2. Собрать команду алготрейдеров, программистов, математиков.
+### 2. Собрать команду алготрейдеров, программистов, математиков
 
 Я ищу единомышленников. Чтобы вместе ~~пить хеннеси и трахать телочек~~
 зарабатывать на бирже.
@@ -74,7 +80,6 @@ let contact = [email](mailto:mr.alexavin@gmail.com) || [telegram](https://t.me/m
 интерфейсы. На сегодня (2025-05-16) переписано около 50% python кода.
 
 ![image](https://github.com/arsvincere/avin-rs/blob/master/res/screenshot/Screenshot_2024-02-28_13-11-10.png)
-
 
 ## Getting start
 

@@ -7,6 +7,8 @@
 
 mod analytic;
 mod trend;
+mod volume;
 
 pub use analytic::Analytic;
 pub use trend::TrendAnalytic;
+pub use volume::VolumeAnalytic;

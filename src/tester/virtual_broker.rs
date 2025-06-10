@@ -54,7 +54,7 @@ impl VirtualBroker {
             strategy_name: test.strategy_name.clone(),
             commission: test.commission.clone(),
 
-            current_bar: Bar::new(0, 0.0, 0.0, 0.0, 0.0, 0),
+            current_bar: Bar::new(0, 0.0, 0.0, 0.0, 0.0, 0, None),
             queue: VecDeque::new(),
             market_orders: Vec::new(),
             limit_orders: Vec::new(),

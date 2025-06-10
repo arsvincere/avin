@@ -15,29 +15,17 @@ use std::path::Path;
 
 use avin::*;
 use chrono::NaiveTime;
+use polars::{prelude::NamedFrom, series::Series};
 
 #[tokio::main]
 async fn main() {
-    let mut asset = Asset::new("moex_share_sber").unwrap();
-    asset.load_tics();
+    log::set_logger(&utils::LOGGER).unwrap();
+    log::set_max_level(log::LevelFilter::Debug);
+    log::info!("Welcome to AVIN Trade System!");
 
-    let t = utils::Timer::new();
-    let f = asset.build_footprint(&TimeFrame::Day).unwrap();
-    t.stop("D");
-    dbg!(&f.df());
+    let asset = Asset::new("moex_share_gazp").unwrap();
+    let iid = asset.iid();
+    let tf = TimeFrame::Day;
 
-    let t = utils::Timer::new();
-    let f = asset.build_footprint(&TimeFrame::H1).unwrap();
-    t.stop("1H");
-    dbg!(&f.df());
-
-    let t = utils::Timer::new();
-    let f = asset.build_footprint(&TimeFrame::M10).unwrap();
-    t.stop("M10");
-    dbg!(&f.df());
-
-    let t = utils::Timer::new();
-    let f = asset.build_footprint(&TimeFrame::M1).unwrap();
-    t.stop("M1");
-    dbg!(&f.df());
+    VolumeAnalytic::analyse(iid, &tf);
 }

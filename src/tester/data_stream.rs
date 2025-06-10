@@ -100,6 +100,12 @@ impl DataStream {
             .i64()
             .unwrap()
             .into_no_null_iter();
+        let mut val = df
+            .column("value")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
 
         let mut bars_1m = VecDeque::with_capacity(df.height());
         for t in ts {
@@ -110,6 +116,7 @@ impl DataStream {
                 l.next().unwrap(),
                 c.next().unwrap(),
                 v.next().unwrap() as u64,
+                Some(val.next().unwrap()),
             );
             bars_1m.push_back(bar);
         }

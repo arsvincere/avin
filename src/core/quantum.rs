@@ -11,7 +11,7 @@ use super::{Quant, Tic};
 
 #[derive(Debug)]
 pub struct Quantum {
-    pub quants: Vec<Quant>,
+    quants: Vec<Quant>,
 }
 impl Quantum {
     // build
@@ -85,6 +85,9 @@ impl Quantum {
         }
 
         max.clone()
+    }
+    pub fn quants(&self) -> &Vec<Quant> {
+        &self.quants
     }
 }
 

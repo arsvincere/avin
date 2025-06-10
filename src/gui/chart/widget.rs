@@ -18,8 +18,10 @@ use egui_plot::PlotUi;
 use egui_plot::Points;
 
 use crate::Asset;
+use crate::CHART_BOTTOM;
 use crate::Chart;
 use crate::ChartFeatures;
+use crate::Footprint;
 use crate::Term::{self, T1, T2, T3, T4, T5};
 use crate::TimeFrame;
 use crate::utils;
@@ -32,6 +34,7 @@ pub struct ChartWidget {
     palette: Palette,
     tf: TimeFrame,
     bars: bool,
+    quantum: bool,
     t1: bool,
     t2: bool,
     t3: bool,
@@ -46,6 +49,7 @@ impl Default for ChartWidget {
             palette: Palette::default(),
             tf: TimeFrame::Day,
             bars: true,
+            quantum: true,
             t1: false,
             t2: false,
             t3: false,
@@ -87,6 +91,10 @@ impl ChartWidget {
             if ui.selectable_label(self.bars, "Bar").clicked() {
                 self.bars = !self.bars;
             };
+            // show quantum
+            if ui.selectable_label(self.quantum, "Qnt").clicked() {
+                self.quantum = !self.quantum;
+            };
             ui.separator();
 
             // show trends
@@ -121,7 +129,8 @@ impl ChartWidget {
             .show(ui, |_plot_ui| {});
     }
     fn show_chart(&mut self, ui: &mut egui::Ui, asset: &mut Asset) {
-        let chart = get_chart(asset, &self.tf);
+        ensure_chart(asset, &self.tf);
+        ensure_footprint(asset, &self.tf);
 
         let _ = ui.input(|i| {
             i.events.iter().find_map(|e| match e {
@@ -148,17 +157,37 @@ impl ChartWidget {
             })
         });
 
-        let _plot = Plot::new("chart_plot")
-            .show_grid(false)
-            .show_axes([false, false])
-            .allow_zoom([self.scale_x, self.scale_y])
-            .cursor_color(self.palette.cross)
-            .coordinates_formatter(Corner::LeftTop, bar_info(chart))
-            .label_formatter(|name, value| price_info(chart, name, value))
-            .show(ui, |plot_ui| self.draw_all(plot_ui, chart));
-    }
+        let chart = asset.chart(&self.tf).unwrap();
+        ui.vertical(|ui| {
+            let _plot = Plot::new("chart_plot")
+                .link_axis("link_group", [true, false])
+                .link_cursor("link_group", [true, false])
+                .height(ui.available_height() - CHART_BOTTOM)
+                .show_grid(false)
+                .show_axes([false, false])
+                .allow_zoom([self.scale_x, self.scale_y])
+                .cursor_color(self.palette.cross)
+                .coordinates_formatter(Corner::LeftTop, bar_info(chart))
+                .label_formatter(|name, value| price_info(chart, name, value))
+                .show(ui, |plot_ui| self.draw_center(plot_ui, asset));
 
-    fn draw_all(&self, plot_ui: &mut PlotUi, chart: &Chart) {
+            let _plot = Plot::new("bottom_plot")
+                .link_axis("link_group", [true, false])
+                .link_cursor("link_group", [true, false])
+                .height(CHART_BOTTOM)
+                .show_grid(false)
+                .show_axes([false, false])
+                .allow_zoom([self.scale_x, self.scale_y])
+                .cursor_color(self.palette.cross)
+                .show(ui, |plot_ui| self.draw_bottom(plot_ui, asset));
+        });
+
+        // asset.load_tics();
+    }
+    fn draw_center(&self, plot_ui: &mut PlotUi, asset: &Asset) {
+        let chart = asset.chart(&self.tf).unwrap();
+        let footprint = asset.footprint(&self.tf).unwrap();
+
         // draw bars
         if self.bars {
             draw_bars(plot_ui, &self.palette, chart);
@@ -190,23 +219,45 @@ impl ChartWidget {
             draw_posterior_1(plot_ui, &self.palette, chart, 1, &T5);
             draw_posterior_0(plot_ui, &self.palette, chart, 0, &T5);
         }
+
+        // draw quantum
+        if self.quantum {
+            draw_quantum(plot_ui, &self.palette, footprint);
+        }
+    }
+    fn draw_bottom(&self, plot_ui: &mut PlotUi, asset: &Asset) {
+        let footprint = asset.footprint(&self.tf).unwrap();
+
+        // draw bars
+        if self.bars {
+            draw_hist(plot_ui, &self.palette, footprint);
+        }
     }
 }
 
-fn get_chart<'a>(asset: &'a mut Asset, tf: &TimeFrame) -> &'a mut Chart {
-    let loaded = asset.chart(tf).is_some();
-
-    match loaded {
-        true => asset.chart_mut(tf).unwrap(),
-        false => {
+fn ensure_chart(asset: &mut Asset, tf: &TimeFrame) {
+    match asset.chart(tf) {
+        Some(_) => (),
+        None => {
             asset.load_chart(tf).unwrap();
             let chart = asset.chart_mut(tf).unwrap();
             chart.features(ChartFeatures::Extremum, true);
             chart.features(ChartFeatures::Posterior, true);
-
-            chart
         }
     }
+}
+fn ensure_footprint<'a>(asset: &'a mut Asset, tf: &TimeFrame) {
+    // check tics
+    match asset.tics() {
+        Some(_) => (),
+        None => asset.load_tics().unwrap(),
+    };
+
+    // check footprint
+    match asset.footprint(tf) {
+        Some(_) => return,
+        None => asset.build_footprint(tf).unwrap(),
+    };
 }
 fn bar_info(chart: &Chart) -> egui_plot::CoordinatesFormatter {
     egui_plot::CoordinatesFormatter::new(|point, _bounds| {
@@ -501,6 +552,43 @@ fn draw_posterior_0(
         let points = Points::new(info, vec![[x, price]]).color(color);
 
         plot.points(points);
+    }
+}
+fn draw_hist(plot: &mut PlotUi, palette: &Palette, footprint: &Footprint) {
+    for cluster in footprint.clusters().iter() {
+        // eval coordinate X
+        let x0 = cluster.ts_nanos as f64;
+        let x1 = x0 + footprint.tf().nanos() as f64;
+        let x = (x1 + x0) / 2.0;
+        let y = 0.0;
+        let y_buy = cluster.val_b;
+        let y_sell = cluster.val_s * -1.0;
+
+        // create buy / sell bars
+        let b = Line::new("", vec![[x, y], [x, y_buy]]).color(palette.bull);
+        let s = Line::new("", vec![[x, y], [x, y_sell]]).color(palette.bear);
+
+        // add lines on plot
+        plot.line(b);
+        plot.line(s);
+    }
+}
+fn draw_quantum(plot: &mut PlotUi, palette: &Palette, footprint: &Footprint) {
+    for cluster in footprint.clusters().iter() {
+        for quant in cluster.quantum.quants().iter() {
+            let x0 = cluster.ts_nanos as f64;
+            let x1 = x0 + footprint.tf().nanos() as f64;
+            let x = (x1 + x0) / 2.0;
+            let y = quant.price;
+
+            // create buy / sell bars
+            let b = Line::new("", vec![[x, y], [x1, y]]).color(palette.bull);
+            let s = Line::new("", vec![[x, y], [x0, y]]).color(palette.bear);
+
+            // add lines on plot
+            plot.line(b);
+            plot.line(s);
+        }
     }
 }
 

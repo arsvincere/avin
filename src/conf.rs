@@ -10,11 +10,12 @@ use chrono::{NaiveTime, TimeDelta};
 // GUI
 pub const APP_ID: &str = "com.arsvincere.avin";
 pub const DEFAULT_ASSET_LIST: &str = "xxx.csv";
+pub const CHART_BOTTOM: f32 = 200.0;
 
 // Chart
 pub const DEFAULT_BARS_COUNT: i32 = 5000;
-pub const CROSS: &str = "#282727";
 
+pub const CROSS: &str = "#282727";
 pub const BEAR: &str = "#FF5D62";
 pub const BULL: &str = "#98BB6C";
 pub const UNDEFINE: &str = "#CCCCCC";

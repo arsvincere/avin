@@ -18,9 +18,18 @@ pub struct Bar {
     pub l: f64,
     pub c: f64,
     pub v: u64,
+    pub val: Option<f64>,
 }
 impl Bar {
-    pub fn new(ts_nanos: i64, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
+    pub fn new(
+        ts_nanos: i64,
+        o: f64,
+        h: f64,
+        l: f64,
+        c: f64,
+        v: u64,
+        val: Option<f64>,
+    ) -> Bar {
         Bar {
             ts_nanos,
             o,
@@ -28,6 +37,7 @@ impl Bar {
             l,
             c,
             v,
+            val,
         }
     }
     pub fn from_df(df: DataFrame) -> Result<Vec<Bar>, String> {
@@ -63,6 +73,12 @@ impl Bar {
             .i64()
             .unwrap()
             .into_no_null_iter();
+        let mut val = df
+            .column("value")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .into_no_null_iter();
 
         let mut bars: Vec<Bar> = Vec::with_capacity(df.height());
         for t in ts {
@@ -73,6 +89,7 @@ impl Bar {
                 l.next().unwrap(),
                 c.next().unwrap(),
                 v.next().unwrap() as u64,
+                Some(val.next().unwrap()),
             );
             bars.push(bar);
         }
@@ -126,6 +143,7 @@ impl Bar {
             l: utils::min(self.l, other.l),
             c: other.c,
             v: utils::sum(self.v, other.v),
+            val: Some(utils::sum(self.val.unwrap(), other.val.unwrap())),
         }
     }
 }
@@ -152,37 +170,39 @@ mod tests {
     fn ohlcv() {
         let dt = Utc::now();
         let ts = dt.timestamp_nanos_opt().unwrap();
-        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
+        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000, Some(50_000.0));
         assert_eq!(b.dt(), dt);
         assert_eq!(b.o, 10.0);
         assert_eq!(b.h, 11.1);
         assert_eq!(b.l, 9.9);
         assert_eq!(b.c, 10.5);
         assert_eq!(b.v, 5000);
+        assert_eq!(b.val, Some(50_000.0));
     }
     #[test]
     fn bear_bull() {
         let dt = Utc::now();
         let ts = dt.timestamp_nanos_opt().unwrap();
-        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
+        let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000, Some(50_000.0));
         assert!(b.is_bull());
         assert!(!b.is_bear());
 
-        let b = Bar::new(ts, 10.0, 11.1, 9.0, 9.5, 5000);
+        let b = Bar::new(ts, 10.0, 11.1, 9.0, 9.5, 5000, Some(50_000.0));
         assert!(!b.is_bull());
         assert!(b.is_bear());
     }
     #[test]
     fn join() {
-        let b1 = Bar::new(100500, 100.0, 101.0, 99.0, 100.5, 5000);
-        let b2 = Bar::new(100550, 100.5, 101.2, 99.7, 100.8, 4000);
+        let b1 = Bar::new(1, 100.0, 101.0, 99.0, 100.5, 5000, Some(50_000.0));
+        let b2 = Bar::new(2, 100.5, 101.2, 99.7, 100.8, 4000, Some(40_000.0));
 
         let bar = b1.join(b2);
-        assert_eq!(bar.ts_nanos, 100500);
+        assert_eq!(bar.ts_nanos, 1);
         assert_eq!(bar.o, 100.0);
         assert_eq!(bar.h, 101.2);
         assert_eq!(bar.l, 99.0);
         assert_eq!(bar.c, 100.8);
         assert_eq!(bar.v, 9000);
+        assert_eq!(bar.val, Some(90_000.0));
     }
 }

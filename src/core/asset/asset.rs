@@ -163,7 +163,7 @@ impl Asset {
     pub fn build_footprint(
         &mut self,
         tf: &TimeFrame,
-    ) -> Result<&Footprint, &'static str> {
+    ) -> Result<(), &'static str> {
         match self {
             Self::SHARE(share) => share.build_footprint(tf),
         }

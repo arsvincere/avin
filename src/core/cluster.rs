@@ -91,7 +91,7 @@ impl Cluster {
     // public
     pub fn df(&self) -> DataFrame {
         df!(
-            "ts" => [self.ts_nanos],
+            "ts_nanos" => [self.ts_nanos],
             "open" => [self.open],
             "high" => [self.high],
             "low" => [self.low],

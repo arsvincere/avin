@@ -5,16 +5,13 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin::{Analytic, TrendAnalytic, utils};
+use avin::*;
 
 fn main() {
     log::set_logger(&utils::LOGGER).unwrap();
     log::set_max_level(log::LevelFilter::Debug);
     log::info!("Welcome to AVIN Trade System!");
 
+    VolumeAnalytic::analyse_all().unwrap();
     TrendAnalytic::analyse_all().unwrap();
-
-    // let share = Share::new("MOEX_SHARE_GAZP").unwrap();
-    // let tf = TimeFrame::Day;
-    // TrendAnalytic::analyse(share.iid(), &tf).unwrap();
 }

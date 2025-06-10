@@ -22,7 +22,7 @@ pub trait Analytic {
         let path = create_path(iid, name);
         Cmd::write_pqt(df, &path).unwrap();
 
-        log::info!("   Analytic save {}", path.display());
+        log::info!("Analytic save {}", path.display());
     }
     fn load(iid: &IID, name: &str) -> Result<DataFrame, String> {
         let path = create_path(iid, name);
@@ -90,7 +90,7 @@ pub trait Analytic {
         df.with_column(cdf).unwrap();
         df.with_column(cdf_p).unwrap();
 
-        df.clone()
+        df
     }
     fn eval_size(cdf: &DataFrame) -> DataFrame {
         let mut sizes = Vec::new();
@@ -331,7 +331,7 @@ fn load_file(path: PathBuf) -> Result<DataFrame, String> {
     let result = Cmd::read_pqt(&path);
     match result {
         Ok(df) => {
-            log::info!("   Analytic load {}", path.display());
+            log::info!("Analytic load {}", path.display());
             Ok(df)
         }
         Err(why) => Err(format!("{}", why)),

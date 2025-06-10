@@ -16,21 +16,21 @@ use super::{Cluster, Tic, TimeFrame};
 pub struct Footprint {
     iid: IID,
     tf: TimeFrame,
-    clasters: Vec<Cluster>,
+    clusters: Vec<Cluster>,
     now: Option<Cluster>,
 }
 impl Footprint {
     pub fn new(
         iid: &IID,
         tf: &TimeFrame,
-        clasters: Vec<Cluster>,
+        clusters: Vec<Cluster>,
     ) -> Footprint {
-        assert!(clasters.len() > 0);
+        assert!(clusters.len() > 0);
 
         Self {
             iid: iid.clone(),
             tf: tf.clone(),
-            clasters,
+            clusters,
             now: None,
         }
     }
@@ -44,7 +44,7 @@ impl Footprint {
         Self {
             iid: iid.clone(),
             tf: tf.clone(),
-            clasters: Self::split(tics, tf),
+            clusters: Self::split(tics, tf),
             now: None,
         }
     }
@@ -56,19 +56,19 @@ impl Footprint {
     pub fn tf(&self) -> &TimeFrame {
         &self.tf
     }
-    pub fn clasters(&self) -> &Vec<Cluster> {
-        &self.clasters
+    pub fn clusters(&self) -> &Vec<Cluster> {
+        &self.clusters
     }
     pub fn now(&self) -> Option<&Cluster> {
         self.now.as_ref()
     }
     pub fn df(&self) -> DataFrame {
-        assert!(self.clasters.len() > 0);
+        assert!(self.clusters.len() > 0);
 
-        let mut all = self.clasters[0].df();
+        let mut all = self.clusters[0].df();
 
-        for i in 1..self.clasters.len() {
-            let df = self.clasters[i].df();
+        for i in 1..self.clusters.len() {
+            let df = self.clusters[i].df();
             all.extend(&df).unwrap();
         }
 
@@ -79,29 +79,33 @@ impl Footprint {
     fn split(tics: &Vec<Tic>, tf: &TimeFrame) -> Vec<Cluster> {
         assert!(tics.len() > 0);
 
-        // output clasters
-        let mut clasters = Vec::new();
+        // output clusters
+        let mut clusters = Vec::new();
 
         // key func for search
         let key = |x: &Tic| x.ts_nanos;
 
         // split tics by part == timeframe
-        let mut b = tics.first().unwrap().ts_nanos;
-        let mut e = tf.next_ts(b);
-        let last = tics.last().unwrap().ts_nanos;
-        while b < last {
-            let i = utils::bisect_left(tics, b, key).unwrap();
-            let j = utils::bisect_left(tics, e, key).unwrap();
-            let selected = &tics[i..j];
+        let mut ts1 = tics.first().unwrap().ts_nanos;
+        let mut ts2 = tf.next_ts(ts1);
+        let mut b = 0;
+        let mut e;
+        while b < tics.len() {
+            b = utils::bisect_right(tics, ts1, key).unwrap();
+            e = utils::bisect_right(tics, ts2, key).unwrap_or(tics.len());
+            let selected = &tics[b..e];
 
-            let cluster = Cluster::new(selected, tf);
-            clasters.push(cluster);
+            if selected.len() > 0 {
+                let cluster = Cluster::new(selected, tf);
+                clusters.push(cluster);
+            }
 
+            ts1 = tf.next_ts(ts1);
+            ts2 = tf.next_ts(ts2);
             b = e;
-            e = tf.next_ts(e);
         }
 
-        clasters
+        clusters
     }
 }
 impl AsRef<Footprint> for Footprint {
