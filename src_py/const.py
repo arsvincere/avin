@@ -13,9 +13,7 @@ from datetime import time as Time
 from datetime import timedelta as TimeDelta
 
 __all__ = (
-    "Dir",
     "WeekDays",
-    "UTC",
     "ONE_SECOND",
     "ONE_MINUTE",
     "FIVE_MINUTE",
@@ -28,22 +26,6 @@ __all__ = (
     "DAY_BEGIN",
     "DAY_END",
 )
-
-
-class Dir:
-    """Program directories"""
-
-    # Specify absolute path to program dir
-    ROOT = "/home/alex/avin/"
-
-    # All user files by default in the 'ROOT/usr', you can specify
-    # an absolute path to another location. All user data be there.
-    USR = os.path.join(ROOT, "usr")
-
-    # Don't edit other dirs
-    LOG = os.path.join(ROOT, "log")
-    RES = os.path.join(ROOT, "res")
-    TMP = os.path.join(ROOT, "tmp")
 
 
 class WeekDays(enum.Enum):  # {{{

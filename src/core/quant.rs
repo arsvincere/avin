@@ -14,6 +14,8 @@ pub struct Quant {
     pub vol_s: u64,
     pub val_b: f64,
     pub val_s: f64,
+    pub cdf_b: Option<f64>,
+    pub cdf_s: Option<f64>,
 }
 impl Quant {
     pub fn new(price: f64) -> Self {
@@ -23,6 +25,8 @@ impl Quant {
             val_s: 0.0,
             vol_b: 0,
             vol_s: 0,
+            cdf_b: None,
+            cdf_s: None,
         }
     }
 
@@ -42,6 +46,12 @@ impl Quant {
     }
     pub fn val(&self) -> f64 {
         self.val_b + self.val_s
+    }
+    pub fn cdf_b(&self) -> Option<f64> {
+        self.cdf_b
+    }
+    pub fn cdf_s(&self) -> Option<f64> {
+        self.cdf_s
     }
 }
 

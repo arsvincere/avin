@@ -13,7 +13,7 @@ from datetime import datetime as Date
 from datetime import datetime as DateTime
 from typing import Optional
 
-from src_py.conf import Usr
+from src_py.conf import cfg
 from src_py.data.category import Category
 from src_py.data.data_file_bar import DataFileBar
 from src_py.data.data_file_tic import DataFileTic
@@ -86,7 +86,7 @@ class Manager:
         log.info(":: Update all market data")
 
         # check data dir
-        data_dir = Usr.DATA
+        data_dir = cfg.data
         if not Cmd.is_exist(data_dir):
             log.error(f"Data dir not found: {data_dir}")
             exit(1)

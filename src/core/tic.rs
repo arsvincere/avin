@@ -34,7 +34,7 @@ impl Tic {
             value,
         }
     }
-    pub fn from_df(df: DataFrame) -> Result<Vec<Tic>, String> {
+    pub fn from_df(df: &DataFrame) -> Result<Vec<Tic>, String> {
         let ts_nanos = df
             .column("ts_nanos")
             .unwrap()

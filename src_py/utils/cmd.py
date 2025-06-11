@@ -7,6 +7,7 @@
 # ============================================================================
 
 import json
+import tomllib
 import os
 import shutil
 import subprocess
@@ -285,6 +286,13 @@ class Cmd:
         )
 
         return string
+
+    @staticmethod
+    def read_toml(file_path: str):
+        with open(file_path, "rb") as f:
+            data = tomllib.load(f)
+
+        return data
 
     @staticmethod
     def read_pqt(path: str) -> pl.DataFrame:

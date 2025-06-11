@@ -21,6 +21,7 @@ use crate::Asset;
 use crate::CHART_BOTTOM;
 use crate::Chart;
 use crate::ChartFeatures;
+use crate::ClusterAnalytic;
 use crate::Footprint;
 use crate::Term::{self, T1, T2, T3, T4, T5};
 use crate::TimeFrame;
@@ -576,18 +577,35 @@ fn draw_hist(plot: &mut PlotUi, palette: &Palette, footprint: &Footprint) {
 fn draw_quantum(plot: &mut PlotUi, palette: &Palette, footprint: &Footprint) {
     for cluster in footprint.clusters().iter() {
         for quant in cluster.quantum.quants().iter() {
+            // eval coordinate
             let x0 = cluster.ts_nanos as f64;
             let x1 = x0 + footprint.tf().nanos() as f64;
             let x = (x1 + x0) / 2.0;
+            let width = x1 - x;
             let y = quant.price;
 
-            // create buy / sell bars
-            let b = Line::new("", vec![[x, y], [x1, y]]).color(palette.bull);
-            let s = Line::new("", vec![[x, y], [x0, y]]).color(palette.bear);
+            if let Some((buy, sell)) =
+                ClusterAnalytic::quant_cdf(footprint, quant)
+            {
+                println!(
+                    "b={} ({})\t s={} ({})\t p={}",
+                    buy, quant.vol_b, sell, quant.vol_s, quant.price
+                );
+                let right = x + width * buy;
+                let left = x - width * sell;
 
-            // add lines on plot
-            plot.line(b);
-            plot.line(s);
+                // create buy / sell lines
+                let b = Line::new("", vec![[x, y], [right, y]])
+                    .color(palette.bull);
+                let s = Line::new("", vec![[x, y], [left, y]])
+                    .color(palette.bear);
+
+                // add lines on plot
+                plot.line(b);
+                plot.line(s);
+            } else {
+                return;
+            }
         }
     }
 }

@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 
-from src_py.conf import Usr
+from src_py.conf import cfg
 from src_py.data.category import Category
 from src_py.data.exchange import Exchange
 from src_py.utils import Cmd
@@ -65,7 +65,7 @@ class Iid:
 
     def path(self) -> str:
         path = Cmd.path(
-            Usr.DATA,
+            cfg.data,
             self.exchange().name,
             self.category().name,
             self.ticker(),

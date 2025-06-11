@@ -19,7 +19,7 @@ import httpx
 import moexalgo
 import polars as pl
 
-from src_py.conf import Usr
+from src_py.conf import cfg
 from src_py.data.category import Category
 from src_py.data.iid import Iid
 from src_py.data.iid_cache import IidCache
@@ -155,7 +155,7 @@ class SourceMoex:
             return
 
         # get login / password
-        account_path = Usr.MOEX_ACCOUNT
+        account_path = cfg.moex_account
         if Cmd.is_exist(account_path):
             login, password = Cmd.read_text(account_path)
             login, password = login.strip(), password.strip()

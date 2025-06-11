@@ -1,0 +1,85 @@
+[dir]
+    # Specify absolute path to program dir
+    root = "/home/alex/avin/"
+
+    # Specify an absolute path to user dir, all user data be there.
+    usr = "/home/alex/avin/usr/"
+
+    # Specify an absolute path to market data dir
+    data = "/home/alex/avin/usr/data"
+
+[usr]
+    # Your local timeshift from UTC+0
+    # set it if you want see time with offset-aware
+    # for example for Moscow +3 hours, set 0 if you want see default UTC time
+    offset = 3
+
+    # The application uses timestamp nanos everywhere.
+    # When it is necessary to display in gui or log will be used this format
+    dt_fmt = "%Y-%m-%d %H:%M:%S"
+
+    # Your applications
+    editor = "nvim"
+    python = "python3"
+    terminal = "alacritty"
+    # Exec flag for your terminal: -e for alacritty, -x for xfce4-terminal...
+    # example: 'alacritty -e nvim', 'xfce4-terminal -x nvim'
+    # it is use for run subprocesses
+    exec = "-e"
+    # Other options used when start terminal
+    opt = "-T AlacrittyFloat"
+
+
+[log]
+    history = 5 # days
+    debug = true
+    info = true
+
+[connect]
+    # Path to tinkoff token
+    tinkoff = "/home/alex/avin/usr/connect/tinkoff/token.txt"
+
+    # Path to moex account
+    moexalgo = "/home/alex/avin/usr/connect/moex/account.txt"
+
+[data]
+    # Availible formats: "pqt", "csv", "postgres"
+    format = "pqt"
+
+[tester]
+    default_commission = 0.05 # %
+
+[color]
+    #  cursor crosshair
+    cross = "#282727"
+    cross_opacity = 1.0
+
+    # bars with close < open
+    bear = "#FF5D62"
+    bear_opacity = 1.0
+
+    # bars with close > open
+    bull = "#98bb6c"
+    bull_opacity = 1.0
+
+    # bars with open == close
+    nobody = "#AAAAAA"
+    nobody_opacity = 1.0
+
+    # trends
+    trend_t1 = "#AAAAAA"
+    trend_t2 = "#658594"
+    trend_t3 = "#7E9CD8"
+    trend_t4 = "#957FB8"
+    trend_t5 = "#DCA561"
+    trend_t1_opacity = 0.2
+    trend_t2_opacity = 0.4
+    trend_t3_opacity = 0.6
+    trend_t4_opacity = 0.8
+    trend_t5_opacity = 1.0
+
+[chart]
+    default_bars_count = 5000
+    bottom_pane_height = 200.0
+    left_pane_width = 200.0
+    right_pane_width = 200.0

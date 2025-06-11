@@ -175,7 +175,7 @@ impl Share {
 
         match Manager::request(&self.iid, &MarketData::TIC, &begin, &end) {
             Ok(df) => {
-                self.tics = Tic::from_df(df).unwrap();
+                self.tics = Tic::from_df(&df).unwrap();
                 Ok(())
             }
             Err(_) => todo!(),

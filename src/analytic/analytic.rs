@@ -228,6 +228,25 @@ pub trait Analytic {
             .last()
             .collect()
             .unwrap()
+            .column("cdf")
+            .unwrap()
+            .f64()
+            .unwrap()
+            .last()
+            .unwrap();
+
+        cdf
+    }
+    fn cdf_p<T>(value: T, cdf_df: DataFrame) -> f64
+    where
+        T: NumericNative + Into<Expr>,
+    {
+        let cdf = cdf_df
+            .lazy()
+            .filter(col("value").lt_eq(value))
+            .last()
+            .collect()
+            .unwrap()
             .column("cdf_p")
             .unwrap()
             .f64()

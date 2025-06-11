@@ -40,7 +40,7 @@ impl Bar {
             val,
         }
     }
-    pub fn from_df(df: DataFrame) -> Result<Vec<Bar>, String> {
+    pub fn from_df(df: &DataFrame) -> Result<Vec<Bar>, String> {
         let ts = df
             .column("ts_nanos")
             .unwrap()

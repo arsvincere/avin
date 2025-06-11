@@ -3,135 +3,117 @@
 # URL:          http://arsvincere.com
 # AUTHOR:       Alex Avin
 # E-MAIL:       mr.alexavin@gmail.com
-# LICENSE:      MIT
+# LICENSE:      MITimport Cmd
 # ============================================================================
 
+from __future__ import annotations
+
 import os
-from datetime import datetime, timedelta
+import sys
+from datetime import timedelta as TimeDelta
+from typing import Optional
 
-from src_py.const import Dir
+from src_py.utils import Cmd
 
-
-class Usr:  # {{{
-    # User subdirectories
-    ANALYSE = os.path.join(Dir.USR, "analyse")
-    BACKUP = os.path.join(Dir.USR, "backup")
-    # ANALYTIC = os.path.join(Dir.USR, "analytic")
-    CACHE = os.path.join(Dir.USR, "cache")
-    CONNECT = os.path.join(Dir.USR, "connect")
-    DATA = os.path.join(Dir.USR, "data")
-    FILTER = os.path.join(Dir.USR, "filter")
-    MARK = os.path.join(Dir.USR, "mark")
-    SCRIPT = os.path.join(Dir.USR, "script")
-    # RESEARCH = os.path.join(Dir.USR, "research")
-    # SCAN = os.path.join(Dir.USR, "scan")
-    STRATEGY = os.path.join(Dir.USR, "strategy")
-    # UTILS = os.path.join(Dir.USR, "utils")
-
-    # User notes
-    NOTE = os.path.join(Dir.USR, "note.un")
-
-    # Your local timeshift from UTC+0
-    # set it if you want see time with offset-aware
-    # for example for Moscow +3 hours, set 0 if you want see default UTC time
-    TIME_DIF = timedelta(hours=3)
-
-    @classmethod  # localTime
-    def localTime(cls, dt: datetime) -> str:
-        return (dt + Usr.TIME_DIF).strftime("%Y-%m-%d %H:%M")
-
-    # Your applications
-    TERMINAL = "alacritty"
-    OPT = ["-T", "AlacrittyFloat"]
-    EDITOR = "nvim"
-    PYTHON = "python3"
-
-    # exec flag for your terminal: -e for alacritty, -x for xfce4-terminal...
-    # example: 'alacritty -e nvim', 'xfce4-terminal -x nvim'
-    # it is use for run subprocesses
-    EXEC = "-e"
-
-    # Log
-    LOG_HISTORY = 5  # days
-    LOG_DEBUG = True
-    LOG_INFO = True
-
-    # Tinkoff token file, by default in dir
-    # 'usr/connect/tinkoff/token.txt'
-    TINKOFF_TOKEN = os.path.join(CONNECT, "tinkoff", "token.txt")
-
-    # MOEX account file, by default in dir
-    # 'usr/connect/moex/account.txt'
-    MOEX_ACCOUNT = os.path.join(CONNECT, "moex", "account.txt")
-
-    # PostresQL settings
-    PG_USER = "alex"
-    PG_PASSWORD = ""
-    PG_DATABASE = "ars_vincere"
-    PG_HOST = "127.0.0.1"
+__all__ = "cfg"
 
 
-# }}}
-class Auto:  # {{{
-    # Update assets info
-    UPDATE_ASSET_CACHE: bool = True
+class Configuration:
+    def __init__(self, file_path: str):
+        self.__path = file_path
+        self.__cfg = Cmd.read_toml(file_path)
 
-    # Update market data
-    UPDATE_MARKET_DATA: bool = True
+    @property
+    def root(self) -> str:
+        return self.__cfg["dir"]["root"]
 
-    # Run convert tasks after update market data
-    CONVERT_MARKET_DATA: bool = True
+    @property
+    def usr(self) -> str:
+        return self.__cfg["dir"]["usr"]
 
-    # Update user analytics
-    UPDATE_ANALYTIC: bool = True
-    UPDATE_ANALYTIC_PERIOD: timedelta = timedelta(days=30)
+    @property
+    def log(self) -> str:
+        return os.path.join(self.root, "log")
 
-    # Postgres backup
-    BACKUP_PATH: str = Usr.BACKUP
-    BACKUP_MARKET: bool = True
-    BACKUP_PUBLIC: bool = True
-    BACKUP_MARKET_HISTORY: int = 2  # files
-    BACKUP_PUBLIC_HISTORY: int = 10  # files
+    @property
+    def res(self) -> str:
+        return os.path.join(self.root, "res")
+
+    @property
+    def tmp(self) -> str:
+        return os.path.join(self.root, "tmp")
+
+    @property
+    def cache(self) -> str:
+        return os.path.join(self.usr, "cache")
+
+    @property
+    def connect(self) -> str:
+        return os.path.join(self.usr, "connect")
+
+    @property
+    def data(self) -> str:
+        return os.path.join(self.usr, self.__cfg["dir"]["data"])
+
+    @property
+    def log_history(self) -> int:
+        return self.__cfg["log"]["history"]
+
+    @property
+    def log_debug(self) -> bool:
+        return self.__cfg["log"]["debug"]
+
+    @property
+    def log_info(self) -> bool:
+        return self.__cfg["log"]["info"]
+
+    @property
+    def offset(self) -> TimeDelta:
+        return TimeDelta(hours=self.__cfg["usr"]["offset"])
+
+    @property
+    def dt_fmt(self) -> str:
+        return self.__cfg["usr"]["dt_fmt"]
+
+    @property
+    def tinkoff_token(self) -> str:
+        return self.__cfg["connect"]["tinkoff"]
+
+    @property
+    def moex_account(self) -> str:
+        return self.__cfg["connect"]["moexalgo"]
+
+    @classmethod
+    def read_config(cls) -> Configuration:
+        file_name = "config.toml"
+
+        # try find user config in <pwd>
+        pwd = os.getcwd()
+        path = Cmd.path(pwd, file_name)
+        if Cmd.is_exist(path):
+            return Configuration(path)
+
+        # try find user config in <pwd>/usr
+        path = Cmd.path(pwd, "usr", file_name)
+        if Cmd.is_exist(path):
+            return Configuration(path)
+
+        # try find user ~/.config/avin/
+        path = Cmd.path("~/.config/avin", file_name)
+        if Cmd.is_exist(path):
+            return Configuration(path)
+
+        # try use default config
+        path = Cmd.path(pwd, "res", "default_config.toml")
+        if Cmd.is_exist(path):
+            return Configuration(path)
+
+        # panic
+        print(f"Config file not found: {path}", file=sys.stderr)
+        exit(1)
 
 
-# }}}
-class Cfg:  # {{{
-    class Chart:  # {{{
-        SHADOW_WIDTH = 1
-
-        BAR_WIDTH = 4  # px
-        BAR_HEIGHT_M = 4  # px на 1% цены
-        BAR_HEIGHT_W = 10  # px на 1% цены
-        BAR_HEIGHT_D = 20  # px на 1% цены
-        BAR_HEIGHT_1H = 100  # px на 1% цены
-        BAR_HEIGHT_5M = 200  # px на 1% цены
-        BAR_HEIGHT_1M = 400  # px на 1% цены
-        BAR_INDENT = 0.5  # px
-        CUNDLE_INDENT = 1  # px
-
-        ZOOM_BAR_WIDTH = 4  # px
-        ZOOM_BAR_HEIGHT = 30  # px на 1% цены
-        ZOOM_BAR_INDENT = 1  # px
-        ZOOM_CUNDLE_INDENT = 2  # px
-
-        VOL_WIDTH = BAR_WIDTH
-        VOL_HEIGHT = 200  # px
-        VOL_INDENT = 3  # px
-
-        QUANT_INDENT = 1  # px
-
-    # }}}
-    class ShapeSize:  # {{{
-        VERY_SMALL = 4  # px
-        SMALL = 6
-        NORMAL = 8
-        BIG = 12
-        VERY_BIG = 16
-
-    # }}}
-
-
-# }}}
-
-
-__all__ = ("Usr", "Auto", "Cfg")
+if __name__ == "__main__":
+    ...
+else:
+    cfg = Configuration.read_config()

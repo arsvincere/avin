@@ -46,6 +46,15 @@ impl Quantum {
 
         Self { quants }
     }
+    pub fn schema() -> Schema {
+        Schema::from_iter(vec![
+            Field::new("price".into(), DataType::Float64),
+            Field::new("vol_b".into(), DataType::UInt64),
+            Field::new("vol_s".into(), DataType::UInt64),
+            Field::new("val_b".into(), DataType::Float64),
+            Field::new("val_s".into(), DataType::Float64),
+        ])
+    }
 
     // public
     pub fn df(&self) -> DataFrame {
@@ -119,7 +128,7 @@ mod tests {
         // │ 1749241804000000000 ┆ B         ┆ 125.84 ┆ 40   ┆ 50336.0  │
         // └─────────────────────┴───────────┴────────┴──────┴──────────┘
 
-        let tics = Tic::from_df(df).unwrap();
+        let tics = Tic::from_df(&df).unwrap();
         let quantum = Quantum::from_tics(&tics);
         let _df = quantum.df();
         // ┌────────┬───────┬───────┬──────────┬───────────┐

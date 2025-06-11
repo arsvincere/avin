@@ -87,6 +87,31 @@ impl Cluster {
             quantum: Quantum::from_tics(tics),
         }
     }
+    pub fn schema() -> Schema {
+        Schema::from_iter(vec![
+            Field::new("ts_nanos".into(), DataType::Int64),
+            Field::new("open".into(), DataType::Float64),
+            Field::new("high".into(), DataType::Float64),
+            Field::new("low".into(), DataType::Float64),
+            Field::new("close".into(), DataType::Float64),
+            Field::new("vol".into(), DataType::UInt64),
+            Field::new("vol_b".into(), DataType::UInt64),
+            Field::new("vol_s".into(), DataType::UInt64),
+            Field::new("val".into(), DataType::Float64),
+            Field::new("val_b".into(), DataType::Float64),
+            Field::new("val_s".into(), DataType::Float64),
+            Field::new("count".into(), DataType::UInt64),
+            Field::new("count_b".into(), DataType::UInt64),
+            Field::new("count_s".into(), DataType::UInt64),
+            Field::new("vwap".into(), DataType::Float64),
+            Field::new("vwap_b".into(), DataType::Float64),
+            Field::new("vwap_s".into(), DataType::Float64),
+            Field::new("buy_p".into(), DataType::Float64),
+            Field::new("sell_p".into(), DataType::Float64),
+            Field::new("disb_p".into(), DataType::Float64),
+            Field::new("pct".into(), DataType::Float64),
+        ])
+    }
 
     // public
     pub fn df(&self) -> DataFrame {
@@ -117,6 +142,7 @@ impl Cluster {
         )
         .unwrap()
     }
+
     pub fn dt(&self) -> DateTime<Utc> {
         DateTime::from_timestamp_nanos(self.ts_nanos)
     }
@@ -315,7 +341,7 @@ mod tests {
         // └─────────────────────┴───────────┴────────┴──────┴──────────┘
 
         let tf = TimeFrame::M1;
-        let tics = Tic::from_df(df).unwrap();
+        let tics = Tic::from_df(&df).unwrap();
         let c = Cluster::new(&tics, &tf);
         assert_eq!(c.ts_nanos, TimeFrame::M1.prev_ts(1749241800000000000));
         assert_eq!(c.open, 125.83);

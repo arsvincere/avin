@@ -12,6 +12,7 @@ fn main() {
     log::set_max_level(log::LevelFilter::Debug);
     log::info!("Welcome to AVIN Trade System!");
 
-    VolumeAnalytic::analyse_all().unwrap();
     TrendAnalytic::analyse_all().unwrap();
+    VolumeAnalytic::analyse_all().unwrap();
+    // ClusterAnalytic::analyse_all().unwrap();
 }

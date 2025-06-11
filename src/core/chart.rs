@@ -97,7 +97,7 @@ impl Chart {
     ) -> Result<Self, &'static str> {
         match Manager::request(&iid, &tf.market_data(), begin, end) {
             Ok(df) => {
-                let bars = Bar::from_df(df).unwrap();
+                let bars = Bar::from_df(&df).unwrap();
                 let chart = Self::new(iid, tf, bars);
 
                 Ok(chart)
@@ -244,6 +244,7 @@ impl AsRef<Chart> for Chart {
     }
 }
 
+// TODO: заменить на обобщенные версия из utils
 fn bisect_left(bars: &Vec<Bar>, ts: &i64) -> Option<usize> {
     // NOTE:
     // если пустой вектор -> None
@@ -769,7 +770,7 @@ mod tests {
         let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
         let df =
             Manager::request(&iid, &tf.market_data(), &begin, &end).unwrap();
-        let bars = Bar::from_df(df).unwrap();
+        let bars = Bar::from_df(&df).unwrap();
 
         let chart = Chart::new(&iid, &tf, bars);
         assert_eq!(chart.iid, iid);

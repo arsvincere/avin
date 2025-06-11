@@ -19,6 +19,8 @@ mod source_moex;
 
 pub use category::Category;
 pub use cli::Command;
+pub use data_file_bar::DataFileBar;
+pub use data_file_tic::DataFileTic;
 pub use iid::IID;
 pub use manager::Manager;
 pub use market_data::MarketData;

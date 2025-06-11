@@ -10,6 +10,7 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
+from src_py.conf import cfg
 
 
 def utc(s: str) -> DateTime:
@@ -30,6 +31,10 @@ def now():
 
 def now_local():
     return DateTime.now()
+
+
+def local_time(dt: DateTime) -> str:
+    return (dt + cfg.offset).strftime(cfg.dt_fmt)
 
 
 def dt_to_ts(dt: DateTime) -> int:

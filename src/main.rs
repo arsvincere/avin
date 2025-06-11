@@ -25,7 +25,8 @@ async fn main() {
 
     let asset = Asset::new("moex_share_gazp").unwrap();
     let iid = asset.iid();
-    let tf = TimeFrame::Day;
 
-    VolumeAnalytic::analyse(iid, &tf);
+    for tf in TimeFrame::all() {
+        ClusterAnalytic::analyse(iid, &tf);
+    }
 }

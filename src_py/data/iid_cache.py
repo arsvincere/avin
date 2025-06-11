@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import polars as pl
 
-from src_py.conf import Usr
+from src_py.conf import cfg
 from src_py.data.category import Category
 from src_py.data.source import Source
 from src_py.utils import Cmd, log
@@ -65,7 +65,7 @@ class IidCache:
     @classmethod
     def __create_file_path(cls, source: Source, category: Category) -> str:
         cache_path = Cmd.path(
-            Usr.CACHE,
+            cfg.cache,
             source.name,
             f"{category.name}.pqt",
         )

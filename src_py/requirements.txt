@@ -2,8 +2,9 @@ pytest
 pytest-asyncio
 moexalgo
 tinkoff-investments
+numpy
 pandas
 plotly
-polars
 polars-lts-cpu
+polars
 pyarrow

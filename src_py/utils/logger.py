@@ -10,14 +10,15 @@ import logging
 import os
 from datetime import date as Date
 
-from src_py.conf import Usr
-from src_py.const import Dir
+from src_py.conf import cfg
 
 __all__ = ("log", "configure_log")
 
 __NAME = "avin-logger"
-__LOG_DIR = Dir.LOG
-__HISTORY = Usr.LOG_HISTORY
+__LOG_DIR = cfg.log
+__HISTORY = cfg.log_history
+__DEBUG = cfg.log_debug
+__INFO = cfg.log_info
 
 log = logging.getLogger(__NAME)
 
@@ -88,3 +89,9 @@ def __delete_old_log_files(log_dir: str, max_files: int) -> None:  # {{{
     while len(log_files) > max_files:
         os.remove(log_files[0])  # remove oldest file in sorted file list
         log_files.pop(0)
+
+
+if __name__ == "__main__":
+    ...
+else:
+    configure_log(debug=__DEBUG, info=__INFO)

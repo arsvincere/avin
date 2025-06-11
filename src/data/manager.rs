@@ -133,6 +133,7 @@ impl Manager {
 }
 
 // private
+// TODO: move func schema in core struct
 fn bar_schema() -> Schema {
     Schema::from_iter(vec![
         Field::new("ts_nanos".into(), DataType::Int64),
@@ -391,7 +392,7 @@ mod tests {
         let end = utils::datetime("2023-08-01 11:00:00");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
-        let bars = Bar::from_df(df).unwrap();
+        let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
 
@@ -409,7 +410,7 @@ mod tests {
         let end = utils::datetime("2023-08-01 13:00:00");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
-        let bars = Bar::from_df(df).unwrap();
+        let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
 
@@ -427,7 +428,7 @@ mod tests {
         let end = utils::date("2023-09-01");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
-        let bars = Bar::from_df(df).unwrap();
+        let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
 
@@ -445,7 +446,7 @@ mod tests {
         let end = utils::date("2025-01-01");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
-        let bars = Bar::from_df(df).unwrap();
+        let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
 
@@ -463,7 +464,7 @@ mod tests {
         let end = utils::date("2025-01-01");
 
         let df = Manager::request(&instr, &data, &begin, &end).unwrap();
-        let bars = Bar::from_df(df).unwrap();
+        let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
 
