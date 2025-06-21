@@ -14,25 +14,23 @@ from avin_data.utils import log
 
 
 class Category(enum.Enum):
-    CASH = 1
+    CURRENCY = 1
     INDEX = 2
     SHARE = 3
     BOND = 4
     FUTURE = 5
     OPTION = 6
-    CURRENCY = 7
-    ETF = 8
+    ETF = 7
 
     @classmethod
     def from_str(cls, string: str) -> Category:
         categories = {
-            "CASH": Category.CASH,
+            "CURRENCY": Category.CURRENCY,
             "INDEX": Category.INDEX,
             "SHARE": Category.SHARE,
             "BOND": Category.BOND,
             "FUTURE": Category.FUTURE,
             "OPTION": Category.OPTION,
-            "CURRENCY": Category.CURRENCY,
             "ETF": Category.ETF,
         }
 

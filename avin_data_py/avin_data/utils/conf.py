@@ -13,7 +13,7 @@ import sys
 from datetime import timedelta as TimeDelta
 from typing import Optional
 
-from avin_data.utils import Cmd
+from avin_data.utils.cmd import Cmd
 
 __all__ = "cfg"
 
@@ -33,27 +33,27 @@ class Configuration:
 
     @property
     def log(self) -> str:
-        return os.path.join(self.root, "log")
+        return Cmd.path(self.root, "log")
 
     @property
     def res(self) -> str:
-        return os.path.join(self.root, "res")
+        return Cmd.path(self.root, "res")
 
     @property
     def tmp(self) -> str:
-        return os.path.join(self.root, "tmp")
+        return Cmd.path(self.root, "tmp")
 
     @property
     def cache(self) -> str:
-        return os.path.join(self.usr, "cache")
+        return Cmd.path(self.usr, "cache")
 
     @property
     def connect(self) -> str:
-        return os.path.join(self.usr, "connect")
+        return Cmd.path(self.usr, "connect")
 
     @property
     def data(self) -> str:
-        return os.path.join(self.usr, self.__cfg["dir"]["data"])
+        return Cmd.path(self.usr, self.__cfg["dir"]["data"])
 
     @property
     def log_history(self) -> int:
@@ -89,23 +89,23 @@ class Configuration:
 
         # try find user config in current dir
         pwd = os.getcwd()
-        path = os.path.join(pwd, file_name)
-        if os.path.exists(path):
+        path = Cmd.path(pwd, file_name)
+        if Cmd.is_exist(path):
             return Configuration(path)
 
         # try find user config in <pwd>/usr
-        path = os.path.join(pwd, "usr", file_name)
-        if os.path.exists(path):
+        path = Cmd.path(pwd, "usr", file_name)
+        if Cmd.is_exist(path):
             return Configuration(path)
 
         # try find in user home ~/.config/avin/
-        path = os.path.join("~/.config/avin", file_name)
-        if os.path.exists(path):
+        path = Cmd.path("~/.config/avin", file_name)
+        if Cmd.is_exist(path):
             return Configuration(path)
 
         # try use default config
-        path = os.path.join(pwd, "res", "default_config.toml")
-        if os.path.exists(path):
+        path = "/home/alex/avin/res/default_config.toml"
+        if Cmd.is_exist(path):
             return Configuration(path)
 
         # panic

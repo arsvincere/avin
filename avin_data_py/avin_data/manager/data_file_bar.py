@@ -13,8 +13,8 @@ from datetime import datetime as DateTime
 
 import polars as pl
 
-from avin_data.data.iid import Iid
-from avin_data.data.market_data import MarketData
+from avin_data.manager.iid import Iid
+from avin_data.manager.market_data import MarketData
 from avin_data.utils import Cmd, dt_to_ts, log, ts_to_dt
 
 

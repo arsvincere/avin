@@ -10,31 +10,8 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from avin_data.conf import cfg
 
-
-def utc(s: str) -> DateTime:
-    """Get UTC datetime from naive string with Moscow date/datetime"""
-
-    tz = TimeZone(TimeDelta(hours=3), "MSK")
-
-    dt = DateTime.fromisoformat(s)
-    dt = dt.replace(tzinfo=tz)
-    dt = dt.astimezone(UTC)
-
-    return dt
-
-
-def now():
-    return DateTime.now(TimeZone.utc)
-
-
-def now_local():
-    return DateTime.now()
-
-
-def local_time(dt: DateTime) -> str:
-    return (dt + cfg.offset).strftime(cfg.dt_fmt)
+from avin_data.utils.conf import cfg
 
 
 def dt_to_ts(dt: DateTime) -> int:
@@ -45,13 +22,6 @@ def dt_to_ts(dt: DateTime) -> int:
     ts = int(ts)
 
     return ts
-
-
-def ts_to_dt(ts_nanos: int) -> DateTime:
-    ts_sec = ts_nanos / 1_000_000_000
-    dt = DateTime.fromtimestamp(ts_sec, UTC)
-
-    return dt
 
 
 def next_month(dt: DateTime) -> DateTime:
@@ -78,6 +48,14 @@ def next_month(dt: DateTime) -> DateTime:
     return next
 
 
+def now():
+    return DateTime.now(TimeZone.utc)
+
+
+def now_local():
+    return DateTime.now()
+
+
 def prev_month(dt: DateTime) -> DateTime:
     """Возвращает datetime первое число предыдущего месяца от dt"""
 
@@ -100,6 +78,29 @@ def prev_month(dt: DateTime) -> DateTime:
         )
 
     return next
+
+
+def str_to_utc(s: str) -> DateTime:
+    """Get UTC datetime from naive string with Moscow date/datetime"""
+
+    tz = TimeZone(TimeDelta(hours=3), "MSK")
+
+    dt = DateTime.fromisoformat(s)
+    dt = dt.replace(tzinfo=tz)
+    dt = dt.astimezone(UTC)
+
+    return dt
+
+
+def ts_to_dt(ts_nanos: int) -> DateTime:
+    ts_sec = ts_nanos / 1_000_000_000
+    dt = DateTime.fromtimestamp(ts_sec, UTC)
+
+    return dt
+
+
+def utc_to_local(dt: DateTime) -> str:
+    return (dt + cfg.offset).strftime(cfg.dt_fmt)
 
 
 if __name__ == "__main__":

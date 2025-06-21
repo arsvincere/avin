@@ -1,0 +1,13 @@
+click
+flit
+httpx
+moexalgo
+numpy
+pandas
+plotly
+polars
+polars-lts-cpu
+pyarrow
+pytest
+pytest-asyncio
+tinkoff-investments

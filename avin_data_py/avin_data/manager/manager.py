@@ -13,16 +13,15 @@ from datetime import datetime as Date
 from datetime import datetime as DateTime
 from typing import Optional
 
-from avin_data.conf import cfg
-from avin_data.data.category import Category
-from avin_data.data.data_file_bar import DataFileBar
-from avin_data.data.data_file_tic import DataFileTic
-from avin_data.data.exchange import Exchange
-from avin_data.data.iid import Iid
-from avin_data.data.market_data import MarketData
-from avin_data.data.source import Source
-from avin_data.data.source_moex import SourceMoex
-from avin_data.utils import Cmd, log, now, ts_to_dt
+from avin_data.manager.category import Category
+from avin_data.manager.data_file_bar import DataFileBar
+from avin_data.manager.data_file_tic import DataFileTic
+from avin_data.manager.exchange import Exchange
+from avin_data.manager.iid import Iid
+from avin_data.manager.market_data import MarketData
+from avin_data.manager.source import Source
+from avin_data.manager.source_moex import SourceMoex
+from avin_data.utils import Cmd, cfg, log, now, ts_to_dt
 
 
 class Manager:
@@ -31,6 +30,7 @@ class Manager:
     def cache(cls) -> None:
         """Make cache of instruments info"""
 
+        log.info(f":: Caching instruments info")
         SourceMoex.cache_instruments_info()
 
     @classmethod

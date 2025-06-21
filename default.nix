@@ -5,7 +5,7 @@ let
 in
 pkgs.mkShell rec {
     name = "avin_dev_shell";
-    venvDir = "avin_data/.venv"; # python
+    venvDir = ".venv"; # python
 
     libPath = with pkgs; lib.makeLibraryPath [
       libGL
@@ -15,8 +15,9 @@ pkgs.mkShell rec {
     LD_LIBRARY_PATH = libPath;
 
     buildInputs = [
-        py_pkgs.python
         py_pkgs.venvShellHook
+        py_pkgs.python
+        py_pkgs.ruff
         py_pkgs.numpy
         py_pkgs.polars
         openssl
@@ -28,7 +29,7 @@ pkgs.mkShell rec {
 
     postVenvCreation = ''
         unset SOURCE_DATE_EPOCH
-        pip install -r avin_data/requirements.txt
+        pip install -r requirements.txt
     '';
 
     postShellHook = ''

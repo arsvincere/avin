@@ -1,12 +1,12 @@
-/.mypy_cache
-/log
-/avin_data/.mypy_cache
-/avin_data/.venv
-/avin_data/__pycache__
-/target
-/tmp
-/usr
+.mypy_cache
+.ruff_cache
+.venv
 __pycache__
+dist
+log
+target
+tmp
+usr
 
 Session.vim*
 /src/bin/1.rs
@@ -14,7 +14,6 @@ Session.vim*
 /src/bin/3.rs
 /src/bin/4.rs
 /src/bin/5.rs
-start_dev
 tmp.*
 1.py
 2.py

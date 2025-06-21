@@ -1,0 +1,33 @@
+[project]
+name = "avin_data"
+version = "1.0.6"
+description = "CLI utility for download market data"
+authors = [{name = "Alex Avin", email = "mr.alexavin@gmail.com"}]
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.1",
+    "flit",
+    "httpx",
+    "moexalgo",
+    "numpy",
+    "pandas",
+    "polars",
+    "polars-lts-cpu",
+    "pyarrow",
+    "pytest",
+    "pytest-asyncio",
+    "tinkoff-investments",
+]
+
+[project.scripts]
+avin_data = "avin_data.cli:cli"
+
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.mypy]
+ignore_missing_imports = true
+

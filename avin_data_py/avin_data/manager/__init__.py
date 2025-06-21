@@ -6,12 +6,12 @@
 # LICENSE:      MIT
 # ============================================================================
 
-from avin_data.data.category import Category
-from avin_data.data.exchange import Exchange
-from avin_data.data.iid import Iid
-from avin_data.data.manager import Manager
-from avin_data.data.market_data import MarketData
-from avin_data.data.source import Source
+from avin_data.manager.category import Category
+from avin_data.manager.exchange import Exchange
+from avin_data.manager.iid import Iid
+from avin_data.manager.manager import Manager
+from avin_data.manager.market_data import MarketData
+from avin_data.manager.source import Source
 
 __all__ = (
     "Category",
