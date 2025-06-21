@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 import sys
 from datetime import timedelta as TimeDelta
-from typing import Optional
 
 from avin_data.utils.cmd import Cmd
 
@@ -28,8 +27,8 @@ class Configuration:
         return self.__cfg["dir"]["root"]
 
     @property
-    def usr(self) -> str:
-        return self.__cfg["dir"]["usr"]
+    def data(self) -> str:
+        return self.__cfg["dir"]["data"]
 
     @property
     def log(self) -> str:
@@ -45,15 +44,11 @@ class Configuration:
 
     @property
     def cache(self) -> str:
-        return Cmd.path(self.usr, "cache")
+        return Cmd.path(self.root, "cache")
 
     @property
     def connect(self) -> str:
-        return Cmd.path(self.usr, "connect")
-
-    @property
-    def data(self) -> str:
-        return Cmd.path(self.usr, self.__cfg["dir"]["data"])
+        return Cmd.path(self.root, "connect")
 
     @property
     def log_history(self) -> int:

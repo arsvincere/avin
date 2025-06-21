@@ -78,15 +78,15 @@ pub const DEFAULT_COMMISSION: f64 = 0.0005;
 
 // Dir
 // TODO: del, use from config.toml
-pub const ASSET_DIR: &str = "/home/alex/avin/usr/asset";
-pub const CACHE_DIR: &str = "/home/alex/avin/usr/cache";
-pub const DATA_DIR: &str = "/home/alex/avin/usr/data";
-pub const TEST_DIR: &str = "/home/alex/avin/usr/test";
+pub const ASSET_DIR: &str = "/home/alex/trading/asset";
+pub const CACHE_DIR: &str = "/home/alex/trading/cache";
+pub const DATA_DIR: &str = "/home/alex/trading/data";
+pub const TEST_DIR: &str = "/home/alex/trading/test";
 
 // Connect
 // TODO: del, use from config.toml
 pub const TINKOFF_TOKEN: &str =
-    "/home/alex/avin/usr/connect/tinkoff/token.txt";
+    "/home/alex/trading/connect/tinkoff/token.txt";
 
 // Datetime
 pub const DAY_BEGIN: NaiveTime = NaiveTime::from_hms_opt(0, 0, 0).unwrap();

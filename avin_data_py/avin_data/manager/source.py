@@ -23,7 +23,7 @@ class Source(enum.Enum):
             "MOEX": Source.MOEX,
             "TINKOFF": Source.TINKOFF,
         }
-        return sources[string]
+        return sources[string.upper()]
 
 
 if __name__ == "__main__":

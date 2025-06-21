@@ -43,23 +43,19 @@ impl IID {
         self.info.get("name").unwrap()
     }
     pub fn lot(&self) -> u32 {
-        let min_price_step = self.info.get("lot").unwrap().parse().unwrap();
-
-        min_price_step
+        self.info.get("lot").unwrap().parse().unwrap()
     }
     pub fn step(&self) -> f64 {
-        let min_price_step = self.info.get("step").unwrap().parse().unwrap();
-
-        min_price_step
+        self.info.get("step").unwrap().parse().unwrap()
     }
     pub fn path(&self) -> PathBuf {
         let mut p = std::path::PathBuf::new();
-        p.push(&DATA_DIR);
+        p.push(DATA_DIR);
         p.push(self.exchange());
         p.push(self.category());
         p.push(self.ticker());
 
-        return p;
+        p
     }
 }
 impl std::fmt::Display for IID {
@@ -68,7 +64,7 @@ impl std::fmt::Display for IID {
             f,
             "IID={}_{}_{}",
             self.exchange(),
-            self.category().to_string(),
+            self.category(),
             self.ticker()
         )
     }
@@ -119,7 +115,7 @@ mod tests {
         info.insert("figi".to_string(), "BBG004730N88".to_string());
 
         let iid = IID::new(info);
-        let path = Path::new("/home/alex/avin/usr/data/MOEX/SHARE/SBER");
+        let path = Path::new("/home/alex/trading/data/MOEX/SHARE/SBER");
         assert_eq!(iid.path(), path);
     }
 }

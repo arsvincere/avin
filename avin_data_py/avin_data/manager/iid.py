@@ -38,28 +38,28 @@ class Iid:
         assert isinstance(other, Iid)
         return self.figi() == other.figi()
 
-    def info(self):
+    def info(self) -> dict:
         return self.__info
 
-    def exchange(self):
+    def exchange(self) -> str:
         return Exchange.from_str(self.__info["exchange"])
 
-    def category(self):
+    def category(self) -> Category:
         return Category.from_str(self.__info["category"])
 
-    def ticker(self):
+    def ticker(self) -> str:
         return self.__info["ticker"]
 
-    def figi(self):
+    def figi(self) -> str:
         return self.__info["figi"]
 
-    def name(self):
+    def name(self) -> str:
         return self.__info["name"]
 
-    def lot(self):
+    def lot(self) -> int:
         return int(self.__info["lot"])
 
-    def step(self):
+    def step(self) -> float:
         return float(self.__info["step"])
 
     def path(self) -> str:
@@ -70,6 +70,9 @@ class Iid:
             self.ticker(),
         )
         return path
+
+    def pretty(self) -> str:
+        return Cmd.to_json_str(self.__info, indent=4)
 
     @classmethod  # from_str
     async def from_str(cls, string: str) -> Iid:

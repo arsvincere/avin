@@ -11,7 +11,6 @@ from __future__ import annotations
 from datetime import UTC
 from datetime import datetime as Date
 from datetime import datetime as DateTime
-from typing import Optional
 
 from avin_data.manager.category import Category
 from avin_data.manager.data_file_bar import DataFileBar
@@ -30,11 +29,11 @@ class Manager:
     def cache(cls) -> None:
         """Make cache of instruments info"""
 
-        log.info(f":: Caching instruments info")
+        log.info(":: Caching instruments info")
         SourceMoex.cache_instruments_info()
 
     @classmethod
-    def find(cls, s: str) -> Optional[Iid]:
+    def find(cls, s: str) -> Iid | None:
         """Find instrument id"""
 
         iid_opt = SourceMoex.find(s)
@@ -47,7 +46,7 @@ class Manager:
         iid: Iid,
         market_data: MarketData,
         *,
-        year: Optional[int] = None,
+        year: int | None = None,
     ) -> None:
         assert isinstance(source, Source)
         assert isinstance(iid, Iid)
@@ -144,7 +143,7 @@ class Manager:
 
         df = SourceMoex.get_market_data(iid, market_data, begin=b, end=e)
         if df.is_empty():
-            log.info(f"   {year} no data")
+            log.info(f"{year} no data")
             return
 
         file = DataFileBar(iid, market_data, df)
@@ -159,7 +158,7 @@ class Manager:
 
         df = SourceMoex.get_market_data(iid, market_data)
         if df.is_empty():
-            log.info(f"   {Date.today()} no data")
+            log.info(f"{Date.today()} no data")
             return
 
         file = DataFileTic(iid, market_data, df)
@@ -181,9 +180,9 @@ class Manager:
         df = df[1:]  # remove first duplicate item
 
         if df.is_empty():
-            log.info("   no new bars")
+            log.info("no new bars")
         else:
-            log.info(f"   receved {len(df)} bars")
+            log.info(f"receved {len(df)} bars")
             last_data.add(df)
             DataFileBar.save(last_data)
 
@@ -205,9 +204,9 @@ class Manager:
         df = df[1:]  # remove first duplicate item
 
         if df.is_empty():
-            log.info("   no new tics")
+            log.info("no new tics")
         else:
-            log.info(f"   receved {len(df)} tics")
+            log.info(f"receved {len(df)} tics")
             last_data.add(df)
             DataFileTic.save(last_data)
 

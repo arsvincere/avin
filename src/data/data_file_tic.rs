@@ -187,7 +187,8 @@ mod tests {
     }
     #[test]
     fn load() {
-        let path = "/home/alex/avin/usr/data/MOEX/SHARE/GAZP/TIC/2025/2025-06-08.pqt";
+        let path =
+            "/home/alex/trading/data/MOEX/SHARE/GAZP/TIC/2025/2025-06-08.pqt";
         let path = std::path::Path::new(path);
         let df = Cmd::read_pqt(path).unwrap();
 

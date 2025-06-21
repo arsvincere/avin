@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 from datetime import date as Date
-from typing import Optional
 
 import polars as pl
 
@@ -52,12 +51,12 @@ class DataFileTic:
         path = cls.__create_file_path(iid, market_data, date)
         Cmd.write_pqt(df, path)
 
-        log.info(f"   Save tics: {path}")
+        log.info(f"Save tics: {path}")
 
     @classmethod
     def load(
         cls, iid: Iid, market_data: MarketData, date: Date
-    ) -> Optional[DataFileTic]:
+    ) -> DataFileTic | None:
         assert isinstance(iid, Iid)
         assert isinstance(market_data, MarketData)
         assert isinstance(date, Date)

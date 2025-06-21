@@ -101,7 +101,7 @@ class MarketData(enum.Enum):
 
         return prev
 
-    def next_dt(self, dt: DateTime) -> DateTime:  # {{{
+    def next_dt(self, dt: DateTime) -> DateTime:
         match self:
             case MarketData.BAR_1M:
                 next = dt.replace(second=0, microsecond=0)
@@ -169,10 +169,12 @@ class MarketData(enum.Enum):
 
         return next
 
-    # }}}
-
     @classmethod
     def from_str(cls, string: str) -> MarketData:
+        if not isinstance(string, str):
+            log.error(f"Invalid argument for market data: {string}")
+            exit(1)
+
         types = {
             "1M": MarketData.BAR_1M,
             "5M": MarketData.BAR_5M,

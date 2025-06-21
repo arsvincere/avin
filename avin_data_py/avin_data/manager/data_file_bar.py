@@ -69,7 +69,7 @@ class DataFileBar:
 
             path = cls.__create_file_path(iid, market_data, year)
             Cmd.write_pqt(year_df, path)
-            log.info(f"   Save bars: {path}")
+            log.info(f"Save bars: {path}")
 
             year += 1
 

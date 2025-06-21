@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn load() {
-        let path = Path::new("/home/alex/avin/usr/asset/xxx.csv");
+        let path = Path::new("/home/alex/trading/asset/xxx.csv");
         let asset_list = AssetList::load(path).unwrap();
 
         assert_eq!(asset_list.name(), "xxx");

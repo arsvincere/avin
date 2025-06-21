@@ -13,7 +13,6 @@ from datetime import UTC
 from datetime import date as Date
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
-from typing import Optional
 
 import httpx
 import moexalgo
@@ -66,7 +65,7 @@ class SourceMoex:
     def find(
         cls,
         s: str,
-    ) -> Optional[Iid]:
+    ) -> Iid | None:
         # parse str
         exchange_str, category_str, ticker_str = s.upper().split("_")
         assert exchange_str == "MOEX"
@@ -86,7 +85,8 @@ class SourceMoex:
             "exchange": "MOEX",
             "category": category_str,
             "ticker": ticker_str,
-            "figi": f"figi_MOEX_{ticker_str}",  # MOEX not provide figi...
+            # NOTE: MOEX not provide figi... using unique fake value
+            "figi": f"figi_MOEX_{category_str}_{ticker_str}",
             "name": df.item(0, "shortname"),
             "lot": df.item(0, "lotsize"),
             "step": df.item(0, "minstep"),
@@ -101,9 +101,9 @@ class SourceMoex:
         iid: Iid,
         market_data: MarketData,
         *,
-        begin: Optional[DateTime] = None,
-        end: Optional[DateTime] = None,
-        tradeno: Optional[int] = None,
+        begin: DateTime | None = None,
+        end: DateTime | None = None,
+        tradeno: int | None = None,
     ) -> pl.DataFrame:
         # check
         if market_data not in AVAILIBLE:
@@ -170,7 +170,7 @@ class SourceMoex:
         # try auth
         cls.__auth = moexalgo.session.authorize(login, password)
         if cls.__auth:
-            log.info("   MOEX Authorization successful")
+            log.info("MOEX Authorization successful")
         else:
             log.error(
                 "MOEX authorization fault, check your login and password. "
@@ -390,7 +390,7 @@ class SourceMoex:
         cls,
         iid: Iid,
         market_data: MarketData,
-        tradeno: Optional[int],
+        tradeno: int | None,
     ) -> pl.DataFrame:
         # convert types to moex format
         moex_ticker = cls.__to_moex_ticker(iid)
@@ -422,7 +422,7 @@ class SourceMoex:
     def __try_request_tics(
         cls,
         moex_ticker: moexalgo.AnyTickers,
-        tradeno: Optional[int],
+        tradeno: int | None,
     ) -> pl.DataFrame:
         MAX_ATTEMPT = 5
         attempt = 0

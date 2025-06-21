@@ -1,12 +1,9 @@
 [dir]
     # Specify absolute path to program dir
-    root = "/home/alex/avin/"
-
-    # Specify an absolute path to user dir, all user data be there.
-    usr = "/home/alex/avin/usr/"
+    root = "/home/alex/trading/"
 
     # Specify an absolute path to market data dir
-    data = "/home/alex/avin/usr/data"
+    data = "/home/alex/trading/data/"
 
 [usr]
     # Your local timeshift from UTC+0
@@ -15,7 +12,7 @@
     offset = 3
 
     # The application uses timestamp nanos everywhere.
-    # When it is necessary to display in gui or log will be used this format
+    # When it is necessary to display (in gui or log) will be used this format
     dt_fmt = "%Y-%m-%d %H:%M:%S"
 
     # Your applications
@@ -29,7 +26,6 @@
     # Other options used when start terminal
     opt = "-T AlacrittyFloat"
 
-
 [log]
     history = 5 # days
     debug = true
@@ -37,36 +33,56 @@
 
 [connect]
     # Path to tinkoff token
-    tinkoff = "/home/alex/avin/usr/connect/tinkoff/token.txt"
+    tinkoff = "/home/alex/trading/connect/tinkoff/token.txt"
 
     # Path to moex account
-    moexalgo = "/home/alex/avin/usr/connect/moex/account.txt"
+    moexalgo = "/home/alex/trading/connect/moex/account.txt"
 
 [data]
     # Availible formats: "pqt", "csv", "postgres"
     format = "pqt"
+    # Converter rule examples:
+    # { iid = "MOEX_SHARE_SBER", input = "1M", output = "5M" },
+    # { iid = "MOEX_SHARE_*", input = "1M", output = "5M" },
+    # { iid = "MOEX_*_*", input = "1M", output = "5M" },
+    # { iid = "*_*_*", input = "1M", output = "5M" },
+    converter = [
+        { iid = "MOEX_*_*", input = "1M", output = "5M" },
+    ]
+
+[core]
+    default_bars_count = 5000
 
 [tester]
     default_commission = 0.05 # %
 
-[color]
-    #  cursor crosshair
+[trader]
+
+[terminal]
+
+[gui.chart]
+    bottom_pane_height = 200.0
+    left_pane_width = 200.0
+    right_pane_width = 200.0
+
+[gui.color]
+    # Cursor crosshair
     cross = "#282727"
     cross_opacity = 1.0
 
-    # bars with close < open
+    # Bars with close < open
     bear = "#FF5D62"
     bear_opacity = 1.0
 
-    # bars with close > open
+    # Bars with close > open
     bull = "#98bb6c"
     bull_opacity = 1.0
 
-    # bars with open == close
+    # Bars with open == close
     nobody = "#AAAAAA"
     nobody_opacity = 1.0
 
-    # trends
+[extra.trend]
     trend_t1 = "#AAAAAA"
     trend_t2 = "#658594"
     trend_t3 = "#7E9CD8"
@@ -77,9 +93,4 @@
     trend_t3_opacity = 0.6
     trend_t4_opacity = 0.8
     trend_t5_opacity = 1.0
-
-[chart]
-    default_bars_count = 5000
-    bottom_pane_height = 200.0
-    left_pane_width = 200.0
-    right_pane_width = 200.0
+    auto_bar_opacity = true

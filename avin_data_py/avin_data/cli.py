@@ -1,6 +1,6 @@
 import click
 
-from avin_data import Category, Manager
+from avin_data import Manager, MarketData, Source
 
 
 @click.group()
@@ -47,7 +47,7 @@ def cache():
 
 @cli.command()
 @click.option("--instrument", "-i", help="Идентификатор инструмента")
-def find(iid):
+def find(instrument):
     """Поиск информации об инструменте
 
     Формат идентификатора инструмента: <exchange>_<category>_<ticker>
@@ -58,48 +58,49 @@ def find(iid):
 
         ticker: [gazp, lkoh, rosn, ... ]
 
-    Пример: moex_share_sber
+    Пример: avin_data find -i moex_share_sber
 
     """
-    print(f"iid={iid}")
-    click.echo("Find ...")
+
+    result = Manager.find(instrument)
+    print(result.pretty())
 
 
 @cli.command()
-@click.option("--source", "-s", help="Источник рыночных данных: [moex]")
-@click.option(
-    "--instrument",
-    "-i",
-    help="Идентификатор инструмента: <exchange>_<category>_<ticker>",
-)
-@click.option(
-    "--data",
-    "-d",
-    help="Тип данных: [BAR_M, BAR_W, BAR_D, BAR_1H, BAR_10M, BAR_1M, TIC]",
-)
-def download(source, iid, data):
+@click.option("--instrument", "-i", help="Идентификатор инструмента")
+@click.option("--source", "-s", help="Источник рыночных данных")
+@click.option("--data", "-d", help="Тип данных")
+@click.option("--year", "-y", help="Год")
+def download(source, instrument, data, year):
     """Загрузка рыночных данных
 
     Примеры:
 
     1. Загрузить дневные бары Сбер банка за 2025г:
 
-        avin_data download -s moex -i moex_share_sber -d bar_d -y 2025
+        avin_data download -i moex_share_sber -s moex  -d bar_d -y 2025
 
     2. Загрузить все 1H бары Газпрома:
 
-        avin_data download -s moex -i moex_share_gazp -d bar_1h
+        avin_data download -i moex_share_gazp -s moex -d bar_1h
 
     """
 
-    print(f"source={source} iid={iid} data={data}")
-    click.echo("Downloading ...")
+    source = Source.from_str(source)
+    iid = Manager.find(instrument)
+    market_data = MarketData.from_str(data)
+
+    if year is None:
+        Manager.download(source, iid, market_data)
+    else:
+        Manager.download(source, iid, market_data, year=int(year))
 
 
 @cli.command()
 def update():
     """Обновление имеющихся данных"""
-    click.echo("Updating ...")
+
+    Manager.update_all()
 
 
 if __name__ == "__main__":

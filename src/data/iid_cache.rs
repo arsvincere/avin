@@ -140,7 +140,7 @@ mod tests {
         let iids = Vec::new();
         let cache = IidCache::new(source, category, iids);
 
-        let path = Path::new("/home/alex/avin/usr/cache/tinkoff/SHARE.bin");
+        let path = Path::new("/home/alex/trading/cache/tinkoff/SHARE.bin");
         assert_eq!(cache.path(), path);
     }
 }

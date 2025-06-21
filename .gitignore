@@ -2,18 +2,20 @@
 .ruff_cache
 .venv
 __pycache__
+build
 dist
 log
 target
 tmp
 usr
+*.spec
 
 Session.vim*
-/src/bin/1.rs
-/src/bin/2.rs
-/src/bin/3.rs
-/src/bin/4.rs
-/src/bin/5.rs
+1.rs
+2.rs
+3.rs
+4.rs
+5.rs
 tmp.*
 1.py
 2.py
