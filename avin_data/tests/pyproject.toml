@@ -2,7 +2,7 @@
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = [
-    "/home/alex/avin/src_py/tests/",
+    "/home/alex/avin/avin_data/tests/",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

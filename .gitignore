@@ -1,8 +1,8 @@
 /.mypy_cache
 /log
-/src_py/.mypy_cache
-/src_py/.venv
-/src_py/__pycache__
+/avin_data/.mypy_cache
+/avin_data/.venv
+/avin_data/__pycache__
 /target
 /tmp
 /usr

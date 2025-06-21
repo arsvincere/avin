@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import polars as pl
 
-from src_py.conf import cfg
-from src_py.data.category import Category
-from src_py.data.source import Source
-from src_py.utils import Cmd, log
+from avin_data.conf import cfg
+from avin_data.data.category import Category
+from avin_data.data.source import Source
+from avin_data.utils import Cmd, log
 
 
 class IidCache:

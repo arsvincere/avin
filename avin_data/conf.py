@@ -13,7 +13,7 @@ import sys
 from datetime import timedelta as TimeDelta
 from typing import Optional
 
-from src_py.utils import Cmd
+from avin_data.utils import Cmd
 
 __all__ = "cfg"
 
@@ -87,25 +87,25 @@ class Configuration:
     def read_config(cls) -> Configuration:
         file_name = "config.toml"
 
-        # try find user config in <pwd>
+        # try find user config in current dir
         pwd = os.getcwd()
-        path = Cmd.path(pwd, file_name)
-        if Cmd.is_exist(path):
+        path = os.path.join(pwd, file_name)
+        if os.path.exists(path):
             return Configuration(path)
 
         # try find user config in <pwd>/usr
-        path = Cmd.path(pwd, "usr", file_name)
-        if Cmd.is_exist(path):
+        path = os.path.join(pwd, "usr", file_name)
+        if os.path.exists(path):
             return Configuration(path)
 
-        # try find user ~/.config/avin/
-        path = Cmd.path("~/.config/avin", file_name)
-        if Cmd.is_exist(path):
+        # try find in user home ~/.config/avin/
+        path = os.path.join("~/.config/avin", file_name)
+        if os.path.exists(path):
             return Configuration(path)
 
         # try use default config
-        path = Cmd.path(pwd, "res", "default_config.toml")
-        if Cmd.is_exist(path):
+        path = os.path.join(pwd, "res", "default_config.toml")
+        if os.path.exists(path):
             return Configuration(path)
 
         # panic

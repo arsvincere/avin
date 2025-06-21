@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import enum
 
-from src_py.utils import log
+from avin_data.utils import log
 
 
 class Category(enum.Enum):

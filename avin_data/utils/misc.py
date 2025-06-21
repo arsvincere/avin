@@ -10,7 +10,7 @@ from datetime import UTC
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
-from src_py.conf import cfg
+from avin_data.conf import cfg
 
 
 def utc(s: str) -> DateTime:

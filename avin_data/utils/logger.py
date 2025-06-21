@@ -10,7 +10,7 @@ import logging
 import os
 from datetime import date as Date
 
-from src_py.conf import cfg
+from avin_data.conf import cfg
 
 __all__ = ("log", "configure_log")
 

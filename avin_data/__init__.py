@@ -21,5 +21,5 @@ import plotly.express as px
 import plotly.graph_objs as go
 import polars as pl
 
-from src_py.data import *
-from src_py.utils import *
+from avin_data.data import *
+from avin_data.utils import *

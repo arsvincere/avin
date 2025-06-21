@@ -6,7 +6,7 @@
 # LICENSE:      MIT
 # ============================================================================
 
-from src_py import *
+from avin_data import *
 
 
 def test_exchange():

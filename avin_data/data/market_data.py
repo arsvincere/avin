@@ -12,7 +12,7 @@ import enum
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 
-from src_py.utils import log
+from avin_data.utils import log
 
 
 class MarketData(enum.Enum):

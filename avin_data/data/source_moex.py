@@ -19,13 +19,13 @@ import httpx
 import moexalgo
 import polars as pl
 
-from src_py.conf import cfg
-from src_py.data.category import Category
-from src_py.data.iid import Iid
-from src_py.data.iid_cache import IidCache
-from src_py.data.market_data import MarketData
-from src_py.data.source import Source
-from src_py.utils import Cmd, dt_to_ts, log, now, prev_month
+from avin_data.conf import cfg
+from avin_data.data.category import Category
+from avin_data.data.iid import Iid
+from avin_data.data.iid_cache import IidCache
+from avin_data.data.market_data import MarketData
+from avin_data.data.source import Source
+from avin_data.utils import Cmd, dt_to_ts, log, now, prev_month
 
 SOURCE = Source.MOEX
 MSK_OFFSET = TimeDelta(hours=3)

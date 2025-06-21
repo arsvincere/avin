@@ -6,9 +6,9 @@
 # LICENSE:      MIT
 # ============================================================================
 
-from src_py.utils.cmd import Cmd
-from src_py.utils.logger import configure_log, log
-from src_py.utils.misc import (
+from avin_data.utils.cmd import Cmd
+from avin_data.utils.logger import configure_log, log
+from avin_data.utils.misc import (
     dt_to_ts,
     next_month,
     now,

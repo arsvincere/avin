@@ -13,16 +13,16 @@ from datetime import datetime as Date
 from datetime import datetime as DateTime
 from typing import Optional
 
-from src_py.conf import cfg
-from src_py.data.category import Category
-from src_py.data.data_file_bar import DataFileBar
-from src_py.data.data_file_tic import DataFileTic
-from src_py.data.exchange import Exchange
-from src_py.data.iid import Iid
-from src_py.data.market_data import MarketData
-from src_py.data.source import Source
-from src_py.data.source_moex import SourceMoex
-from src_py.utils import Cmd, log, now, ts_to_dt
+from avin_data.conf import cfg
+from avin_data.data.category import Category
+from avin_data.data.data_file_bar import DataFileBar
+from avin_data.data.data_file_tic import DataFileTic
+from avin_data.data.exchange import Exchange
+from avin_data.data.iid import Iid
+from avin_data.data.market_data import MarketData
+from avin_data.data.source import Source
+from avin_data.data.source_moex import SourceMoex
+from avin_data.utils import Cmd, log, now, ts_to_dt
 
 
 class Manager:

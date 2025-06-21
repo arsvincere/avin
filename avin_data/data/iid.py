@@ -8,10 +8,10 @@
 
 from __future__ import annotations
 
-from src_py.conf import cfg
-from src_py.data.category import Category
-from src_py.data.exchange import Exchange
-from src_py.utils import Cmd
+from avin_data.conf import cfg
+from avin_data.data.category import Category
+from avin_data.data.exchange import Exchange
+from avin_data.utils import Cmd
 
 
 class Iid:
