@@ -1,25 +1,29 @@
-.mypy_cache
-.ruff_cache
-.venv
-__pycache__
-arch
-build
-dist
-log
-target
-tmp
-usr
+# Distribution / packaging
 *.spec
+.venv/
+arch/
+build/
+dist/
+target/
 
+# Byte-compiled / optimized / DLL files
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+
+# tmp files
+*.bak
+*.tmp
+1.*
+2.*
+3.*
+4.*
+5.*
 Session.vim*
-1.rs
-2.rs
-3.rs
-4.rs
-5.rs
-tmp.*
-1.py
-2.py
-3.py
-4.py
-5.py
+aaa
+avin/src/main.rs
+dev
+log/
+tmp/
+usr/

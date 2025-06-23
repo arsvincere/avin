@@ -1,3 +1,82 @@
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "~/avin/avin_data/tests/",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::pytest.PytestCollectionWarning",
+    ]
+asyncio_mode="auto"
+asyncio_default_fixture_loop_scope="session"
+
 [tool.mypy]
 ignore_missing_imports = true
 
+[tool.ruff]
+src = ["avin_data"]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "__pypackages__",
+    "arch",
+    "build",
+    "dist",
+]
+# Same as PEP8.
+line-length = 78
+indent-width = 4
+# Assume Python 3.13
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    # default
+    "E4", "E7", "E9", "F",
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = [
+    "I001", # Import block is un-sorted or un-formatted (when use *)
+    "F403", # import *
+    "F405", # may be undefined, or defined from star imports
+    "F821", # undefine name (не смотря на __future__.annotation)
+    "B011", # assert False
+    "UP007", # Optional[int] -> Use `X | Y` for type annotations
+]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"

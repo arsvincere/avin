@@ -1,3 +1,0 @@
-python -m venv ~/avin/.venv
-source ~/avin/.venv/bin/activate
-pip install -r ~/avin/avin_data_py/requirements.txt

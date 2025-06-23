@@ -1,0 +1,20 @@
+[package]
+name = "avin_tester"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+description = {workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = "../README.md"
+
+[dependencies]
+avin_core = { workspace = true }
+avin_strategy = { workspace = true }
+avin_utils = { workspace = true }
+bitcode = { workspace = true }
+chrono = { workspace = true }
+log = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }

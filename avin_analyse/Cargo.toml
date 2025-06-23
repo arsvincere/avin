@@ -1,0 +1,19 @@
+[package]
+name = "avin_analyse"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+description = {workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = "../README.md"
+
+[dependencies]
+avin_core = { workspace = true }
+avin_utils = { workspace = true }
+cached = { workspace = true}
+chrono = { workspace = true}
+log = { workspace = true}
+polars = { workspace = true}
+strum = { workspace = true}

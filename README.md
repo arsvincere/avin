@@ -1,25 +1,28 @@
 <h1 align="center">
-  <img src="https://github.com/arsvincere/avin-rs/blob/master/res/splash/splash.png" alt="AVIN - Trade System">
+  <img src="https://raw.githubusercontent.com/arsvincere/avin/master/res/splash/splash.png" alt="AVIN - Trade System">
 </h1>
 
 <div align="center">
 
-  [![version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
-  [![size](https://img.shields.io/crates/size/avin)]()
-  [![lines](https://sloc.xyz/github/arsvincere/avin-rs/?badge-bg-color=E82424&lower=true&label=lines)]()
+  [![version](https://img.shields.io/crates/v/avin?label=release)](https://github.com/arsvincere/avin)
+  [![size](https://img.shields.io/crates/size/avin)](https://github.com/arsvincere/avin)
+  [![lines](https://sloc.xyz/github/arsvincere/avin-rs/?badge-bg-color=E82424&lower=true&label=lines)](https://github.com/arsvincere/avin)
   [![doc](https://docs.rs/avin/badge.svg)](https://docs.rs/avin/)
   [![downloads](https://img.shields.io/crates/d/avin?label=crates.io)](https://crates.io/crates/avin)
 
 </div>
 
-## AVIN - open source cross-platform trading system
+## Open source cross-platform trading system
 AVIN (от лат. Ars Vincere  -  искусство побеждать)  —  это кросплатформенная
 трейдинговая система, написана на Rust, с GUI на egui/eframe.
 
 Содержит все, что нужно для алготрейдинга: от загрузки исторических данных и
 разработки стратегии, до запуска в боевой режим и построения отчетов.
 
-Интерфейсы и принципы работы стремятся быть такими же простыми как Pine от TradingView, но реализация на Rust дает возможность создавать сложные алгоритмы, и обеспечивает скорость достаточную для работы с тиковыми данными, кластерами и стаканом на grpc стриме.
+Интерфейсы и принципы работы стремятся быть такими же простыми как Pine от
+TradingView, но реализация на Rust дает возможность создавать сложные
+алгоритмы, и обеспечивает скорость достаточную для работы с тиковыми данными,
+кластерами и стаканом на grpc стриме.
 
 ## Модули и возможности
 

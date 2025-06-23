@@ -1,68 +1,59 @@
-[package]
-name = "avin"
-version = "0.1.1"
+[workspace]
+resolver = "3"
+members = [
+    "avin",
+    "avin_analyse",
+    "avin_connect",
+    "avin_core",
+    "avin_strategy",
+    "avin_tester",
+    "avin_trader",
+    "avin_utils"
+]
+
+[workspace.package]
+description = "Open source cross-platform trading system"
+version = "0.2.4"
 edition = "2024"
 license = "MIT"
-description = "Open source cross-platform trading system"
 authors = ["Alex Avin <mr.alexavin@gmail.com>"]
-repository = "https://github.com/arsvincere/avin-rs"
+repository = "https://github.com/arsvincere/avin"
+homepage = "https://avin.info"
 
-[dependencies]
+[workspace.dependencies]
 bitcode = "0.6.5"
 cached = "0.55.1"
 chrono = "0.4.41"
-eframe = { version = "0.31", default-features = false, features = [
-    "accesskit",     # Make egui compatible with screen readers.
-    "default_fonts", # Embed the default egui fonts.
-    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
-    "persistence",   # Enable restoring app state when restarting the app.
-    "wayland",       # To support Linux (and CI)
-    "x11",           # To support older Linux distributions
-] }
-egui-file-dialog = "0.10.0"
-egui_extras = { version= "0.31.1", features = ["all_loaders", "image", "svg"]}
-egui_plot = "0.32.1"
 flume = "0.11.1"
 log = "0.4.27"
-polars = { version = "0.46", features = [
-    "lazy",
-    "temporal",
-    "describe",
-    "json",
-    "parquet",
-    "dtype-datetime",
-    "strings",
-    "is_between",
-    "is_in",
-    "polars-ops", # for Series.cum_sum()
+polars = { version = "0.49.1", features = [
     "cum_agg", # for Expr.cum_sum()
+    "describe",
+    "is_in",
+    "lazy",
+    "parquet",
+    "temporal",
+    # "is_between",
+    # "json",
+    # "polars-ops", # for Series.cum_sum()
+    # "strings",
 ] }
-prost = "0.12"
-prost-types = "0.12"
-reqwest = { version = "0.12", features = ["json"] }
-rust_decimal = {version = "1.37.1", features = ["macros"]}
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0"
+serde = "1.0.219"
 strum = { version = "0.27.1", features = ["derive", "strum_macros"]}
 time-unit = "0.1"
 tokio = { version = "1", features = ["full"] }
-tokio-stream = "0.1.17"
+toml = "0.8.23"
 tonic = { version = "0.11", features = ["tls", "tls-roots", "gzip"] }
-tonic-build = "0.8.0"
 uuid = {version = "1.16.0", features = [ "v4" ]}
+prost-types = "0.12"
+prost = "0.12"
 
-[[bin]]
-name = "analytic"
-path = "src/bin/a-analytic.rs"
-[[bin]]
-name = "data"
-path = "src/bin/a-data.rs"
-[[bin]]
-name = "tester"
-path = "src/bin/a-tester.rs"
-[[bin]]
-name = "trader"
-path = "src/bin/a-trader.rs"
-# [[bin]]
-# name = "terminal"
-# path = "src/bin/a-terminal.rs"
+# self crates
+avin = { version = "0.2.4", path = "avin" }
+avin_analyse = { version = "0.2.4", path = "avin_analyse" }
+avin_connect = { version = "0.2.4", path = "avin_connect" }
+avin_core = { version = "0.2.4", path = "avin_core" }
+avin_strategy = { version = "0.2.4", path = "avin_strategy" }
+avin_tester = { version = "0.2.4", path = "avin_tester" }
+avin_trader = { version = "0.2.4", path = "avin_trader" }
+avin_utils = { version = "0.2.4", path = "avin_utils" }

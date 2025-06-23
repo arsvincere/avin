@@ -1,0 +1,22 @@
+[package]
+name = "avin_connect"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+description = {workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = "../README.md"
+
+[dependencies]
+avin_core = { workspace = true }
+avin_utils = { workspace = true }
+chrono = { workspace = true }
+flume = { workspace = true }
+log = { workspace = true }
+tokio = { workspace = true }
+tonic = { workspace = true }
+uuid = { workspace = true }
+prost-types = { workspace = true }
+prost = { workspace = true }

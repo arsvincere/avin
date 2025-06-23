@@ -1,3 +1,0 @@
-source ~/avin/.venv/bin/activate
-alacritty -e nvim
-deactivate

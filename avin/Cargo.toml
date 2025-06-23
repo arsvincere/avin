@@ -1,0 +1,24 @@
+[package]
+name = "avin"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+description = {workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = "../README.md"
+
+[dependencies]
+avin_analyse = { workspace = true }
+avin_connect = { workspace = true }
+avin_core = { workspace = true }
+avin_strategy = { workspace = true }
+avin_tester = { workspace = true }
+avin_trader = { workspace = true }
+avin_utils = { workspace = true }
+
+polars = { workspace = true }
+tokio = { workspace = true }
+chrono = { workspace = true }
+
