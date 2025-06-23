@@ -27,7 +27,7 @@ mod tester;
 mod tinkoff;
 mod trader;
 
-pub mod gui;
+// pub mod gui;
 pub mod utils;
 
 pub use analytic::*;

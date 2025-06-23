@@ -2,6 +2,7 @@
 .ruff_cache
 .venv
 __pycache__
+arch
 build
 dist
 log

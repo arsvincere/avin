@@ -1,6 +1,6 @@
 [package]
 name = "avin"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "MIT"
 description = "Open source cross-platform trading system"
@@ -58,12 +58,11 @@ path = "src/bin/a-analytic.rs"
 name = "data"
 path = "src/bin/a-data.rs"
 [[bin]]
-name = "terminal"
-path = "src/bin/a-terminal.rs"
-[[bin]]
 name = "tester"
 path = "src/bin/a-tester.rs"
 [[bin]]
 name = "trader"
 path = "src/bin/a-trader.rs"
-
+# [[bin]]
+# name = "terminal"
+# path = "src/bin/a-terminal.rs"
