@@ -22,4 +22,5 @@ pub use avin_connect as connect;
 pub use avin_core as core;
 pub use avin_strategy as strategy;
 pub use avin_tester as tester;
+pub use avin_trader as trader;
 pub use avin_utils as utils;
