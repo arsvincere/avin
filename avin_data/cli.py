@@ -10,24 +10,24 @@ def cli():
     Первое что нужно сделать - кэшировать информацию о доступных инструментах.
     Выполните:
 
-        avin_data cache
+        avin-data cache
 
     Теперь вы можете выполнять поиск инструментов и просматривать информацию
     о них. Например:
 
-        avin_data find -i moex_share_sber
+        avin-data find -i moex_share_sber
 
     Загрузка дневных баров Сбер банка за 2025г:
 
-        avin_data download -s moex -i moex_share_sber -d bar_d --year 2025
+        avin-data download -s moex -i moex_share_sber -d bar_d --year 2025
 
     Обновить все имеющиеся данные:
 
-        avin_data update
+        avin-data update
 
     Подробнее об использовании команд:
 
-        avin_data <command> --help
+        avin-data <command> --help
 
     Программа может использоваться отдельно, или как часть AVIN Trade System
     Подробнее: https://github.com/arsvincere/avin
@@ -66,7 +66,7 @@ def find(instrument: str):
 
         ticker: [gazp, lkoh, rosn, ... ]
 
-    Пример: avin_data find -i moex_share_sber
+    Пример: avin-data find -i moex_share_sber
 
     """
 
@@ -89,19 +89,19 @@ def download(source, instrument, data, year):
 
     1. Загрузить дневные бары Сбер банка за 2025г:
 
-        avin_data download -i moex_share_sber -s moex  -d bar_d -y 2025
+        avin-data download -i moex_share_sber -s moex  -d bar_d -y 2025
 
     2. Загрузить все 1H бары Газпрома:
 
-        avin_data download -i moex_share_gazp -s moex -d bar_1h
+        avin-data download -i moex_share_gazp -s moex -d bar_1h
 
     3. Загрузить тиковые данные Роснефть за сегодня:
 
-        avin_data download -i moex_share_rosn -s moex -d tic
+        avin-data download -i moex_share_rosn -s moex -d tic
 
     4. Загрузить все типы данных Яндекс за все годы:
 
-        avin_data download -i moex_share_ydex
+        avin-data download -i moex_share_ydex
     """
     ALL = ["TIC", "1M", "10M", "1H", "D", "W", "M"]
 

@@ -50,6 +50,8 @@ publish: ## Publish PyPl & crates.io
 	cargo publish -p avin_analyse
 	cargo publish -p avin_strategy
 	cargo publish -p avin_tester
+	cargo publish -p avin_connect
+	cargo publish -p avin_trader
 	cargo publish -p avin
 
 install: build ## Install the project
