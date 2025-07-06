@@ -34,6 +34,39 @@ impl MarketOrder {
     pub fn new(direction: Direction, lots: u32) -> NewMarketOrder {
         NewMarketOrder { direction, lots }
     }
+
+    pub fn as_new(self) -> Option<NewMarketOrder> {
+        match self {
+            MarketOrder::New(o) => Some(o),
+            MarketOrder::Posted(_) => None,
+            MarketOrder::Filled(_) => None,
+            MarketOrder::Rejected(_) => None,
+        }
+    }
+    pub fn as_posted(self) -> Option<PostedMarketOrder> {
+        match self {
+            MarketOrder::New(_) => None,
+            MarketOrder::Posted(o) => Some(o),
+            MarketOrder::Filled(_) => None,
+            MarketOrder::Rejected(_) => None,
+        }
+    }
+    pub fn as_filled(self) -> Option<FilledMarketOrder> {
+        match self {
+            MarketOrder::New(_) => None,
+            MarketOrder::Posted(_) => None,
+            MarketOrder::Filled(o) => Some(o),
+            MarketOrder::Rejected(_) => None,
+        }
+    }
+    pub fn as_rejected(self) -> Option<RejectedMarketOrder> {
+        match self {
+            MarketOrder::New(_) => None,
+            MarketOrder::Posted(_) => None,
+            MarketOrder::Filled(_) => None,
+            MarketOrder::Rejected(o) => Some(o),
+        }
+    }
 }
 impl std::fmt::Display for MarketOrder {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

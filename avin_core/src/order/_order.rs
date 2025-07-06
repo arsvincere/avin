@@ -42,6 +42,53 @@ impl Order {
         bitcode::encode(self)
     }
 
+    /// Unwrap as market order
+    ///
+    /// # ru
+    /// Развернуть как маркет ордер
+    pub fn as_market(self) -> Option<MarketOrder> {
+        match self {
+            Order::Market(o) => Some(o),
+            Order::Limit(_) => None,
+            Order::Stop(_) => None,
+        }
+    }
+    /// Unwrap as limit order
+    ///
+    /// # ru
+    /// Развернуть как лимит ордер
+    pub fn as_limit(self) -> Option<LimitOrder> {
+        match self {
+            Order::Market(_) => None,
+            Order::Limit(o) => Some(o),
+            Order::Stop(_) => None,
+        }
+    }
+    /// Unwrap as stop order
+    ///
+    /// # ru
+    /// Развернуть как стоп ордер
+    pub fn as_stop(self) -> Option<StopOrder> {
+        match self {
+            Order::Market(_) => None,
+            Order::Limit(_) => None,
+            Order::Stop(o) => Some(o),
+        }
+    }
+
+    /// Check is order market
+    pub fn is_market(&self) -> bool {
+        matches!(self, Order::Market(_))
+    }
+    /// Check is order limit
+    pub fn is_limit(&self) -> bool {
+        matches!(self, Order::Limit(_))
+    }
+    /// Check is order stop
+    pub fn is_stop(&self) -> bool {
+        matches!(self, Order::Stop(_))
+    }
+
     /// Check is order posted.
     ///
     /// # ru

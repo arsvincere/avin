@@ -339,7 +339,13 @@ impl Asset {
 impl std::fmt::Display for Asset {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::SHARE(s) => write!(f, "Asset={}", s.iid()),
+            Self::SHARE(s) => write!(
+                f,
+                "Asset={}_{}_{}",
+                s.exchange(),
+                s.category(),
+                s.ticker()
+            ),
         }
     }
 }

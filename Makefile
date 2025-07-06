@@ -23,7 +23,7 @@ fmt: ## Run ruff format & cargo fmt
 	ruff format
 
 test: ## Run pytests, lib-tests, doc-tests
-	cd avin_data && pytest tests
+	source .venv/bin/activate && cd avin_data && pytest tests
 	cargo test --lib
 	cargo test --doc
 

@@ -86,7 +86,7 @@ let contact = [email](mailto:mr.alexavin@gmail.com) || [telegram](https://t.me/m
 интерфейсы. На сегодня (2025-05-16) переписано около 50% python кода.
 
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/arsvincere/avin/blob/master/res/screenshot/Screenshot_2024-02-28_13-11-10.png" alt="GUI screenshot">
+  <img src="https://raw.githubusercontent.com/arsvincere/avin/master/res/screenshot/Screenshot_2024-02-28_13-11-10.png" alt="GUI screenshot">
 </h1>
 
 ## Getting start

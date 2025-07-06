@@ -39,21 +39,67 @@ impl LimitOrder {
             price,
         }
     }
-    pub fn from_csv() {}
-    pub fn to_csv(&self) -> String {
-        let mut csv = "limit;".to_string();
+
+    pub fn as_new(self) -> Option<NewLimitOrder> {
         match self {
-            LimitOrder::New(o) => {
-                csv.push_str("new;");
-                csv.push_str(o.direction.to_str());
-                csv.push_str(&o.lots.to_string());
-            }
-            LimitOrder::Posted(_) => csv.push_str("posted;"),
-            LimitOrder::Filled(_) => csv.push_str("filled;"),
-            LimitOrder::Rejected(_) => csv.push_str("rejected;"),
-            LimitOrder::Canceled(_) => csv.push_str("rejected;"),
-        };
-        todo!();
+            LimitOrder::New(o) => Some(o),
+            LimitOrder::Posted(_) => None,
+            LimitOrder::Filled(_) => None,
+            LimitOrder::Rejected(_) => None,
+            LimitOrder::Canceled(_) => None,
+        }
+    }
+    pub fn as_posted(self) -> Option<PostedLimitOrder> {
+        match self {
+            LimitOrder::New(_) => None,
+            LimitOrder::Posted(o) => Some(o),
+            LimitOrder::Filled(_) => None,
+            LimitOrder::Rejected(_) => None,
+            LimitOrder::Canceled(_) => None,
+        }
+    }
+    pub fn as_filled(self) -> Option<FilledLimitOrder> {
+        match self {
+            LimitOrder::New(_) => None,
+            LimitOrder::Posted(_) => None,
+            LimitOrder::Filled(o) => Some(o),
+            LimitOrder::Rejected(_) => None,
+            LimitOrder::Canceled(_) => None,
+        }
+    }
+    pub fn as_rejected(self) -> Option<RejectedLimitOrder> {
+        match self {
+            LimitOrder::New(_) => None,
+            LimitOrder::Posted(_) => None,
+            LimitOrder::Filled(_) => None,
+            LimitOrder::Rejected(o) => Some(o),
+            LimitOrder::Canceled(_) => None,
+        }
+    }
+    pub fn as_canceled(self) -> Option<CanceledLimitOrder> {
+        match self {
+            LimitOrder::New(_) => None,
+            LimitOrder::Posted(_) => None,
+            LimitOrder::Filled(_) => None,
+            LimitOrder::Rejected(_) => None,
+            LimitOrder::Canceled(o) => Some(o),
+        }
+    }
+
+    pub fn is_new(&self) -> bool {
+        matches!(self, LimitOrder::New(_))
+    }
+    pub fn is_posted(&self) -> bool {
+        matches!(self, LimitOrder::Posted(_))
+    }
+    pub fn is_filled(&self) -> bool {
+        matches!(self, LimitOrder::Filled(_))
+    }
+    pub fn is_rejected(&self) -> bool {
+        matches!(self, LimitOrder::Rejected(_))
+    }
+    pub fn is_canceled(&self) -> bool {
+        matches!(self, LimitOrder::Canceled(_))
     }
 }
 impl std::fmt::Display for LimitOrder {

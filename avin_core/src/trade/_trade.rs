@@ -73,6 +73,38 @@ impl Trade {
             iid,
         }
     }
+
+    pub fn as_new(self) -> Option<NewTrade> {
+        match self {
+            Trade::New(t) => Some(t),
+            Trade::Opened(_) => None,
+            Trade::Closed(_) => None,
+        }
+    }
+    pub fn as_opened(self) -> Option<OpenedTrade> {
+        match self {
+            Trade::New(_) => None,
+            Trade::Opened(t) => Some(t),
+            Trade::Closed(_) => None,
+        }
+    }
+    pub fn as_closed(self) -> Option<ClosedTrade> {
+        match self {
+            Trade::New(_) => None,
+            Trade::Opened(_) => None,
+            Trade::Closed(t) => Some(t),
+        }
+    }
+
+    pub fn is_new(&self) -> bool {
+        matches!(self, Trade::New(_))
+    }
+    pub fn is_opened(&self) -> bool {
+        matches!(self, Trade::Opened(_))
+    }
+    pub fn is_closed(&self) -> bool {
+        matches!(self, Trade::Closed(_))
+    }
 }
 impl std::fmt::Display for Trade {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -158,6 +190,126 @@ impl OpenedTrade {
             panic!("in closed trade quantity != 0");
         }
         trade
+    }
+
+    pub fn is_long(&self) -> bool {
+        self.kind == TradeKind::Long
+    }
+    pub fn is_short(&self) -> bool {
+        self.kind == TradeKind::Short
+    }
+
+    pub fn lots(&self) -> i32 {
+        self.quantity() / self.iid.lot() as i32
+    }
+    pub fn quantity(&self) -> i32 {
+        let mut total: i32 = 0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => continue,
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.quantity
+            } else {
+                total -= op.quantity
+            }
+        }
+
+        total
+    }
+    pub fn buy_quantity(&self) -> i32 {
+        let mut total: i32 = 0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => continue,
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.quantity
+            }
+        }
+
+        total
+    }
+    pub fn sell_quantity(&self) -> i32 {
+        let mut total: i32 = 0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => continue,
+            };
+            if *order.direction() == Direction::Sell {
+                total += op.quantity
+            }
+        }
+
+        total
+    }
+
+    pub fn value(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => continue,
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.value
+            } else {
+                total -= op.value
+            }
+        }
+
+        total
+    }
+    pub fn buy_value(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => continue,
+            };
+            if *order.direction() == Direction::Buy {
+                total += op.value
+            }
+        }
+
+        total
+    }
+    pub fn sell_value(&self) -> f64 {
+        let mut total: f64 = 0.0;
+
+        for order in self.orders.iter() {
+            let op = match order.operation() {
+                Some(op) => op,
+                None => continue,
+            };
+            if *order.direction() == Direction::Sell {
+                total += op.value
+            }
+        }
+
+        total
+    }
+
+    pub fn avg(&self) -> f64 {
+        if self.is_long() {
+            self.buy_avg()
+        } else {
+            self.sell_avg()
+        }
+    }
+    pub fn buy_avg(&self) -> f64 {
+        self.buy_value() / self.buy_quantity() as f64
+    }
+    pub fn sell_avg(&self) -> f64 {
+        self.sell_value() / self.sell_quantity() as f64
     }
 }
 impl std::fmt::Display for OpenedTrade {

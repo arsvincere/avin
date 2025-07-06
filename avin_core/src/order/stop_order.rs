@@ -48,7 +48,6 @@ pub enum StopOrder {
     Rejected(RejectedStopOrder),
     Canceled(CanceledStopOrder),
 }
-
 impl StopOrder {
     #[allow(clippy::new_ret_no_self)]
     pub fn new(
@@ -65,6 +64,68 @@ impl StopOrder {
             stop_price,
             exec_price,
         }
+    }
+
+    pub fn as_new(self) -> Option<NewStopOrder> {
+        match self {
+            StopOrder::New(o) => Some(o),
+            Self::Posted(_) => None,
+            Self::Triggered(_) => None,
+            Self::Rejected(_) => None,
+            Self::Canceled(_) => None,
+        }
+    }
+    pub fn as_posted(self) -> Option<PostedStopOrder> {
+        match self {
+            StopOrder::New(_) => None,
+            Self::Posted(o) => Some(o),
+            Self::Triggered(_) => None,
+            Self::Rejected(_) => None,
+            Self::Canceled(_) => None,
+        }
+    }
+    pub fn as_triggered(self) -> Option<TriggeredStopOrder> {
+        match self {
+            StopOrder::New(_) => None,
+            Self::Posted(_) => None,
+            Self::Triggered(o) => Some(o),
+            Self::Rejected(_) => None,
+            Self::Canceled(_) => None,
+        }
+    }
+    pub fn as_rejected(self) -> Option<RejectedStopOrder> {
+        match self {
+            StopOrder::New(_) => None,
+            Self::Posted(_) => None,
+            Self::Triggered(_) => None,
+            Self::Rejected(o) => Some(o),
+            Self::Canceled(_) => None,
+        }
+    }
+    pub fn as_canceled(self) -> Option<CanceledStopOrder> {
+        match self {
+            StopOrder::New(_) => None,
+            Self::Posted(_) => None,
+            Self::Triggered(_) => None,
+            Self::Rejected(_) => None,
+            Self::Canceled(o) => Some(o),
+        }
+    }
+
+    pub fn is_new(&self) -> bool {
+        matches!(self, StopOrder::New(_))
+    }
+    pub fn is_posted(&self) -> bool {
+        matches!(self, StopOrder::Posted(_))
+    }
+    pub fn is_triggered(&self) -> bool {
+        matches!(self, StopOrder::Triggered(_))
+    }
+    pub fn is_rejected(&self) -> bool {
+        matches!(self, StopOrder::Rejected(_))
+    }
+    pub fn is_canceled(&self) -> bool {
+        matches!(self, StopOrder::Canceled(_))
     }
 }
 impl std::fmt::Display for StopOrder {

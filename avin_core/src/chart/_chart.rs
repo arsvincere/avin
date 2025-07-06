@@ -133,7 +133,12 @@ impl Chart {
     /// ...
     pub fn bar(&self, n: usize) -> Option<&Bar> {
         if n == 0 {
-            self.now.as_ref()
+            return self.now.as_ref();
+        };
+
+        let bars_count = self.bars.len();
+        if bars_count < n {
+            None
         } else {
             let index = self.bars.len() - n;
             self.bars.get(index)
