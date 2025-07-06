@@ -100,7 +100,7 @@ help:
 	@echo ""
 	@echo -e $(T1)Build project:$(T2)
 	@echo -e $(B1)build$(B2)"          Build python and rust sources"
-	@echo -e $(B1)publish$(B2)"        Publish package PyPl & crates.io"
+	@echo -e $(B1)publish$(B2)"        Publish package pypi.org & crates.io"
 	@echo -e $(B1)install$(B2)"        Install the project"
 	@echo -e $(B1)doc$(B2)"            Create and open local documentation"
 	@echo -e $(B1)clean$(B2)"          Clean the project"
