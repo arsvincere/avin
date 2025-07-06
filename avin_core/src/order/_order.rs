@@ -111,6 +111,18 @@ impl Order {
             Order::Stop(_) => panic!("Stop order can't be filled"),
         }
     }
+    /// Check is order canceled.
+    ///
+    /// # ru
+    /// Проверка статуса ордера, если отменен true, иначе false.
+    pub fn is_canceled(&self) -> bool {
+        match self {
+            Order::Market(_) => unreachable!("Canceled market order???"),
+            Order::Limit(l) => matches!(l, LimitOrder::Canceled(_)),
+            Order::Stop(s) => matches!(s, StopOrder::Canceled(_)),
+        }
+    }
+
     /// Return order direction.
     ///
     /// # ru

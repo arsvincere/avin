@@ -186,6 +186,7 @@ impl OpenedTrade {
 
         // NOTE: проверка что трейд действительно закрыт
         // количество активов в позиции = 0
+        log::debug!("!!! {}", trade.quantity());
         if trade.quantity() != 0 {
             panic!("in closed trade quantity != 0");
         }

@@ -24,7 +24,7 @@ use crate::{Account, Iid, Order};
 /// в соответствующую стратегию.
 ///
 /// А в режиме терминала автоматически указывается owner="User".
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OrderAction {
     pub account: Account,
     pub iid: Iid,

@@ -2,7 +2,7 @@
 SHELL=bash
 PYTHONPATH=
 VENV=.venv
-VENV_BIN=$(VENV)/bin
+PY_ENV=source .venv/bin/activate && cd avin_data
 AVIN_DATA_APP=~/.local/bin/avin-data
 
 .venv: ## Create python virtual environment & install requirements
@@ -10,8 +10,8 @@ AVIN_DATA_APP=~/.local/bin/avin-data
 	$(MAKE) requirements
 
 requirements: .venv ## Install/Update Python project requirements
-	$(VENV_BIN)/python -m pip install --upgrade pip
-	$(VENV_BIN)/python -m pip install --upgrade -r avin_data/requirements.txt
+	$(VENV)/bin/python -m pip install --upgrade pip
+	$(VENV)/bin/python -m pip install --upgrade -r avin_data/requirements.txt
 
 check: ## Run ruff, mypy clippy
 	ruff check --select I --fix
@@ -23,7 +23,7 @@ fmt: ## Run ruff format & cargo fmt
 	ruff format
 
 test: ## Run pytests, lib-tests, doc-tests
-	source .venv/bin/activate && cd avin_data && pytest tests
+	$(PY_ENV) && pytest tests
 	cargo test --lib
 	cargo test --doc
 
@@ -36,15 +36,15 @@ pre-commit: ## Make check, fmt, test
 	$(MAKE) test
 
 build: .venv ## Build the project
-	cd avin_data && flit build --no-use-vcs
-	cd avin_data && pyinstaller cli.py \
+	$(PY_ENV) && flit build --no-use-vcs
+	$(PY_ENV) && pyinstaller cli.py \
 		--onefile \
 		--specpath build \
 		--name avin-data
 	cargo build --jobs 2
 
 publish: ## Publish PyPl & crates.io
-	cd avin_data && flit publish
+	source .venv/bin/activate && cd avin_data && flit publish
 	cargo publish -p avin_utils
 	cargo publish -p avin_core
 	cargo publish -p avin_analyse
@@ -55,7 +55,7 @@ publish: ## Publish PyPl & crates.io
 	cargo publish -p avin
 
 install: build ## Install the project
-	cd avin_data && flit install
+	$(PY_ENV) && flit install
 	rm -rf $(AVIN_DATA_APP)
 	install -Dm755 avin_data/dist/avin-data $(AVIN_DATA_APP)
 

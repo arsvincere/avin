@@ -51,7 +51,7 @@ impl VirtualBroker {
             tx,
             rx,
             data_stream,
-            account: Account::new("VirtualAccount", "bla-bla-bla"),
+            account: Account::new("VirtualAccount", "Virtual_ID"),
             strategy_name: test.strategy_name.clone(),
             commission: test.commission,
 
@@ -75,11 +75,11 @@ impl VirtualBroker {
         while let Ok(a) = self.rx.try_recv() {
             match a {
                 Action::Post(a) => self.post_action(a),
-                Action::Cancel(_) => todo!(),
-                Action::TradeOpened(_) => panic!(),
-                Action::TradeClosed(_) => panic!(),
-                Action::Subscribe(_) => panic!(),
-                Action::Unsubscribe(_) => panic!(),
+                Action::Cancel(a) => self.cancel_action(a),
+                Action::TradeOpened(_) => unreachable!(),
+                Action::TradeClosed(_) => unreachable!(),
+                Action::Subscribe(_) => unreachable!(),
+                Action::Unsubscribe(_) => unreachable!(),
             }
         }
 
@@ -118,7 +118,7 @@ impl VirtualBroker {
                     };
                 }
                 Event::Tic(_) => todo!("Обработка тиков виртуал брокером..."),
-                Event::Order(_) => panic!("WTF??? Так не должно быть!"),
+                Event::Order(_) => unreachable!("OrderEvent in data stream?"),
             }
 
             // достать из очереди первый эвент и выдать его
@@ -155,37 +155,67 @@ impl VirtualBroker {
         self.queue.push_back(e);
     }
     fn post_market(&mut self, order: MarketOrder) -> Order {
-        if let MarketOrder::New(new_order) = order {
-            let broker_id = uuid::Uuid::new_v4().to_string();
-            let posted_order = new_order.post(&broker_id);
-            let posted_order = MarketOrder::Posted(posted_order);
-            self.market_orders.push(posted_order.clone());
-            Order::Market(posted_order)
-        } else {
-            panic!("Can't post not new order, got {}", order);
-        }
+        // unwrap
+        let new_order = order
+            .as_new()
+            .expect("Order must have status 'New', posting failed");
+
+        // create broker id
+        let broker_id = uuid::Uuid::new_v4().to_string();
+
+        // change status
+        let posted_order = new_order.post(&broker_id);
+
+        // wrap
+        let posted_order = MarketOrder::Posted(posted_order);
+
+        // save copy
+        self.market_orders.push(posted_order.clone());
+
+        // wrap & return posted order
+        Order::Market(posted_order)
     }
     fn post_limit(&mut self, order: LimitOrder) -> Order {
-        if let LimitOrder::New(new_order) = order {
-            let broker_id = uuid::Uuid::new_v4().to_string();
-            let posted_order = new_order.post(&broker_id);
-            let posted_order = LimitOrder::Posted(posted_order);
-            self.limit_orders.push(posted_order.clone());
-            Order::Limit(posted_order)
-        } else {
-            panic!("Can't post not new order, got {}", order);
-        }
+        // unwrap
+        let new_order = order
+            .as_new()
+            .expect("Order must have status 'New', posting failed");
+
+        // create broker id
+        let broker_id = uuid::Uuid::new_v4().to_string();
+
+        // change status
+        let posted_order = new_order.post(&broker_id);
+
+        // wrap
+        let posted_order = LimitOrder::Posted(posted_order);
+
+        // save copy
+        self.limit_orders.push(posted_order.clone());
+
+        // wrap & return posted order
+        Order::Limit(posted_order)
     }
     fn post_stop(&mut self, order: StopOrder) -> Order {
-        if let StopOrder::New(new_order) = order {
-            let broker_id = uuid::Uuid::new_v4().to_string();
-            let posted_order = new_order.post(&broker_id);
-            let posted_order = StopOrder::Posted(posted_order);
-            self.stop_orders.push(posted_order.clone());
-            Order::Stop(posted_order)
-        } else {
-            panic!("Can't post not new order, got {}", order);
-        }
+        // unwrap
+        let new_order = order
+            .as_new()
+            .expect("Order must have status 'New', posting failed");
+
+        // create broker id
+        let broker_id = uuid::Uuid::new_v4().to_string();
+
+        // change status
+        let posted_order = new_order.post(&broker_id);
+
+        // wrap
+        let posted_order = StopOrder::Posted(posted_order);
+
+        // save copy
+        self.stop_orders.push(posted_order.clone());
+
+        // wrap & return posted order
+        Order::Stop(posted_order)
     }
     fn check_all_orders(&mut self) {
         self.check_all_orders_market();
@@ -196,11 +226,11 @@ impl VirtualBroker {
         let bar = self.current_bar;
 
         while let Some(order) = self.market_orders.pop() {
-            if let MarketOrder::Posted(order) = order {
-                self.exec_market(order, bar.ts_nanos, bar.c);
-            } else {
-                panic!("WTF??? Тут должны быть только 'posted' ордера")
-            }
+            // unwrap
+            let order = order.as_posted().unwrap();
+
+            // exec in current bar
+            self.exec_market(bar.ts_nanos, bar.c, order);
         }
     }
     fn check_all_orders_limit(&mut self) {
@@ -210,27 +240,24 @@ impl VirtualBroker {
         while i < self.limit_orders.len() {
             // unwrap PostedLimitOrder
             let limit_order = &self.limit_orders[i];
-            let posted = match limit_order {
-                LimitOrder::Posted(order) => order,
-                _ => panic!("WTF??? Тут должны быть только 'posted' ордера"),
-            };
+            let posted = limit_order.clone().as_posted().unwrap();
 
             // если бар содержит цену лимитки -> по цене лимитки
             if self.current_bar.contains(posted.price) {
-                self.exec_limit(posted.clone(), bar.ts_nanos, posted.price);
+                self.exec_limit(bar.ts_nanos, posted.price, posted);
                 self.limit_orders.remove(i);
             }
             // бар открылся под лимиткой на покупку -> по цене открытия
             else if posted.direction == Direction::Buy {
                 if bar.o < posted.price {
-                    self.exec_limit(posted.clone(), bar.ts_nanos, bar.o);
+                    self.exec_limit(bar.ts_nanos, posted.price, posted);
                     self.limit_orders.remove(i);
                 }
             }
             // бар открылся над лимиткой на продажу -> по цене открытия
             else if posted.direction == Direction::Sell {
                 if bar.o > posted.price {
-                    self.exec_limit(posted.clone(), bar.ts_nanos, bar.o);
+                    self.exec_limit(bar.ts_nanos, posted.price, posted);
                     self.limit_orders.remove(i);
                 }
             }
@@ -255,7 +282,7 @@ impl VirtualBroker {
 
             // если бар содержит цену сработки...
             if bar.contains(posted.stop_price) {
-                self.trigger_stop(posted.clone(), ts, posted.stop_price);
+                self.trigger_stop(ts, posted.stop_price, posted.clone());
                 self.stop_orders.remove(i);
                 continue;
             }
@@ -266,7 +293,7 @@ impl VirtualBroker {
                 if posted.direction == Sell {
                     // open ниже stop_price, trigger по цене открытия бара
                     if bar.o < posted.stop_price {
-                        self.trigger_stop(posted.clone(), ts, bar.o);
+                        self.trigger_stop(ts, bar.o, posted.clone());
                         self.stop_orders.remove(i);
                         continue;
                     }
@@ -275,7 +302,7 @@ impl VirtualBroker {
                 else {
                     // open выше stop_price, trigger по цене открытия бара
                     if bar.o > posted.stop_price {
-                        self.trigger_stop(posted.clone(), ts, bar.o);
+                        self.trigger_stop(ts, bar.o, posted.clone());
                         self.stop_orders.remove(i);
                         continue;
                     }
@@ -288,7 +315,7 @@ impl VirtualBroker {
                 if posted.direction == Sell {
                     // open выше stop_price, trigger по цене открытия бара
                     if bar.o > posted.stop_price {
-                        self.trigger_stop(posted.clone(), ts, bar.o);
+                        self.trigger_stop(ts, bar.o, posted.clone());
                         self.stop_orders.remove(i);
                         continue;
                     }
@@ -297,7 +324,7 @@ impl VirtualBroker {
                 else {
                     // open ниже stop_price, trigger по цене открытия бара
                     if bar.o < posted.stop_price {
-                        self.trigger_stop(posted.clone(), ts, bar.o);
+                        self.trigger_stop(ts, bar.o, posted.clone());
                         self.stop_orders.remove(i);
                         continue;
                     }
@@ -310,18 +337,23 @@ impl VirtualBroker {
     }
     fn exec_market(
         &mut self,
-        mut order: PostedMarketOrder,
         ts_nanos: i64,
         price: f64,
+        mut order: PostedMarketOrder,
     ) {
+        // create transaction
         let quantity = order.lots * self.data_stream.iid.lot();
         let transaction = Transaction::new(quantity as i32, price);
         let commission = transaction.value() * self.commission;
         order.add_transaction(transaction);
+
+        // change status
         let order = order.fill(ts_nanos, commission);
+
+        // wrap
         let order = Order::Market(MarketOrder::Filled(order));
 
-        // собрать ордер эвент
+        // create order event and push in queue
         let e = OrderEvent::new(
             self.account.clone(),
             self.data_stream.iid.clone(),
@@ -333,18 +365,23 @@ impl VirtualBroker {
     }
     fn exec_limit(
         &mut self,
-        mut order: PostedLimitOrder,
         ts_nanos: i64,
         price: f64,
+        mut order: PostedLimitOrder,
     ) {
+        // create transaction
         let quantity = order.lots * self.data_stream.iid.lot();
         let transaction = Transaction::new(quantity as i32, price);
         let commission = transaction.value() * self.commission;
         order.add_transaction(transaction);
+
+        // change status
         let order = order.fill(ts_nanos, commission);
+
+        // wrap
         let order = Order::Limit(LimitOrder::Filled(order));
 
-        // собрать ордер эвент
+        // create order event and push in queue
         let e = OrderEvent::new(
             self.account.clone(),
             self.data_stream.iid.clone(),
@@ -356,9 +393,9 @@ impl VirtualBroker {
     }
     fn trigger_stop(
         &mut self,
-        order: PostedStopOrder,
         _ts_nanos: i64,
         _price: f64,
+        order: PostedStopOrder,
     ) {
         let bar = &self.current_bar;
         let id = order.broker_id.clone();
@@ -368,13 +405,82 @@ impl VirtualBroker {
             TriggeredStopOrder::Limit(order) => {
                 let order = LimitOrder::Posted(order);
                 self.limit_orders.push(order);
-                self.check_all_orders_limit(); // TODO: сделать чек 1 ордера
+                self.check_all_orders_limit();
             }
             TriggeredStopOrder::Market(order) => {
-                self.exec_market(order, bar.ts_nanos, bar.c);
+                self.exec_market(bar.ts_nanos, bar.c, order);
             }
         };
+    }
 
-        todo!();
+    fn cancel_action(&mut self, action: OrderAction) {
+        let canceled_order_opt = match action.clone().order {
+            Order::Market(_) => unreachable!("Cancel market order? Really?"),
+            Order::Limit(order) => self.cancel_limit(order),
+            Order::Stop(order) => self.cancel_stop(order),
+        };
+
+        if let Some(canceled_order) = canceled_order_opt {
+            let e = OrderEvent::new(
+                action.account,
+                action.iid,
+                action.owner,
+                canceled_order,
+            );
+            let e = Event::Order(e);
+            self.queue.push_back(e);
+        } else {
+            log::error!("How you fuck want to cancel not posted order?!");
+            log::error!("Action: {:#?}", action);
+            unreachable!();
+        }
+    }
+    fn cancel_limit(&mut self, order: LimitOrder) -> Option<Order> {
+        let mut i = 0;
+
+        while i < self.limit_orders.len() {
+            // unwrap PostedLimitOrder
+            let posted = &self.limit_orders[i];
+
+            if posted.broker_id() == order.broker_id() {
+                // if exist -> remove
+                self.limit_orders.remove(i);
+
+                // unwrap
+                let order = order.as_posted().unwrap();
+                let canceled = order.cancel();
+
+                // wrap and return
+                return Some(Order::Limit(LimitOrder::Canceled(canceled)));
+            }
+
+            i += 1;
+        }
+
+        None
+    }
+    fn cancel_stop(&mut self, order: StopOrder) -> Option<Order> {
+        let mut i = 0;
+
+        while i < self.stop_orders.len() {
+            // unwrap PostedLimitOrder
+            let posted = &self.stop_orders[i];
+
+            if posted.broker_id() == order.broker_id() {
+                // if exist -> remove
+                self.stop_orders.remove(i);
+
+                // unwrap
+                let order = order.as_posted().unwrap();
+                let canceled = order.cancel();
+
+                // wrap and return
+                return Some(Order::Stop(StopOrder::Canceled(canceled)));
+            }
+
+            i += 1;
+        }
+
+        None
     }
 }

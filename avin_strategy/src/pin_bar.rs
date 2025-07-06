@@ -54,6 +54,8 @@ enum Status {
     PostingTake,
     /// Стратегия имеет активный трейд, ничего не делает, ждет его закрытия
     Active,
+    /// Стратегия закрыла трейд и ждет отмены остальных ордеров
+    Canceling,
 }
 
 /// Определяем структуру для своей стратегии
@@ -71,8 +73,8 @@ pub struct PinBarLong {
     last_ts: i64,
     trade: Option<Trade>,
     buy_order: Option<Order>,
-    stop: Option<Order>,
-    take: Option<Order>,
+    stop_loss: Option<Order>,
+    take_profit: Option<Order>,
 }
 
 /// Чтобы тестер или трейдер могли работать с этой стратегией нужно
@@ -107,6 +109,7 @@ impl Strategy for PinBarLong {
     /// ордеру выставленному этой стратегией: выставлен, отклонен,
     /// частично исполнен, исполнен, отменен пользователем...
     fn order_event(&mut self, e: OrderEvent) {
+        log::debug!("PinBarLong: order_event: {:#?}", e);
         match self.status {
             Status::Observe => unreachable!(),
             Status::PostingBuy => self.on_buy_event(e),
@@ -114,6 +117,7 @@ impl Strategy for PinBarLong {
             Status::PostingStop => self.on_posting_stop_event(e),
             Status::PostingTake => self.on_posting_take_event(e),
             Status::Active => self.on_active_event(e),
+            Status::Canceling => self.on_canceling_event(e),
         }
     }
 }
@@ -194,7 +198,7 @@ impl PinBarLong {
         log::debug!("Send buy order!");
 
         // Создаем ордер
-        let order = MarketOrder::new(Direction::Buy, 1);
+        let order = MarketOrder::new(Direction::Buy, LOTS);
         let order = MarketOrder::New(order);
         let order = Order::Market(order);
         self.buy_order = Some(order.clone());
@@ -312,7 +316,7 @@ impl PinBarLong {
         // Если например захочется переставлять стоп по мере изменения
         // цены, то удобно иметь его под рукой, а не доставать каждый раз
         // из трейда.
-        self.stop = Some(order.clone());
+        self.stop_loss = Some(order.clone());
 
         // Заворачиваем ордер в экшен
         let a = OrderAction::new(
@@ -346,15 +350,19 @@ impl PinBarLong {
 
             // достаем трейд
             let trade = self.trade.take().unwrap();
+
             // разворачиваем из него OpenedTrade
             let mut trade = trade.as_opened().unwrap();
 
             // крепим стоп ордер к трейду
-            trade.set_stop(order);
+            trade.set_stop(order.clone());
 
             // заворачиваем OpenedTrade в Trade и сохраняем
             let trade = Trade::Opened(trade);
             self.trade = Some(trade);
+
+            // сохраняем у себя запостенный стоп
+            self.stop_loss = Some(Order::Stop(StopOrder::Posted(order)));
 
             // начинаем постить тейк профит
             self.post_take();
@@ -401,7 +409,7 @@ impl PinBarLong {
         // Если например захочется переставлять стоп по мере изменения
         // цены, то удобно иметь его под рукой, а не доставать каждый раз
         // из трейда.
-        self.take = Some(order.clone());
+        self.take_profit = Some(order.clone());
 
         // Заворачиваем ордер в экшен
         let a = OrderAction::new(
@@ -439,11 +447,14 @@ impl PinBarLong {
             let mut trade = trade.as_opened().unwrap();
 
             // крепим стоп ордер к трейду
-            trade.set_take(order);
+            trade.set_take(order.clone());
 
             // заворачиваем OpenedTrade в Trade и сохраняем
             let trade = Trade::Opened(trade);
             self.trade = Some(trade);
+
+            // сохраняем у себя запостенный тейк
+            self.take_profit = Some(Order::Stop(StopOrder::Posted(order)));
 
             // статус - Active, ждем закрытия трейда
             self.status = Status::Active;
@@ -471,6 +482,15 @@ impl PinBarLong {
 
         // Вариант - сработал стоп лосс
         if order.is_market() && order.is_filled() {
+            // отменяем тейк профит
+            let a = Action::Cancel(OrderAction::new(
+                self.account.clone().unwrap(),
+                self.iid.clone().unwrap(),
+                self.name(),
+                self.take_profit.take().unwrap(),
+            ));
+            self.trader.as_ref().unwrap().send(a).unwrap();
+
             // достаем трейд
             let mut trade = self.trade.take().unwrap().as_opened().unwrap();
 
@@ -487,9 +507,8 @@ impl PinBarLong {
             // отправляем трейдеру
             self.trader.as_ref().unwrap().send(a).unwrap();
 
-            // сбрасываем статус на Observe, ждем новых условий для входа
-            self.trade = None;
-            self.status = Status::Observe;
+            // Ставим статус Canceling, ждем отмены второго стоп ордера
+            self.status = Status::Canceling;
 
             // тут еще могла бы быть логика проверки не вышла ли стратегия
             // за пределы допустимых для нее убытков, возможно остановка
@@ -498,10 +517,16 @@ impl PinBarLong {
         }
 
         // Вариант - сработал тейк профит
-        // в данном примере делаем ровно тоже самое что и при сработке стопа
-        // просто отправляем закрытый трейд трейдеру, он его сохранит там для
-        // отчета.
         if order.is_limit() && order.is_filled() {
+            // отменяем стоп лосс
+            let a = Action::Cancel(OrderAction::new(
+                self.account.clone().unwrap(),
+                self.iid.clone().unwrap(),
+                self.name(),
+                self.stop_loss.take().unwrap(),
+            ));
+            self.trader.as_ref().unwrap().send(a).unwrap();
+
             // достаем трейд
             let mut trade = self.trade.take().unwrap().as_opened().unwrap();
 
@@ -518,8 +543,22 @@ impl PinBarLong {
             // отправляем трейдеру
             self.trader.as_ref().unwrap().send(a).unwrap();
 
-            // сбрасываем статус на Observe, ждем новых условий для входа
-            self.trade = None;
+            // Ставим статус Canceling, ждем отмены второго стоп ордера
+            self.status = Status::Canceling;
+        }
+    }
+    fn on_canceling_event(&mut self, e: OrderEvent) {
+        log::debug!("On canceling event={}", e);
+
+        // Функция вызывается когда стратегия находится в статусе Canceling
+        // и прилетает ордер эвент - отменен 2й стоп ордер который не сработал
+
+        // Достаем из эвента ордер
+        let order = e.order;
+
+        // если это стоп ордер и он отменен
+        if order.is_stop() && order.is_canceled() {
+            // все один рабочий цикл закончен, снова ставим статус Observe
             self.status = Status::Observe;
         }
     }

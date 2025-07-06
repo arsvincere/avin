@@ -101,6 +101,16 @@ impl LimitOrder {
     pub fn is_canceled(&self) -> bool {
         matches!(self, LimitOrder::Canceled(_))
     }
+
+    pub fn broker_id(&self) -> Option<&String> {
+        match self {
+            Self::New(_) => None,
+            Self::Posted(o) => Some(&o.broker_id),
+            Self::Filled(o) => Some(&o.broker_id),
+            Self::Canceled(o) => Some(&o.broker_id),
+            Self::Rejected(_) => None,
+        }
+    }
 }
 impl std::fmt::Display for LimitOrder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
