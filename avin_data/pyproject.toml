@@ -1,6 +1,6 @@
 [project]
 name = "avin_data"
-version = "0.2.6"
+version = "0.2.7"
 description = "CLI utility for download market data"
 authors = [{name = "Alex Avin", email = "mr.alexavin@gmail.com"}]
 license = "MIT"

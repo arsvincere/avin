@@ -21,4 +21,3 @@ avin_utils = { workspace = true }
 polars = { workspace = true }
 tokio = { workspace = true }
 chrono = { workspace = true }
-
