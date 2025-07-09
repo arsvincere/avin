@@ -73,14 +73,18 @@ pub struct DirSettings {
     data: String,
 }
 impl DirSettings {
-    pub fn root(&self) -> PathBuf {
-        PathBuf::from(&self.root)
-    }
     pub fn data(&self) -> PathBuf {
         PathBuf::from(&self.data)
     }
     pub fn cache(&self) -> PathBuf {
         PathBuf::from(&self.data).join("cache")
+    }
+
+    pub fn root(&self) -> PathBuf {
+        PathBuf::from(&self.root)
+    }
+    pub fn asset(&self) -> PathBuf {
+        PathBuf::from(&self.root).join("asset")
     }
     pub fn test(&self) -> PathBuf {
         PathBuf::from(&self.root).join("test")

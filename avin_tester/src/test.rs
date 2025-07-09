@@ -126,16 +126,16 @@ impl Test {
 mod tests {
     use super::*;
     use avin_core::Asset;
-    use avin_strategy::Every;
+    use avin_strategy::PinBarLong;
 
     #[test]
     fn new() {
-        let strategy = Every::default();
-        let asset = Asset::new("moex_share_sber").unwrap();
+        let strategy = PinBarLong::default();
+        let asset = Asset::new("moex_share_ydex").unwrap();
         let test = Test::new(&strategy, asset.iid());
 
-        assert_eq!(test.name(), "Every_SBER");
-        assert_eq!(test.strategy_name, "Every");
+        assert_eq!(test.name(), "PinBarLong_YDEX");
+        assert_eq!(test.strategy_name, "PinBarLong");
         assert_eq!(test.iid, *asset.iid());
         assert_eq!(test.deposit, 100_000.0);
         assert_eq!(test.commission, 0.0005);
@@ -158,8 +158,8 @@ mod tests {
 
     #[test]
     fn save_load_delete() {
-        let strategy = Every::default();
-        let asset = Asset::new("moex_share_sber").unwrap();
+        let strategy = PinBarLong::default();
+        let asset = Asset::new("moex_share_ydex").unwrap();
         let test = Test::new(&strategy, asset.iid());
 
         // save

@@ -14,7 +14,7 @@ members = [
 
 [workspace.package]
 description = "Open source cross-platform trading system"
-version = "0.2.7"
+version = "0.2.10"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -55,10 +55,6 @@ polars = { version = "0.49.1", features = [
     "lazy",
     "parquet",
     "temporal",
-    # "is_between",
-    # "json",
-    # "polars-ops", # for Series.cum_sum(),
-    # "strings",
 ] }
 serde = { version = "1.0.219", features = ["derive"] }
 strum = { version = "0.27.1", features = ["derive", "strum_macros"]}
@@ -70,15 +66,13 @@ uuid = {version = "1.16.0", features = [ "v4" ]}
 prost-types = "0.12"
 prost = "0.12"
 
-
-
 # self crates
-avin = { version = "0.2.7", path = "avin" }
-avin_analyse = { version = "0.2.7", path = "avin_analyse" }
-avin_connect = { version = "0.2.7", path = "avin_connect" }
-avin_core = { version = "0.2.7", path = "avin_core" }
-# avin_gui = { version = "0.2.7", path = "avin_gui" }
-avin_strategy = { version = "0.2.7", path = "avin_strategy" }
-avin_tester = { version = "0.2.7", path = "avin_tester" }
-avin_trader = { version = "0.2.7", path = "avin_trader" }
-avin_utils = { version = "0.2.7", path = "avin_utils" }
+avin = { version = "0.2.10", path = "avin" }
+avin_analyse = { version = "0.2.10", path = "avin_analyse" }
+avin_connect = { version = "0.2.10", path = "avin_connect" }
+avin_core = { version = "0.2.10", path = "avin_core" }
+# avin_gui = { version = "0.2.10", path = "avin_gui" }
+avin_strategy = { version = "0.2.10", path = "avin_strategy" }
+avin_tester = { version = "0.2.10", path = "avin_tester" }
+avin_trader = { version = "0.2.10", path = "avin_trader" }
+avin_utils = { version = "0.2.10", path = "avin_utils" }

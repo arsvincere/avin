@@ -109,7 +109,6 @@ impl Strategy for PinBarLong {
     /// ордеру выставленному этой стратегией: выставлен, отклонен,
     /// частично исполнен, исполнен, отменен пользователем...
     fn order_event(&mut self, e: OrderEvent) {
-        log::debug!("PinBarLong: order_event: {:#?}", e);
         match self.status {
             Status::Observe => unreachable!(),
             Status::PostingBuy => self.on_buy_event(e),
@@ -176,8 +175,6 @@ impl PinBarLong {
         self.buy();
     }
     fn buy(&mut self) {
-        log::debug!("Buy!");
-
         // создаем трейд
         self.create_trade();
 
@@ -185,7 +182,6 @@ impl PinBarLong {
         self.send_buy_order();
     }
     fn create_trade(&mut self) {
-        log::debug!("Create trade!");
         let trade = Trade::new(
             self.last_ts,
             self.name(),
@@ -195,8 +191,6 @@ impl PinBarLong {
         self.trade = Some(Trade::New(trade));
     }
     fn send_buy_order(&mut self) {
-        log::debug!("Send buy order!");
-
         // Создаем ордер
         let order = MarketOrder::new(Direction::Buy, LOTS);
         let order = MarketOrder::New(order);
@@ -219,8 +213,6 @@ impl PinBarLong {
         self.status = Status::PostingBuy;
     }
     fn on_buy_event(&mut self, e: OrderEvent) {
-        log::debug!("On buy event={}", e);
-
         // Функция вызывается когда стратегия находится в статусе PostingBuy
         // и прилетает ордер эвент, по отправленному ордеру на покупку.
 
@@ -255,8 +247,6 @@ impl PinBarLong {
         }
     }
     fn on_opening_event(&mut self, e: OrderEvent) {
-        log::debug!("On opening event={}", e);
-
         // Функция вызывается когда стратегия находится в статусе Opening
         // и прилетает ордер эвент, по отправленному ордеру на покупку.
 
@@ -264,8 +254,6 @@ impl PinBarLong {
         let order = e.order;
 
         if order.is_filled() {
-            log::debug!("On openin event, order filled={}", order);
-
             // достаем трейд
             let trade = self.trade.take().unwrap();
             // разворачиваем из него NewTrade
@@ -281,8 +269,6 @@ impl PinBarLong {
         }
     }
     fn post_stop(&mut self) {
-        log::debug!("Post stop");
-
         // достаем трейд
         let trade = self.trade.take().unwrap();
 
@@ -337,7 +323,6 @@ impl PinBarLong {
         self.status = Status::PostingStop;
     }
     fn on_posting_stop_event(&mut self, e: OrderEvent) {
-        log::debug!("On posting stop event={}", e);
         // Функция вызывается когда стратегия находится в статусе PostingStop
         // и прилетает ордер эвент, по отправленному stop loss.
 
@@ -374,8 +359,6 @@ impl PinBarLong {
         }
     }
     fn post_take(&mut self) {
-        log::debug!("Post take");
-
         // достаем трейд
         let trade = self.trade.take().unwrap();
 
@@ -430,7 +413,6 @@ impl PinBarLong {
         self.status = Status::PostingTake;
     }
     fn on_posting_take_event(&mut self, e: OrderEvent) {
-        log::debug!("On posting take event={}", e);
         // Функция вызывается когда стратегия находится в статусе PostingTake
         // и прилетает ордер эвент, по отправленному take profit
 
@@ -466,8 +448,6 @@ impl PinBarLong {
         }
     }
     fn on_active_event(&mut self, e: OrderEvent) {
-        log::debug!("On active event={}", e);
-
         // Функция вызывается когда стратегия находится в статусе Active
         // и прилетает ордер эвент - сработал стоп или тейк
 
@@ -548,8 +528,6 @@ impl PinBarLong {
         }
     }
     fn on_canceling_event(&mut self, e: OrderEvent) {
-        log::debug!("On canceling event={}", e);
-
         // Функция вызывается когда стратегия находится в статусе Canceling
         // и прилетает ордер эвент - отменен 2й стоп ордер который не сработал
 
