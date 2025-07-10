@@ -49,7 +49,7 @@ impl Chart {
     pub fn new(iid: &Iid, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
         Self {
             iid: iid.clone(),
-            tf: tf.clone(),
+            tf: *tf,
             bars,
             now: None,
             ind: HashMap::new(),

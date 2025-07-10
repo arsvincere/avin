@@ -13,10 +13,17 @@ requirements: .venv ## Install/Update Python project requirements
 	$(VENV)/bin/python -m pip install --upgrade pip
 	$(VENV)/bin/python -m pip install --upgrade -r avin_data/requirements.txt
 
+dev: .venv  ## Activate venv & start neovim for this project
+	source .venv/bin/activate
+	nvim -c AvinDev
+
 check: ## Run ruff, mypy clippy
 	ruff check --select I --fix
 	mypy avin_data --no-namespace-packages
 	cargo clippy
+
+fix: ## Automatically apply lint suggestions
+	cargo clippy --fix
 
 fmt: ## Run ruff format & cargo fmt
 	cargo fmt --all
@@ -24,11 +31,11 @@ fmt: ## Run ruff format & cargo fmt
 
 test: ## Run pytests, lib-tests, doc-tests
 	$(PY_ENV) && pytest tests
-	cargo test --lib
-	cargo test --doc
+	cargo test --lib -j 2 -- --test-threads=1
+	cargo test --doc -j 2 -- --test-threads=1
 
 test_ignored: ## Run slow ingnored tests
-	cargo test --lib -- --ignored
+	cargo test --lib -j 2 -- --ignored --test-threads=1
 
 pre-commit: ## Make check, fmt, test
 	$(MAKE) check
@@ -72,12 +79,23 @@ clean: ## Clean up caches, build artifacts, and the venv
 	ruff clean
 	cargo clean
 
-dev: .venv  ## Activate venv & start neovim for this project
-	source .venv/bin/activate
-	nvim -c AvinDev
-
 r: ## Run temp bin (gitignored main.rs)
 	cargo run --bin avin --jobs 2
+
+analyse:
+	cargo run --bin analyse --jobs 4 --release
+
+backtest:
+	cargo run --bin backtest --jobs 4 --release
+
+tester:
+	cargo run --bin tester --jobs 4 --release
+
+trader:
+	cargo run --bin trader --jobs 4 --release
+
+terminal:
+	cargo run --bin terminal --jobs 4 --release
 
 T1="\033[1m"
 T2="\033[0m"
@@ -90,9 +108,11 @@ help:
 	@echo -e $(T1)Virtual environment:$(T2)
 	@echo -e $(B1).venv$(B2)"          Create python .venv"
 	@echo -e $(B1)requirements$(B2)"   Install/Update python requirements"
+	@echo -e $(B1)dev$(B2)"            Activate venv & start neovim"
 	@echo ""
 	@echo -e $(T1)Code quality:$(T2)
 	@echo -e $(B1)check$(B2)"          Linting ruff, mypy, clippy"
+	@echo -e $(B1)fix$(B2)"            Auto apply linting suggestions"
 	@echo -e $(B1)fmt$(B2)"            Autoformatting"
 	@echo -e $(B1)test$(B2)"           Run pytests, lib-tests, doc-tests"
 	@echo -e $(B1)test_ignored$(B2)"   Run slow ignored tests"
@@ -105,9 +125,14 @@ help:
 	@echo -e $(B1)doc$(B2)"            Create and open local documentation"
 	@echo -e $(B1)clean$(B2)"          Clean the project"
 	@echo ""
-	@echo -e $(T1)Other:$(T2)
-	@echo -e $(B1)dev$(B2)"            Activate venv & start neovim"
+	@echo -e $(T1)Run:$(T2)
 	@echo -e $(B1)r$(B2)"              Run temp bin (gitignored main.rs)"
+	@echo -e $(B1)analyse$(B2)"        Run analyse"
+	@echo -e $(B1)backtest$(B2)"       Run backtest"
+	@echo -e $(B1)tester$(B2)"         Run tester"
+	@echo -e $(B1)trader$(B2)"         Run trader"
+	@echo -e $(B1)terminal$(B2)"       Run terminal"
+	@echo ""
 	@echo -e $(B1)help$(B2)"           Display this help message"
 
 # help: ## Display this help screen

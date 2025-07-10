@@ -52,10 +52,12 @@ impl Tester {
             match e {
                 Event::Bar(e) => {
                     // PERF: чтобы 5 раз не дергать стратегию на обновление
-                    // после 1М, 5М, 10М, 1Н... дергаю ее только на обновлении
-                    // 1М бара, чаще все равно смысла нет, а вызовов в 5 раз
-                    // меньше.
-                    if e.tf == TimeFrame::M1 {
+                    // после 1М, 5М, 10М, 1Н, Day... дергаю ее только на
+                    // обновлении Day бара, чаще все равно смысла нет,
+                    // а вызовов в 5 раз меньше. Бар стрим выдает бары от
+                    // 1М до Day, то есть в момент прихода Day как раз
+                    // все графики обновлены на текущую минуту.
+                    if e.tf == TimeFrame::Day {
                         asset.bar_event(e);
                         strategy.process(&asset);
                     } else {
@@ -114,13 +116,13 @@ mod tests {
 
         let mut test = Test::new(&strategy, asset.iid());
         test.set_begin(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap());
-        test.set_end(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 10, 0).unwrap());
+        test.set_end(&Utc.with_ymd_and_hms(2023, 8, 1, 7, 9, 0).unwrap());
         assert_eq!(test.status, TestStatus::New);
 
         let mut tester = Tester::new();
         tester.run(strategy, &mut test).await;
         assert_eq!(test.status, TestStatus::Complete);
-        assert_eq!(test.trade_list.len(), 5);
+        assert_eq!(test.trade_list.len(), 4);
 
         Test::delete(&test).unwrap();
     }

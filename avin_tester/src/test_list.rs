@@ -111,7 +111,7 @@ impl Default for TestList {
 mod tests {
     use super::*;
     use avin_core::Asset;
-    use avin_strategy::{Every, Strategy};
+    use avin_strategy::{PinBarLong, Strategy};
 
     #[test]
     fn new() {
@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn save_load_delete() {
-        let strategy = Every::default();
+        let strategy = PinBarLong::default();
         let asset = Asset::new("moex_share_vtbr").unwrap();
         let test = Test::new(&strategy, asset.iid());
 

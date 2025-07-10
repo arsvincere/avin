@@ -5,7 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Timelike};
 use strum::EnumIter;
 use time_unit::TimeUnit;
@@ -17,7 +16,19 @@ use crate::MarketData;
 /// # ru
 /// Перечисление для выбора таймфрейма. Используется в
 /// [`crate::Chart`] и [`crate::Footprint`]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Encode, Decode, EnumIter)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    bitcode::Encode,
+    bitcode::Decode,
+    EnumIter,
+    serde::Deserialize,
+    serde::Serialize,
+)]
 pub enum TimeFrame {
     M1,
     M10,

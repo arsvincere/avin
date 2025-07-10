@@ -1,4 +1,4 @@
-/*****************************************************************************
+/****************************************************************************
  * URL:         http://arsvincere.com
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -12,9 +12,10 @@ use cached::proc_macro::cached;
 use polars::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::{Size, Sz};
 use avin_core::{Iid, TimeFrame};
 use avin_utils::{AvinError, Cmd};
+
+use crate::{Size, Sz};
 
 pub trait Analyse {
     fn analyse(iid: &Iid, tf: &TimeFrame) -> Result<(), AvinError>;
@@ -37,13 +38,20 @@ pub trait Analyse {
         cached_load_file(path)
     }
     fn delete(iid: &Iid, name: &str) -> Result<(), AvinError> {
-        let path = create_path(iid, name);
+        let mut path = iid.path();
+        path.push("ANALYSE");
+        path.push(name);
 
-        if path.is_dir() {
+        if !Cmd::is_exist(&path) {
+            log::info!("Skip delete {}", path.display());
+            return Ok(());
+        } else if path.is_dir() {
             Cmd::delete_dir(&path).unwrap();
+            log::info!("Analyse delete {}", path.display());
         } else if path.is_file() {
             Cmd::delete(&path).unwrap();
-        };
+            log::info!("Analyse delete {}", path.display());
+        }
 
         Ok(())
     }
@@ -350,6 +358,7 @@ fn create_path(iid: &Iid, analyse_name: &str) -> PathBuf {
 
     path
 }
+#[inline]
 #[cached]
 fn cached_load_file(path: PathBuf) -> Result<DataFrame, AvinError> {
     Cmd::read_pqt(&path)

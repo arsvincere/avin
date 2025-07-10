@@ -5,7 +5,7 @@ members = [
     "avin_analyse",
     "avin_connect",
     "avin_core",
-    # "avin_gui",
+    "avin_gui",
     "avin_strategy",
     "avin_tester",
     "avin_trader",
@@ -14,7 +14,7 @@ members = [
 
 [workspace.package]
 description = "Open source cross-platform trading system"
-version = "0.2.10"
+version = "0.2.11"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -67,12 +67,12 @@ prost-types = "0.12"
 prost = "0.12"
 
 # self crates
-avin = { version = "0.2.10", path = "avin" }
-avin_analyse = { version = "0.2.10", path = "avin_analyse" }
-avin_connect = { version = "0.2.10", path = "avin_connect" }
-avin_core = { version = "0.2.10", path = "avin_core" }
-# avin_gui = { version = "0.2.10", path = "avin_gui" }
-avin_strategy = { version = "0.2.10", path = "avin_strategy" }
-avin_tester = { version = "0.2.10", path = "avin_tester" }
-avin_trader = { version = "0.2.10", path = "avin_trader" }
-avin_utils = { version = "0.2.10", path = "avin_utils" }
+avin = { version = "0.2.11", path = "avin" }
+avin_analyse = { version = "0.2.11", path = "avin_analyse" }
+avin_connect = { version = "0.2.11", path = "avin_connect" }
+avin_core = { version = "0.2.11", path = "avin_core" }
+avin_gui = { version = "0.2.11", path = "avin_gui" }
+avin_strategy = { version = "0.2.11", path = "avin_strategy" }
+avin_tester = { version = "0.2.11", path = "avin_tester" }
+avin_trader = { version = "0.2.11", path = "avin_trader" }
+avin_utils = { version = "0.2.11", path = "avin_utils" }

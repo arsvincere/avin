@@ -1,21 +1,24 @@
 [package]
-name = "avin_core"
-description = "Core of the Avin Trade System library"
+name = "avin_gui"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
+description = {workspace = true }
 authors = { workspace = true }
 repository = { workspace = true }
 homepage = { workspace = true }
 readme = "../README.md"
 
 [dependencies]
+avin_connect = { workspace = true }
+avin_core = { workspace = true }
+avin_tester = { workspace = true }
 avin_utils = { workspace = true }
-bitcode = { workspace = true }
-cached = { workspace = true }
 chrono = { workspace = true }
+eframe = { workspace = true }
+egui-file-dialog = { workspace = true }
+egui_extras = { workspace = true }
+egui_plot = { workspace = true }
 log = { workspace = true }
-polars = { workspace = true }
 serde = { workspace = true }
-strum = { workspace = true }
-time-unit = { workspace = true }
+tokio = { workspace = true }

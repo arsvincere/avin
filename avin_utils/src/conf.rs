@@ -124,6 +124,7 @@ pub struct ConvertRule {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CoreSettings {
+    pub default_asset_list: String,
     pub default_bars_count: usize,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -145,6 +146,17 @@ pub struct ColorSettings {
     pub bull_opacity: f32,
     pub nobody: String,
     pub nobody_opacity: f32,
+    pub trend_t1: String,
+    pub trend_t2: String,
+    pub trend_t3: String,
+    pub trend_t4: String,
+    pub trend_t5: String,
+    pub trend_t1_opacity: f32,
+    pub trend_t2_opacity: f32,
+    pub trend_t3_opacity: f32,
+    pub trend_t4_opacity: f32,
+    pub trend_t5_opacity: f32,
+    pub auto_bar_opacity: bool,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ChartSettings {

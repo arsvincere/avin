@@ -782,7 +782,7 @@ impl Tinkoff {
             .unwrap();
             Some(ts)
         };
-        let interval: api::marketdata::CandleInterval = tf.clone().into();
+        let interval: api::marketdata::CandleInterval = (*tf).into();
         let request =
             tonic::Request::new(api::marketdata::GetCandlesRequest {
                 figi: "".to_string(),
@@ -876,7 +876,7 @@ impl Tinkoff {
         tf: &TimeFrame,
     ) -> Result<(), &'static str> {
         // create request
-        let interval: SubscriptionInterval = tf.clone().into();
+        let interval: SubscriptionInterval = (*tf).into();
         let candle_instrument = CandleInstrument {
             figi: "".to_string(),
             // interval: SubscriptionInterval::OneMinute as i32,

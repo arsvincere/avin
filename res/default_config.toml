@@ -51,6 +51,7 @@
     ]
 
 [core]
+    default_asset_list = "xxx.csv"
     default_bars_count = 5000
 
 [tester]
@@ -81,4 +82,17 @@
     # Bars with open == close
     nobody = "#AAAAAA"
     nobody_opacity = 1.0
+
+    # trends
+    trend_t1 = "#AAAAAA"
+    trend_t2 = "#658594"
+    trend_t3 = "#7E9CD8"
+    trend_t4 = "#957FB8"
+    trend_t5 = "#DCA561"
+    trend_t1_opacity = 0.2
+    trend_t2_opacity = 0.4
+    trend_t3_opacity = 0.6
+    trend_t4_opacity = 0.8
+    trend_t5_opacity = 1.0
+    auto_bar_opacity = true
 

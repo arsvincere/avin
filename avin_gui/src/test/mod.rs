@@ -5,13 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod analyse;
-mod bar;
-mod cluster;
-mod size;
-mod trend;
+mod widget;
 
-pub use analyse::Analyse;
-pub use bar::BarAnalytic;
-pub use size::{Size, Sz};
-pub use trend::TrendAnalytic;
+pub use widget::TestWidget;

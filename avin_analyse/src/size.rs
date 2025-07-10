@@ -7,8 +7,9 @@
 
 use std::str::FromStr;
 
-use avin_core::Range;
 use strum::EnumIter;
+
+use avin_core::Range;
 
 #[derive(Debug, Clone, PartialEq, EnumIter)]
 pub enum Size {

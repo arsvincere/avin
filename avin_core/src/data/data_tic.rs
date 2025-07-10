@@ -32,7 +32,7 @@ impl DataTic {
         let mut day = begin.date_naive();
         let end_day = end.date_naive();
         while day <= end_day {
-            match load_file(iid, market_data, &day) {
+            match Self::load_file(iid, market_data, &day) {
                 Ok(file_df) => {
                     df.extend(&file_df).unwrap();
                     day = day.checked_add_days(Days::new(1)).unwrap();
@@ -56,30 +56,28 @@ impl DataTic {
 
         Ok(df)
     }
-}
+    pub fn load_file(
+        iid: &Iid,
+        md: &MarketData,
+        day: &NaiveDate,
+    ) -> Result<DataFrame, AvinError> {
+        // get path
+        let mut path = iid.path();
+        path.push(md.name());
+        path.push(day.year().to_string());
+        path.push(format!("{}.pqt", day.format("%Y-%m-%d")));
 
-// private
-fn load_file(
-    iid: &Iid,
-    md: &MarketData,
-    day: &NaiveDate,
-) -> Result<DataFrame, AvinError> {
-    // get path
-    let mut path = iid.path();
-    path.push(md.name());
-    path.push(day.year().to_string());
-    path.push(format!("{}.pqt", day.format("%Y-%m-%d")));
+        if !Cmd::is_exist(&path) {
+            let msg = format!("{} {}", iid, md);
+            return Err(AvinError::NotFound(msg.to_string()));
+        }
 
-    if !Cmd::is_exist(&path) {
-        let msg = format!("{} {}", iid, md);
-        return Err(AvinError::NotFound(msg.to_string()));
-    }
-
-    match Cmd::read_pqt(&path) {
-        Ok(df) => Ok(df),
-        Err(why) => {
-            let msg = format!("read {} - {}", path.display(), why);
-            Err(AvinError::ReadError(msg.to_string()))
+        match Cmd::read_pqt(&path) {
+            Ok(df) => Ok(df),
+            Err(why) => {
+                let msg = format!("read {} - {}", path.display(), why);
+                Err(AvinError::ReadError(msg.to_string()))
+            }
         }
     }
 }

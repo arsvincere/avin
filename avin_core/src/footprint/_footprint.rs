@@ -40,7 +40,7 @@ impl Footprint {
 
         Self {
             iid: iid.clone(),
-            tf: tf.clone(),
+            tf: *tf,
             clusters,
             now: None,
         }
@@ -50,7 +50,7 @@ impl Footprint {
 
         Self {
             iid: iid.clone(),
-            tf: tf.clone(),
+            tf: *tf,
             clusters: Self::split(tics, tf),
             now: None,
         }

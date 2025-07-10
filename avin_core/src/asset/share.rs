@@ -261,7 +261,7 @@ impl Share {
         end: &DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
         let chart = Chart::load(&self.iid, tf, begin, end)?;
-        self.charts.insert(tf.clone(), chart);
+        self.charts.insert(*tf, chart);
 
         Ok(self.charts[tf].as_ref())
     }
@@ -271,7 +271,7 @@ impl Share {
     /// Создает пустой график для актива. Используется бэктестером.
     pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
         let chart = Chart::empty(&self.iid, tf);
-        self.charts.insert(tf.clone(), chart);
+        self.charts.insert(*tf, chart);
 
         self.charts[tf].as_ref()
     }
@@ -343,7 +343,7 @@ impl Share {
         }
 
         let footprint = Footprint::from_tics(self.iid(), tf, &self.tics);
-        self.footprints.insert(tf.clone(), footprint);
+        self.footprints.insert(*tf, footprint);
 
         Ok(())
     }
