@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use cached::SizedCache;
+use cached::proc_macro::cached;
 use chrono::{TimeZone, Utc};
 use polars::prelude::{DataFrame, IntoLazy, NamedFrom, Series, col, df, lit};
 use strum::{EnumIter, IntoEnumIterator};
@@ -118,7 +120,7 @@ pub trait TrendAnalytic: ExtremumIndicator {
     fn trend_vol_cdf(&self, trend: &Trend) -> Option<f64>;
 
     fn trend_posterior_now(&self, term: Term) -> Option<DataFrame>;
-    // fn trend_posterior_last(&self, term: Term) -> Option<DataFrame>;
+    fn trend_posterior_last(&self, term: Term) -> Option<DataFrame>;
 }
 impl TrendAnalytic for Chart {
     fn init(&mut self) {}
@@ -207,85 +209,37 @@ impl TrendAnalytic for Chart {
         // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
         // └──────┴───────────┴────────────┘
 
-        // try get abs size for this trend
+        // try get abs size for this trend, if None -> None
         let trend = self.trend(term, 0)?;
         self.trend_abs_size(trend)?;
 
-        // n - current trend
-        // all - all historical trends
-        // obs - observation trends for current 'trend'
-        // step - for this 'trend', depends on timeframe
-        let all = get_trends_df(self, term).unwrap();
-        let obs = get_obs(self, trend, &all);
-        let step = get_step(self.tf());
-
-        // eval posterior
-        let mut df = get_posterior(all, obs, step);
-
-        // Если тренд бычий, значит следующий медвежий.
-        // abs по модулю посчитан, так что для определения цен
-        // текущего медвежьего тренда, надо abs умножить на -1
-        let k = if trend.is_bull() { -1.0 } else { 1.0 };
-        let delta = df.column("abs").unwrap() * k;
-
-        // eval concrete prices from delta and current_trend_end price
-        let price = trend.end().price;
-        let mut price_column = delta * price / 100.0 + price;
-        price_column.rename("price".into());
-
-        df.with_column(price_column).unwrap();
-        Some(df)
+        cached_posterior_0(self, trend)
     }
-    // pub fn trend_posterior_last(term: Term) -> Option<DataFrame> {
-    //     // ┌──────┬───────────┬────────────┐
-    //     // │ abs  ┆ p         ┆ price      │
-    //     // │ ---  ┆ ---       ┆ ---        │
-    //     // │ f64  ┆ f64       ┆ f64        │
-    //     // ╞══════╪═══════════╪════════════╡
-    //     // │ 0.0  ┆ 99.87545  ┆ 140.75     │
-    //     // │ 0.01 ┆ 97.467479 ┆ 140.764075 │
-    //     // │ 0.02 ┆ 92.928314 ┆ 140.77815  │
-    //     // │ 0.03 ┆ 71.436479 ┆ 140.792225 │
-    //     // │ 0.04 ┆ 62.413507 ┆ 140.8063   │
-    //     // │ …    ┆ …         ┆ …          │
-    //     // │ 0.24 ┆ 1.632992  ┆ 141.0878   │
-    //     // │ 0.25 ┆ 1.480764  ┆ 141.101875 │
-    //     // │ 0.26 ┆ 1.328536  ┆ 141.11595  │
-    //     // │ 0.27 ┆ 1.079435  ┆ 141.130025 │
-    //     // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
-    //     // └──────┴───────────┴────────────┘
-    //
-    //     // try get abs size for this trend
-    //     let trend = self.trend(term, 1)?;
-    //     Self::abs_size(trend)?;
-    //
-    //     // all - all historical trends
-    //     // obs - observation trends for current 'trend'
-    //     // step - for this 'trend', depends on timeframe
-    //     let all = get_trends_df(trend)
-    //         .unwrap()
-    //         .with_row_index("id".into(), None)
-    //         .unwrap();
-    //     let obs = get_obs(&trend, &all);
-    //     let step = get_step(&trend);
-    //
-    //     // eval posterior
-    //     let mut df = get_posterior(all, obs, step);
-    //
-    //     // Если тренд бычий, значит следующий медвежий.
-    //     // abs по модулю посчитан, так что для определения цен
-    //     // текущего медвежьего тренда, надо abs умножить на -1
-    //     let k = if trend.is_bull() { -1.0 } else { 1.0 };
-    //     let delta = df.column("abs").unwrap() * k;
-    //
-    //     // eval concrete prices from delta and current_trend_end price
-    //     let price = trend.end().price;
-    //     let mut price_column = delta * price / 100.0 + price;
-    //     price_column.rename("price".into());
-    //
-    //     df.with_column(price_column).unwrap();
-    //     Some(df)
-    // }
+    fn trend_posterior_last(&self, term: Term) -> Option<DataFrame> {
+        // ┌──────┬───────────┬────────────┐
+        // │ abs  ┆ p         ┆ price      │
+        // │ ---  ┆ ---       ┆ ---        │
+        // │ f64  ┆ f64       ┆ f64        │
+        // ╞══════╪═══════════╪════════════╡
+        // │ 0.0  ┆ 99.87545  ┆ 140.75     │
+        // │ 0.01 ┆ 97.467479 ┆ 140.764075 │
+        // │ 0.02 ┆ 92.928314 ┆ 140.77815  │
+        // │ 0.03 ┆ 71.436479 ┆ 140.792225 │
+        // │ 0.04 ┆ 62.413507 ┆ 140.8063   │
+        // │ …    ┆ …         ┆ …          │
+        // │ 0.24 ┆ 1.632992  ┆ 141.0878   │
+        // │ 0.25 ┆ 1.480764  ┆ 141.101875 │
+        // │ 0.26 ┆ 1.328536  ┆ 141.11595  │
+        // │ 0.27 ┆ 1.079435  ┆ 141.130025 │
+        // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
+        // └──────┴───────────┴────────────┘
+
+        // try get abs size for this trend
+        let trend = self.trend(term, 1)?;
+        self.trend_abs_size(trend)?;
+
+        cached_posterior_1(self, trend)
+    }
 }
 
 // analyse
@@ -525,6 +479,69 @@ fn set_metrics(chart: &Chart, trends: &[Trend], trends_df: &mut DataFrame) {
 }
 
 // posterior
+// сделано отдельной функцией чтобы отдельно кешировался 0 и 1
+#[cached(
+    ty = "SizedCache<i64, Option<DataFrame>>",
+    create = "{ SizedCache::with_size(100) }",
+    convert = r#"{ trend.begin().ts_nanos }"#
+)]
+fn cached_posterior_0(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
+    // n - current trend
+    // all - all historical trends
+    // obs - observation trends for current 'trend'
+    // step - for this 'trend', depends on timeframe
+    let all = get_trends_df(chart, trend.term()).unwrap();
+    let obs = get_obs(chart, trend, &all);
+    let step = get_step(chart.tf());
+
+    // eval posterior
+    let mut df = calc_posgerior(all, obs, step);
+
+    // Если тренд бычий, значит следующий медвежий.
+    // abs по модулю посчитан, так что для определения цен
+    // текущего медвежьего тренда, надо abs умножить на -1
+    let k = if trend.is_bull() { -1.0 } else { 1.0 };
+    let delta = df.column("abs").unwrap() * k;
+
+    // eval concrete prices from delta and current_trend_end price
+    let price = trend.end().price;
+    let mut price_column = delta * price / 100.0 + price;
+    price_column.rename("price".into());
+
+    df.with_column(price_column).unwrap();
+    Some(df)
+}
+
+#[cached(
+    ty = "SizedCache<i64, Option<DataFrame>>",
+    create = "{ SizedCache::with_size(100) }",
+    convert = r#"{ trend.begin().ts_nanos }"#
+)]
+fn cached_posterior_1(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
+    // all - all historical trends
+    // obs - observation trends for current 'trend'
+    // step - for this 'trend', depends on timeframe
+    let all = get_trends_df(chart, trend.term()).unwrap();
+    let obs = get_obs(chart, trend, &all);
+    let step = get_step(chart.tf());
+
+    // eval posterior
+    let mut df = calc_posgerior(all, obs, step);
+
+    // Если тренд бычий, значит следующий медвежий.
+    // abs по модулю посчитан, так что для определения цен
+    // текущего медвежьего тренда, надо abs умножить на -1
+    let k = if trend.is_bull() { -1.0 } else { 1.0 };
+    let delta = df.column("abs").unwrap() * k;
+
+    // eval concrete prices from delta and current_trend_end price
+    let price = trend.end().price;
+    let mut price_column = delta * price / 100.0 + price;
+    price_column.rename("price".into());
+
+    df.with_column(price_column).unwrap();
+    Some(df)
+}
 fn get_obs(chart: &Chart, trend: &Trend, all: &DataFrame) -> DataFrame {
     // stage 1 - abs size
     let value = chart.trend_abs_size(trend).unwrap().name();
@@ -576,7 +593,7 @@ fn get_step(tf: &TimeFrame) -> f64 {
         TimeFrame::Month => 1.00,
     }
 }
-fn get_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
+fn calc_posgerior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     // obs_id - observation trend id
     // h_id - hypothesis trend id
     let obs_id = obs.column("id").unwrap();
@@ -614,68 +631,3 @@ fn get_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     )
     .unwrap()
 }
-
-// fn posterior(&self, term: &Term, n: usize) -> Option<&DataFrame> {
-//     // get indicator metric
-//     let extr_data = match self.get_ind(ID) {
-//         Some(Indicator::Extremum(metric)) => metric,
-//         None => panic!("Chart don't have indicator {}", NAME),
-//     };
-//
-//     // real-time
-//     if n == 0 {
-//         match term {
-//             T1 => return extr_data.p_t1_now.as_ref(),
-//             T2 => return extr_data.p_t2_now.as_ref(),
-//             T3 => return extr_data.p_t3_now.as_ref(),
-//             T4 => return extr_data.p_t4_now.as_ref(),
-//             T5 => return extr_data.p_t5_now.as_ref(),
-//         };
-//     }
-//     // historical
-//     else if n == 1 {
-//         match term {
-//             T1 => return extr_data.p_t1.as_ref(),
-//             T2 => return extr_data.p_t2.as_ref(),
-//             T3 => return extr_data.p_t3.as_ref(),
-//             T4 => return extr_data.p_t4.as_ref(),
-//             T5 => return extr_data.p_t5.as_ref(),
-//         };
-//     } else {
-//         panic!();
-//     }
-// }
-
-// fn upd_posterior(&mut self) {
-//     // historical
-//     for term in Term::iter() {
-//         let trend_1 = match self.trend(&term, 1) {
-//             Some(t) => t,
-//             None => continue,
-//         };
-//         match term {
-//             _ => todo!(),
-//             // T1 => self.p_t1 = Trend::posterior(&trend_1),
-//             // T2 => self.p_t2 = Trend::posterior(&trend_1),
-//             // T3 => self.p_t3 = Trend::posterior(&trend_1),
-//             // T4 => self.p_t4 = Trend::posterior(&trend_1),
-//             // T5 => self.p_t5 = Trend::posterior(&trend_1),
-//         }
-//     }
-//
-//     // real-time
-//     for term in Term::iter() {
-//         let trend_0 = match self.trend(&term, 0) {
-//             Some(t) => t,
-//             None => continue,
-//         };
-//         match term {
-//             _ => todo!(),
-//             // T1 => self.p_t1_now = Trend::posterior(&trend_0),
-//             // T2 => self.p_t2_now = Trend::posterior(&trend_0),
-//             // T3 => self.p_t3_now = Trend::posterior(&trend_0),
-//             // T4 => self.p_t4_now = Trend::posterior(&trend_0),
-//             // T5 => self.p_t5_now = Trend::posterior(&trend_0),
-//         }
-//     }
-// }

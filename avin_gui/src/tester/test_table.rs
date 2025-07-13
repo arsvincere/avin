@@ -12,29 +12,26 @@ use egui_file_dialog::FileDialog;
 use avin_tester::{Test, TestList};
 use avin_utils::CFG;
 
-pub struct TestWidget {
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct TestTable {
+    #[serde(skip)]
     test_list: TestList,
     current_index: usize,
+    #[serde(skip)]
     file_dialog: FileDialog,
 }
-impl TestWidget {
+impl TestTable {
     pub fn new() -> Self {
-        let path = CFG.dir.test();
-        let file_dialog = FileDialog::new().initial_directory(path);
-
-        Self {
-            test_list: TestList::new(),
-            current_index: 0,
-            file_dialog,
-        }
+        TestTable::default()
     }
 
     pub fn ui(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
         self.ui_toolbar(ctx, ui);
         self.ui_table(ui);
     }
-    pub fn current_test(&mut self) -> Option<&mut Test> {
-        self.test_list.get_mut(self.current_index)
+    pub fn current_test(&mut self) -> Option<&Test> {
+        self.test_list.get(self.current_index)
     }
 
     // private
@@ -75,7 +72,7 @@ impl TestWidget {
         table
             .header(20.0, |mut header| {
                 header.col(|ui| {
-                    ui.strong("Ticker");
+                    ui.strong("Name");
                 });
             })
             .body(|body| {
@@ -93,5 +90,17 @@ impl TestWidget {
                     };
                 });
             });
+    }
+}
+impl Default for TestTable {
+    fn default() -> Self {
+        let path = CFG.dir.test();
+        let file_dialog = FileDialog::new().initial_directory(path);
+
+        Self {
+            test_list: TestList::new(),
+            current_index: 0,
+            file_dialog,
+        }
     }
 }

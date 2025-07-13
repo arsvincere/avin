@@ -10,8 +10,8 @@ use eframe::egui;
 use avin_connect::Tinkoff;
 use avin_core::Action;
 
-use super::asset::AssetWidget;
-use super::chart::ChartWidget;
+use crate::asset::AssetWidget;
+use crate::chart::ChartWidget;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]

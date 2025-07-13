@@ -13,19 +13,23 @@ use avin::utils;
 #[tokio::main]
 async fn main() {
     utils::init_logger();
+    let tickers = ["AFKS", "LKOH", "ROSN"];
 
-    let strategy = PinBarLong::default();
-    let asset = Asset::new("moex_share_sber").unwrap();
-    let begin = utils::str_date_to_utc("2024-01-01");
-    let end = utils::str_date_to_utc("2025-01-01");
+    for ticker in tickers {
+        let s = format!("MOEX_SHARE_{ticker}");
+        let asset = Asset::new(&s).unwrap();
 
-    let mut test = Test::new(&strategy, asset.iid());
-    test.set_begin(&begin);
-    test.set_end(&end);
+        let strategy = PinBarLong::default();
+        let mut test = Test::new(&strategy, asset.iid());
+        let begin = utils::str_date_to_utc("2024-01-01");
+        let end = utils::str_date_to_utc("2025-01-01");
+        test.set_begin(&begin);
+        test.set_end(&end);
 
-    let mut tester = Tester::new();
-    tester.run(strategy, &mut test).await;
+        let mut tester = Tester::new();
+        tester.run(strategy, &mut test).await;
 
-    let summary = Summary::new(&test.trade_list);
-    dbg!(summary);
+        let summary = Summary::new(&test.trade_list);
+        dbg!(summary);
+    }
 }

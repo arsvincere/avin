@@ -596,8 +596,7 @@ impl Tinkoff {
         let response =
             match self.orders.as_mut().unwrap().post_order(request).await {
                 Ok(response) => response,
-                Err(why) => {
-                    dbg!(why);
+                Err(_) => {
                     return Err("post order failed");
                 }
             };
@@ -656,8 +655,7 @@ impl Tinkoff {
             .await
         {
             Ok(response) => response,
-            Err(why) => {
-                dbg!(why);
+            Err(_) => {
                 return Err("post stop order failed");
             }
         };
@@ -687,8 +685,7 @@ impl Tinkoff {
         let tonic_resp =
             match self.orders.as_mut().unwrap().cancel_order(request).await {
                 Ok(response) => response,
-                Err(why) => {
-                    dbg!(why);
+                Err(_) => {
                     return Err("cancel order failed");
                 }
             };
@@ -728,8 +725,7 @@ impl Tinkoff {
             .await
         {
             Ok(response) => response,
-            Err(why) => {
-                dbg!(why);
+            Err(_) => {
                 return Err("cancel stop order failed");
             }
         };
@@ -948,9 +944,8 @@ impl Tinkoff {
     }
     pub async fn unsubscribe_tic(
         &mut self,
-        iid: &Iid,
+        _iid: &Iid,
     ) -> Result<(), &'static str> {
-        dbg!(&iid);
         todo!();
     }
 
@@ -1303,10 +1298,6 @@ impl From<api::orders::OrderState> for MarketOrder {
         //     },
         // ]
 
-        // NOTE: для отладки, в ветках todo! чтобы вывести исходный
-        // ордер стейт
-        let copy_t = t.clone();
-
         let status = t.execution_report_status();
         let operation: Operation = t.clone().into();
         let direction: Direction = t.direction().into();
@@ -1349,11 +1340,9 @@ impl From<api::orders::OrderState> for MarketOrder {
                 MarketOrder::Rejected(order)
             }
             s::ExecutionReportStatusCancelled => {
-                dbg!(&copy_t);
                 todo!()
             }
             s::ExecutionReportStatusUnspecified => {
-                dbg!(&copy_t);
                 todo!()
             }
             s::ExecutionReportStatusPartiallyfill => {
@@ -1596,12 +1585,10 @@ impl From<api::orders::PostOrderResponse> for LimitOrder {
 
         match t.execution_report_status() {
             status::ExecutionReportStatusUnspecified => {
-                dbg!(&t);
                 todo!();
             }
 
             status::ExecutionReportStatusFill => {
-                dbg!(&t);
                 todo!();
             }
 
@@ -1616,7 +1603,6 @@ impl From<api::orders::PostOrderResponse> for LimitOrder {
             }
 
             status::ExecutionReportStatusCancelled => {
-                dbg!(&t);
                 todo!();
             }
 
@@ -1632,7 +1618,6 @@ impl From<api::orders::PostOrderResponse> for LimitOrder {
             }
 
             status::ExecutionReportStatusPartiallyfill => {
-                dbg!(&t);
                 todo!();
             }
         }
@@ -1739,7 +1724,7 @@ impl From<api::stoporders::StopOrder> for StopOrder {
     }
 }
 impl From<api::operations::Operation> for Operation {
-    fn from(t: api::operations::Operation) -> Self {
+    fn from(_t: api::operations::Operation) -> Self {
         // Example:
         // Operation {
         //     id: "65576085",
@@ -1796,8 +1781,6 @@ impl From<api::operations::Operation> for Operation {
         //     instrument_uid: "e6123145-9665-43e0-8413-cd61b8aa9b13",
         // }
 
-        dbg!(&t);
-        todo!("TODO_ME");
         // NOTE: вообще не очень понятно зачем мне этот метод.
         // Тинькофф вернет список операций в котором будут операции
         // покупки продажи и коммиссия по ним будут отдельными операциями.
@@ -1806,6 +1789,7 @@ impl From<api::operations::Operation> for Operation {
         // И еще тут приходят всякие другие операции: пополнение счета,
         // налоги, начисление вариационной маржи... когда нибудь это
         // надо будет реализовать, но сейчас не нужно.
+        todo!("TODO_ME");
     }
 }
 impl From<api::marketdata::SubscriptionInterval> for TimeFrame {

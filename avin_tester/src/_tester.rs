@@ -107,11 +107,11 @@ mod tests {
     use chrono::{TimeZone, Utc};
 
     use super::*;
-    use avin_strategy::Every;
+    use avin_strategy::BuySell;
 
     #[tokio::test]
     async fn run_test() {
-        let strategy = Every::default();
+        let strategy = BuySell::default();
         let asset = Asset::new("moex_share_sber").unwrap();
 
         let mut test = Test::new(&strategy, asset.iid());

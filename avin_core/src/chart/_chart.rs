@@ -300,6 +300,12 @@ impl Chart {
         self.ind.get_mut(id)
     }
 
+    pub fn add_data(&mut self, mut data: impl UserData + 'static) {
+        data.init(self.bars(), self.now());
+        let id = data.id().to_string();
+        self.user_data.insert(id, Box::new(data));
+    }
+
     // private
     #[inline]
     fn update_ind(&mut self) {

@@ -16,7 +16,7 @@ use avin_core::{
 
 use crate::Strategy;
 
-const NAME: &str = "Every";
+const NAME: &str = "BuySell";
 
 type Trader = tokio::sync::mpsc::UnboundedSender<Action>;
 
@@ -32,7 +32,7 @@ enum Status {
 }
 
 #[derive(Debug, Default)]
-pub struct Every {
+pub struct BuySell {
     trader: Option<Trader>,
     account: Option<Account>,
     iid: Option<Iid>,
@@ -43,7 +43,7 @@ pub struct Every {
     buy_order: Option<Order>,
     sell_order: Option<Order>,
 }
-impl Strategy for Every {
+impl Strategy for BuySell {
     fn name(&self) -> &'static str {
         NAME
     }
@@ -58,7 +58,7 @@ impl Strategy for Every {
         let chart = asset.chart(&tf).unwrap();
         let bar = chart.now().unwrap();
 
-        // log::debug!("Every.process {}", bar);
+        // log::debug!("BuySell.process {}", bar);
         if bar.ts_nanos == self.last_ts {
             return;
         }
@@ -76,7 +76,7 @@ impl Strategy for Every {
         }
     }
     fn order_event(&mut self, e: OrderEvent) {
-        // log::debug!("Every.order_event: {}", e);
+        // log::debug!("BuySell.order_event: {}", e);
 
         match self.status {
             Status::PostingBuy => self.on_buy_event(e),
@@ -88,10 +88,10 @@ impl Strategy for Every {
         }
     }
 }
-impl Every {
+impl BuySell {
     // private
     fn get_in(&mut self, bar: &Bar) {
-        // log::debug!("Every.get_in {}", bar);
+        // log::debug!("BuySell.get_in {}", bar);
 
         // если четное количество минут
         if bar.dt().minute() % 2 == 0 {
@@ -99,7 +99,7 @@ impl Every {
         }
     }
     fn get_out(&mut self, bar: &Bar) {
-        // log::debug!("Every.get_out {}", bar);
+        // log::debug!("BuySell.get_out {}", bar);
 
         // если нечетное количество минут
         if bar.dt().minute() % 2 != 0 {

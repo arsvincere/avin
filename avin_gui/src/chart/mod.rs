@@ -6,9 +6,10 @@
  ****************************************************************************/
 
 mod draw;
-mod theme;
 mod toolbar;
 mod view;
 mod widget;
 
+pub use toolbar::ChartToolbar;
+pub use view::ChartView;
 pub use widget::ChartWidget;

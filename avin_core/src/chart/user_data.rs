@@ -11,7 +11,7 @@ use crate::Bar;
 
 pub trait UserData: Send {
     fn id(&self) -> &str;
-    fn data(&self) -> &DataFrame;
+    fn df(&self) -> &DataFrame;
     fn init(&mut self, bars: &[Bar], now: Option<&Bar>);
     fn update(&mut self, bars: &[Bar], now: Option<&Bar>);
 }

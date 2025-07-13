@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use avin_connect::Tinkoff;
 use avin_core::{Action, Asset, Event, TimeFrame, TradeList};
-use avin_strategy::{Every, Strategy};
+use avin_strategy::{BuySell, Strategy};
 
 use super::work::Work;
 
@@ -57,7 +57,7 @@ impl Trader {
         log::info!(":: Trader load strategys");
         let sender = self.action_tx.clone();
         let account = broker.get_account("Agni").await.unwrap();
-        let mut strategy = Every::default();
+        let mut strategy = BuySell::default();
         strategy.init(sender, account, asset.iid().clone());
 
         log::info!(":: Trader start work");

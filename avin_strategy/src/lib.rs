@@ -6,9 +6,9 @@
  ****************************************************************************/
 
 mod _strategy;
-mod every;
+mod buy_sell;
 mod pin_bar;
 
 pub use _strategy::Strategy;
-pub use every::Every;
+pub use buy_sell::BuySell;
 pub use pin_bar::PinBarLong;

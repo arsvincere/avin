@@ -5,6 +5,11 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod widget;
+mod _tester;
+mod summary_table;
+mod test_table;
+mod toolbar;
+mod trade_table;
+mod view;
 
-pub use widget::TestWidget;
+pub use _tester::Tester;

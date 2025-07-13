@@ -5,11 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod asset;
-mod chart;
-mod terminal;
-mod tester;
-mod theme;
+mod _terminal;
 
-pub use terminal::Terminal;
-pub use tester::Tester;
+pub use _terminal::Terminal;

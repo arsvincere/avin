@@ -307,10 +307,8 @@ mod tests {
         assert_eq!(new.direction, Direction::Buy);
         assert_eq!(new.lots, 100);
         assert_eq!(new.price, 400.0);
-        dbg!(&new);
 
         let reject = new.reject("not enought money");
         assert_eq!(reject.meta, "not enought money");
-        dbg!(&reject);
     }
 }

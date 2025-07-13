@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL:=help
 SHELL=bash
 PYTHONPATH=
 VENV=.venv
@@ -59,6 +59,7 @@ publish: ## Publish PyPl & crates.io
 	cargo publish -p avin_tester
 	cargo publish -p avin_connect
 	cargo publish -p avin_trader
+	cargo publish -p avin_gui
 	cargo publish -p avin
 
 install: build ## Install the project
@@ -79,7 +80,7 @@ clean: ## Clean up caches, build artifacts, and the venv
 	ruff clean
 	cargo clean
 
-r: ## Run temp bin (gitignored main.rs)
+run: ## Run temp bin (gitignored main.rs)
 	cargo run --bin avin --jobs 2
 
 analyse:

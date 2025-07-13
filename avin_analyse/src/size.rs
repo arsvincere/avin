@@ -31,7 +31,8 @@ pub enum Size {
 }
 impl Size {
     pub fn from_cdf(value: f64) -> Self {
-        match value {
+        let pct = value * 100.0;
+        match pct {
             0.0..1.0 => Size::GreatestSmall,
             1.0..3.0 => Size::AnomalSmall,
             3.0..5.0 => Size::ExtraSmall,
@@ -48,7 +49,7 @@ impl Size {
             97.0..99.0 => Size::AnomalBig,
             99.0..100.01 => Size::GreatestBig, // 100.01 - погрешность f64...
             _ => {
-                dbg!(&value);
+                log::error!("Invalid value {}", value);
                 panic!();
             }
         }
@@ -166,14 +167,15 @@ pub enum Sz {
 }
 impl Sz {
     pub fn from_cdf(value: f64) -> Self {
-        match value {
+        let pct = value * 100.0;
+        match pct {
             0.0..10.0 => Sz::XS,
             10.0..30.0 => Sz::S,
             30.0..70.0 => Sz::M,
             70.0..90.0 => Sz::L,
             90.0..100.01 => Sz::XL, // 100.01 - погрешность f64...
             _ => {
-                dbg!(&value);
+                log::error!("Invalid value {}", value);
                 panic!();
             }
         }
@@ -228,87 +230,87 @@ mod tests {
 
     #[test]
     fn size_new() {
-        assert_eq!(Size::from_cdf(0.1).name(), "-7");
-        assert_eq!(Size::from_cdf(1.0).name(), "-6");
-        assert_eq!(Size::from_cdf(3.0).name(), "-5");
-        assert_eq!(Size::from_cdf(5.0).name(), "-4");
-        assert_eq!(Size::from_cdf(10.0).name(), "-3");
-        assert_eq!(Size::from_cdf(20.0).name(), "-2");
-        assert_eq!(Size::from_cdf(30.0).name(), "-1");
-        assert_eq!(Size::from_cdf(50.0).name(), "=0");
-        assert_eq!(Size::from_cdf(60.0).name(), "+1");
-        assert_eq!(Size::from_cdf(70.0).name(), "+2");
-        assert_eq!(Size::from_cdf(80.0).name(), "+3");
-        assert_eq!(Size::from_cdf(90.0).name(), "+4");
-        assert_eq!(Size::from_cdf(95.0).name(), "+5");
-        assert_eq!(Size::from_cdf(97.0).name(), "+6");
-        assert_eq!(Size::from_cdf(99.0).name(), "+7");
+        assert_eq!(Size::from_cdf(0.001).name(), "-7");
+        assert_eq!(Size::from_cdf(0.010).name(), "-6");
+        assert_eq!(Size::from_cdf(0.030).name(), "-5");
+        assert_eq!(Size::from_cdf(0.050).name(), "-4");
+        assert_eq!(Size::from_cdf(0.100).name(), "-3");
+        assert_eq!(Size::from_cdf(0.200).name(), "-2");
+        assert_eq!(Size::from_cdf(0.300).name(), "-1");
+        assert_eq!(Size::from_cdf(0.500).name(), "=0");
+        assert_eq!(Size::from_cdf(0.600).name(), "+1");
+        assert_eq!(Size::from_cdf(0.700).name(), "+2");
+        assert_eq!(Size::from_cdf(0.800).name(), "+3");
+        assert_eq!(Size::from_cdf(0.900).name(), "+4");
+        assert_eq!(Size::from_cdf(0.950).name(), "+5");
+        assert_eq!(Size::from_cdf(0.970).name(), "+6");
+        assert_eq!(Size::from_cdf(0.990).name(), "+7");
 
-        assert_eq!(Size::from_cdf(0.0).name(), "-7");
-        assert_eq!(Size::from_cdf(0.5).name(), "-7");
-        assert_eq!(Size::from_cdf(0.9).name(), "-7");
-        assert_eq!(Size::from_cdf(0.99999).name(), "-7");
-        assert_eq!(Size::from_cdf(1.0).name(), "-6");
+        assert_eq!(Size::from_cdf(0.000).name(), "-7");
+        assert_eq!(Size::from_cdf(0.005).name(), "-7");
+        assert_eq!(Size::from_cdf(0.009).name(), "-7");
+        assert_eq!(Size::from_cdf(0.0099999).name(), "-7");
+        assert_eq!(Size::from_cdf(0.010).name(), "-6");
 
-        assert_eq!(Size::from_cdf(40.0).name(), "=0");
-        assert_eq!(Size::from_cdf(49.0).name(), "=0");
-        assert_eq!(Size::from_cdf(51.0).name(), "=0");
-        assert_eq!(Size::from_cdf(59.9).name(), "=0");
-        assert_eq!(Size::from_cdf(60.0).name(), "+1");
+        assert_eq!(Size::from_cdf(0.40).name(), "=0");
+        assert_eq!(Size::from_cdf(0.49).name(), "=0");
+        assert_eq!(Size::from_cdf(0.51).name(), "=0");
+        assert_eq!(Size::from_cdf(0.59).name(), "=0");
+        assert_eq!(Size::from_cdf(0.60).name(), "+1");
 
-        assert_eq!(Size::from_cdf(99.0).name(), "+7");
-        assert_eq!(Size::from_cdf(99.5).name(), "+7");
-        assert_eq!(Size::from_cdf(99.9).name(), "+7");
-        assert_eq!(Size::from_cdf(100.0).name(), "+7");
+        assert_eq!(Size::from_cdf(0.990).name(), "+7");
+        assert_eq!(Size::from_cdf(0.995).name(), "+7");
+        assert_eq!(Size::from_cdf(0.999).name(), "+7");
+        assert_eq!(Size::from_cdf(1.000).name(), "+7");
     }
     #[test]
     fn size_to_sz() {
-        assert_eq!(Size::from_cdf(0.0).sz(), Sz::XS);
-        assert_eq!(Size::from_cdf(9.9).sz(), Sz::XS);
+        assert_eq!(Size::from_cdf(0.000).sz(), Sz::XS);
+        assert_eq!(Size::from_cdf(0.099).sz(), Sz::XS);
 
-        assert_eq!(Size::from_cdf(10.0).sz(), Sz::S);
-        assert_eq!(Size::from_cdf(29.9).sz(), Sz::S);
+        assert_eq!(Size::from_cdf(0.100).sz(), Sz::S);
+        assert_eq!(Size::from_cdf(0.299).sz(), Sz::S);
 
-        assert_eq!(Size::from_cdf(30.0).sz(), Sz::M);
-        assert_eq!(Size::from_cdf(69.9).sz(), Sz::M);
+        assert_eq!(Size::from_cdf(0.300).sz(), Sz::M);
+        assert_eq!(Size::from_cdf(0.699).sz(), Sz::M);
 
-        assert_eq!(Size::from_cdf(70.0).sz(), Sz::L);
-        assert_eq!(Size::from_cdf(89.9).sz(), Sz::L);
+        assert_eq!(Size::from_cdf(0.700).sz(), Sz::L);
+        assert_eq!(Size::from_cdf(0.899).sz(), Sz::L);
 
-        assert_eq!(Size::from_cdf(90.0).sz(), Sz::XL);
-        assert_eq!(Size::from_cdf(100.0).sz(), Sz::XL);
+        assert_eq!(Size::from_cdf(0.900).sz(), Sz::XL);
+        assert_eq!(Size::from_cdf(1.000).sz(), Sz::XL);
     }
     #[test]
     fn size_eq() {
-        assert_eq!(Size::from_cdf(0.0), Size::from_cdf(0.9));
+        assert_eq!(Size::from_cdf(0.0), Size::from_cdf(0.009));
 
-        assert_eq!(Size::from_cdf(40.0), Size::from_cdf(59.9));
+        assert_eq!(Size::from_cdf(0.40), Size::from_cdf(0.599));
 
-        assert_eq!(Size::from_cdf(99.0), Size::from_cdf(100.0));
+        assert_eq!(Size::from_cdf(0.99), Size::from_cdf(1.0));
     }
     #[test]
     fn simple_size_eq() {
-        assert_eq!(Sz::from_cdf(0.0), Sz::from_cdf(1.0));
-        assert_eq!(Sz::from_cdf(0.0), Sz::from_cdf(9.9));
-        assert_ne!(Sz::from_cdf(9.9), Sz::from_cdf(10.0));
+        assert_eq!(Sz::from_cdf(0.000), Sz::from_cdf(0.010));
+        assert_eq!(Sz::from_cdf(0.000), Sz::from_cdf(0.099));
+        assert_ne!(Sz::from_cdf(0.099), Sz::from_cdf(0.100));
 
-        assert_eq!(Sz::from_cdf(10.0), Sz::from_cdf(20.0));
-        assert_eq!(Sz::from_cdf(10.0), Sz::from_cdf(29.9));
-        assert_ne!(Sz::from_cdf(29.9), Sz::from_cdf(30.0));
+        assert_eq!(Sz::from_cdf(0.100), Sz::from_cdf(0.200));
+        assert_eq!(Sz::from_cdf(0.100), Sz::from_cdf(0.299));
+        assert_ne!(Sz::from_cdf(0.299), Sz::from_cdf(0.300));
 
-        assert_eq!(Sz::from_cdf(30.0), Sz::M);
-        assert_eq!(Sz::from_cdf(40.0), Sz::M);
-        assert_eq!(Sz::from_cdf(50.0), Sz::M);
-        assert_eq!(Sz::from_cdf(60.0), Sz::M);
-        assert_ne!(Sz::from_cdf(69.9), Sz::L);
+        assert_eq!(Sz::from_cdf(0.300), Sz::M);
+        assert_eq!(Sz::from_cdf(0.400), Sz::M);
+        assert_eq!(Sz::from_cdf(0.500), Sz::M);
+        assert_eq!(Sz::from_cdf(0.600), Sz::M);
+        assert_ne!(Sz::from_cdf(0.699), Sz::L);
 
-        assert_eq!(Sz::from_cdf(70.0), Sz::from_cdf(77.7));
-        assert_eq!(Sz::from_cdf(80.0), Sz::from_cdf(88.8));
-        assert_ne!(Sz::from_cdf(89.9), Sz::from_cdf(90.0));
+        assert_eq!(Sz::from_cdf(0.700), Sz::from_cdf(0.777));
+        assert_eq!(Sz::from_cdf(0.800), Sz::from_cdf(0.888));
+        assert_ne!(Sz::from_cdf(0.899), Sz::from_cdf(0.900));
 
-        assert_eq!(Sz::from_cdf(90.0), Sz::from_cdf(99.9));
-        assert_eq!(Sz::from_cdf(99.0), Sz::from_cdf(99.9));
-        assert_eq!(Sz::from_cdf(100.0), Sz::from_cdf(90.0));
+        assert_eq!(Sz::from_cdf(0.900), Sz::from_cdf(0.999));
+        assert_eq!(Sz::from_cdf(0.990), Sz::from_cdf(0.999));
+        assert_eq!(Sz::from_cdf(1.000), Sz::from_cdf(0.900));
     }
     #[test]
     fn range() {

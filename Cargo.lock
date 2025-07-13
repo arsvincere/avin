@@ -587,6 +587,7 @@ dependencies = [
 name = "avin_gui"
 version = "0.2.11"
 dependencies = [
+ "avin_analyse",
  "avin_connect",
  "avin_core",
  "avin_tester",

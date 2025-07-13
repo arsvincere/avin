@@ -213,10 +213,8 @@ mod tests {
         let new = MarketOrder::new(Direction::Sell, 10);
         assert_eq!(new.direction, Direction::Sell);
         assert_eq!(new.lots, 10);
-        dbg!(&new);
 
         let reject = new.reject("market is closed");
         assert_eq!(reject.meta, "market is closed");
-        dbg!(&reject);
     }
 }

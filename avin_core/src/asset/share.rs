@@ -326,7 +326,14 @@ impl Share {
                 self.tics = Tic::from_df(&df).unwrap();
                 Ok(())
             }
-            Err(_) => todo!(),
+            Err(AvinError::NotFound(_)) => {
+                self.tics = Vec::new();
+                Ok(())
+            }
+            Err(err) => {
+                log::error!("{}", err);
+                panic!();
+            }
         }
     }
     /// Calculate footprint chart
