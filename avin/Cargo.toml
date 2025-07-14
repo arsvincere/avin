@@ -25,18 +25,18 @@ chrono = { workspace = true }
 eframe = { workspace = true }
 ##############################################################################
 
-[[bin]]
-name = "analyse"
-path = "src/bin/a-analyse.rs"
-[[bin]]
-name = "backtest"
-path = "src/bin/a-backtest.rs"
-[[bin]]
-name = "tester"
-path = "src/bin/a-tester.rs"
-[[bin]]
-name = "trader"
-path = "src/bin/a-trader.rs"
-[[bin]]
-name = "terminal"
-path = "src/bin/a-terminal.rs"
+# [[bin]]
+# name = "analyse"
+# path = "src/bin/a-analyse.rs"
+# [[bin]]
+# name = "backtest"
+# path = "src/bin/a-backtest.rs"
+# [[bin]]
+# name = "tester"
+# path = "src/bin/a-tester.rs"
+# [[bin]]
+# name = "trader"
+# path = "src/bin/a-trader.rs"
+# [[bin]]
+# name = "terminal"
+# path = "src/bin/a-terminal.rs"

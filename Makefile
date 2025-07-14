@@ -80,23 +80,18 @@ clean: ## Clean up caches, build artifacts, and the venv
 	ruff clean
 	cargo clean
 
-run: ## Run temp bin (gitignored main.rs)
+run: ## Run temp bin (gitignored)
 	cargo run --bin avin --jobs 2
-
 analyse:
-	cargo run --bin analyse --jobs 4 --release
-
+	cargo run --bin a-analyse --jobs 4 --release
 backtest:
-	cargo run --bin backtest --jobs 4 --release
-
+	cargo run --bin a-backtest --jobs 4 --release
 tester:
-	cargo run --bin tester --jobs 4 --release
-
+	cargo run --bin a-tester --jobs 4 --release
 trader:
-	cargo run --bin trader --jobs 4 --release
-
+	cargo run --bin a-trader --jobs 4 --release
 terminal:
-	cargo run --bin terminal --jobs 4 --release
+	cargo run --bin a-terminal --jobs 4 --release
 
 T1="\033[1m"
 T2="\033[0m"
