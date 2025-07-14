@@ -23,6 +23,7 @@ __pycache__/
 Session.vim*
 aaa
 avin/src/main.rs
+avin/src/bin
 dev
 log/
 tmp/
