@@ -31,11 +31,11 @@ fmt: ## Run ruff format & cargo fmt
 
 test: ## Run pytests, lib-tests, doc-tests
 	$(PY_ENV) && pytest tests
-	cargo test --lib -j 2 -- --test-threads=1
-	cargo test --doc -j 2 -- --test-threads=1
+	cargo test --lib --jobs 4 -- --test-threads=1
+	cargo test --doc --jobs 4 -- --test-threads=1
 
 test_ignored: ## Run slow ingnored tests
-	cargo test --lib -j 2 -- --ignored --test-threads=1
+	cargo test --lib --jobs 4 -- --ignored --test-threads=1
 
 pre-commit: ## Make check, fmt, test
 	$(MAKE) check
@@ -48,7 +48,7 @@ build: .venv ## Build the project
 		--onefile \
 		--specpath build \
 		--name avin-data
-	cargo build --jobs 2
+	cargo build --jobs 4
 
 publish: ## Publish PyPl & crates.io
 	source .venv/bin/activate && cd avin_data && flit publish
@@ -68,7 +68,7 @@ install: build ## Install the project
 	install -Dm755 avin_data/dist/avin-data $(AVIN_DATA_APP)
 
 doc: build ## Create and open local documentation
-	cargo doc --workspace --open --no-deps --color always --jobs 2
+	cargo doc --workspace --open --no-deps --color always --jobs 4
 
 clean: ## Clean up caches, build artifacts, and the venv
 	rm -rf .mypy_cache/
@@ -81,7 +81,7 @@ clean: ## Clean up caches, build artifacts, and the venv
 	cargo clean
 
 run: ## Run temp bin (gitignored)
-	cargo run --bin avin --jobs 2
+	cargo run --bin a-aaa --jobs 4
 analyse:
 	cargo run --bin a-analyse --jobs 4 --release
 backtest:
