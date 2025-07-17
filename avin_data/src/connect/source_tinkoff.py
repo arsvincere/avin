@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import polars as pl
 import tinkoff.invest as ti
-
 from src.manager.category import Category
 from src.manager.iid_cache import IidCache
 from src.manager.source import Source

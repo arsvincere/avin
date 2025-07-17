@@ -17,7 +17,7 @@ from datetime import timedelta as TimeDelta
 import httpx
 import moexalgo
 import polars as pl
-
+from src.exceptions import NotImplemetedCategory, TickerNotFound
 from src.manager.category import Category
 from src.manager.iid import Iid
 from src.manager.iid_cache import IidCache
@@ -40,6 +40,13 @@ AVAILIBLE = [
     MarketData.ORDER_STATS,
     MarketData.OB_STATS,
 ]
+
+
+def _get_safe_value(df: pl.DataFrame, key: str) -> pl.Series | None:
+    """Get vaue or None if key not exists."""
+    if key in df.columns:
+        return df[key]
+    return None
 
 
 class SourceMoex:
@@ -69,7 +76,7 @@ class SourceMoex:
     ) -> Iid | None:
         # parse str
         exchange_str, category_str, ticker_str = s.upper().split("_")
-        assert exchange_str == "MOEX"
+        assert exchange_str == "MOEX", f"Not supported {exchange_str}, only MOEX"
         category = Category.from_str(category_str)
 
         # load cache
@@ -79,33 +86,29 @@ class SourceMoex:
         # try find ticker
         df = df.filter(pl.col("ticker") == ticker_str)
         if len(df) != 1:
-            return None
+            raise TickerNotFound(f"Cannot find {ticker_str}")
 
         # NOTE: MOEX not provide figi... using unique fake value
         match category:
             case Category.SHARE:
-                info = {
-                    "exchange": "MOEX",
-                    "category": category_str,
-                    "ticker": ticker_str,
-                    "figi": f"figi_MOEX_{category_str}_{ticker_str}",
-                    "name": df.item(0, "shortname"),
-                    "lot": df.item(0, "lotsize"),
-                    "step": df.item(0, "minstep"),
-                }
+                lotsize = df.item(0, "lotsize")
+                step = df.item(0, "minstep")
             case Category.FUTURE:
-                info = {
-                    "exchange": "MOEX",
-                    "category": category_str,
-                    "ticker": ticker_str,
-                    "figi": f"figi_MOEX_{category_str}_{ticker_str}",
-                    "name": df.item(0, "shortname"),
-                    "lot": 1,
-                    "step": df.item(0, "minstep"),
-                }
+                lotsize = 1
+                step = df.item(0, "minstep")
+            case Category.INDEX:
+                lotsize = 1
+                step = 10 ** (-df.item(0, "decimals"))
             case _:
-                log.error(f"Not implemented category {category_str}, {df}")
-                exit(1)
+                raise NotImplemetedCategory(f"Not implemented category {category_str}, {df}")
+
+        info = {"exchange": exchange_str,
+                "category": category_str,
+                "ticker": ticker_str,
+                "figi": f"figi_MOEX_{category_str}_{ticker_str}",
+                "name": df.item(0, "shortname"),
+                "lot": lotsize,
+                "step": step}
 
         return Iid(info)
 
@@ -495,16 +498,16 @@ class SourceMoex:
         df = pl.DataFrame(
             {
                 "ts_nanos": timestamps,
-                "direction": tics["buysell"],
-                "lots": tics["quantity"],
+                "direction": _get_safe_value(tics, "buysell"),
+                "lots": _get_safe_value(tics, "quantity"),
                 "price": tics["price"],
                 "value": tics["value"],
-                "session": tics["tradingsession"].cast(pl.Int8),
-                "tradeno": tics["tradeno"],
+                "session": _get_safe_value(tics, "tradingsession").cast(pl.Int8) if not _get_safe_value(tics, "tradingsession") is None else None,
+                "tradeno": _get_safe_value(tics, "tradeno"),
             }
         )
 
-        return df
+        return pl.DataFrame(df)
 
 
 if __name__ == "__main__":

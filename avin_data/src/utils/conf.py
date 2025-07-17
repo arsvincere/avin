@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import sys
 from datetime import timedelta as TimeDelta
+from pathlib import Path
 
 from src.utils.cmd import Cmd
 
@@ -94,8 +95,8 @@ class Configuration:
             return Configuration(path)
 
         # try use default config
-        path = "/home/alex/avin/res/default_config.toml"
-        if Cmd.is_exist(path):
+        path = Path(__file__).parent.parent.parent.parent / "res" / "default_config.toml"
+        if path.exists():
             return Configuration(path)
 
         # panic
