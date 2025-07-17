@@ -11,7 +11,6 @@ from __future__ import annotations
 from datetime import date as Date
 
 import polars as pl
-
 from src.manager.iid import Iid
 from src.manager.market_data import MarketData
 from src.utils import Cmd, log, ts_to_dt

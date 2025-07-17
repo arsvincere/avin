@@ -1,5 +1,4 @@
 import click
-
 from src.manager import Manager, MarketData, Source
 
 

@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import enum
 
+from src.exceptions import NotImplemetedCategory
 from src.utils import log
 
 
 class Category(enum.Enum):
+    """All categories enum."""
     CURRENCY = 1
     INDEX = 2
     SHARE = 3
@@ -24,24 +26,17 @@ class Category(enum.Enum):
 
     @classmethod
     def from_str(cls, string: str) -> Category:
-        categories = {
-            "CURRENCY": Category.CURRENCY,
-            "INDEX": Category.INDEX,
-            "SHARE": Category.SHARE,
-            "BOND": Category.BOND,
-            "FUTURE": Category.FUTURE,
-            "OPTION": Category.OPTION,
-            "ETF": Category.ETF,
-        }
+        """Get enum from str.
 
-        category = categories.get(string)
+        Args:
+            string: category name.
 
-        if category is None:
-            log.error(f"Invalid category: {string}")
-            exit(1)
+        Returns:
+            Category Enum.
 
-        return category
-
-
-if __name__ == "__main__":
-    ...
+        Raises:
+            NotImplemetedCategory if category not exists.
+        """
+        if attr := getattr(cls, string.upper(), None):
+            return attr
+        raise NotImplemetedCategory(f"Category not implemented. Choice from {cls.__members__.keys()}")
