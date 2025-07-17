@@ -132,7 +132,7 @@ class Manager:
     def __download_bars_all_availible(
         cls, source: Source, iid: Iid, market_data: MarketData
     ) -> None:
-        year = 1990
+        year = 1997
         end = now().year
         while year <= end:
             cls.__download_bars_one_year(source, iid, market_data, year)

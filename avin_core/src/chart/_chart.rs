@@ -87,7 +87,7 @@ impl Chart {
                 Ok(chart)
             }
             Err(e) => {
-                log::warn!("{}, using empty chart", e);
+                log::warn!("{e}, using empty chart");
                 Ok(Self::empty(iid, tf))
             }
         }

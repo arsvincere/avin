@@ -10,11 +10,12 @@ from __future__ import annotations
 
 import enum
 
-from src.exceptions import NotImplemetedCategory
+from src.exceptions import NotImplemetedSource
 
 
 class Source(enum.Enum):
-    """Stock exchange."""
+    """Market data source."""
+
     MOEX = 1
     TINKOFF = 2
 
@@ -29,11 +30,13 @@ class Source(enum.Enum):
             Category Enum.
 
         Raises:
-            NotImplemetedCategory if category not exists.
+            NotImplemetedSource if category not exists.
         """
         if attr := getattr(cls, string.upper(), None):
             return attr
-        raise NotImplemetedCategory(f"Category not implemented. Choice from {cls.__members__.keys()}")
+        raise NotImplemetedSource(
+            f"Source not implemented. Choice from {cls.__members__.keys()}"
+        )
 
 
 if __name__ == "__main__":

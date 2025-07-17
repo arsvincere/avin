@@ -83,7 +83,7 @@ impl Asset {
         let category = parts.get(1).expect("invalid line");
         let ticker = parts.get(2).expect("invalid line");
 
-        let query = format!("{}_{}_{}", exchange, category, ticker);
+        let query = format!("{exchange}_{category}_{ticker}");
         let result = Manager::find_iid(&query);
 
         match result {
@@ -92,7 +92,7 @@ impl Asset {
                 Ok(asset)
             }
             Err(why) => {
-                let msg = format!("fail create from csv {}, {}", line, why);
+                let msg = format!("fail create from csv {line}, {why}");
                 Err(msg)
             }
         }

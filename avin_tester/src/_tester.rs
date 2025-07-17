@@ -91,7 +91,7 @@ impl Tester {
         log::info!(":: Tester load charts {asset}");
 
         for tf in TimeFrame::all() {
-            log::info!("   {}", tf);
+            log::info!("   {tf}");
             asset.load_chart_empty(&tf);
         }
     }

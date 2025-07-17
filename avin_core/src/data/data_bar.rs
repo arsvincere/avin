@@ -41,7 +41,7 @@ impl DataBar {
                     year += 1;
                 }
                 Err(other) => {
-                    log::error!("{}", other);
+                    log::error!("{other}");
                     panic!();
                 }
             }
@@ -50,7 +50,7 @@ impl DataBar {
         // filter & check empty
         let df = utils::filter_dt(begin, end, df);
         if df.is_empty() {
-            let msg = format!("{} {}", iid, market_data);
+            let msg = format!("{iid} {market_data}");
             return Err(AvinError::NotFound(msg));
         }
 
@@ -69,7 +69,7 @@ fn load_file(
     path.push(format!("{year}.pqt"));
 
     if !Cmd::is_exist(&path) {
-        let msg = format!("{} {}", iid, market_data);
+        let msg = format!("{iid} {market_data}");
         return Err(AvinError::NotFound(msg.to_string()));
     }
 

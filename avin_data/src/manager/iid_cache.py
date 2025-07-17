@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import polars as pl
+
 from src.manager.category import Category
 from src.manager.source import Source
 from src.utils import Cmd, cfg, log

@@ -16,7 +16,7 @@ impl Timer {
     }
     pub fn stop(&self, msg: &str) {
         let duration = self.instant.elapsed();
-        println!("Timer {} {:?}", msg, duration);
+        println!("Timer {msg} {duration:?}");
     }
 }
 impl Default for Timer {

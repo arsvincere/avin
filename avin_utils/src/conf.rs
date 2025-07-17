@@ -63,7 +63,7 @@ fn find_config() -> Configuration {
     };
 
     // panic
-    log::error!("Config file not found: {:?}", path);
+    log::error!("Config file not found: {path:?}");
     panic!()
 }
 

@@ -13,6 +13,7 @@ import subprocess
 import tomllib
 import zipfile
 from collections import deque
+from pathlib import Path
 
 import polars as pl
 
@@ -288,8 +289,8 @@ class Cmd:
         return string
 
     @staticmethod
-    def read_toml(file_path: str):
-        with open(file_path, "rb") as f:
+    def read_toml(file_path: Path):
+        with file_path.open(mode="rb") as f:
             data = tomllib.load(f)
 
         return data

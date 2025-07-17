@@ -24,7 +24,7 @@ impl From<&str> for Exchange {
     fn from(value: &str) -> Self {
         match value.to_uppercase().as_str() {
             "MOEX" => Exchange::MOEX,
-            _ => panic!("Invalid exchange: {}", value),
+            _ => panic!("Invalid exchange: {value}"),
         }
     }
 }

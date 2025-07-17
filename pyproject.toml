@@ -30,8 +30,7 @@ exclude = [
 # Same as PEP8.
 line-length = 78
 indent-width = 4
-# Assume Python 3.13
-target-version = "py313"
+target-version = "py313" # Assume Python 3.13
 
 [tool.ruff.lint]
 select = [

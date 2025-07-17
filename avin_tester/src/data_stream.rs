@@ -123,7 +123,7 @@ impl DataStream {
         }
 
         if bars_1m.is_empty() {
-            log::warn!("No data for {}", iid);
+            log::warn!("No data for {iid}");
         }
 
         bars_1m

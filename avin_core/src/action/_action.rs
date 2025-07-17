@@ -28,12 +28,12 @@ pub enum Action {
 impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Action::Post(a) => write!(f, "Action={}", a),
-            Action::Cancel(a) => write!(f, "Action={}", a),
-            Action::Subscribe(a) => write!(f, "Action={}", a),
-            Action::Unsubscribe(a) => write!(f, "Action={}", a),
-            Action::TradeOpened(a) => write!(f, "Action={}", a),
-            Action::TradeClosed(a) => write!(f, "Action={}", a),
+            Action::Post(a) => write!(f, "Action={a}"),
+            Action::Cancel(a) => write!(f, "Action={a}"),
+            Action::Subscribe(a) => write!(f, "Action={a}"),
+            Action::Unsubscribe(a) => write!(f, "Action={a}"),
+            Action::TradeOpened(a) => write!(f, "Action={a}"),
+            Action::TradeClosed(a) => write!(f, "Action={a}"),
         }
     }
 }

@@ -8,18 +8,17 @@
 
 from __future__ import annotations
 
-import os
-import sys
 from datetime import timedelta as TimeDelta
 from pathlib import Path
 
+from src.exceptions import ConfigNotFound
 from src.utils.cmd import Cmd
 
 __all__ = "cfg"
 
 
 class Configuration:
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: Path):
         self.__path = file_path
         self.__cfg = Cmd.read_toml(file_path)
 
@@ -81,27 +80,40 @@ class Configuration:
 
     @classmethod
     def read_config(cls) -> Configuration:
+        """Try find and read config
+
+        First try in current dir, then in ~/.config/avin/config.toml,
+        then use defaul_config.toml from res/
+
+        Returns:
+            Configuration.
+
+        Raises:
+            ConfigNotFound if config not exists.
+        """
+
         file_name = "config.toml"
 
         # try find user config in current dir
-        pwd = os.getcwd()
-        path = Cmd.path(pwd, file_name)
-        if Cmd.is_exist(path):
-            return Configuration(path)
-
-        # try find in user home ~/.config/avin/
-        path = Cmd.path("~/.config/avin", file_name)
-        if Cmd.is_exist(path):
-            return Configuration(path)
-
-        # try use default config
-        path = Path(__file__).parent.parent.parent.parent / "res" / "default_config.toml"
+        path = Path(Path.cwd(), file_name)
         if path.exists():
             return Configuration(path)
 
-        # panic
-        print(f"Config file not found: {path}", file=sys.stderr)
-        exit(1)
+        # try find in user home ~/.config/avin/
+        path = Path(Path.home(), ".config", "avin", file_name)
+        if path.exists():
+            return Configuration(path)
+
+        # try use default config
+        path = (
+            Path(__file__).parent.parent.parent.parent
+            / "res"
+            / "default_config.toml"
+        )
+        if path.exists():
+            return Configuration(path)
+
+        raise ConfigNotFound(f"Config file not found: {path}")
 
 
 if __name__ == "__main__":

@@ -204,11 +204,11 @@ fn analyse_name(
             metric.unwrap().name(),
         )
     } else {
-        format!("{} {} {}", NAME, tf, NAME)
+        format!("{NAME} {tf} {NAME}")
     }
 }
 fn load_chart(iid: &Iid, tf: &TimeFrame) -> Result<Chart, String> {
-    log::info!("Load chart {}", tf);
+    log::info!("Load chart {tf}");
 
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();

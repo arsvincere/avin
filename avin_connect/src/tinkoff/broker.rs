@@ -216,7 +216,7 @@ impl Tinkoff {
         while let Some(a) = self.action_rx.recv().await {
             match a {
                 Action::Post(a) => {
-                    log::info!("Broker get action {}", a);
+                    log::info!("Broker get action {a}");
                     self.post_action(a).await;
                 }
                 Action::Cancel(_) => todo!(),
@@ -533,7 +533,7 @@ impl Tinkoff {
             match self.orders.as_mut().unwrap().post_order(request).await {
                 Ok(response) => response,
                 Err(why) => {
-                    log::error!("{:?}", why);
+                    log::error!("{why:?}");
                     return Err("post order failed");
                 }
             };
@@ -1034,37 +1034,37 @@ async fn start_marketdata_stream(
         match msg.payload.unwrap() {
             // market data
             Res::Candle(candle) => {
-                log::debug!("{:?}", candle);
+                log::debug!("{candle:?}");
                 let e: BarEvent = candle.into();
                 sender.send(Event::Bar(e)).unwrap();
             }
             Res::Trade(tic) => {
-                log::debug!("{:?}", tic);
+                log::debug!("{tic:?}");
                 let e: TicEvent = tic.into();
                 sender.send(Event::Tic(e)).unwrap();
             }
             Res::Orderbook(_) => todo!(),
             Res::TradingStatus(i) => {
-                log::debug!("{:#?}", i);
+                log::debug!("{i:#?}");
                 log::warn!("Сделать обработку смены статуса актива!")
             }
             Res::LastPrice(_) => todo!(),
 
             // subscription responses
             Res::SubscribeInfoResponse(r) => {
-                log::debug!(":: Subscribe info {:?}", r);
+                log::debug!(":: Subscribe info {r:?}");
             }
             Res::SubscribeTradesResponse(r) => {
-                log::debug!(":: Subscribe trades {:?}", r);
+                log::debug!(":: Subscribe trades {r:?}");
             }
             Res::SubscribeCandlesResponse(r) => {
-                log::debug!(":: Subscribe candles {:?}", r);
+                log::debug!(":: Subscribe candles {r:?}");
             }
             Res::SubscribeOrderBookResponse(r) => {
-                log::debug!(":: Subscribe book {:?}", r);
+                log::debug!(":: Subscribe book {r:?}");
             }
             Res::SubscribeLastPriceResponse(r) => {
-                log::debug!(":: Subscribe last price {:?}", r);
+                log::debug!(":: Subscribe last price {r:?}");
             }
             Res::Ping(_) => {}
         }
@@ -1084,7 +1084,7 @@ async fn start_transaction_stream(
     let mut transaction_stream = response.into_inner();
 
     while let Some(msg) = transaction_stream.message().await.unwrap() {
-        log::debug!("---- TS: {:?}", msg);
+        log::debug!("---- TS: {msg:?}");
         // TODO:
         // короче здесь я получаю транзакции, а надо собрать
         // OrderEvent и его отправить
@@ -2285,12 +2285,12 @@ mod tests {
         while let Some(e) = rx.recv().await {
             match e {
                 Event::Bar(e) => {
-                    log::debug!("receive {}", e);
+                    log::debug!("receive {e}");
                     assert_eq!(e.figi, *sber.figi());
                     bar -= 1;
                 }
                 Event::Tic(e) => {
-                    log::debug!("receive {}", e);
+                    log::debug!("receive {e}");
                     assert_eq!(e.figi, *sber.figi());
                     tic -= 1;
                 }

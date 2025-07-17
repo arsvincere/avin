@@ -83,7 +83,7 @@ impl Share {
         // create shares from dir name (ticker)
         for dir in dirs.iter() {
             let ticker = Cmd::name(dir).unwrap();
-            let s = format!("MOEX_SHARE_{}", ticker);
+            let s = format!("MOEX_SHARE_{ticker}");
             let share = Share::new(&s).unwrap();
             shares.push(share);
         }
@@ -331,7 +331,7 @@ impl Share {
                 Ok(())
             }
             Err(err) => {
-                log::error!("{}", err);
+                log::error!("{err}");
                 panic!();
             }
         }
@@ -366,7 +366,7 @@ impl Share {
         match self.charts.get_mut(&e.tf) {
             Some(chart) => chart.add_bar(e.bar),
             None => {
-                log::error!("Chart not loaded: {}", e);
+                log::error!("Chart not loaded: {e}");
                 panic!();
             }
         }

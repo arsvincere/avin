@@ -17,11 +17,11 @@ pub enum AvinError {
 impl std::fmt::Display for AvinError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::InvalidValue(s) => write!(f, "InvalidValue: {}", s),
-            Self::NotFound(s) => write!(f, "NotFound: {}", s),
-            Self::NotLoaded(s) => write!(f, "NotLoaded: {}", s),
-            Self::ReadError(s) => write!(f, "ReadError: {}", s),
-            Self::WriteError(s) => write!(f, "WriteError: {}", s),
+            Self::InvalidValue(s) => write!(f, "InvalidValue: {s}"),
+            Self::NotFound(s) => write!(f, "NotFound: {s}"),
+            Self::NotLoaded(s) => write!(f, "NotLoaded: {s}"),
+            Self::ReadError(s) => write!(f, "ReadError: {s}"),
+            Self::WriteError(s) => write!(f, "WriteError: {s}"),
         }
     }
 }

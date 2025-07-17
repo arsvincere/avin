@@ -259,11 +259,11 @@ fn analyse_name(
             metric.unwrap().name(),
         )
     } else {
-        format!("{} {} {} {}", NAME, tf, term, NAME)
+        format!("{NAME} {tf} {term} {NAME}")
     }
 }
 fn load_chart(iid: &Iid, tf: &TimeFrame) -> Result<Chart, AvinError> {
-    log::info!("Load chart {}", tf);
+    log::info!("Load chart {tf}");
 
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();
@@ -274,7 +274,7 @@ fn load_chart(iid: &Iid, tf: &TimeFrame) -> Result<Chart, AvinError> {
 }
 fn create_trends_df(trends: &[Trend]) -> DataFrame {
     let term = trends[0].term();
-    log::info!("Create trends dataframe {}", term);
+    log::info!("Create trends dataframe {term}");
 
     // tmp vectors for create df
     let mut begin = Vec::new();

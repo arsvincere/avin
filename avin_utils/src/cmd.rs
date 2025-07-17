@@ -114,13 +114,13 @@ impl Cmd {
 
         // open file in write mode
         let mut file = match File::create(path) {
-            Err(why) => panic!("Error create {}: {}", str_path, why),
+            Err(why) => panic!("Error create {str_path}: {why}"),
             Ok(file) => file,
         };
 
         // write bytes
         if let Err(why) = file.write_all(bytes) {
-            panic!("Error save {}: {}", str_path, why);
+            panic!("Error save {str_path}: {why}");
         }
 
         Ok(())

@@ -17,6 +17,7 @@ from datetime import timedelta as TimeDelta
 import httpx
 import moexalgo
 import polars as pl
+
 from src.exceptions import NotImplemetedCategory, TickerNotFound
 from src.manager.category import Category
 from src.manager.iid import Iid
@@ -27,7 +28,7 @@ from src.utils import Cmd, cfg, dt_to_ts, log, now, prev_month
 
 SOURCE = Source.MOEX
 MSK_OFFSET = TimeDelta(hours=3)
-MSK_TS = 3 * 60 * 60 * 1_000_000_000  # ts_nanos offset
+MSK_OFFSET_TS = 3 * 60 * 60 * 1_000_000_000  # ts_nanos offset
 AVAILIBLE = [
     MarketData.BAR_1M,
     MarketData.BAR_10M,
@@ -42,13 +43,6 @@ AVAILIBLE = [
 ]
 
 
-def _get_safe_value(df: pl.DataFrame, key: str) -> pl.Series | None:
-    """Get vaue or None if key not exists."""
-    if key in df.columns:
-        return df[key]
-    return None
-
-
 class SourceMoex:
     __auth = False
 
@@ -61,7 +55,7 @@ class SourceMoex:
         cls.__authorizate()
 
         # moex_categories = ["index", "shares", "currency", "futures"]
-        moex_categories = ["shares"]
+        moex_categories = ["index", "shares", "futures", "currency"]
         for i in moex_categories:
             df = cls.__request_instruments(i)
             category = cls.__to_avin_category(i)
@@ -76,7 +70,9 @@ class SourceMoex:
     ) -> Iid | None:
         # parse str
         exchange_str, category_str, ticker_str = s.upper().split("_")
-        assert exchange_str == "MOEX", f"Not supported {exchange_str}, only MOEX"
+        assert exchange_str == "MOEX", (
+            f"Not supported {exchange_str}, only MOEX"
+        )
         category = Category.from_str(category_str)
 
         # load cache
@@ -88,7 +84,6 @@ class SourceMoex:
         if len(df) != 1:
             raise TickerNotFound(f"Cannot find {ticker_str}")
 
-        # NOTE: MOEX not provide figi... using unique fake value
         match category:
             case Category.SHARE:
                 lotsize = df.item(0, "lotsize")
@@ -98,17 +93,22 @@ class SourceMoex:
                 step = df.item(0, "minstep")
             case Category.INDEX:
                 lotsize = 1
-                step = 10 ** (-df.item(0, "decimals"))
+                step = 10 ** -float(df.item(0, "decimals"))
             case _:
-                raise NotImplemetedCategory(f"Not implemented category {category_str}, {df}")
+                raise NotImplemetedCategory(
+                    f"Not implemented category {category_str}, {df}"
+                )
 
-        info = {"exchange": exchange_str,
-                "category": category_str,
-                "ticker": ticker_str,
-                "figi": f"figi_MOEX_{category_str}_{ticker_str}",
-                "name": df.item(0, "shortname"),
-                "lot": lotsize,
-                "step": step}
+        # NOTE: MOEX not provide figi... using unique fake value
+        info = {
+            "exchange": exchange_str,
+            "category": category_str,
+            "ticker": ticker_str,
+            "figi": f"figi_MOEX_{category_str}_{ticker_str}",
+            "name": df.item(0, "shortname"),
+            "lot": lotsize,
+            "step": step,
+        }
 
         return Iid(info)
 
@@ -202,23 +202,19 @@ class SourceMoex:
         response = market.tickers(use_dataframe=True)
         df = pl.from_pandas(response)
 
-        df = df.with_columns(
-            pl.col("lotsize").cast(pl.String).alias("lotsize")
-        )
-        df = df.with_columns(
-            pl.col("decimals").cast(pl.String).alias("decimals")
-        )
-        df = df.with_columns(
-            pl.col("minstep").cast(pl.String).alias("minstep")
-        )
-        df = df.with_columns(
-            pl.col("issuesize").cast(pl.String).alias("issuesize")
-        )
-        df = df.with_columns(
-            pl.col("listlevel").cast(pl.String).alias("listlevel")
-        )
+        match moex_category:
+            case "index":
+                return _format_indexes_info(df)
+            case "shares":
+                return _format_shares_info(df)
+            case "futures":
+                return _format_futures_info(df)
+            case "currency":
+                return _format_currencies_info(df)
 
-        return df
+        raise NotImplemetedCategory(
+            f"Not implemented category {moex_category}, {df}"
+        )
 
     @classmethod
     def __to_avin_category(cls, name: str) -> Category:
@@ -250,13 +246,11 @@ class SourceMoex:
                 return moex_ticker
 
             except httpx.ConnectError as e:
-                log.warning(f"ConnectError: {e}")
-                log.info("Try again after 3 sec")
+                log.warning(f"ConnectError: {e}. Try again after 3 sec")
                 time.sleep(3)
 
             except httpx.ConnectTimeout as e:
-                log.warning(f"ConnectTimeout: {e}")
-                log.info("Try again after 3 sec")
+                log.warning(f"ConnectTimeout: {e}. Try again after 3 sec")
                 time.sleep(3)
 
             attempt += 1
@@ -362,7 +356,7 @@ class SourceMoex:
             current = bars.item(-1, "begin")
 
         # format df
-        df = cls.__format_bars_df(bars)
+        df = _format_bars_df(bars)
 
         return df
 
@@ -388,35 +382,17 @@ class SourceMoex:
                 return pl.from_pandas(df)
 
             except httpx.ConnectError as e:
-                log.warning(f"ConnectError: {e}")
-                log.info("Try again after 3 sec")
+                log.warning(f"ConnectError: {e}. Try again after 3 sec")
                 time.sleep(3)
 
             except httpx.ConnectTimeout as e:
-                log.warning(f"ConnectTimeout: {e}")
-                log.info("Try again after 3 sec")
+                log.warning(f"ConnectTimeout: {e}. Try again after 3 sec")
                 time.sleep(3)
 
             attempt += 1
 
         log.error("Request data failed")
         exit(1)
-
-    @classmethod
-    def __format_bars_df(cls, bars: pl.DataFrame) -> pl.DataFrame:
-        df = pl.DataFrame(
-            {
-                "ts_nanos": bars["begin"].cast(pl.Int64) - MSK_TS,
-                "open": bars["open"],
-                "high": bars["high"],
-                "low": bars["low"],
-                "close": bars["close"],
-                "volume": bars["volume"].cast(pl.Int64),
-                "value": bars["value"],
-            }
-        )
-
-        return df
 
     @classmethod
     def __get_tics(
@@ -447,7 +423,7 @@ class SourceMoex:
             tics.extend(part)
 
         # format df
-        df = cls.__format_tics_df(tics)
+        df = _format_tics_df(tics)
 
         return df
 
@@ -469,13 +445,11 @@ class SourceMoex:
                 return pl.from_pandas(df)
 
             except httpx.ConnectError as e:
-                log.warning(f"ConnectError: {e}")
-                log.info("Try again after 3 sec")
+                log.warning(f"ConnectError: {e}. Try again after 3 sec")
                 time.sleep(3)
 
             except httpx.ConnectTimeout as e:
-                log.warning(f"ConnectTimeout: {e}")
-                log.info("Try again after 3 sec")
+                log.warning(f"ConnectTimeout: {e}. Try again after 3 sec")
                 time.sleep(3)
 
             attempt += 1
@@ -483,31 +457,106 @@ class SourceMoex:
         log.error("Request data failed")
         exit(1)
 
-    @classmethod
-    def __format_tics_df(cls, tics: pl.DataFrame) -> pl.DateFrame:
-        # convert date & time to timestamp
-        day = Date.today()
-        times = tics["tradetime"]
-        timestamps = list()
-        for t in times:
-            dt = DateTime.combine(day, t, tzinfo=UTC) - MSK_OFFSET
-            ts = dt_to_ts(dt)
-            timestamps.append(ts)
 
-        # format dataframe
-        df = pl.DataFrame(
-            {
-                "ts_nanos": timestamps,
-                "direction": _get_safe_value(tics, "buysell"),
-                "lots": _get_safe_value(tics, "quantity"),
-                "price": tics["price"],
-                "value": tics["value"],
-                "session": _get_safe_value(tics, "tradingsession").cast(pl.Int8) if not _get_safe_value(tics, "tradingsession") is None else None,
-                "tradeno": _get_safe_value(tics, "tradeno"),
-            }
-        )
+def _format_indexes_info(df: pl.DataFrame) -> pl.DataFrame:
+    columns = ["decimals"]
+    for name in columns:
+        df = df.with_columns(pl.col(name).cast(pl.String).alias(name))
 
-        return pl.DataFrame(df)
+    return df
+
+
+def _format_shares_info(df: pl.DataFrame) -> pl.DataFrame:
+    columns = ["lotsize", "decimals", "minstep", "issuesize", "listlevel"]
+    for name in columns:
+        df = df.with_columns(pl.col(name).cast(pl.String).alias(name))
+
+    return df
+
+
+def _format_futures_info(df: pl.DataFrame) -> pl.DataFrame:
+    columns = ["decimals", "minstep"]
+    for name in columns:
+        df = df.with_columns(pl.col(name).cast(pl.String).alias(name))
+
+    return df
+
+
+def _format_currencies_info(df: pl.DataFrame) -> pl.DataFrame:
+    columns = ["lotsize", "decimals", "minstep"]
+    for name in columns:
+        df = df.with_columns(pl.col(name).cast(pl.String).alias(name))
+
+    return df
+
+
+def _format_bars_df(bars: pl.DataFrame) -> pl.DataFrame:
+    df = pl.DataFrame(
+        {
+            "ts_nanos": bars["begin"].cast(pl.Int64) - MSK_OFFSET_TS,
+            "open": bars["open"],
+            "high": bars["high"],
+            "low": bars["low"],
+            "close": bars["close"],
+            "volume": bars["volume"].cast(pl.Int64),
+            "value": bars["value"],
+        }
+    )
+
+    return df
+
+
+def _format_tics_df(tics: pl.DataFrame) -> pl.DateFrame:
+    # format dataframe
+    df = pl.DataFrame(
+        {
+            "ts_nanos": _get_safely(tics, "ts_nanos"),
+            "direction": _get_safely(tics, "direction"),
+            "lots": _get_safely(tics, "lots"),
+            "price": tics["price"],
+            "value": _get_safely(tics, "value"),
+            "session": _get_safely(tics, "session"),
+            "tradeno": _get_safely(tics, "tradeno"),
+        }
+    )
+
+    return df
+
+
+def _get_safely(df: pl.DataFrame, key: str) -> pl.Series | None:
+    """Get value (pl.Series) or None if key not exists."""
+
+    match key:
+        case "ts_nanos":
+            # convert date & time to timestamp
+            day = Date.today()
+            times = df["tradetime"]
+            timestamps = list()
+            for t in times:
+                dt = DateTime.combine(day, t, tzinfo=UTC) - MSK_OFFSET
+                ts = dt_to_ts(dt)
+                timestamps.append(ts)
+            return pl.Series("ts_nanos", timestamps)
+        case "direction":
+            if "buysell" in df.columns:
+                return df["buysell"]
+        case "lots":
+            if "quantity" in df.columns:
+                return df["quantity"]
+        case "tradeno":
+            if "tradeno" in df.columns:
+                return df["tradeno"]
+        case "session":
+            if "tradingsession" in df.columns:
+                return df["quantity"].cast(pl.Int8)
+        case "value":
+            if "value" in df.columns:
+                return df["value"]
+            else:
+                # это фьючерс... вручную умножим lotsize=1 * lots * price
+                return df["quantity"] * df["price"]
+
+    return None
 
 
 if __name__ == "__main__":

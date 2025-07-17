@@ -76,7 +76,7 @@ impl AssetList {
             match result {
                 Ok(asset) => assets.push(asset),
                 Err(why) => {
-                    let msg = format!("line number {}, {}", n, why);
+                    let msg = format!("line number {n}, {why}");
                     return Err(msg);
                 }
             };

@@ -36,9 +36,9 @@ impl Event {
 impl std::fmt::Display for Event {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Event::Bar(e) => write!(f, "Event={}", e),
-            Event::Tic(e) => write!(f, "Event={}", e),
-            Event::Order(e) => write!(f, "Event={}", e),
+            Event::Bar(e) => write!(f, "Event={e}"),
+            Event::Tic(e) => write!(f, "Event={e}"),
+            Event::Order(e) => write!(f, "Event={e}"),
         }
     }
 }

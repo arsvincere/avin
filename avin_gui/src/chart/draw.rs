@@ -62,10 +62,10 @@ impl ChartDraw for Chart {
         match self.last_price() {
             Some(last_price) => {
                 let pct = (price - last_price) / last_price * 100.0;
-                format!(" {}\n {:.2}%\n {}", name, pct, price)
+                format!(" {name}\n {pct:.2}%\n {price}")
             }
             None => {
-                format!(" {}\n __.__%\n {}", name, price)
+                format!(" {name}\n __.__%\n {price}")
             }
         }
     }
@@ -150,7 +150,7 @@ impl ChartDraw for Chart {
             let y1 = trend.end().price;
 
             // create trend line
-            let info = format!("{}", trend);
+            let info = format!("{trend}");
             let l = Line::new(info, vec![[x0, y0], [x1, y1]])
                 .color(color)
                 .style(LineStyle::Dashed { length: 10.0 });
@@ -181,7 +181,7 @@ impl ChartDraw for Chart {
             let y1 = trend.end().price;
 
             // create trend line
-            let info = format!("{}", trend);
+            let info = format!("{trend}");
             let l = Line::new(info, vec![[x0, y0], [x1, y1]]).color(color);
 
             // add line on plot
@@ -336,7 +336,7 @@ impl FootprintDraw for Footprint {
             let x = (x1 + x0) / 2.0;
             let y = 0.0;
             let y_buy = cluster.val_b;
-            let y_sell = cluster.val_s * -1.0;
+            let y_sell = -cluster.val_s;
 
             // create buy / sell bars
             let b = Line::new("", vec![[x, y], [x, y_buy]]).color(theme.bull);

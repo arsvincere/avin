@@ -351,7 +351,7 @@ fn create_path(iid: &Iid, analyse_name: &str) -> PathBuf {
 
     path.push("ANALYSE");
 
-    let analyse_name = format!("{}.pqt", analyse_name);
+    let analyse_name = format!("{analyse_name}.pqt");
     for part in analyse_name.split(' ') {
         path.push(part);
     }

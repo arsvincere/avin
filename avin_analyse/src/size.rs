@@ -49,7 +49,7 @@ impl Size {
             97.0..99.0 => Size::AnomalBig,
             99.0..100.01 => Size::GreatestBig, // 100.01 - погрешность f64...
             _ => {
-                log::error!("Invalid value {}", value);
+                log::error!("Invalid value {value}");
                 panic!();
             }
         }
@@ -175,7 +175,7 @@ impl Sz {
             70.0..90.0 => Sz::L,
             90.0..100.01 => Sz::XL, // 100.01 - погрешность f64...
             _ => {
-                log::error!("Invalid value {}", value);
+                log::error!("Invalid value {value}");
                 panic!();
             }
         }

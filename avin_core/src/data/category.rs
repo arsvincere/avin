@@ -24,7 +24,7 @@ impl From<&str> for Category {
     fn from(value: &str) -> Self {
         match value.to_uppercase().as_str() {
             "SHARE" => Category::SHARE,
-            _ => panic!("Invalid category: {}", value),
+            _ => panic!("Invalid category: {value}"),
         }
     }
 }

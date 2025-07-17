@@ -59,7 +59,7 @@ impl From<&str> for MarketData {
             "BAR_W" => MarketData::BAR_W,
             "BAR_M" => MarketData::BAR_M,
             "TIC" => MarketData::TIC,
-            _ => panic!("Invalid value for MarketData: {}", value),
+            _ => panic!("Invalid value for MarketData: {value}"),
         }
     }
 }

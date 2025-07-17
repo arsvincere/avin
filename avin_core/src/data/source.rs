@@ -31,7 +31,7 @@ impl From<&str> for Source {
         match value.to_uppercase().as_str() {
             "MOEX" => Source::MOEX,
             "TINKOFF" => Source::TINKOFF,
-            _ => panic!("Invalid value for Source: {}", value),
+            _ => panic!("Invalid value for Source: {value}"),
         }
     }
 }

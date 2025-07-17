@@ -16,6 +16,7 @@ from src.utils import log
 
 class Category(enum.Enum):
     """All categories enum."""
+
     CURRENCY = 1
     INDEX = 2
     SHARE = 3
@@ -39,4 +40,6 @@ class Category(enum.Enum):
         """
         if attr := getattr(cls, string.upper(), None):
             return attr
-        raise NotImplemetedCategory(f"Category not implemented. Choice from {cls.__members__.keys()}")
+        raise NotImplemetedCategory(
+            f"Category not implemented. Choice from {cls.__members__.keys()}"
+        )

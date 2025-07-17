@@ -431,7 +431,7 @@ impl VirtualBroker {
             self.queue.push_back(e);
         } else {
             log::error!("How you fuck want to cancel not posted order?!");
-            log::error!("Action: {:#?}", action);
+            log::error!("Action: {action:#?}");
             unreachable!();
         }
     }

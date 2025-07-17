@@ -40,7 +40,7 @@ impl From<&str> for Direction {
             "s" => Direction::Sell,
             "B" => Direction::Buy,
             "S" => Direction::Sell,
-            _ => panic!("Invalid value for direction: {}", value),
+            _ => panic!("Invalid value for direction: {value}"),
         }
     }
 }

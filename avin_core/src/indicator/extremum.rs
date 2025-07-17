@@ -252,7 +252,7 @@ impl ExtremumIndicator for Chart {
         // get indicator data
         let extr_data = match self.get_ind(ID) {
             Some(Indicator::Extremum(data)) => data,
-            None => panic!("Chart don't have indicator {}", NAME),
+            None => panic!("Chart don't have indicator {NAME}"),
         };
 
         if n == 0 {
@@ -282,7 +282,7 @@ impl ExtremumIndicator for Chart {
         // get indicator data
         let extr_data = match self.get_ind(ID) {
             Some(Indicator::Extremum(data)) => data,
-            None => panic!("Chart don't have indicator {}", NAME),
+            None => panic!("Chart don't have indicator {NAME}"),
         };
 
         if n == 0 {
@@ -311,7 +311,7 @@ impl ExtremumIndicator for Chart {
         // get indicator data
         let extr_data = match self.get_ind(ID) {
             Some(Indicator::Extremum(data)) => data,
-            None => panic!("Chart don't have indicator {}", NAME),
+            None => panic!("Chart don't have indicator {NAME}"),
         };
 
         match term {
@@ -326,7 +326,7 @@ impl ExtremumIndicator for Chart {
         // get indicator data
         let extr_data = match self.get_ind(ID) {
             Some(Indicator::Extremum(data)) => data,
-            None => panic!("Chart don't have indicator {}", NAME),
+            None => panic!("Chart don't have indicator {NAME}"),
         };
 
         match term {

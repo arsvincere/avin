@@ -5,6 +5,7 @@ arch/
 build/
 dist/
 target/
+venv/
 
 # Byte-compiled / optimized / DLL files
 .mypy_cache/
@@ -26,10 +27,3 @@ dev
 log/
 tmp/
 usr/
-
-# config
-res/default_config.toml
-
-# personal files / scripts
-avin_data/upload_script.py
-avin_data/venv
