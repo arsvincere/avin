@@ -18,7 +18,7 @@ use avin_utils::{AvinError, Cmd};
 use crate::{Size, Sz};
 
 pub trait Analyse {
-    fn analyse(iid: &Iid, tf: &TimeFrame) -> Result<(), AvinError>;
+    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError>;
     fn analyse_all() -> Result<(), AvinError>;
     fn save(iid: &Iid, name: &str, df: &mut DataFrame) {
         let path = create_path(iid, name);

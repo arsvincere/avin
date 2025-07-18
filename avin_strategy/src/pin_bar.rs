@@ -126,7 +126,7 @@ impl PinBarLong {
     fn observe(&mut self, asset: &Asset) {
         // берем дневной график
         let tf = TimeFrame::Day;
-        let chart = asset.chart(&tf).unwrap();
+        let chart = asset.chart(tf).unwrap();
 
         // позавчерашний бар есть в графике
         let b2 = chart.bar(2);

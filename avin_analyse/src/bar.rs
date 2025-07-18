@@ -57,7 +57,7 @@ impl Feat {
 }
 
 impl Analyse for Bar {
-    fn analyse(iid: &Iid, tf: &TimeFrame) -> Result<(), AvinError> {
+    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
 
         // load chart
@@ -86,7 +86,7 @@ impl Analyse for Bar {
 
         for share in shares.iter() {
             for tf in timeframes.iter() {
-                Self::analyse(share.iid(), tf).unwrap();
+                Self::analyse(share.iid(), *tf).unwrap();
             }
         }
 
@@ -191,7 +191,7 @@ impl BarAnalytic for Chart {
 
 // analyse
 fn analyse_name(
-    tf: &TimeFrame,
+    tf: TimeFrame,
     feat: Option<&Feat>,
     metric: Option<&Metric>,
 ) -> String {
@@ -207,7 +207,7 @@ fn analyse_name(
         format!("{NAME} {tf} {NAME}")
     }
 }
-fn load_chart(iid: &Iid, tf: &TimeFrame) -> Result<Chart, String> {
+fn load_chart(iid: &Iid, tf: TimeFrame) -> Result<Chart, String> {
     log::info!("Load chart {tf}");
 
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
@@ -252,7 +252,7 @@ fn create_df(chart: &Chart) -> DataFrame {
     )
     .unwrap()
 }
-fn analyse_feat(iid: &Iid, vol_df: &DataFrame, tf: &TimeFrame, feat: &Feat) {
+fn analyse_feat(iid: &Iid, vol_df: &DataFrame, tf: TimeFrame, feat: &Feat) {
     log::info!("Analyse feat {}", feat.name());
 
     let metric = Metric::Cdf;

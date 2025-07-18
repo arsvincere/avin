@@ -42,14 +42,14 @@ impl Chart {
     /// let b2 = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10, None);
     /// let bars = vec![b1, b2];
     ///
-    /// let chart = Chart::new(&iid, &tf, bars);
+    /// let chart = Chart::new(&iid, tf, bars);
     ///
     /// assert_eq!(chart.ticker(), "SBER");
     /// ```
-    pub fn new(iid: &Iid, tf: &TimeFrame, bars: Vec<Bar>) -> Self {
+    pub fn new(iid: &Iid, tf: TimeFrame, bars: Vec<Bar>) -> Self {
         Self {
             iid: iid.clone(),
-            tf: *tf,
+            tf,
             bars,
             now: None,
             ind: HashMap::new(),
@@ -60,7 +60,7 @@ impl Chart {
     ///
     /// # ru
     /// Создает пустой график, без баров. Используется в тестере.
-    pub fn empty(iid: &Iid, tf: &TimeFrame) -> Self {
+    pub fn empty(iid: &Iid, tf: TimeFrame) -> Self {
         Self::new(iid, tf, Vec::new())
     }
     /// Loading chart with bars from half-open interval [begin, end)
@@ -75,7 +75,7 @@ impl Chart {
     /// см. репозитарий [проекта](https://github.com/arsvincere/avin).
     pub fn load(
         iid: &Iid,
-        tf: &TimeFrame,
+        tf: TimeFrame,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<Self, AvinError> {
@@ -111,8 +111,8 @@ impl Chart {
     ///
     /// # ru
     /// Возвращает ссылку на таймфрейм.
-    pub fn tf(&self) -> &TimeFrame {
-        &self.tf
+    pub fn tf(&self) -> TimeFrame {
+        self.tf
     }
     /// Return bars of chart.
     ///
@@ -345,7 +345,7 @@ mod tests {
             Manager::load(&iid, &tf.market_data(), &begin, &end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
 
-        let chart = Chart::new(&iid, &tf, bars);
+        let chart = Chart::new(&iid, tf, bars);
         assert_eq!(chart.iid, iid);
         assert_eq!(chart.tf, tf);
         assert_eq!(chart.bars.len(), 256);
@@ -356,7 +356,7 @@ mod tests {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
 
-        let chart = Chart::empty(&iid, &tf);
+        let chart = Chart::empty(&iid, tf);
         assert_eq!(chart.tf, tf);
         assert_eq!(chart.bars.len(), 0);
         assert!(chart.now.is_none());
@@ -368,8 +368,8 @@ mod tests {
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-09-01");
 
-        let chart = Chart::load(&iid, &tf, &begin, &end).unwrap();
-        assert_eq!(chart.tf(), &tf);
+        let chart = Chart::load(&iid, tf, &begin, &end).unwrap();
+        assert_eq!(chart.tf(), tf);
         assert_eq!(chart.bars().len(), 23);
         assert!(chart.now().is_none());
 
@@ -385,7 +385,7 @@ mod tests {
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
+        let chart = share.load_chart_period(tf, &begin, &end).unwrap();
 
         let from = utils::str_date_to_utc("2024-12-23")
             .timestamp_nanos_opt()
@@ -404,7 +404,7 @@ mod tests {
 
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-08-02");
-        let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
+        let chart = share.load_chart_period(tf, &begin, &end).unwrap();
 
         // выборка с 12:30 до 15:30
         // должно войти 3 бара 13:00 14:00 15:00

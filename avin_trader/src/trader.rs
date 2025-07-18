@@ -96,7 +96,7 @@ impl Trader {
         log::info!(":: Trader load charts {asset}");
 
         for tf in TimeFrame::all() {
-            asset.load_chart_empty(&tf);
+            asset.load_chart_empty(tf);
         }
     }
 }

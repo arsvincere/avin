@@ -92,7 +92,7 @@ impl Tester {
 
         for tf in TimeFrame::all() {
             log::info!("   {tf}");
-            asset.load_chart_empty(&tf);
+            asset.load_chart_empty(tf);
         }
     }
 }

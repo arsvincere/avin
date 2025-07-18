@@ -37,6 +37,18 @@ impl TestToolbar {
             ui.separator();
         });
     }
+    pub fn is_trades(&self) -> bool {
+        self.trades
+    }
+    pub fn is_orders(&self) -> bool {
+        self.orders
+    }
+    pub fn is_operations(&self) -> bool {
+        self.operations
+    }
+    pub fn is_transactions(&self) -> bool {
+        self.transactions
+    }
 }
 impl Default for TestToolbar {
     fn default() -> Self {

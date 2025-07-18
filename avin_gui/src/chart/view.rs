@@ -15,10 +15,9 @@ use avin_core::{
 };
 use avin_utils::CFG;
 
-use crate::chart::draw::{ChartDraw, FootprintDraw};
+use crate::chart::toolbar::ChartToolbar;
+use crate::draw::{ChartDraw, FootprintDraw};
 use crate::theme::Theme;
-
-use super::toolbar::ChartToolbar;
 
 pub struct ChartView {
     scale_x: bool,

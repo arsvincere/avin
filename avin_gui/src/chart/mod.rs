@@ -5,11 +5,10 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod draw;
 mod toolbar;
 mod view;
 mod widget;
 
 pub use toolbar::ChartToolbar;
-pub use view::ChartView;
+// pub use view::ChartView;
 pub use widget::ChartWidget;

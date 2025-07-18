@@ -182,6 +182,8 @@ impl OpenedTrade {
             kind: self.kind,
             iid: self.iid,
             orders: self.orders,
+            stop_loss: self.stop_loss,
+            take_profit: self.take_profit,
         };
 
         // NOTE: проверка что трейд действительно закрыт
@@ -329,6 +331,8 @@ pub struct ClosedTrade {
     pub kind: TradeKind,
     pub iid: Iid,
     pub orders: Vec<Order>,
+    pub stop_loss: Option<PostedStopOrder>,
+    pub take_profit: Option<PostedStopOrder>,
 }
 impl ClosedTrade {
     pub fn is_long(&self) -> bool {
@@ -487,6 +491,12 @@ impl ClosedTrade {
         total
     }
 
+    pub fn avg(&self) -> f64 {
+        match self.kind {
+            TradeKind::Long => self.buy_avg(),
+            TradeKind::Short => self.sell_avg(),
+        }
+    }
     pub fn buy_avg(&self) -> f64 {
         self.buy_value() / self.buy_quantity() as f64
     }
@@ -504,10 +514,24 @@ impl ClosedTrade {
             None => panic!("closed trade without operation in order"),
         }
     }
+    pub fn open_ts(&self) -> i64 {
+        let o = self.orders.first().unwrap();
+        match o.operation() {
+            Some(operation) => operation.ts_nanos,
+            None => panic!("closed trade without operation in order"),
+        }
+    }
     pub fn close_dt(&self) -> DateTime<Utc> {
         let o = self.orders.last().unwrap();
         match o.operation() {
             Some(operation) => operation.dt(),
+            None => panic!("closed trade without operation in order"),
+        }
+    }
+    pub fn close_ts(&self) -> i64 {
+        let o = self.orders.last().unwrap();
+        match o.operation() {
+            Some(operation) => operation.ts_nanos,
             None => panic!("closed trade without operation in order"),
         }
     }

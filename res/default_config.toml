@@ -61,22 +61,17 @@
 
 [terminal]
 
-[gui.chart]
-    bottom_pane_height = 200.0
-    left_pane_width = 200.0
-    right_pane_width = 200.0
-
 [gui.color]
     # Cursor crosshair
     cross = "#282727"
     cross_opacity = 1.0
 
     # Bars with close < open
-    bear = "#FF5D62"
+    bear = "#C34043"
     bear_opacity = 1.0
 
     # Bars with close > open
-    bull = "#98bb6c"
+    bull = "#76946A"
     bull_opacity = 1.0
 
     # Bars with open == close
@@ -96,3 +91,18 @@
     trend_t5_opacity = 1.0
     auto_bar_opacity = true
 
+    # trades
+    trade_open = "#AAAAAA"
+    # trade_stop = "#FF5D62"
+    # trade_take = "#98BB6C"
+    trade_take = "#24C824"
+    trade_stop = "#E82424"
+
+[gui.chart]
+    bottom_pane_height = 200.0
+    left_pane_width = 200.0
+    right_pane_width = 200.0
+
+[gui.test]
+    trade_shift = 1.05 # 5% upper
+    trade_size = 5.0 # px

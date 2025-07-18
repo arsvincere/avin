@@ -45,7 +45,7 @@ impl ChartWidget {
     }
 }
 
-fn ensure_chart(asset: &mut Asset, tf: &TimeFrame) {
+fn ensure_chart(asset: &mut Asset, tf: TimeFrame) {
     match asset.chart(tf) {
         Some(_) => (),
         None => {
@@ -55,7 +55,7 @@ fn ensure_chart(asset: &mut Asset, tf: &TimeFrame) {
         }
     }
 }
-fn ensure_footprint(asset: &mut Asset, tf: &TimeFrame) {
+fn ensure_footprint(asset: &mut Asset, tf: TimeFrame) {
     // check tics
     match asset.tics() {
         Some(_) => (),

@@ -5,6 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_tester::Test;
 use chrono::{DateTime, Local};
 use egui_plot::{Line, LineStyle, MarkerShape, PlotPoint, PlotUi, Points};
 
@@ -12,8 +13,11 @@ use avin_analyse::TrendAnalytic;
 use avin_core::{
     Chart, ExtremumIndicator, Footprint,
     Term::{self, T1, T2, T3, T4, T5},
+    TimeFrame, Trade,
+    TradeKind::Long,
+    TradeKind::Short,
 };
-use avin_utils as utils;
+use avin_utils::{self as utils, CFG};
 
 use crate::theme::Theme;
 
@@ -383,6 +387,62 @@ impl FootprintDraw for Footprint {
     //         }
     //     }
     // }
+}
+
+pub trait TestDraw {
+    fn draw_trades(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame);
+}
+impl TestDraw for Test {
+    fn draw_trades(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame) {
+        for trade in self.trade_list.trades().iter() {
+            let t = match trade {
+                Trade::Closed(t) => t,
+                _ => unreachable!(),
+            };
+
+            // eval coordinate X
+            let x0 = t.open_ts() as f64;
+            let x1 = (t.close_ts() + tf.nanos()) as f64;
+            let y_opn = t.avg();
+            let y_shape = y_opn * CFG.gui.test.trade_shift;
+
+            // create shape - triangle
+            let shape = match t.kind {
+                Long => MarkerShape::Up,
+                Short => MarkerShape::Down,
+            };
+            let color = match t.kind {
+                Long => theme.trade_take,
+                Short => theme.trade_stop,
+            };
+            let points = Points::new("Long", vec![[x0, y_shape]])
+                .color(color)
+                .shape(shape)
+                .radius(CFG.gui.test.trade_size);
+            plot.points(points);
+
+            // create position avg line
+            let open_line = Line::new("", vec![[x0, y_opn], [x1, y_opn]])
+                .color(theme.trade_open);
+            plot.line(open_line);
+
+            // create stop loss line if exist
+            if let Some(stop_loss) = t.stop_loss.as_ref() {
+                let price = stop_loss.stop_price;
+                let stop_line = Line::new("", vec![[x0, price], [x1, price]])
+                    .color(theme.trade_stop);
+                plot.line(stop_line);
+            }
+
+            // create take profit line if exist
+            if let Some(take_profit) = t.take_profit.as_ref() {
+                let price = take_profit.stop_price;
+                let take_line = Line::new("", vec![[x0, price], [x1, price]])
+                    .color(theme.trade_take);
+                plot.line(take_line);
+            }
+        }
+    }
 }
 
 fn solve(x0: f64, y0: f64, x1: f64, y1: f64) -> (f64, f64) {

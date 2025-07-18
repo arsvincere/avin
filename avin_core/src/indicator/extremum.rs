@@ -742,9 +742,9 @@ mod tests {
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        share.load_chart_period(&tf, &begin, &end).unwrap();
+        share.load_chart_period(tf, &begin, &end).unwrap();
 
-        let chart = share.chart_mut(&tf).unwrap();
+        let chart = share.chart_mut(tf).unwrap();
         ExtremumIndicator::init(chart);
 
         // one real-time extremum
@@ -772,9 +772,9 @@ mod tests {
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        share.load_chart_period(&tf, &begin, &end).unwrap();
+        share.load_chart_period(tf, &begin, &end).unwrap();
 
-        let chart = share.chart_mut(&tf).unwrap();
+        let chart = share.chart_mut(tf).unwrap();
         ExtremumIndicator::init(chart);
 
         // last 3 extremums

@@ -7,6 +7,7 @@
 
 mod asset;
 mod chart;
+mod draw;
 mod terminal;
 mod tester;
 mod theme;

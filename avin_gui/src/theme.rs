@@ -19,6 +19,10 @@ pub struct Theme {
     pub t3: Color32,
     pub t4: Color32,
     pub t5: Color32,
+
+    pub trade_open: Color32,
+    pub trade_stop: Color32,
+    pub trade_take: Color32,
 }
 impl Default for Theme {
     fn default() -> Self {
@@ -50,6 +54,10 @@ impl Default for Theme {
             t5: Color32::from_hex(&c.trend_t5)
                 .unwrap()
                 .gamma_multiply(c.trend_t5_opacity),
+
+            trade_open: Color32::from_hex(&c.trade_open).unwrap(),
+            trade_stop: Color32::from_hex(&c.trade_stop).unwrap(),
+            trade_take: Color32::from_hex(&c.trade_take).unwrap(),
         }
     }
 }

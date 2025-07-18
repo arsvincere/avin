@@ -80,13 +80,13 @@ impl ChartToolbar {
     }
 
     #[inline]
-    pub fn tf(&self) -> &TimeFrame {
-        &self.tf1
+    pub fn tf(&self) -> TimeFrame {
+        self.tf1
     }
     #[inline]
     #[allow(dead_code)]
-    pub fn bg_tf(&self) -> &TimeFrame {
-        &self.tf2
+    pub fn bg_tf(&self) -> TimeFrame {
+        self.tf2
     }
     #[inline]
     pub fn is_bars(&self) -> bool {

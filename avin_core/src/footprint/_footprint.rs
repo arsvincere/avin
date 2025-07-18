@@ -45,13 +45,13 @@ impl Footprint {
             now: None,
         }
     }
-    pub fn from_tics(iid: &Iid, tf: &TimeFrame, tics: &[Tic]) -> Footprint {
+    pub fn from_tics(iid: &Iid, tf: TimeFrame, tics: &[Tic]) -> Footprint {
         assert!(!tics.is_empty());
 
         Self {
             iid: iid.clone(),
-            tf: *tf,
             clusters: Self::split(tics, tf),
+            tf,
             now: None,
         }
     }
@@ -83,7 +83,7 @@ impl Footprint {
     }
 
     // private
-    fn split(tics: &[Tic], tf: &TimeFrame) -> Vec<Cluster> {
+    fn split(tics: &[Tic], tf: TimeFrame) -> Vec<Cluster> {
         assert!(!tics.is_empty());
 
         // output clusters

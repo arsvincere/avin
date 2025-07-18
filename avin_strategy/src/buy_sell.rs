@@ -55,7 +55,7 @@ impl Strategy for BuySell {
     }
     fn process(&mut self, asset: &Asset) {
         let tf = TimeFrame::M1;
-        let chart = asset.chart(&tf).unwrap();
+        let chart = asset.chart(tf).unwrap();
         let bar = chart.now().unwrap();
 
         // log::debug!("BuySell.process {}", bar);

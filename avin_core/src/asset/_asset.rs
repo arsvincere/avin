@@ -33,16 +33,16 @@ use avin_utils::AvinError;
 /// assert_eq!(sber.name(), "Сбер Банк");
 ///
 /// let tf = TimeFrame::Day;
-/// assert!(sber.chart(&tf).is_none());
+/// assert!(sber.chart(tf).is_none());
 ///
-/// sber.load_chart(&tf).unwrap();
-/// assert!(sber.chart(&tf).is_some());
+/// sber.load_chart(tf).unwrap();
+/// assert!(sber.chart(tf).is_some());
 ///
 /// sber.load_tics().unwrap();
 /// assert!(sber.tics().is_some());
 ///
-/// sber.build_footprint(&tf).unwrap();
-/// assert!(sber.footprint(&tf).is_some());
+/// sber.build_footprint(tf).unwrap();
+/// assert!(sber.footprint(tf).is_some());
 /// ```
 pub enum Asset {
     SHARE(Share),
@@ -181,7 +181,7 @@ impl Asset {
     /// # ru
     /// Возвращает ссылку на график, или None если график заданного
     /// таймфрейма не загружен.
-    pub fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
+    pub fn chart(&self, tf: TimeFrame) -> Option<&Chart> {
         match self {
             Self::SHARE(share) => share.chart(tf),
         }
@@ -192,7 +192,7 @@ impl Asset {
     /// Возвращает мутабельную ссылку на график (например, для добавление
     /// индикаторов на график), или None, если график заданного таймфрейма
     /// не загружен.
-    pub fn chart_mut(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
+    pub fn chart_mut(&mut self, tf: TimeFrame) -> Option<&mut Chart> {
         match self {
             Self::SHARE(share) => share.chart_mut(tf),
         }
@@ -203,10 +203,7 @@ impl Asset {
     /// Загружает график с количеством баров по умолчанию (задается в
     /// конфиге пользователя). Возвращает ссылку на загруженный график.
     /// График сохраняется внутри актива.
-    pub fn load_chart(
-        &mut self,
-        tf: &TimeFrame,
-    ) -> Result<&Chart, AvinError> {
+    pub fn load_chart(&mut self, tf: TimeFrame) -> Result<&Chart, AvinError> {
         match self {
             Self::SHARE(share) => share.load_chart(tf),
         }
@@ -220,7 +217,7 @@ impl Asset {
     /// мутабельную ссылку на загруженный график.
     pub fn load_chart_mut(
         &mut self,
-        tf: &TimeFrame,
+        tf: TimeFrame,
     ) -> Result<&mut Chart, AvinError> {
         match self {
             Self::SHARE(share) => share.load_chart_mut(tf),
@@ -234,7 +231,7 @@ impl Asset {
     /// график.
     pub fn load_chart_period(
         &mut self,
-        tf: &TimeFrame,
+        tf: TimeFrame,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
@@ -246,7 +243,7 @@ impl Asset {
     ///
     /// # ru
     /// Создает пустой график для актива. Используется бэктестером.
-    pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
+    pub fn load_chart_empty(&mut self, tf: TimeFrame) -> &Chart {
         match self {
             Self::SHARE(share) => share.load_chart_empty(tf),
         }
@@ -269,7 +266,7 @@ impl Asset {
     /// Сначала нужно загрузить тиковые данные [`Asset::load_tics`], затем
     /// рассчитать кластеры для таймфрейма [`Asset::build_footprint`]. Если
     /// это не сделано, вернет None.
-    pub fn footprint(&self, tf: &TimeFrame) -> Option<&Footprint> {
+    pub fn footprint(&self, tf: TimeFrame) -> Option<&Footprint> {
         match self {
             Self::SHARE(share) => share.footprint(tf),
         }
@@ -307,7 +304,7 @@ impl Asset {
     /// тиков. Сохраняет результат.
     pub fn build_footprint(
         &mut self,
-        tf: &TimeFrame,
+        tf: TimeFrame,
     ) -> Result<(), AvinError> {
         match self {
             Self::SHARE(share) => share.build_footprint(tf),

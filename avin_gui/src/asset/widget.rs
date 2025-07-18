@@ -124,12 +124,12 @@ impl AssetWidget {
         let asset = self.asset_list.get_mut(self.current_index).unwrap();
 
         for tf in TimeFrame::all() {
-            match asset.chart(&tf).is_some() {
+            match asset.chart(tf).is_some() {
                 true => (),
                 false => {
                     log::debug!("Asset widget loading {asset} {tf}");
-                    asset.load_chart(&tf).unwrap();
-                    let chart = asset.chart_mut(&tf).unwrap();
+                    asset.load_chart(tf).unwrap();
+                    let chart = asset.chart_mut(tf).unwrap();
                     ExtremumIndicator::init(chart);
                 }
             };

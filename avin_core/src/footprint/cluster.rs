@@ -54,7 +54,7 @@ pub struct Cluster {
 }
 impl Cluster {
     // build
-    pub fn new(tics: &[Tic], tf: &TimeFrame) -> Cluster {
+    pub fn new(tics: &[Tic], tf: TimeFrame) -> Cluster {
         let open = Self::eval_open(tics);
         let high = Self::eval_high(tics);
         let low = Self::eval_low(tics);
@@ -169,7 +169,7 @@ impl Cluster {
     }
 
     // private
-    fn eval_ts(tics: &[Tic], tf: &TimeFrame) -> i64 {
+    fn eval_ts(tics: &[Tic], tf: TimeFrame) -> i64 {
         let first_tic_ts = tics.first().unwrap().ts_nanos;
 
         tf.prev_ts(first_tic_ts)
@@ -358,7 +358,7 @@ mod tests {
 
         let tf = TimeFrame::M1;
         let tics = Tic::from_df(&df).unwrap();
-        let c = Cluster::new(&tics, &tf);
+        let c = Cluster::new(&tics, tf);
         assert_eq!(c.ts_nanos, TimeFrame::M1.prev_ts(1749241800000000000));
         assert_eq!(c.open, 125.83);
         assert_eq!(c.high, 125.84);

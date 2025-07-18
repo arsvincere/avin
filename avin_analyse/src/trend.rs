@@ -59,7 +59,7 @@ impl Feat {
 }
 
 impl Analyse for Trend {
-    fn analyse(iid: &Iid, tf: &TimeFrame) -> Result<(), AvinError> {
+    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
 
         let mut chart = load_chart(iid, tf).unwrap();
@@ -97,7 +97,7 @@ impl Analyse for Trend {
         for share in shares.iter() {
             for tf in timeframes.iter() {
                 Trend::delete(share.iid(), NAME).unwrap();
-                Self::analyse(share.iid(), tf).unwrap();
+                Self::analyse(share.iid(), *tf).unwrap();
             }
         }
 
@@ -244,7 +244,7 @@ impl TrendAnalytic for Chart {
 
 // analyse
 fn analyse_name(
-    tf: &TimeFrame,
+    tf: TimeFrame,
     term: Term,
     feat: Option<Feat>,
     metric: Option<Metric>,
@@ -262,7 +262,7 @@ fn analyse_name(
         format!("{NAME} {tf} {term} {NAME}")
     }
 }
-fn load_chart(iid: &Iid, tf: &TimeFrame) -> Result<Chart, AvinError> {
+fn load_chart(iid: &Iid, tf: TimeFrame) -> Result<Chart, AvinError> {
     log::info!("Load chart {tf}");
 
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
@@ -316,7 +316,7 @@ fn create_trends_df(trends: &[Trend]) -> DataFrame {
 fn analyse_feat(
     iid: &Iid,
     trends: &DataFrame,
-    tf: &TimeFrame,
+    tf: TimeFrame,
     term: Term,
     feat: Feat,
 ) {
@@ -582,7 +582,7 @@ fn get_obs(chart: &Chart, trend: &Trend, all: &DataFrame) -> DataFrame {
         obs_3
     }
 }
-fn get_step(tf: &TimeFrame) -> f64 {
+fn get_step(tf: TimeFrame) -> f64 {
     match tf {
         TimeFrame::M1 => 0.01,
         // TimeFrame::M5 => 0.05,

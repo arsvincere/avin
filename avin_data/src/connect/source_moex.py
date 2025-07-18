@@ -548,7 +548,7 @@ def _get_safely(df: pl.DataFrame, key: str) -> pl.Series | None:
                 return df["tradeno"]
         case "session":
             if "tradingsession" in df.columns:
-                return df["quantity"].cast(pl.Int8)
+                return df["tradingsession"].cast(pl.Int8)
         case "value":
             if "value" in df.columns:
                 return df["value"]

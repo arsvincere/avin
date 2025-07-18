@@ -41,16 +41,16 @@ use crate::{
 /// assert_eq!(sber.name(), "Сбер Банк");
 ///
 /// let tf = TimeFrame::Day;
-/// assert!(sber.chart(&tf).is_none());
+/// assert!(sber.chart(tf).is_none());
 ///
-/// sber.load_chart(&tf).unwrap();
-/// assert!(sber.chart(&tf).is_some());
+/// sber.load_chart(tf).unwrap();
+/// assert!(sber.chart(tf).is_some());
 ///
 /// sber.load_tics().unwrap();
 /// assert!(sber.tics().is_some());
 ///
-/// sber.build_footprint(&tf).unwrap();
-/// assert!(sber.footprint(&tf).is_some());
+/// sber.build_footprint(tf).unwrap();
+/// assert!(sber.footprint(tf).is_some());
 /// ```
 pub struct Share {
     iid: Iid,
@@ -203,8 +203,8 @@ impl Share {
     /// # ru
     /// Возвращает ссылку на график, или None если график заданного
     /// таймфрейма не загружен.
-    pub fn chart(&self, tf: &TimeFrame) -> Option<&Chart> {
-        self.charts.get(tf)
+    pub fn chart(&self, tf: TimeFrame) -> Option<&Chart> {
+        self.charts.get(&tf)
     }
     /// Return mutable chart.
     ///
@@ -212,8 +212,8 @@ impl Share {
     /// Возвращает мутабельную ссылку на график (например, для добавление
     /// индикаторов на график), или None, если график заданного таймфрейма
     /// не загружен.
-    pub fn chart_mut(&mut self, tf: &TimeFrame) -> Option<&mut Chart> {
-        self.charts.get_mut(tf)
+    pub fn chart_mut(&mut self, tf: TimeFrame) -> Option<&mut Chart> {
+        self.charts.get_mut(&tf)
     }
     /// Load chart with default bars count. Return reference of loaded chart.
     ///
@@ -221,10 +221,7 @@ impl Share {
     /// Загружает график с количеством баров по умолчанию, задается в
     /// конфиге пользователя. Возвращает ссылку на загруженный график.
     /// График сохраняется внутри актива.
-    pub fn load_chart(
-        &mut self,
-        tf: &TimeFrame,
-    ) -> Result<&Chart, AvinError> {
+    pub fn load_chart(&mut self, tf: TimeFrame) -> Result<&Chart, AvinError> {
         let end = Utc::now();
         let begin = end - tf.timedelta() * CFG.core.default_bars_count as i32;
 
@@ -239,14 +236,14 @@ impl Share {
     /// мутабельную ссылку на загруженный график.
     pub fn load_chart_mut(
         &mut self,
-        tf: &TimeFrame,
+        tf: TimeFrame,
     ) -> Result<&mut Chart, AvinError> {
         let end = Utc::now();
         let begin = end - tf.timedelta() * CFG.core.default_bars_count as i32;
 
         self.load_chart_period(tf, &begin, &end).unwrap();
 
-        Ok(self.charts.get_mut(tf).unwrap())
+        Ok(self.charts.get_mut(&tf).unwrap())
     }
     /// Load chart with bars of half-open interval [begin, end).
     ///
@@ -256,24 +253,24 @@ impl Share {
     /// график.
     pub fn load_chart_period(
         &mut self,
-        tf: &TimeFrame,
+        tf: TimeFrame,
         begin: &DateTime<Utc>,
         end: &DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
         let chart = Chart::load(&self.iid, tf, begin, end)?;
-        self.charts.insert(*tf, chart);
+        self.charts.insert(tf, chart);
 
-        Ok(self.charts[tf].as_ref())
+        Ok(self.charts[&tf].as_ref())
     }
     /// Create empty chart with given timeframe, and store in self.
     ///
     /// # ru
     /// Создает пустой график для актива. Используется бэктестером.
-    pub fn load_chart_empty(&mut self, tf: &TimeFrame) -> &Chart {
+    pub fn load_chart_empty(&mut self, tf: TimeFrame) -> &Chart {
         let chart = Chart::empty(&self.iid, tf);
-        self.charts.insert(*tf, chart);
+        self.charts.insert(tf, chart);
 
-        self.charts[tf].as_ref()
+        self.charts[&tf].as_ref()
     }
 
     /// Return vector of tics, if loaded, else None.
@@ -295,8 +292,8 @@ impl Share {
     /// Сначала нужно загрузить тиковые данные [`Share::load_tics`], затем
     /// рассчитать кластеры для таймфрейма [`Share::build_footprint`]. Если
     /// это не сделано, вернет None.
-    pub fn footprint(&self, tf: &TimeFrame) -> Option<&Footprint> {
-        self.footprints.get(tf)
+    pub fn footprint(&self, tf: TimeFrame) -> Option<&Footprint> {
+        self.footprints.get(&tf)
     }
     /// Return footprint chart
     ///
@@ -343,14 +340,14 @@ impl Share {
     /// тиков. Сохраняет результат.
     pub fn build_footprint(
         &mut self,
-        tf: &TimeFrame,
+        tf: TimeFrame,
     ) -> Result<(), AvinError> {
         if self.tics.is_empty() {
             return Err(AvinError::NotLoaded("tics".into()));
         }
 
         let footprint = Footprint::from_tics(self.iid(), tf, &self.tics);
-        self.footprints.insert(*tf, footprint);
+        self.footprints.insert(tf, footprint);
 
         Ok(())
     }
@@ -417,9 +414,9 @@ mod tests {
         let begin = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 2, 1, 0, 0, 0).unwrap();
 
-        let chart = share.load_chart_period(&tf, &begin, &end).unwrap();
+        let chart = share.load_chart_period(tf, &begin, &end).unwrap();
 
-        assert_eq!(chart.tf(), &tf);
+        assert_eq!(chart.tf(), tf);
         assert_eq!(
             chart.first().unwrap().dt(),
             Utc.with_ymd_and_hms(2025, 1, 3, 6, 0, 0).unwrap()
@@ -434,8 +431,8 @@ mod tests {
         let mut share = Share::new("moex_share_sber").unwrap();
         let tf = TimeFrame::Day;
 
-        let chart = share.load_chart(&tf).unwrap();
-        assert_eq!(chart.tf(), &tf);
+        let chart = share.load_chart(tf).unwrap();
+        assert_eq!(chart.tf(), tf);
 
         assert!(!chart.bars().is_empty());
         assert!(chart.bars().len() <= CFG.core.default_bars_count);
