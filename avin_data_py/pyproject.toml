@@ -1,6 +1,6 @@
 [project]
 name = "avin_data"
-version = "0.3.2"
+version = "0.3.6"
 description = "CLI utility for download market data"
 authors = [{name = "Alex Avin", email = "mr.alexavin@gmail.com"}]
 license = "MIT"
@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.scripts]
-avin-data = "cli:cli"
+avin-data = "avin_data.cli:cli"
 
 [build-system]
 requires = ["flit_core >=3.11,<4"]

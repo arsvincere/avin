@@ -6,5 +6,10 @@
 # LICENSE:      MIT
 # ============================================================================
 
-from src.manager import *
-from src.utils import *
+from avin_data.connect.source_moex import SourceMoex
+from avin_data.connect.source_tinkoff import SourceTinkoff
+
+__all__ = [
+    "SourceMoex",
+    "SourceTinkoff",
+]

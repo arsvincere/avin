@@ -6,7 +6,6 @@
  ****************************************************************************/
 
 use std::collections::HashMap;
-use std::path::Path;
 
 use chrono::{DateTime, Datelike, Timelike, Utc};
 use tonic::transport::{Channel, ClientTlsConfig};
@@ -952,9 +951,8 @@ impl Tinkoff {
     // private
     fn create_interceptor() -> DefaultInterceptor {
         // load token
-        let path = CFG.connect.tinkoff.as_ref().unwrap();
-        let path = Path::new(path);
-        let token = Cmd::read(path).unwrap().trim().to_string();
+        let path = CFG.connect.tinkoff();
+        let token = Cmd::read(&path).unwrap().trim().to_string();
 
         // create interceptor
         DefaultInterceptor { token }

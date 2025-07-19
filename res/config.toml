@@ -1,9 +1,16 @@
 [dir]
-    # Specify absolute path to program dir
-    root = "/home/alex/trading/"
+    # Specify the path to the working directory relative to the home folder
+    root = "trading" # == /home/_user_/trading
 
-    # Specify an absolute path to market data dir
-    data = "/home/alex/trading/data/"
+    # Specify path to market data dir
+    data = "trading/data"
+
+[connect]
+    # Path to tinkoff token
+    tinkoff = "trading/connect/tinkoff/token.txt"
+
+    # Path to moex account
+    moexalgo = "trading/connect/moex/account.txt"
 
 [usr]
     # Your local timeshift from UTC+0
@@ -30,13 +37,6 @@
     history = 5 # days
     debug = true
     info = true
-
-[connect]
-    # Path to tinkoff token
-    tinkoff = "/home/alex/trading/connect/tinkoff/token.txt"
-
-    # Path to moex account
-    moexalgo = "/home/alex/trading/connect/moex/account.txt"
 
 [data]
     # Availible formats: "parquet", "csv", "postgres"

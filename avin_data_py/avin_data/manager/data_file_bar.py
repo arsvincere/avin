@@ -10,12 +10,13 @@ from __future__ import annotations
 
 from datetime import UTC
 from datetime import datetime as DateTime
+from pathlib import Path
 
 import polars as pl
 
-from src.manager.iid import Iid
-from src.manager.market_data import MarketData
-from src.utils import Cmd, dt_to_ts, log, ts_to_dt
+from avin_data.manager.iid import Iid
+from avin_data.manager.market_data import MarketData
+from avin_data.utils import Cmd, dt_to_ts, log, ts_to_dt
 
 
 class DataFileBar:
@@ -87,7 +88,7 @@ class DataFileBar:
     def load_last(cls, iid: Iid, market_data: MarketData) -> DataFileBar:
         dir_path = cls.__create_dir_path(iid, market_data)
 
-        if not Cmd.is_exist(dir_path):
+        if not Path(dir_path).exists():
             log.error(f"Data not found: {iid} {market_data} ({dir_path})")
             exit(1)
 
@@ -98,7 +99,7 @@ class DataFileBar:
 
         last_file = files[-1]
 
-        df = Cmd.read_pqt(last_file)
+        df = Cmd.read_pqt(Path(last_file))
         data = DataFileBar(iid, market_data, df)
 
         return data
@@ -115,11 +116,11 @@ class DataFileBar:
     @classmethod
     def __create_file_path(
         cls, iid: Iid, market_data: MarketData, year: int
-    ) -> str:
+    ) -> Path:
         dir_path = cls.__create_dir_path(iid, market_data)
         file_path = Cmd.path(
             dir_path,
             f"{year}.parquet",
         )
 
-        return file_path
+        return Path(file_path)

@@ -10,17 +10,22 @@ from __future__ import annotations
 
 import enum
 
-from src.exceptions import SourceNotFound
+from avin_data.utils import CategoryNotFound
 
 
-class Source(enum.Enum):
-    """Market data source."""
+class Category(enum.Enum):
+    """All categories enum."""
 
-    MOEX = 1
-    TINKOFF = 2
+    CURRENCY = 1
+    INDEX = 2
+    SHARE = 3
+    BOND = 4
+    FUTURE = 5
+    OPTION = 6
+    ETF = 7
 
     @classmethod
-    def from_str(cls, string: str) -> Source:
+    def from_str(cls, string: str) -> Category:
         """Get enum from str.
 
         Args:
@@ -30,14 +35,11 @@ class Source(enum.Enum):
             Category Enum.
 
         Raises:
-            SourceNotFound if category not exists.
+            CategoryNotFound if category not exists.
         """
         if attr := getattr(cls, string.upper(), None):
             return attr
-        raise SourceNotFound(
-            f"Source not found. Choice from {Source._member_names_}"
+
+        raise CategoryNotFound(
+            f"Category not found. Choice from {Category._member_names_}"
         )
-
-
-if __name__ == "__main__":
-    ...

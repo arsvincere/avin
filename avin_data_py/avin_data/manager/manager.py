@@ -11,16 +11,17 @@ from __future__ import annotations
 from datetime import UTC
 from datetime import datetime as Date
 from datetime import datetime as DateTime
+from pathlib import Path
 
-from src.connect import SourceMoex, SourceTinkoff
-from src.manager.category import Category
-from src.manager.data_file_bar import DataFileBar
-from src.manager.data_file_tic import DataFileTic
-from src.manager.exchange import Exchange
-from src.manager.iid import Iid
-from src.manager.market_data import MarketData
-from src.manager.source import Source
-from src.utils import Cmd, cfg, log, now, ts_to_dt
+from avin_data.connect import SourceMoex, SourceTinkoff
+from avin_data.manager.category import Category
+from avin_data.manager.data_file_bar import DataFileBar
+from avin_data.manager.data_file_tic import DataFileTic
+from avin_data.manager.exchange import Exchange
+from avin_data.manager.iid import Iid
+from avin_data.manager.market_data import MarketData
+from avin_data.manager.source import Source
+from avin_data.utils import Cmd, cfg, log, now, ts_to_dt
 
 
 class Manager:
@@ -101,7 +102,7 @@ class Manager:
         for e in Exchange:
             for c in Category:
                 instrument_path = Cmd.path(data_dir, e.name, c.name)
-                if not Cmd.is_exist(instrument_path):
+                if not Cmd.is_exist(Path(instrument_path)):
                     continue
 
                 # dir name == ticker
@@ -113,7 +114,7 @@ class Manager:
                     # for each market data if exist
                     for md in MarketData:
                         path = Cmd.path(instrument_path, ticker, md.name)
-                        if not Cmd.is_exist(path):
+                        if not Cmd.is_exist(Path(path)):
                             continue
 
                         cls.update(Source.MOEX, iid, md)

@@ -9,8 +9,9 @@
 import logging
 import os
 from datetime import date as Date
+from pathlib import Path
 
-from src.utils.conf import cfg
+from avin_data.utils.conf import cfg
 
 __all__ = ("log", "configure_log")
 
@@ -79,7 +80,7 @@ def __config_info_log(logger, file_path):
     logger.setLevel(logging.INFO)
 
 
-def __delete_old_log_files(log_dir: str, max_files: int) -> None:  # {{{
+def __delete_old_log_files(log_dir: Path, max_files: int) -> None:
     contents = os.listdir(log_dir)
     contents = [os.path.join(log_dir, i) for i in contents]
 

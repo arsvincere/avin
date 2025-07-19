@@ -2,8 +2,9 @@
 SHELL=bash
 PYTHONPATH=
 VENV=.venv
-PY_ENV=source .venv/bin/activate && cd avin_data
-AVIN_DATA_APP=~/.local/bin/avin-data
+PY=avin_data_py
+PY_ENV=source .venv/bin/activate && cd avin_data_py
+PY_APP=~/.local/bin/avin-data
 
 .venv: ## Create python virtual environment & install requirements
 	python3 -m venv $(VENV)
@@ -11,7 +12,7 @@ AVIN_DATA_APP=~/.local/bin/avin-data
 
 requirements: .venv ## Install/Update Python project requirements
 	$(VENV)/bin/python -m pip install --upgrade pip
-	$(VENV)/bin/python -m pip install --upgrade -r avin_data/requirements.txt
+	$(VENV)/bin/python -m pip install --upgrade -r $(PY)/requirements.txt
 
 dev: .venv  ## Activate venv & start neovim for this project
 	source .venv/bin/activate
@@ -19,7 +20,7 @@ dev: .venv  ## Activate venv & start neovim for this project
 
 check: ## Run ruff, mypy clippy
 	ruff check --select I --fix
-	mypy avin_data --no-namespace-packages
+	mypy $(PY) --no-namespace-packages
 	cargo clippy
 
 fix: ## Automatically apply lint suggestions
@@ -44,14 +45,14 @@ pre-commit: ## Make check, fmt, test
 
 build: .venv ## Build the project
 	$(PY_ENV) && flit build --no-use-vcs
-	$(PY_ENV) && pyinstaller cli.py \
+	$(PY_ENV) && pyinstaller avin_data/cli.py \
 		--onefile \
 		--specpath build \
 		--name avin-data
 	cargo build --jobs 4
 
 publish: ## Publish PyPl & crates.io
-	source .venv/bin/activate && cd avin_data && flit publish
+	source .venv/bin/activate && cd $(PY) && flit publish
 	cargo publish -p avin_utils
 	cargo publish -p avin_core
 	cargo publish -p avin_analyse
@@ -64,8 +65,9 @@ publish: ## Publish PyPl & crates.io
 
 install: build ## Install the project
 	$(PY_ENV) && flit install
-	rm -rf $(AVIN_DATA_APP)
-	install -Dm755 avin_data/dist/avin-data $(AVIN_DATA_APP)
+	rm -rf $(PY_APP)
+	install -Dm755 $(PY)/dist/avin-data $(PY_APP)
+	install -Dm644 res/config.toml ~/.config/avin/config.toml
 
 doc: build ## Create and open local documentation
 	cargo doc --workspace --open --no-deps --color always --jobs 4
@@ -75,8 +77,8 @@ clean: ## Clean up caches, build artifacts, and the venv
 	rm -rf .pytest_cache/
 	rm -rf .ruff_cache/
 	rm -rf .venv/
-	rm -rf avin_data/build
-	rm -rf avin_data/dist
+	rm -rf $(PY)/build
+	rm -rf $(PY)/dist
 	ruff clean
 	cargo clean
 

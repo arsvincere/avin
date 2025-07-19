@@ -8,11 +8,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import polars as pl
 
-from src.manager.category import Category
-from src.manager.source import Source
-from src.utils import Cmd, cfg, log
+from avin_data.manager.category import Category
+from avin_data.manager.source import Source
+from avin_data.utils import Cmd, cfg, log
 
 
 class IidCache:
@@ -49,14 +51,14 @@ class IidCache:
 
         path = cache.path()
         df = cache.df()
-        Cmd.write_pqt(df, path)
+        Cmd.write_pqt(df, Path(path))
 
         log.info(f"Cache save: {path}")
 
     @classmethod
     def load(cls, source: Source, category: Category) -> IidCache:
         path = cls.__create_file_path(source, category)
-        df = Cmd.read_pqt(path)
+        df = Cmd.read_pqt(Path(path))
         cache = IidCache(source, category, df)
 
         return cache

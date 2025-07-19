@@ -11,7 +11,7 @@ from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from datetime import timezone as TimeZone
 
-from src.utils.conf import cfg
+from avin_data.utils.conf import cfg
 
 
 def dt_to_ts(dt: DateTime) -> int:

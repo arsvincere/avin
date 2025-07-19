@@ -12,8 +12,7 @@ import enum
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 
-from src.exceptions import InvalidMarketData
-from src.utils import log
+from avin_data.utils import InvalidMarketData, log
 
 
 class MarketData(enum.Enum):

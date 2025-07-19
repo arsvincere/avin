@@ -11,8 +11,8 @@ from __future__ import annotations
 from datetime import timedelta as TimeDelta
 from pathlib import Path
 
-from src.exceptions import ConfigNotFound
-from src.utils.cmd import Cmd
+from avin_data.utils.cmd import Cmd
+from avin_data.utils.exceptions import ConfigNotFound
 
 __all__ = "cfg"
 
@@ -23,32 +23,40 @@ class Configuration:
         self.__cfg = Cmd.read_toml(file_path)
 
     @property
-    def root(self) -> str:
-        return self.__cfg["dir"]["root"]
+    def root(self) -> Path:
+        return Path.home() / self.__cfg["dir"]["root"]
 
     @property
-    def data(self) -> str:
-        return self.__cfg["dir"]["data"]
+    def data(self) -> Path:
+        return Path.home() / self.__cfg["dir"]["data"]
 
     @property
-    def log(self) -> str:
-        return Cmd.path(self.root, "log")
+    def tinkoff_token(self) -> Path:
+        return Path.home() / self.__cfg["connect"]["tinkoff"]
 
     @property
-    def res(self) -> str:
-        return Cmd.path(self.root, "res")
+    def moex_account(self) -> Path:
+        return Path.home() / self.__cfg["connect"]["moexalgo"]
 
     @property
-    def tmp(self) -> str:
-        return Cmd.path(self.root, "tmp")
+    def log(self) -> Path:
+        return Path(self.root, "log")
 
     @property
-    def connect(self) -> str:
-        return Cmd.path(self.root, "connect")
+    def res(self) -> Path:
+        return Path(self.root, "res")
 
     @property
-    def cache(self) -> str:
-        return Cmd.path(self.data, "cache")
+    def tmp(self) -> Path:
+        return Path(self.root, "tmp")
+
+    @property
+    def connect(self) -> Path:
+        return Path(self.root, "connect")
+
+    @property
+    def cache(self) -> Path:
+        return Path(self.data, "cache")
 
     @property
     def log_history(self) -> int:
@@ -70,20 +78,12 @@ class Configuration:
     def dt_fmt(self) -> str:
         return self.__cfg["usr"]["dt_fmt"]
 
-    @property
-    def tinkoff_token(self) -> str:
-        return self.__cfg["connect"]["tinkoff"]
-
-    @property
-    def moex_account(self) -> str:
-        return self.__cfg["connect"]["moexalgo"]
-
     @classmethod
     def read_config(cls) -> Configuration:
         """Try find and read config
 
         First try in current dir, then in ~/.config/avin/config.toml,
-        then use defaul_config.toml from res/
+        then use config.toml from res/
 
         Returns:
             Configuration.
@@ -106,9 +106,7 @@ class Configuration:
 
         # try use default config
         path = (
-            Path(__file__).parent.parent.parent.parent
-            / "res"
-            / "default_config.toml"
+            Path(__file__).parent.parent.parent.parent / "res" / "config.toml"
         )
         if path.exists():
             return Configuration(path)

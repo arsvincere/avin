@@ -9,7 +9,7 @@
 import sys
 from datetime import datetime as DateTime
 
-sys.path.append("/home/alex/avin/avin_data")
+sys.path.append("/home/alex/avin/avin_data_py")
 from avin_data import *
 
 

@@ -9,12 +9,13 @@
 from __future__ import annotations
 
 from datetime import date as Date
+from pathlib import Path
 
 import polars as pl
 
-from src.manager.iid import Iid
-from src.manager.market_data import MarketData
-from src.utils import Cmd, log, ts_to_dt
+from avin_data.manager.iid import Iid
+from avin_data.manager.market_data import MarketData
+from avin_data.utils import Cmd, log, ts_to_dt
 
 
 class DataFileTic:
@@ -73,7 +74,7 @@ class DataFileTic:
     @classmethod
     def __create_file_path(
         cls, iid: Iid, market_data: MarketData, date: Date
-    ) -> str:
+    ) -> Path:
         file_path = Cmd.path(
             iid.path(),
             market_data.name,
@@ -81,4 +82,4 @@ class DataFileTic:
             f"{date}.parquet",
         )
 
-        return file_path
+        return Path(file_path)

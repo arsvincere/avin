@@ -17,9 +17,9 @@ pub static CFG: LazyLock<Configuration> = LazyLock::new(Configuration::find);
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Configuration {
     pub dir: DirSettings,
+    pub connect: ConnectSettings,
     pub usr: UsrSettings,
     pub log: LogSettings,
-    pub connect: ConnectSettings,
     pub data: DataSettings,
     pub core: CoreSettings,
     pub tester: TesterSettings,
@@ -72,21 +72,54 @@ pub struct DirSettings {
     data: String,
 }
 impl DirSettings {
+    pub fn root(&self) -> PathBuf {
+        let mut path = std::env::home_dir().unwrap();
+        path.push(&self.root);
+
+        path
+    }
     pub fn data(&self) -> PathBuf {
-        PathBuf::from(&self.data)
+        let mut path = std::env::home_dir().unwrap();
+        path.push(&self.data);
+
+        path
     }
     pub fn cache(&self) -> PathBuf {
-        PathBuf::from(&self.data).join("cache")
-    }
+        let mut path = self.data();
+        path.push("cache");
 
-    pub fn root(&self) -> PathBuf {
-        PathBuf::from(&self.root)
+        path
     }
     pub fn asset(&self) -> PathBuf {
-        PathBuf::from(&self.root).join("asset")
+        let mut path = self.root();
+        path.push("asset");
+
+        path
     }
     pub fn test(&self) -> PathBuf {
-        PathBuf::from(&self.root).join("test")
+        let mut path = self.root();
+        path.push("test");
+
+        path
+    }
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ConnectSettings {
+    moexalgo: Option<String>,
+    tinkoff: Option<String>,
+}
+impl ConnectSettings {
+    pub fn moexalgo(&self) -> PathBuf {
+        let mut path = std::env::home_dir().unwrap();
+        path.push(self.moexalgo.as_ref().unwrap());
+
+        path
+    }
+    pub fn tinkoff(&self) -> PathBuf {
+        let mut path = std::env::home_dir().unwrap();
+        path.push(self.tinkoff.as_ref().unwrap());
+
+        path
     }
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -104,11 +137,6 @@ pub struct LogSettings {
     pub history: u32,
     pub debug: bool,
     pub info: bool,
-}
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ConnectSettings {
-    pub moexalgo: Option<String>,
-    pub tinkoff: Option<String>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DataSettings {
@@ -177,4 +205,15 @@ pub struct GuiChartSettings {
 pub struct GuiTestSettings {
     pub trade_shift: f64,
     pub trade_size: f32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn configuration() {
+        let p = CFG.dir.root();
+        assert_eq!(p.display().to_string(), "/home/alex/trading")
+    }
 }

@@ -6,10 +6,17 @@
 # LICENSE:      MIT
 # ============================================================================
 
-from src.utils.cmd import Cmd
-from src.utils.conf import cfg
-from src.utils.logger import configure_log, log
-from src.utils.misc import (
+from avin_data.utils.cmd import Cmd
+from avin_data.utils.conf import cfg
+from avin_data.utils.exceptions import (
+    CategoryNotFound,
+    ConfigNotFound,
+    InvalidMarketData,
+    SourceNotFound,
+    TickerNotFound,
+)
+from avin_data.utils.logger import configure_log, log
+from avin_data.utils.misc import (
     dt_to_ts,
     next_month,
     now,
@@ -23,6 +30,11 @@ from src.utils.misc import (
 __all__ = (
     "Cmd",
     "cfg",
+    "CategoryNotFound",
+    "ConfigNotFound",
+    "InvalidMarketData",
+    "SourceNotFound",
+    "TickerNotFound",
     "configure_log",
     "dt_to_ts",
     "log",

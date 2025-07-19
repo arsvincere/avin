@@ -11,10 +11,10 @@ from __future__ import annotations
 import polars as pl
 import tinkoff.invest as ti
 
-from src.manager.category import Category
-from src.manager.iid_cache import IidCache
-from src.manager.source import Source
-from src.utils import Cmd, cfg, dt_to_ts, log
+from avin_data.manager.category import Category
+from avin_data.manager.iid_cache import IidCache
+from avin_data.manager.source import Source
+from avin_data.utils import Cmd, cfg, dt_to_ts, log
 
 SOURCE = Source.TINKOFF
 TARGET = ti.constants.INVEST_GRPC_API

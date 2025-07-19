@@ -8,9 +8,12 @@
 
 import sys
 from datetime import datetime as DateTime
+from datetime import timedelta as TimeDelta
+from pathlib import Path
 
-sys.path.append("/home/alex/avin/avin_data")
+sys.path.append("/home/alex/avin/avin_data_py")
 from avin_data import *
+from avin_data.utils.conf import Configuration
 
 
 def test_utc_dt():
@@ -57,3 +60,25 @@ def test_next_month():
     dt = DateTime(2023, 12, 30, 11, 16)
     dt = next_month(dt)
     assert dt == DateTime(2024, 1, 1)
+
+
+def test_configuration():
+    cfg = Configuration.read_config()
+    assert cfg.root == Path("/home/alex/trading")
+    assert cfg.data == Path("/home/alex/trading/data")
+    assert cfg.tinkoff_token == Path(
+        "/home/alex/trading/connect/tinkoff/token.txt"
+    )
+    assert cfg.moex_account == Path(
+        "/home/alex/trading/connect/moex/account.txt"
+    )
+    assert cfg.log == Path("/home/alex/trading/log")
+    assert cfg.res == Path("/home/alex/trading/res")
+    assert cfg.tmp == Path("/home/alex/trading/tmp")
+    assert cfg.connect == Path("/home/alex/trading/connect")
+    assert cfg.cache == Path("/home/alex/trading/data/cache")
+    assert cfg.log_history == 5
+    assert cfg.log_debug
+    assert cfg.log_info
+    assert cfg.offset == TimeDelta(hours=3)
+    assert cfg.dt_fmt == "%Y-%m-%d %H:%M:%S"

@@ -64,8 +64,8 @@ class Cmd:
         return dir_path
 
     @staticmethod
-    def is_exist(path: str) -> bool:
-        return os.path.exists(path)
+    def is_exist(path: Path) -> bool:
+        return path.exists()
 
     @staticmethod
     def is_file(path: str) -> bool:
@@ -186,7 +186,7 @@ class Cmd:
             file.extractall(dest_dir)
 
     @staticmethod
-    def read(file_path: str) -> str:
+    def read(file_path: Path) -> str:
         """Read file as one string"""
 
         with open(file_path, encoding="utf-8") as file:
@@ -223,7 +223,7 @@ class Cmd:
         return text
 
     @staticmethod
-    def read_text(file_path: str) -> list[str]:
+    def read_text(file_path: Path) -> list[str]:
         """Read file by row, return list[str]"""
 
         text = list()
@@ -296,14 +296,14 @@ class Cmd:
         return data
 
     @staticmethod
-    def read_pqt(path: str) -> pl.DataFrame:
+    def read_pqt(path: Path) -> pl.DataFrame:
         df = pl.read_parquet(path)
 
         return df
 
     @staticmethod
     def write_pqt(
-        df: pl.DataFrame, path: str, create_dirs: bool = True
+        df: pl.DataFrame, path: Path, create_dirs: bool = True
     ) -> None:
         if create_dirs:
             Cmd.__create_dirs_for_filepath(path)

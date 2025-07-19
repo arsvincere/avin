@@ -8,9 +8,9 @@
 
 from __future__ import annotations
 
-from src.manager.category import Category
-from src.manager.exchange import Exchange
-from src.utils import Cmd, cfg
+from avin_data.manager.category import Category
+from avin_data.manager.exchange import Exchange
+from avin_data.utils import Cmd, cfg
 
 
 class Iid:

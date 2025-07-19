@@ -1,8 +1,20 @@
+#!/usr/bin/env  python3
+# ============================================================================
+# URL:          http://avin.info
+# AUTHOR:       Alex Avin
+# E-MAIL:       mr.alexavin@gmail.com
+# LICENSE:      MIT
+# ============================================================================
+
 import click
 
-from src.exceptions import CategoryNotFound, SourceNotFound, TickerNotFound
-from src.manager import Manager, MarketData, Source
-from src.utils import log
+from avin_data.manager import Manager, MarketData, Source
+from avin_data.utils import (
+    CategoryNotFound,
+    SourceNotFound,
+    TickerNotFound,
+    log,
+)
 
 
 @click.group()
