@@ -66,7 +66,7 @@ fn load_file(
     // get path
     let mut path = iid.path();
     path.push(market_data.name());
-    path.push(format!("{year}.pqt"));
+    path.push(format!("{year}.parquet"));
 
     if !Cmd::is_exist(&path) {
         let msg = format!("{iid} {market_data}");

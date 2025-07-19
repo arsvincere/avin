@@ -77,7 +77,7 @@ fn cached_load_df(
     // create file path
     let mut path = CFG.dir.cache();
     path.push(source.name());
-    path.push(format!("{}.pqt", category.name()));
+    path.push(format!("{}.parquet", category.name()));
 
     // load parquet
     let df = Cmd::read_pqt(&path).unwrap();

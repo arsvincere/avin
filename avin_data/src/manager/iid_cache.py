@@ -66,7 +66,7 @@ class IidCache:
         cache_path = Cmd.path(
             cfg.cache,
             source.name,
-            f"{category.name}.pqt",
+            f"{category.name}.parquet",
         )
 
         return cache_path

@@ -65,7 +65,7 @@ impl DataTic {
         let mut path = iid.path();
         path.push(md.name());
         path.push(day.year().to_string());
-        path.push(format!("{}.pqt", day.format("%Y-%m-%d")));
+        path.push(format!("{}.parquet", day.format("%Y-%m-%d")));
 
         if !Cmd::is_exist(&path) {
             let msg = format!("{iid} {md}");

@@ -39,8 +39,8 @@
     moexalgo = "/home/alex/trading/connect/moex/account.txt"
 
 [data]
-    # Availible formats: "pqt", "csv", "postgres"
-    format = "pqt"
+    # Availible formats: "parquet", "csv", "postgres"
+    format = "parquet"
     # Converter rule examples:
     # { iid = "MOEX_SHARE_SBER", input = "1M", output = "5M" },
     # { iid = "MOEX_SHARE_*", input = "1M", output = "5M" },

@@ -119,7 +119,7 @@ class DataFileBar:
         dir_path = cls.__create_dir_path(iid, market_data)
         file_path = Cmd.path(
             dir_path,
-            f"{year}.pqt",
+            f"{year}.parquet",
         )
 
         return file_path

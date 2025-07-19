@@ -78,7 +78,7 @@ class DataFileTic:
             iid.path(),
             market_data.name,
             f"{date.year}",
-            f"{date}.pqt",
+            f"{date}.parquet",
         )
 
         return file_path
