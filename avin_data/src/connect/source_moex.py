@@ -18,7 +18,7 @@ import httpx
 import moexalgo
 import polars as pl
 
-from src.exceptions import NotImplemetedCategory, TickerNotFound
+from src.exceptions import CategoryNotFound, TickerNotFound
 from src.manager.category import Category
 from src.manager.iid import Iid
 from src.manager.iid_cache import IidCache
@@ -57,17 +57,36 @@ class SourceMoex:
         # moex_categories = ["index", "shares", "currency", "futures"]
         moex_categories = ["index", "shares", "futures", "currency"]
         for i in moex_categories:
-            df = cls.__request_instruments(i)
-            category = cls.__to_avin_category(i)
-            cache = IidCache(SOURCE, category, df)
+            try:
+                df = cls.__request_instruments(i)
+                category = cls.__to_avin_category(i)
+                cache = IidCache(SOURCE, category, df)
+                IidCache.save(cache)
 
-            IidCache.save(cache)
+            except httpx.ConnectError as e:
+                log.warning(f"ConnectError: {e}. Try again after 5 sec")
+                time.sleep(5)
+
+            except httpx.ConnectTimeout as e:
+                log.warning(f"ConnectTimeout: {e}. Try again after 5 sec")
+                time.sleep(5)
 
     @classmethod
     def find(
         cls,
         s: str,
-    ) -> Iid | None:
+    ) -> Iid:
+        """Get instrument id from str.
+
+        Args:
+            s: search querry. Example: "moex_share_sber", "moex_index_imoex2".
+
+        Returns:
+            Iid.
+
+        Raises:
+            TickerNotFound if not exists.
+        """
         # parse str
         exchange_str, category_str, ticker_str = s.upper().split("_")
         assert exchange_str == "MOEX", (
@@ -82,7 +101,7 @@ class SourceMoex:
         # try find ticker
         df = df.filter(pl.col("ticker") == ticker_str)
         if len(df) != 1:
-            raise TickerNotFound(f"Cannot find {ticker_str}")
+            raise TickerNotFound(f"Cannot find ticker {ticker_str}")
 
         match category:
             case Category.SHARE:
@@ -95,7 +114,7 @@ class SourceMoex:
                 lotsize = 1
                 step = 10 ** -float(df.item(0, "decimals"))
             case _:
-                raise NotImplemetedCategory(
+                raise CategoryNotFound(
                     f"Not implemented category {category_str}, {df}"
                 )
 
@@ -212,7 +231,7 @@ class SourceMoex:
             case "currency":
                 return _format_currencies_info(df)
 
-        raise NotImplemetedCategory(
+        raise CategoryNotFound(
             f"Not implemented category {moex_category}, {df}"
         )
 

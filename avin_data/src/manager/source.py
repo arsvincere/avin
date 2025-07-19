@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import enum
 
-from src.exceptions import NotImplemetedSource
+from src.exceptions import SourceNotFound
 
 
 class Source(enum.Enum):
@@ -30,12 +30,12 @@ class Source(enum.Enum):
             Category Enum.
 
         Raises:
-            NotImplemetedSource if category not exists.
+            SourceNotFound if category not exists.
         """
         if attr := getattr(cls, string.upper(), None):
             return attr
-        raise NotImplemetedSource(
-            f"Source not implemented. Choice from {cls.__members__.keys()}"
+        raise SourceNotFound(
+            f"Source not found. Choice from {Source._member_names_}"
         )
 
 

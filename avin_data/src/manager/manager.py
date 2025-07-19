@@ -29,7 +29,7 @@ class Manager:
     def cache(cls, source: Source) -> None:
         """Make cache of instruments info"""
 
-        log.info(":: Caching instruments info")
+        log.info("Manager cache")
         match source:
             case Source.MOEX:
                 SourceMoex.cache_instruments_info()
@@ -40,7 +40,7 @@ class Manager:
                 exit(1)
 
     @classmethod
-    def find(cls, s: str) -> Iid | None:
+    def find(cls, s: str) -> Iid:
         """Find instrument id"""
 
         iid_opt = SourceMoex.find(s)
@@ -58,7 +58,7 @@ class Manager:
         assert isinstance(source, Source)
         assert isinstance(iid, Iid)
         assert isinstance(market_data, MarketData)
-        log.info(f":: Download {iid.ticker()} {market_data.name}")
+        log.info(f"Download {iid.ticker()} {market_data.name}")
 
         match market_data:
             case MarketData.TIC:
@@ -77,7 +77,7 @@ class Manager:
         assert isinstance(iid, Iid)
         assert isinstance(market_data, MarketData)
         assert source == Source.MOEX
-        log.info(f":: Update {iid.ticker()} {market_data.name}")
+        log.info(f"Update {iid.ticker()} {market_data.name}")
 
         match market_data:
             case MarketData.TIC:
@@ -89,7 +89,7 @@ class Manager:
     def update_all(
         cls,
     ) -> None:
-        log.info(":: Update all market data")
+        log.info("Update all market data")
 
         # check data dir
         data_dir = cfg.data

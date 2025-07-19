@@ -1,6 +1,8 @@
 import click
 
+from src.exceptions import CategoryNotFound, SourceNotFound, TickerNotFound
 from src.manager import Manager, MarketData, Source
+from src.utils import log
 
 
 @click.group()
@@ -43,14 +45,16 @@ def cache(source: str):
     Пока доступны данные только с Московской биржи.
     """
 
-    match source.upper():
-        case "ALL":
-            for i in Source:
-                Manager.cache(i)
-        case "MOEX":
-            Manager.cache(Source.MOEX)
-        case "TINKOFF":
-            Manager.cache(Source.TINKOFF)
+    if source == "all":
+        for i in Source:
+            Manager.cache(i)
+        return
+
+    try:
+        s = Source.from_str(source)
+        Manager.cache(s)
+    except SourceNotFound as e:
+        log.error(e)
 
 
 @cli.command()
@@ -70,11 +74,15 @@ def find(instrument: str):
 
     """
 
-    result = Manager.find(instrument)
-    if result:
+    try:
+        result = Manager.find(instrument)
         print(result.pretty())
-    else:
-        print("not found")
+    except TickerNotFound as e:
+        log.error(e)
+    except CategoryNotFound as e:
+        log.error(e)
+    except Exception as e:
+        log.error(e)
 
 
 @cli.command()
@@ -105,16 +113,26 @@ def download(source, instrument, data, year):
     """
     ALL = ["TIC", "1M", "10M", "1H", "D", "W", "M"]
 
-    iid = Manager.find(instrument)
-    source = Source.from_str(source)
-    data = ALL if data == "all" else [data]
+    try:
+        source = Source.from_str(source)
+        iid = Manager.find(instrument)
 
-    for i in data:
-        market_data = MarketData.from_str(i)
-        if year is None:
-            Manager.download(source, iid, market_data)
-        else:
-            Manager.download(source, iid, market_data, year=int(year))
+        data = ALL if data == "all" else [data]
+        for i in data:
+            market_data = MarketData.from_str(i)
+            if year is None:
+                Manager.download(source, iid, market_data)
+            else:
+                Manager.download(source, iid, market_data, year=int(year))
+
+    except SourceNotFound as e:
+        log.error(e)
+    except TickerNotFound as e:
+        log.error(e)
+    except CategoryNotFound as e:
+        log.error(e)
+    except Exception as e:
+        log.error(e)
 
 
 @cli.command()

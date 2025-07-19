@@ -215,7 +215,7 @@ impl ChartDraw for Chart {
         };
 
         // posterior
-        let p = match self.trend_posterior_now(term) {
+        let p = match self.trend_df_now(term) {
             Some(p) => p,
             None => return,
         };
@@ -278,7 +278,7 @@ impl ChartDraw for Chart {
         };
 
         // posterior
-        let p = match self.trend_posterior_last(term) {
+        let p = match self.trend_df_last(term) {
             Some(p) => p,
             None => return,
         };

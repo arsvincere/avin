@@ -12,6 +12,7 @@ import enum
 from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 
+from src.exceptions import InvalidMarketData
 from src.utils import log
 
 
@@ -197,12 +198,13 @@ class MarketData(enum.Enum):
             "OB_STATS": MarketData.OB_STATS,
         }
 
-        result = types.get(string.upper())
-        if result is None:
-            log.error(f"Invalid market data name: {string}")
-            exit(1)
+        if t := types.get(string.upper()):
+            return t
 
-        return result
+        raise InvalidMarketData(
+            f"Invalid market data name: '{string}'. "
+            f"Choice from {MarketData._member_names_}"
+        )
 
 
 if __name__ == "__main__":

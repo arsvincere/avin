@@ -95,8 +95,11 @@ impl Analyse for Trend {
         let timeframes = TimeFrame::all();
 
         for share in shares.iter() {
+            // remove old analyse
+            Trend::delete(share.iid(), NAME).unwrap();
+
+            // create new analyse for each timeframe
             for tf in timeframes.iter() {
-                Trend::delete(share.iid(), NAME).unwrap();
                 Self::analyse(share.iid(), *tf).unwrap();
             }
         }
@@ -119,8 +122,8 @@ pub trait TrendAnalytic: ExtremumIndicator {
     fn trend_speed_cdf(&self, trend: &Trend) -> Option<f64>;
     fn trend_vol_cdf(&self, trend: &Trend) -> Option<f64>;
 
-    fn trend_posterior_now(&self, term: Term) -> Option<DataFrame>;
-    fn trend_posterior_last(&self, term: Term) -> Option<DataFrame>;
+    fn trend_df_now(&self, term: Term) -> Option<DataFrame>;
+    fn trend_df_last(&self, term: Term) -> Option<DataFrame>;
 }
 impl TrendAnalytic for Chart {
     fn init(&mut self) {}
@@ -190,7 +193,7 @@ impl TrendAnalytic for Chart {
         }
     }
 
-    fn trend_posterior_now(&self, term: Term) -> Option<DataFrame> {
+    fn trend_df_now(&self, term: Term) -> Option<DataFrame> {
         // ┌──────┬───────────┬────────────┐
         // │ abs  ┆ p         ┆ price      │
         // │ ---  ┆ ---       ┆ ---        │
@@ -215,7 +218,7 @@ impl TrendAnalytic for Chart {
 
         cached_posterior_0(self, trend)
     }
-    fn trend_posterior_last(&self, term: Term) -> Option<DataFrame> {
+    fn trend_df_last(&self, term: Term) -> Option<DataFrame> {
         // ┌──────┬───────────┬────────────┐
         // │ abs  ┆ p         ┆ price      │
         // │ ---  ┆ ---       ┆ ---        │
@@ -240,6 +243,28 @@ impl TrendAnalytic for Chart {
 
         cached_posterior_1(self, trend)
     }
+
+    // /// Return probability in current price
+    // fn trend_posterior(&self, term: Term) -> Option<f64> {
+    //     let df = self.trend_df_last(term);
+    //     // ┌──────┬───────────┬────────────┐
+    //     // │ abs  ┆ p         ┆ price      │
+    //     // │ ---  ┆ ---       ┆ ---        │
+    //     // │ f64  ┆ f64       ┆ f64        │
+    //     // ╞══════╪═══════════╪════════════╡
+    //     // │ 0.0  ┆ 99.87545  ┆ 140.75     │
+    //     // │ 0.01 ┆ 97.467479 ┆ 140.764075 │
+    //     // │ 0.02 ┆ 92.928314 ┆ 140.77815  │
+    //     // │ 0.03 ┆ 71.436479 ┆ 140.792225 │
+    //     // │ 0.04 ┆ 62.413507 ┆ 140.8063   │
+    //     // │ …    ┆ …         ┆ …          │
+    //     // │ 0.24 ┆ 1.632992  ┆ 141.0878   │
+    //     // │ 0.25 ┆ 1.480764  ┆ 141.101875 │
+    //     // │ 0.26 ┆ 1.328536  ┆ 141.11595  │
+    //     // │ 0.27 ┆ 1.079435  ┆ 141.130025 │
+    //     // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
+    //     // └──────┴───────────┴────────────┘
+    // }
 }
 
 // analyse
@@ -600,29 +625,26 @@ fn calc_posgerior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     let h_id = obs_id + 1;
     let h_id = h_id.as_materialized_series().clone();
 
-    // tmp Vec for create df
-    let mut abs = Vec::new();
-    let mut probability = Vec::new();
-
-    // x - trend abs
-    // p - probability of this abs
-    let mut x: f64 = 0.0;
-    let mut p: f64 = 100.0;
+    // tmp variables
+    let mut abs = Vec::new(); // tmp Vec for create df
+    let mut probability = Vec::new(); // tmp Vec for create df
+    let mut cur_abs: f64 = 0.0; // current trend abs
+    let mut p: f64 = 100.0; // probability of this abs
     let mut combo = all;
 
     while p >= MIN_P {
         combo = combo
             .lazy()
             .filter(col("id").is_in(lit(h_id.clone()), false))
-            .filter(col("abs").gt(lit(x)))
+            .filter(col("abs").gt(lit(cur_abs)))
             .collect()
             .unwrap();
 
         p = combo.height() as f64 / obs.height() as f64 * 100.0;
         probability.push(p);
-        abs.push(x);
+        abs.push(cur_abs);
 
-        x = utils::round(x + step, 2);
+        cur_abs = utils::round(cur_abs + step, 2);
     }
 
     df!(

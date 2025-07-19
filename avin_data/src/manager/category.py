@@ -10,8 +10,7 @@ from __future__ import annotations
 
 import enum
 
-from src.exceptions import NotImplemetedCategory
-from src.utils import log
+from src.exceptions import CategoryNotFound
 
 
 class Category(enum.Enum):
@@ -36,10 +35,11 @@ class Category(enum.Enum):
             Category Enum.
 
         Raises:
-            NotImplemetedCategory if category not exists.
+            CategoryNotFound if category not exists.
         """
         if attr := getattr(cls, string.upper(), None):
             return attr
-        raise NotImplemetedCategory(
-            f"Category not implemented. Choice from {cls.__members__.keys()}"
+
+        raise CategoryNotFound(
+            f"Category not found. Choice from {Category._member_names_}"
         )
