@@ -8,7 +8,9 @@
 use cached::SizedCache;
 use cached::proc_macro::cached;
 use chrono::{TimeZone, Utc};
-use polars::prelude::{DataFrame, IntoLazy, NamedFrom, Series, col, df, lit};
+use polars::prelude::{
+    ChunkCompareIneq, DataFrame, IntoLazy, NamedFrom, Series, col, df, lit,
+};
 use strum::{EnumIter, IntoEnumIterator};
 
 use avin_core::{
@@ -124,6 +126,7 @@ pub trait TrendAnalytic: ExtremumIndicator {
 
     fn trend_df_now(&self, term: Term) -> Option<DataFrame>;
     fn trend_df_last(&self, term: Term) -> Option<DataFrame>;
+    fn trend_posterior(&self, term: Term) -> Option<f64>;
 }
 impl TrendAnalytic for Chart {
     fn init(&mut self) {}
@@ -244,27 +247,45 @@ impl TrendAnalytic for Chart {
         cached_posterior_1(self, trend)
     }
 
-    // /// Return probability in current price
-    // fn trend_posterior(&self, term: Term) -> Option<f64> {
-    //     let df = self.trend_df_last(term);
-    //     // ┌──────┬───────────┬────────────┐
-    //     // │ abs  ┆ p         ┆ price      │
-    //     // │ ---  ┆ ---       ┆ ---        │
-    //     // │ f64  ┆ f64       ┆ f64        │
-    //     // ╞══════╪═══════════╪════════════╡
-    //     // │ 0.0  ┆ 99.87545  ┆ 140.75     │
-    //     // │ 0.01 ┆ 97.467479 ┆ 140.764075 │
-    //     // │ 0.02 ┆ 92.928314 ┆ 140.77815  │
-    //     // │ 0.03 ┆ 71.436479 ┆ 140.792225 │
-    //     // │ 0.04 ┆ 62.413507 ┆ 140.8063   │
-    //     // │ …    ┆ …         ┆ …          │
-    //     // │ 0.24 ┆ 1.632992  ┆ 141.0878   │
-    //     // │ 0.25 ┆ 1.480764  ┆ 141.101875 │
-    //     // │ 0.26 ┆ 1.328536  ┆ 141.11595  │
-    //     // │ 0.27 ┆ 1.079435  ┆ 141.130025 │
-    //     // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
-    //     // └──────┴───────────┴────────────┘
-    // }
+    /// Return probability in current price
+    fn trend_posterior(&self, term: Term) -> Option<f64> {
+        let price = self.last_price()?;
+        let df = self.trend_df_last(term)?;
+        // ┌──────┬───────────┬────────────┐
+        // │ abs  ┆ p         ┆ price      │
+        // │ ---  ┆ ---       ┆ ---        │
+        // │ f64  ┆ f64       ┆ f64        │
+        // ╞══════╪═══════════╪════════════╡
+        // │ 0.0  ┆ 99.87545  ┆ 140.75     │
+        // │ 0.01 ┆ 97.467479 ┆ 140.764075 │
+        // │ 0.02 ┆ 92.928314 ┆ 140.77815  │
+        // │ 0.03 ┆ 71.436479 ┆ 140.792225 │
+        // │ 0.04 ┆ 62.413507 ┆ 140.8063   │
+        // │ …    ┆ …         ┆ …          │
+        // │ 0.24 ┆ 1.632992  ┆ 141.0878   │
+        // │ 0.25 ┆ 1.480764  ┆ 141.101875 │
+        // │ 0.26 ┆ 1.328536  ┆ 141.11595  │
+        // │ 0.27 ┆ 1.079435  ┆ 141.130025 │
+        // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
+        // └──────┴───────────┴────────────┘
+
+        let mask = df.column("price").unwrap().f64().unwrap().gt(price);
+        let df = df.filter(&mask).unwrap();
+
+        if df.is_empty() {
+            None
+        } else {
+            Some(
+                df.column("p")
+                    .unwrap()
+                    .as_materialized_series()
+                    .first()
+                    .value()
+                    .try_extract::<f64>()
+                    .unwrap(),
+            )
+        }
+    }
 }
 
 // analyse
