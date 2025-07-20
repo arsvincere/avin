@@ -314,7 +314,7 @@ impl Share {
     ///
     /// # ru
     /// Загружает тиковые данные по активу.
-    pub fn load_tics(&mut self) -> Result<(), String> {
+    pub fn load_tics(&mut self) -> Result<(), AvinError> {
         let begin = Utc::now().with_time(NaiveTime::MIN).unwrap();
         let end = Utc::now();
 
@@ -342,10 +342,6 @@ impl Share {
         &mut self,
         tf: TimeFrame,
     ) -> Result<(), AvinError> {
-        if self.tics.is_empty() {
-            return Err(AvinError::NotLoaded("tics".into()));
-        }
-
         let footprint = Footprint::from_tics(self.iid(), tf, &self.tics);
         self.footprints.insert(tf, footprint);
 

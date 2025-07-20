@@ -292,7 +292,7 @@ impl Asset {
     ///
     /// # ru
     /// Загружает тиковые данные по активу.
-    pub fn load_tics(&mut self) -> Result<(), String> {
+    pub fn load_tics(&mut self) -> Result<(), AvinError> {
         match self {
             Self::SHARE(share) => share.load_tics(),
         }

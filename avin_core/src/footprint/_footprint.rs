@@ -36,8 +36,6 @@ impl Footprint {
         tf: &TimeFrame,
         clusters: Vec<Cluster>,
     ) -> Footprint {
-        assert!(!clusters.is_empty());
-
         Self {
             iid: iid.clone(),
             tf: *tf,
@@ -46,8 +44,6 @@ impl Footprint {
         }
     }
     pub fn from_tics(iid: &Iid, tf: TimeFrame, tics: &[Tic]) -> Footprint {
-        assert!(!tics.is_empty());
-
         Self {
             iid: iid.clone(),
             clusters: Self::split(tics, tf),
@@ -84,10 +80,13 @@ impl Footprint {
 
     // private
     fn split(tics: &[Tic], tf: TimeFrame) -> Vec<Cluster> {
-        assert!(!tics.is_empty());
-
         // output clusters
         let mut clusters = Vec::new();
+
+        // return empty vec if no tics
+        if tics.is_empty() {
+            return clusters;
+        }
 
         // key func for search
         let key = |x: &Tic| x.ts_nanos;

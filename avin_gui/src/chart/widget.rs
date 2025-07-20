@@ -5,14 +5,11 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-// TODO:
-// ensure_footprint - плохо. С утра нет тиков. Надо придумать логику работы
-// когда нет тиковых данных - просто не отображать гистограмму и кластеры.
-
 use eframe::egui;
 use egui_plot::Plot;
 
-use avin_core::{Asset, ExtremumIndicator, TimeFrame};
+use avin_analyse::TrendAnalytic;
+use avin_core::{Asset, ExtremumIndicator};
 
 use super::toolbar::ChartToolbar;
 use super::view::ChartView;
@@ -42,33 +39,31 @@ impl ChartWidget {
             .show(ui, |_plot_ui| {});
     }
     fn show_chart(&mut self, ui: &mut egui::Ui, asset: &mut Asset) {
-        ensure_chart(asset, self.toolbar.tf());
-        ensure_footprint(asset, self.toolbar.tf());
+        let tf = self.toolbar.tf();
+
+        // try load chart
+        match asset.chart(tf) {
+            Some(_) => (),
+            None => {
+                asset.load_chart(tf).unwrap();
+                let chart = asset.chart_mut(tf).unwrap();
+                ExtremumIndicator::init(chart);
+                TrendAnalytic::init(chart);
+            }
+        }
+
+        // check tics
+        match asset.tics() {
+            Some(_) => (),
+            None => asset.load_tics().unwrap(),
+        };
+
+        // check footprint
+        match asset.footprint(tf) {
+            Some(_) => (),
+            None => asset.build_footprint(tf).unwrap(),
+        };
 
         self.view.draw(ui, asset, &self.toolbar);
     }
-}
-
-fn ensure_chart(asset: &mut Asset, tf: TimeFrame) {
-    match asset.chart(tf) {
-        Some(_) => (),
-        None => {
-            asset.load_chart(tf).unwrap();
-            let chart = asset.chart_mut(tf).unwrap();
-            ExtremumIndicator::init(chart);
-        }
-    }
-}
-fn ensure_footprint(asset: &mut Asset, tf: TimeFrame) {
-    // check tics
-    match asset.tics() {
-        Some(_) => (),
-        None => asset.load_tics().unwrap(),
-    };
-
-    // check footprint
-    match asset.footprint(tf) {
-        Some(_) => (),
-        None => asset.build_footprint(tf).unwrap(),
-    };
 }
