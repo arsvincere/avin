@@ -48,15 +48,12 @@ impl ChartView {
                     repeat: _,
                     modifiers: _,
                 } => {
-                    if *key == Key::D && *pressed {
-                        self.scale_x = true;
-                        self.scale_y = false;
-                    } else if *key == Key::F && *pressed {
+                    if *key == Key::F && *pressed {
                         self.scale_x = false;
                         self.scale_y = true;
                     } else {
                         self.scale_x = true;
-                        self.scale_y = true;
+                        self.scale_y = false;
                     };
                     Some(())
                 }
@@ -160,7 +157,7 @@ impl Default for ChartView {
     fn default() -> Self {
         Self {
             scale_x: true,
-            scale_y: true,
+            scale_y: false,
             theme: Theme::default(),
         }
     }
