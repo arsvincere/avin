@@ -92,8 +92,10 @@ tester:
 	cargo run --bin a-tester --jobs 4 --release
 trader:
 	cargo run --bin a-trader --jobs 4 --release
-terminal:
+e-terminal:
 	cargo run --bin a-terminal --jobs 4 --release
+terminal:
+	cargo run --bin avin_terminal --jobs 4 --release
 
 T1="\033[1m"
 T2="\033[0m"

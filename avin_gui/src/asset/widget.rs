@@ -5,12 +5,14 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_analyse::TrendAnalytic;
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
 use avin_core::{
-    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator, TimeFrame,
+    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator, Term,
+    TimeFrame,
 };
 use avin_utils::{CFG, Cmd};
 
@@ -90,6 +92,24 @@ impl AssetWidget {
             .resizable(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
             .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
+            .column(Column::remainder())
             .min_scrolled_height(0.0)
             .max_scroll_height(available_height);
         table = table.sense(egui::Sense::click());
@@ -97,6 +117,60 @@ impl AssetWidget {
             .header(20.0, |mut header| {
                 header.col(|ui| {
                     ui.strong("Ticker");
+                });
+                header.col(|ui| {
+                    ui.strong("1M-1");
+                });
+                header.col(|ui| {
+                    ui.strong("1M-2");
+                });
+                header.col(|ui| {
+                    ui.strong("1M-3");
+                });
+                header.col(|ui| {
+                    ui.strong("1M-4");
+                });
+                header.col(|ui| {
+                    ui.strong("1M-5");
+                });
+                header.col(|ui| {
+                    ui.strong("10M-1");
+                });
+                header.col(|ui| {
+                    ui.strong("10M-2");
+                });
+                header.col(|ui| {
+                    ui.strong("10M-3");
+                });
+                header.col(|ui| {
+                    ui.strong("10M-4");
+                });
+                header.col(|ui| {
+                    ui.strong("10M-5");
+                });
+                header.col(|ui| {
+                    ui.strong("1H-1");
+                });
+                header.col(|ui| {
+                    ui.strong("1H-2");
+                });
+                header.col(|ui| {
+                    ui.strong("1H-3");
+                });
+                header.col(|ui| {
+                    ui.strong("1H-4");
+                });
+                header.col(|ui| {
+                    ui.strong("1H-5");
+                });
+                header.col(|ui| {
+                    ui.strong("D-1");
+                });
+                header.col(|ui| {
+                    ui.strong("D-2");
+                });
+                header.col(|ui| {
+                    ui.strong("D-3");
                 });
             })
             .body(|body| {
@@ -108,6 +182,16 @@ impl AssetWidget {
                     }
                     row.col(|ui| {
                         ui.label(asset.ticker());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T1).unwrap()
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
                     });
                     if row.response().clicked() {
                         self.current_index = row.index();
@@ -127,10 +211,10 @@ impl AssetWidget {
             match asset.chart(tf).is_some() {
                 true => (),
                 false => {
-                    log::debug!("Asset widget loading {asset} {tf}");
                     asset.load_chart(tf).unwrap();
                     let chart = asset.chart_mut(tf).unwrap();
                     ExtremumIndicator::init(chart);
+                    TrendAnalytic::init(chart);
                 }
             };
         }
@@ -143,13 +227,16 @@ impl AssetWidget {
 
         let mut market_data = Vec::new();
         for tf in TimeFrame::all() {
+            // collect market data type
             let md = tf.market_data();
             market_data.push(md);
         }
 
+        // create action
         let action =
             Action::Subscribe(DataAction::new(iid.clone(), market_data));
-        log::debug!("Asset widget send {action}");
+
+        // send action
         match self.action_tx.send(action) {
             Ok(_) => (),
             Err(e) => log::error!("{e}"),

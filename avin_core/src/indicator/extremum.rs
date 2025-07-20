@@ -414,23 +414,27 @@ impl ExtremumData {
         if !self.upd_extr_t1(current) {
             return;
         }
-        self.upd_trends(T1, bars);
+        self.upd_trends(T1, bars); // и тренды Т1 обновляем
+
         if !self.upd_extr_tn(T2) {
             return;
         }
-        self.upd_trends(T2, bars);
+        self.upd_trends(T2, bars); // и тренды Т2 обновляем
+
         if !self.upd_extr_tn(T3) {
             return;
         }
-        self.upd_trends(T3, bars);
+        self.upd_trends(T3, bars); // и тренды Т4 обновляем
+
         if !self.upd_extr_tn(T4) {
             return;
         }
-        self.upd_trends(T4, bars);
+        self.upd_trends(T4, bars); // и тренды Т4 обновляем
+
         if !self.upd_extr_tn(T5) {
             return;
         }
-        self.upd_trends(T5, bars);
+        self.upd_trends(T5, bars); // и тренды Т5 обновляем
 
         // сохраняем время последнего обработанного бара
         self.last_ts = current.ts_nanos;

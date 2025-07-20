@@ -1,0 +1,16 @@
+[package]
+name = "avin_terminal"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+description = {workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = "../README.md"
+
+[dependencies]
+avin_core = { workspace = true }
+avin_utils = { workspace = true }
+iced = { workspace = true }
+iced_table = { workspace = true }

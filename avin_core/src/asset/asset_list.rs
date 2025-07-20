@@ -8,7 +8,7 @@
 use std::path::Path;
 
 use crate::Asset;
-use avin_utils::Cmd;
+use avin_utils::{AvinError, CFG, Cmd};
 
 /// Users asset list.
 ///
@@ -38,11 +38,12 @@ impl AssetList {
     ///
     /// # ru
     /// Загружает пользовательский список активов.
-    pub fn load(path: &Path) -> Result<Self, String> {
+    pub fn load(path: &Path) -> Result<Self, AvinError> {
         // check file existing
         if !Cmd::is_exist(path) {
             let msg = format!("file not found {}", path.display());
-            return Err(msg);
+            let e = AvinError::NotFound(msg);
+            return Err(e);
         };
 
         let text = Cmd::read(path).expect("Fail to read asset list file");
@@ -52,11 +53,19 @@ impl AssetList {
         match result {
             Err(why) => {
                 let msg = format!("file {}, {}", path.display(), why);
-                Err(msg)
+                let e = AvinError::ReadError(msg);
+                Err(e)
             }
             ok => ok,
         }
     }
+    pub fn load_name(name: &str) -> Result<Self, AvinError> {
+        let mut path = CFG.dir.asset();
+        path.push(name);
+
+        AssetList::load(&path)
+    }
+
     /// Create asset list from csv.
     ///
     /// # ru
@@ -67,7 +76,7 @@ impl AssetList {
     /// MOEX;SHARE;GAZP;
     /// MOEX;FUTURE;USDRUBF;
     /// MOEX;INDEX;IMOEX2;
-    pub fn from_csv(name: &str, csv: &str) -> Result<Self, String> {
+    pub fn from_csv(name: &str, csv: &str) -> Result<Self, AvinError> {
         let mut assets = Vec::new();
 
         for (n, line) in csv.lines().enumerate() {
@@ -77,7 +86,8 @@ impl AssetList {
                 Ok(asset) => assets.push(asset),
                 Err(why) => {
                     let msg = format!("line number {n}, {why}");
-                    return Err(msg);
+                    let e = AvinError::ReadError(msg);
+                    return Err(e);
                 }
             };
         }

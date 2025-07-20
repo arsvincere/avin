@@ -38,6 +38,17 @@ pub enum TimeFrame {
     Month,
 }
 impl TimeFrame {
+    // const ALL: &'static [Self] =
+    //     &[Self::A, Self::B, Self::C, Self::D, Self::E];
+    // pub const ALL: &'static [Self] = &[
+    //     Self::M1,
+    //     Self::M10,
+    //     Self::H1,
+    //     Self::Day,
+    //     Self::Week,
+    //     Self::Month,
+    // ];
+
     pub fn all() -> Vec<TimeFrame> {
         vec![
             TimeFrame::M1,
