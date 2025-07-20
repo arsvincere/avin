@@ -348,6 +348,79 @@ impl Share {
         Ok(())
     }
 
+    /// Change per month
+    ///
+    /// # ru
+    /// Изменение за месяц (процент тела бара, знаковое).
+    /// Если график не загружен None.
+    pub fn delta_month(&self) -> Option<f64> {
+        let chart = self.charts.get(&TimeFrame::Month)?;
+        let bar = chart.now()?;
+        let delta = bar.body().delta_p();
+
+        Some(delta)
+    }
+    /// Change per week
+    ///
+    /// # ru
+    /// Изменение за неделю (процент тела бара, знаковое).
+    /// Если график не загружен None.
+    pub fn delta_week(&self) -> Option<f64> {
+        let chart = self.charts.get(&TimeFrame::Week)?;
+        let bar = chart.now()?;
+        let delta = bar.body().delta_p();
+
+        Some(delta)
+    }
+    /// Change per day
+    ///
+    /// # ru
+    /// Изменение за день (процент тела бара, знаковое).
+    /// Если график не загружен None.
+    pub fn delta_day(&self) -> Option<f64> {
+        let chart = self.charts.get(&TimeFrame::Day)?;
+        let bar = chart.now()?;
+        let delta = bar.body().delta_p();
+
+        Some(delta)
+    }
+    /// Change per hour
+    ///
+    /// # ru
+    /// Изменение за час (процент тела бара, знаковое).
+    /// Если график не загружен None.
+    pub fn delta_1h(&self) -> Option<f64> {
+        let chart = self.charts.get(&TimeFrame::H1)?;
+        let bar = chart.now()?;
+        let delta = bar.body().delta_p();
+
+        Some(delta)
+    }
+    /// Change per 10 minutes
+    ///
+    /// # ru
+    /// Изменение за 10 минут (процент тела бара, знаковое).
+    /// Если график не загружен None.
+    pub fn delta_10m(&self) -> Option<f64> {
+        let chart = self.charts.get(&TimeFrame::M10)?;
+        let bar = chart.now()?;
+        let delta = bar.body().delta_p();
+
+        Some(delta)
+    }
+    /// Change per 1 minute
+    ///
+    /// # ru
+    /// Изменение за 1 минуту (процент тела бара, знаковое).
+    /// Если график не загружен None.
+    pub fn delta_1m(&self) -> Option<f64> {
+        let chart = self.charts.get(&TimeFrame::M1)?;
+        let bar = chart.now()?;
+        let delta = bar.body().delta_p();
+
+        Some(delta)
+    }
+
     /// Receive bar event
     ///
     /// # ru
