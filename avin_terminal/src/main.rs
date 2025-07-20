@@ -1,4 +1,6 @@
-use avin_core::AssetList;
+#![allow(unused_imports)]
+
+use avin_core::{Asset, AssetList};
 use avin_utils::CFG;
 use iced::{Theme, widget};
 
@@ -10,7 +12,7 @@ fn main() -> Result<(), iced::Error> {
 
 #[derive(Debug, Clone, Copy)]
 enum Message {
-    //
+    // AssetChanget(Asset),
 }
 struct Terminal {
     #[allow(dead_code)]
@@ -25,31 +27,34 @@ impl Default for Terminal {
 }
 
 impl Terminal {
-    fn theme(&self) -> Theme {
-        Theme::KanagawaDragon
-    }
-
     fn update(&mut self, message: Message) -> iced::Task<Message> {
-        // handle emitted messages
         match message {
             // Message::IncrementCount => self.count += 1,
             // Message::DecrementCount => self.count -= 1,
         }
-        // iced::Task::none()
     }
     fn view(&self) -> iced::Element<'_, Message> {
-        // create the View Logic (UI)
-        let header = widget::row![
-            widget::text("Ticker"),
-            widget::text("A"),
-            widget::text("Day"),
-        ]
-        .spacing(10);
+        let header = create_header();
         widget::container(header)
-            // .center_x(iced::Length::Fill)
-            // .center_y(iced::Length::Fill)
             .width(iced::Length::Shrink)
             .height(iced::Length::Shrink)
             .into()
     }
+    fn theme(&self) -> Theme {
+        Theme::KanagawaDragon
+    }
+}
+
+fn create_header() -> iced::widget::Row<'static, Message> {
+    widget::row![
+        widget::text("Ticker"),
+        widget::text("A"),
+        widget::text("Day"),
+        widget::text("1M-1"),
+        widget::text("1M-2"),
+        widget::text("1M-3"),
+        widget::text("1M-4"),
+        widget::text("1M-5"),
+    ]
+    .spacing(10)
 }
