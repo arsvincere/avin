@@ -22,8 +22,7 @@ __pycache__/
 4.*
 5.*
 Session.vim*
-avin/src/bin
-dev
+dev/
 log/
 tmp/
 usr/

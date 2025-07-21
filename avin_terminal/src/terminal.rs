@@ -1,40 +1,79 @@
+/****************************************************************************
+ * URL:         http://arsvincere.com
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
+ * LICENSE:     MIT
+ ****************************************************************************/
+
 #![allow(unused_imports)]
 
-use avin_analyse::TrendAnalytic;
 use iced::{
     Theme,
     widget::{self, column},
 };
 
-use avin_core::{Asset, AssetList, ExtremumIndicator, Term, TimeFrame};
+use avin_analyse::TrendAnalytic;
+use avin_connect::Tinkoff;
+use avin_core::{
+    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator, Term,
+    TimeFrame,
+};
 use avin_utils::CFG;
 
 use super::message::Message;
 
+type EventSender = tokio::sync::mpsc::UnboundedSender<Event>;
+type EventReceiver = tokio::sync::mpsc::UnboundedReceiver<Event>;
+type ActionSender = tokio::sync::mpsc::UnboundedSender<Action>;
+
 pub struct Terminal {
     #[allow(dead_code)]
     asset_list: AssetList,
+
+    is_connect: bool,
+    broker_tx: Option<ActionSender>,
+    event_tx: EventSender,
+    event_rx: EventReceiver,
 }
 impl Default for Terminal {
     fn default() -> Self {
+        // channel for maker events
+        let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
+
         // load asset list
         let name = &CFG.core.default_asset_list;
         let asset_list = AssetList::load_name(name).unwrap();
 
-        Self { asset_list }
+        Self {
+            asset_list,
+
+            is_connect: false,
+            broker_tx: None,
+            event_tx,
+            event_rx,
+        }
     }
 }
 impl Terminal {
     pub fn update(&mut self, message: Message) -> iced::Task<Message> {
         match message {
-            // Message::IncrementCount => self.count += 1,
-            // Message::DecrementCount => self.count -= 1,
+            Message::Connect(toggler) => {
+                self.is_connect = toggler;
+                if self.is_connect {
+                    self.connect_broker();
+                } else {
+                    self.disconnect_broker();
+                };
+            }
         }
+
+        iced::Task::none()
     }
     pub fn view(&self) -> iced::Element<'_, Message> {
+        let connect_toggler = create_connect_toggler(self.is_connect);
         let header = create_header();
 
-        let mut content = column![header].spacing(4);
+        let mut content = column![connect_toggler, header].spacing(4);
         for asset in self.asset_list.assets().iter() {
             let row = create_asset_row(asset);
             content = content.push(row);
@@ -48,8 +87,53 @@ impl Terminal {
     pub fn theme(&self) -> Theme {
         Theme::KanagawaDragon
     }
+
+    // private
+    fn connect_broker(&mut self) {
+        let broker = Tinkoff::new(self.event_tx.clone());
+        self.broker_tx = Some(broker.get_sender());
+
+        let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+
+        // start tokio main loop, broker in there
+        tokio_runtime.block_on(async {
+            start_broker(broker).await;
+        });
+
+        // subscribe market data for all asset list
+        for asset in self.asset_list.assets().iter() {
+            let iid = asset.iid();
+            let mut market_data = Vec::new();
+            for tf in TimeFrame::all() {
+                // collect market data types
+                let md = tf.market_data();
+                market_data.push(md);
+            }
+
+            // create action
+            let action =
+                Action::Subscribe(DataAction::new(iid.clone(), market_data));
+
+            self.broker_tx.as_ref().unwrap().send(action).unwrap();
+        }
+    }
+    fn disconnect_broker(&mut self) {
+        self.broker_tx = None;
+    }
 }
 
+fn create_connect_toggler(
+    state: bool,
+) -> iced::widget::Toggler<'static, Message> {
+    widget::toggler(state)
+        .label("Connect")
+        .size(10)
+        .text_size(HEADER)
+        .on_toggle(Message::Connect)
+}
 fn create_header() -> iced::widget::Row<'static, Message> {
     widget::row![
         widget::text("Ticker").size(FONT).width(TICKER),
@@ -85,8 +169,10 @@ fn create_asset_row(asset: &Asset) -> iced::widget::Row<'static, Message> {
         .size(FONT)
         .width(TICKER);
 
-    // active col
-    let active = widget::checkbox("", false).size(CHECK).text_size(FONT);
+    // // active col
+    // let active = widget::checkbox("", false)
+    //     .size(CHECK)
+    //     .text_size(FONT)
 
     // delta day col
     let delta_day = asset.delta_day().unwrap_or(0.0);
@@ -488,7 +574,7 @@ fn create_asset_row(asset: &Asset) -> iced::widget::Row<'static, Message> {
     // all row
     widget::row![
         ticker,
-        active,
+        // active,
         delta,
         posterior_1m_t1(),
         posterior_1m_t2(),
@@ -512,13 +598,30 @@ fn create_asset_row(asset: &Asset) -> iced::widget::Row<'static, Message> {
     .spacing(10)
 }
 
+async fn start_broker(mut broker: Tinkoff) {
+    broker.connect().await.unwrap();
+    log::debug!(":: Broker connected!");
+
+    broker.create_marketdata_stream().await.unwrap();
+    log::debug!(":: Data stream started!");
+
+    broker.create_transactions_stream().await.unwrap();
+    log::debug!(":: Transaction stream started!");
+
+    tokio::spawn(async move {
+        broker.start().await;
+    });
+    log::debug!(":: Broker started!");
+}
+
 // sizes
+const HEADER: u16 = 12; // header font size
 const FONT: u16 = 11; // font size
-const CHECK: u16 = 10; // check box size
+// const CHECK: u16 = 10; // check box size
 
 // column width
 const TICKER: u16 = 40;
 const ACTIVE: u16 = 15;
 const DAY: u16 = 32;
-const TFT__: u16 = 32;
+const TFT__: u16 = 40;
 const TFT_L: u16 = 50;

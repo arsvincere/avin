@@ -60,6 +60,7 @@ publish: ## Publish PyPl & crates.io
 	cargo publish -p avin_tester
 	cargo publish -p avin_connect
 	cargo publish -p avin_trader
+	cargo publish -p avin_terminal
 	cargo publish -p avin_gui
 	cargo publish -p avin
 
