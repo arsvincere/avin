@@ -33,12 +33,12 @@ pub struct Terminal {
     is_connect: bool,
     broker_tx: Option<ActionSender>,
     event_tx: EventSender,
-    event_rx: EventReceiver,
+    _event_rx: EventReceiver,
 }
 impl Default for Terminal {
     fn default() -> Self {
         // channel for maker events
-        let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
+        let (event_tx, _event_rx) = tokio::sync::mpsc::unbounded_channel();
 
         // load asset list
         let name = &CFG.core.default_asset_list;
@@ -50,7 +50,7 @@ impl Default for Terminal {
             is_connect: false,
             broker_tx: None,
             event_tx,
-            event_rx,
+            _event_rx,
         }
     }
 }
