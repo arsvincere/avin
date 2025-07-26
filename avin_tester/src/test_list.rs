@@ -1,4 +1,4 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -17,6 +17,11 @@ use super::Test;
 pub struct TestList {
     tests: Vec<Test>,
 }
+impl Default for TestList {
+    fn default() -> Self {
+        TestList::new()
+    }
+}
 impl TestList {
     pub fn new() -> Self {
         Self { tests: Vec::new() }
@@ -28,7 +33,7 @@ impl TestList {
 
         Ok(())
     }
-    pub fn load(name: &str) -> Result<TestList, AvinError> {
+    pub fn load_name(name: &str) -> Result<TestList, AvinError> {
         // create empty test list
         let mut test_list = TestList::new();
 
@@ -101,11 +106,6 @@ impl TestList {
         self.tests.clear();
     }
 }
-impl Default for TestList {
-    fn default() -> Self {
-        TestList::new()
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -133,7 +133,7 @@ mod tests {
         TestList::save(&test_list).unwrap();
 
         // load
-        let loaded = TestList::load(strategy.name()).unwrap();
+        let loaded = TestList::load_name(strategy.name()).unwrap();
         assert_eq!(test_list.tests(), loaded.tests());
 
         // delete

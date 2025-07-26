@@ -1,12 +1,12 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[derive(Debug, Clone, Copy)]
-pub enum Message {
-    // AssetChanged(Asset),
-    Connect(bool),
-}
+mod _strategy;
+mod examples;
+
+pub use _strategy::Strategy;
+pub use examples::{BuySell, PinBarLong};

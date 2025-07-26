@@ -1,4 +1,4 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -173,6 +173,17 @@ pub struct GuiSettings {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GuiColorSettings {
+    pub red: String,
+    pub orange: String,
+    pub yellow: String,
+    pub green: String,
+    pub cyan: String,
+    pub blue: String,
+    pub violet: String,
+    pub white: String,
+    pub grey: String,
+    pub black: String,
+
     pub cross: String,
     pub cross_opacity: f32,
 

@@ -1,4 +1,4 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -12,7 +12,7 @@
 //! Не надо пытаться заработать этой стратегией! Это просто пример как
 //! сделать стратегию исползуя библиотеку. Стратегия убыточна.
 
-use crate::_strategy::Strategy;
+use crate::Strategy;
 use avin_core::{
     Account, Action, Asset, Direction, Iid, MarketOrder, Order, OrderAction,
     OrderEvent, StopOrder, StopOrderKind, TimeFrame, Trade, TradeKind,

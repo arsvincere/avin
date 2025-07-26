@@ -1,17 +1,17 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
-#![allow(unused)]
+use std::path::Path;
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use avin_analyse::TrendAnalytic;
-use avin_core::Term::T1;
-use avin_core::{Asset, Chart, ExtremumIndicator, Iid, Manager, TimeFrame};
+use avin_core::{Chart, ExtremumIndicator, TimeFrame};
 use avin_utils::{AvinError, CFG, Cmd};
 
 pub trait Filter {
@@ -79,9 +79,9 @@ impl std::fmt::Display for MarkerColor {
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum MarkerSize {
-    S = 5,
-    M = 8,
-    L = 13,
+    S = 3,
+    M = 5,
+    L = 8,
 }
 impl std::fmt::Display for MarkerSize {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -94,9 +94,9 @@ impl std::fmt::Display for MarkerSize {
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Marker {
-    shape: MarkerShape,
-    color: MarkerColor,
-    size: MarkerSize,
+    pub shape: MarkerShape,
+    pub color: MarkerColor,
+    pub size: MarkerSize,
 }
 impl Marker {
     pub fn new(
@@ -117,7 +117,7 @@ pub struct ScannerResult {
     points: Vec<i64>,
 }
 impl ScannerResult {
-    fn new(
+    pub fn new(
         chart: &Chart,
         filter: impl Filter,
         marker: Marker,
@@ -131,8 +131,7 @@ impl ScannerResult {
             points,
         }
     }
-
-    fn save(result: &ScannerResult) -> Result<(), AvinError> {
+    pub fn save(result: &ScannerResult) -> Result<(), AvinError> {
         let text = toml::to_string_pretty(result).unwrap();
         let mut path = CFG.dir.scan();
         path.push(format!("{}.toml", result.scan_name));
@@ -141,14 +140,116 @@ impl ScannerResult {
 
         Ok(())
     }
-    fn load_name(name: &str) -> Result<Self, AvinError> {
-        let mut path = CFG.dir.scan();
-        path.push(format!("{name}.toml"));
-
-        let text = Cmd::read(&path).unwrap();
+    pub fn load(path: &Path) -> Result<Self, AvinError> {
+        let text = Cmd::read(path).unwrap();
         let r: ScannerResult = toml::from_str(&text).unwrap();
 
         Ok(r)
+    }
+
+    pub fn scan_name(&self) -> &String {
+        &self.scan_name
+    }
+    pub fn iid_name(&self) -> &String {
+        &self.iid_name
+    }
+    pub fn tf(&self) -> TimeFrame {
+        self.tf
+    }
+    pub fn marker(&self) -> &Marker {
+        &self.marker
+    }
+    pub fn points(&self) -> &Vec<i64> {
+        &self.points
+    }
+    pub fn begin(&self) -> DateTime<Utc> {
+        let ts = self.points.first().unwrap();
+        DateTime::from_timestamp_nanos(
+            *ts - 24 * 60 * 60 * 1_000_000_000, // -1 day
+        )
+    }
+    pub fn end(&self) -> DateTime<Utc> {
+        let ts = self.points.last().unwrap();
+        DateTime::from_timestamp_nanos(
+            *ts + 24 * 60 * 60 * 1_000_000_000, // +1 day
+        )
+    }
+}
+
+pub struct ScannerResultList {
+    scanner_results: Vec<ScannerResult>,
+}
+impl Default for ScannerResultList {
+    fn default() -> Self {
+        ScannerResultList::new()
+    }
+}
+impl ScannerResultList {
+    pub fn new() -> Self {
+        Self {
+            scanner_results: Vec::new(),
+        }
+    }
+    pub fn save(list: &ScannerResultList) -> Result<(), AvinError> {
+        for result in list.scanner_results.iter() {
+            ScannerResult::save(result).unwrap();
+        }
+
+        Ok(())
+    }
+    pub fn load_name(name: &str) -> Result<ScannerResultList, AvinError> {
+        // create empty scanner result list
+        let mut scan_list = ScannerResultList::new();
+
+        // create dir path
+        let mut dir_path = CFG.dir.scan();
+        dir_path.push(name);
+        let files = Cmd::get_files(&dir_path).unwrap();
+
+        // load scan files
+        for file in files {
+            let scan = ScannerResult::load(&file).unwrap();
+            scan_list.add(scan);
+        }
+
+        Ok(scan_list)
+    }
+    pub fn load_dir(path: &Path) -> Result<ScannerResultList, AvinError> {
+        // create empty scan list
+        let mut test_list = ScannerResultList::new();
+
+        // get scan paths of scan files
+        let files = Cmd::get_files(path).unwrap();
+
+        // load scan files
+        for file in files {
+            let scan = ScannerResult::load(&file).unwrap();
+            test_list.add(scan);
+        }
+
+        Ok(test_list)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.scanner_results.is_empty()
+    }
+    pub fn len(&self) -> usize {
+        self.scanner_results.len()
+    }
+    pub fn results(&self) -> &Vec<ScannerResult> {
+        &self.scanner_results
+    }
+    pub fn add(&mut self, result: ScannerResult) {
+        self.scanner_results.push(result);
+    }
+    pub fn get(&self, index: usize) -> Option<&ScannerResult> {
+        self.scanner_results.get(index)
+    }
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut ScannerResult> {
+        self.scanner_results.get_mut(index)
+    }
+    pub fn clear(&mut self) {
+        self.scanner_results.clear();
     }
 }
 

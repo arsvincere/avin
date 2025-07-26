@@ -625,6 +625,7 @@ dependencies = [
  "avin_analyse",
  "avin_connect",
  "avin_core",
+ "avin_strategy",
  "avin_tester",
  "avin_utils",
  "chrono",

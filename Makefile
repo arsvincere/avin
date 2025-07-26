@@ -57,8 +57,8 @@ publish: ## Publish PyPl & crates.io
 	cargo publish -p avin_core
 	cargo publish -p avin_analyse
 	cargo publish -p avin_strategy
-	cargo publish -p avin_tester
 	cargo publish -p avin_connect
+	cargo publish -p avin_tester
 	cargo publish -p avin_trader
 	cargo publish -p avin_terminal
 	cargo publish -p avin_gui
@@ -91,6 +91,8 @@ backscan:
 	cargo run --bin avin-backscan --jobs 4 --release
 backtest:
 	cargo run --bin avin-backtest --jobs 4 --release
+scanner:
+	cargo run --bin avin-scanner --jobs 4 --release
 tester:
 	cargo run --bin avin-tester --jobs 4 --release
 trader:

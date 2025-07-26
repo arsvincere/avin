@@ -28,12 +28,17 @@ eframe = { workspace = true }
 [[bin]]
 name = "avin-analyse"
 path = "src/bin/a-analyse.rs"
+
 [[bin]]
 name = "avin-backscan"
 path = "src/bin/a-backscan.rs"
 [[bin]]
 name = "avin-backtest"
 path = "src/bin/a-backtest.rs"
+
+[[bin]]
+name = "avin-scanner"
+path = "src/bin/a-scanner.rs"
 [[bin]]
 name = "avin-tester"
 path = "src/bin/a-tester.rs"

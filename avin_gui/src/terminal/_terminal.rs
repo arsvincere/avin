@@ -1,4 +1,4 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -10,8 +10,8 @@ use eframe::egui;
 use avin_connect::Tinkoff;
 use avin_core::Action;
 
-use crate::asset::AssetWidget;
-use crate::chart::ChartWidget;
+use crate::chart_widget::ChartWidget;
+use crate::terminal::asset_widget::AssetWidget;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]

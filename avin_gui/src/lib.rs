@@ -1,16 +1,17 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod asset;
-mod chart;
+mod chart_widget;
 mod draw;
+mod scanner;
 mod terminal;
 mod tester;
 mod theme;
 
+pub use scanner::Scanner;
 pub use terminal::Terminal;
 pub use tester::Tester;

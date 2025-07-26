@@ -1,4 +1,4 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -18,7 +18,7 @@ use avin_tester::Test;
 use avin_utils::CFG;
 use egui_plot::PlotUi;
 
-use crate::chart::ChartToolbar;
+use crate::chart_widget::ChartToolbar;
 use crate::draw::TestDraw;
 use crate::draw::{ChartDraw, FootprintDraw};
 use crate::tester::toolbar::TestToolbar;

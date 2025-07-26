@@ -1,10 +1,11 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_strategy::ScannerResult;
 use avin_tester::Test;
 use chrono::{DateTime, Local};
 use egui_plot::{Line, LineStyle, MarkerShape, PlotPoint, PlotUi, Points};
@@ -400,7 +401,7 @@ impl TestDraw for Test {
                 _ => unreachable!(),
             };
 
-            // eval coordinate X
+            // eval coordinate
             let x0 = t.open_ts() as f64;
             let x1 = (t.close_ts() + tf.nanos()) as f64;
             let y_opn = t.avg();
@@ -441,6 +442,55 @@ impl TestDraw for Test {
                     .color(theme.trade_take);
                 plot.line(take_line);
             }
+        }
+    }
+}
+
+pub trait ScanDraw {
+    fn draw_points(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame);
+}
+impl ScanDraw for ScannerResult {
+    fn draw_points(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame) {
+        for ts in self.points().iter() {
+            // eval coordinate X
+            let x0 = *ts as f64;
+            let x1 = (ts + tf.nanos()) as f64;
+            let x = (x1 - x0) / 2.0 + x0;
+            let y = 311.0;
+
+            // create shape
+            use avin_strategy::MarkerShape as ams;
+            use egui_plot::MarkerShape as ems;
+            let shape = match self.marker().shape {
+                ams::Circle => ems::Circle,
+                ams::Square => ems::Square,
+                ams::Diamond => ems::Diamond,
+                ams::Plus => ems::Plus,
+                ams::Cross => ems::Cross,
+                ams::Asterisk => ems::Asterisk,
+                ams::Up => ems::Up,
+                ams::Down => ems::Down,
+                ams::Left => ems::Left,
+                ams::Right => ems::Right,
+            };
+            use avin_strategy::MarkerColor as amc;
+            let color = match self.marker().color {
+                amc::Red => theme.red,
+                amc::Orange => theme.orange,
+                amc::Yellow => theme.yellow,
+                amc::Green => theme.green,
+                amc::Cyan => theme.cyan,
+                amc::Blue => theme.blue,
+                amc::Violet => theme.violet,
+                amc::White => theme.white,
+                amc::Grey => theme.grey,
+                amc::Black => theme.black,
+            };
+            let points = Points::new("Long", vec![[x, y]])
+                .color(color)
+                .shape(shape)
+                .radius(self.marker().size as i8 as f32);
+            plot.points(points);
         }
     }
 }

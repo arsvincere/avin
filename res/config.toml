@@ -62,6 +62,18 @@
 [terminal]
 
 [gui.color]
+    # common colors
+    red = "#FF0000"
+    orange = "#FFA500"
+    yellow = "#FFFF00"
+    green = "#008000"
+    cyan = "#00FFFF"
+    blue = "#0000FF"
+    violet = "#EE82EE"
+    white = "#FFFFFF"
+    grey = "#808080"
+    black = "#000000"
+
     # Cursor crosshair
     cross = "#282727"
     cross_opacity = 1.0

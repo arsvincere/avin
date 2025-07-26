@@ -1,4 +1,4 @@
-/****************************************************************************
+/*****************************************************************************
  * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
@@ -751,6 +751,10 @@ impl ExtremumData {
             T4 => self.e_t4_now.as_ref().unwrap(),
             T5 => self.e_t5_now.as_ref().unwrap(),
         };
+        // FIX: тут может и не быть тренда, например D таймфрейм
+        // там вообще трендов 4 порядка не бывает, тут надо проверять...
+        // причем на каждом шаге, причем лучше начать с экстремумов.
+        // с last_extr & now_extr
         let last_trend = match term {
             T1 => self.t_t1.last().unwrap(),
             T2 => self.t_t2.last().unwrap(),
