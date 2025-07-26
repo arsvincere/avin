@@ -1,5 +1,5 @@
 /****************************************************************************
- * URL:         http://arsvincere.com
+ * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
@@ -255,28 +255,7 @@ impl ExtremumIndicator for Chart {
             None => panic!("Chart don't have indicator {NAME}"),
         };
 
-        if n == 0 {
-            // real-time extremum, n == 0
-            match term {
-                T1 => extr_data.e_t1_now.as_ref(),
-                T2 => extr_data.e_t2_now.as_ref(),
-                T3 => extr_data.e_t3_now.as_ref(),
-                T4 => extr_data.e_t4_now.as_ref(),
-                T5 => extr_data.e_t5_now.as_ref(),
-            }
-        } else {
-            // historical extremum, n > 0
-            let extremums = match term {
-                T1 => &extr_data.e_t1,
-                T2 => &extr_data.e_t2,
-                T3 => &extr_data.e_t3,
-                T4 => &extr_data.e_t4,
-                T5 => &extr_data.e_t5,
-            };
-
-            let index = extremums.len() - n;
-            extremums.get(index)
-        }
+        extr_data.extr(term, n)
     }
     fn trend(&self, term: Term, n: usize) -> Option<&Trend> {
         // get indicator data
@@ -285,27 +264,7 @@ impl ExtremumIndicator for Chart {
             None => panic!("Chart don't have indicator {NAME}"),
         };
 
-        if n == 0 {
-            match term {
-                T1 => extr_data.t_t1_now.as_ref(),
-                T2 => extr_data.t_t2_now.as_ref(),
-                T3 => extr_data.t_t3_now.as_ref(),
-                T4 => extr_data.t_t4_now.as_ref(),
-                T5 => extr_data.t_t5_now.as_ref(),
-            }
-        } else {
-            // n > 0
-            let all_trends = match term {
-                T1 => &extr_data.t_t1,
-                T2 => &extr_data.t_t2,
-                T3 => &extr_data.t_t3,
-                T4 => &extr_data.t_t4,
-                T5 => &extr_data.t_t5,
-            };
-
-            let index = all_trends.len() - n;
-            all_trends.get(index)
-        }
+        extr_data.trend(term, n)
     }
     fn all_extr(&self, term: Term) -> &Vec<Extremum> {
         // get indicator data
@@ -314,13 +273,7 @@ impl ExtremumIndicator for Chart {
             None => panic!("Chart don't have indicator {NAME}"),
         };
 
-        match term {
-            T1 => &extr_data.e_t1,
-            T2 => &extr_data.e_t2,
-            T3 => &extr_data.e_t3,
-            T4 => &extr_data.e_t4,
-            T5 => &extr_data.e_t5,
-        }
+        extr_data.all_extr(term)
     }
     fn all_trend(&self, term: Term) -> &Vec<Trend> {
         // get indicator data
@@ -329,13 +282,7 @@ impl ExtremumIndicator for Chart {
             None => panic!("Chart don't have indicator {NAME}"),
         };
 
-        match term {
-            T1 => &extr_data.t_t1,
-            T2 => &extr_data.t_t2,
-            T3 => &extr_data.t_t3,
-            T4 => &extr_data.t_t4,
-            T5 => &extr_data.t_t5,
-        }
+        extr_data.all_trend(term)
     }
 }
 
@@ -368,6 +315,7 @@ pub struct ExtremumData {
     last_ts: i64,
 }
 impl ExtremumData {
+    // indicator interface
     pub fn id(&self) -> &'static str {
         ID
     }
@@ -388,16 +336,24 @@ impl ExtremumData {
         self.calc_trends(T5, bars);
     }
     pub fn update(&mut self, bars: &[Bar], _now: Option<&Bar>) {
-        // в тестере, после init на пустом графике нет ни одного экстремума
-        // и нет исторических баров. Поэтому, первое смотрим на наличие
-        // исторических баров в принципе
-        if bars.is_empty() {
+        // В тестере/сканере, после init на пустом графике нет ни одного
+        // экстремума и нет исторических баров. Поэтому, первое смотрим на
+        // наличие исторических баров в принципе.
+        // Если bars.len() < 50 значит в тестере только появились первые бары
+        // и значит индикатор еще не инициализирован вообще, алгоритмы
+        // обновления не отработают корректно.
+        // Цифра 50 взята эмпирически, этого достаточно чтобы после вызова
+        // инит в индикаторе появились первые тренды и экстремумы.
+        // Дело в том что первоначально вызванная инициализация закончилась
+        // ничем - calc_e1 при отсутствии баров просто возвращает
+        // пустой список экстремумов, а текущий равен None. В дальнейшем же
+        // функции обновления ориентированы на то что уже есть какие-то
+        // экстремумы в графике...
+        // Поэтому сначала делаем инициализацию на 50 историческом баре,
+        // там можно сформировать первые экстремумы и тренды.
+        if bars.len() < 50 {
             return;
-        }
-        // далее если bars.len() == 1 значит в тестере только появился
-        // первый бар, и значит индикатор еще не инициализирован вообще,
-        // алгоритмы обновления не отработают корректно, надо инициализировать
-        if bars.len() == 1 {
+        } else if bars.len() == 50 {
             self.init(bars, _now);
             return;
         }
@@ -411,36 +367,80 @@ impl ExtremumData {
         }
 
         // вот теперь есть что обновлять
-        if !self.upd_extr_t1(current) {
-            return;
-        }
-        self.upd_trends(T1, bars); // и тренды Т1 обновляем
-
-        if !self.upd_extr_tn(T2) {
-            return;
-        }
-        self.upd_trends(T2, bars); // и тренды Т2 обновляем
-
-        if !self.upd_extr_tn(T3) {
-            return;
-        }
-        self.upd_trends(T3, bars); // и тренды Т4 обновляем
-
-        if !self.upd_extr_tn(T4) {
-            return;
-        }
-        self.upd_trends(T4, bars); // и тренды Т4 обновляем
-
-        if !self.upd_extr_tn(T5) {
-            return;
-        }
-        self.upd_trends(T5, bars); // и тренды Т5 обновляем
+        self.upd_extr(current);
+        self.upd_trends(bars);
 
         // сохраняем время последнего обработанного бара
         self.last_ts = current.ts_nanos;
     }
 
     // private
+    fn extr(&self, term: Term, n: usize) -> Option<&Extremum> {
+        if n == 0 {
+            // real-time extremum, n == 0
+            match term {
+                T1 => self.e_t1_now.as_ref(),
+                T2 => self.e_t2_now.as_ref(),
+                T3 => self.e_t3_now.as_ref(),
+                T4 => self.e_t4_now.as_ref(),
+                T5 => self.e_t5_now.as_ref(),
+            }
+        } else {
+            // historical extremum, n > 0
+            let extremums = match term {
+                T1 => &self.e_t1,
+                T2 => &self.e_t2,
+                T3 => &self.e_t3,
+                T4 => &self.e_t4,
+                T5 => &self.e_t5,
+            };
+
+            let index = extremums.len() - n;
+            extremums.get(index)
+        }
+    }
+    fn trend(&self, term: Term, n: usize) -> Option<&Trend> {
+        if n == 0 {
+            match term {
+                T1 => self.t_t1_now.as_ref(),
+                T2 => self.t_t2_now.as_ref(),
+                T3 => self.t_t3_now.as_ref(),
+                T4 => self.t_t4_now.as_ref(),
+                T5 => self.t_t5_now.as_ref(),
+            }
+        } else {
+            // n > 0
+            let all_trends = match term {
+                T1 => &self.t_t1,
+                T2 => &self.t_t2,
+                T3 => &self.t_t3,
+                T4 => &self.t_t4,
+                T5 => &self.t_t5,
+            };
+
+            let index = all_trends.len() - n;
+            all_trends.get(index)
+        }
+    }
+    fn all_extr(&self, term: Term) -> &Vec<Extremum> {
+        match term {
+            T1 => &self.e_t1,
+            T2 => &self.e_t2,
+            T3 => &self.e_t3,
+            T4 => &self.e_t4,
+            T5 => &self.e_t5,
+        }
+    }
+    fn all_trend(&self, term: Term) -> &Vec<Trend> {
+        match term {
+            T1 => &self.t_t1,
+            T2 => &self.t_t2,
+            T3 => &self.t_t3,
+            T4 => &self.t_t4,
+            T5 => &self.t_t5,
+        }
+    }
+
     fn calc_e1(&mut self, bars: &[Bar]) {
         // if chart is empty
         if bars.is_empty() {
@@ -561,6 +561,21 @@ impl ExtremumData {
                 self.e_t5_now = Some(out_now);
             }
         };
+    }
+    fn upd_extr(&mut self, bar: &Bar) {
+        if !self.upd_extr_t1(bar) {
+            return;
+        }
+        if !self.upd_extr_tn(T2) {
+            return;
+        }
+        if !self.upd_extr_tn(T3) {
+            return;
+        }
+        if !self.upd_extr_tn(T4) {
+            return;
+        }
+        self.upd_extr_tn(T5);
     }
     fn upd_extr_t1(&mut self, bar: &Bar) -> bool {
         let mut now_extr = self.e_t1_now.take().unwrap();
@@ -693,16 +708,17 @@ impl ExtremumData {
             // get extremum begin / end
             let e1 = in_extr.get(i - 1).unwrap();
             let e2 = in_extr.get(i).unwrap();
-            let trend = Self::build_trend(e1, e2, bars);
+            let trend = build_trend(e1, e2, bars);
 
             out_trends.push(trend);
             i += 1;
         }
 
+        // calc real-time trend
         if in_extr.last().is_some() && in_now.is_some() {
             let e1 = in_extr.last().unwrap();
             let e2 = in_now.as_ref().unwrap();
-            let trend = Self::build_trend(e1, e2, bars);
+            let trend = build_trend(e1, e2, bars);
 
             match term {
                 T1 => self.t_t1_now = Some(trend),
@@ -713,25 +729,74 @@ impl ExtremumData {
             };
         }
     }
-    fn upd_trends(&mut self, _term: Term, _bars: &[Bar]) {
-        // TODO: тут все не просто.
-        // Если экстремум только обновлен - надо только обновить текущий тренд
-        // есть новый исторически - делать исторический тренд
-        // либо вызывать обновление изнутри обновления экстремумов, когда
-        // там известно что именно обновилось. Либо тут надо сначала
-        // определять есть ли новый исторический тренд, обновлен ли текущий
-        // экстремум. Пока не знаю как лучше, сделаю ничего!
-        todo!();
+    fn upd_trends(&mut self, bars: &[Bar]) {
+        self.upd_trends_tn(T1, bars);
+        self.upd_trends_tn(T2, bars);
+        self.upd_trends_tn(T3, bars);
+        self.upd_trends_tn(T4, bars);
+        self.upd_trends_tn(T5, bars);
     }
-    #[inline]
-    fn build_trend(e1: &Extremum, e2: &Extremum, all_bars: &[Bar]) -> Trend {
-        // select bars of trend
-        let f = bisect_right(all_bars, e1.ts_nanos, |b| b.ts_nanos).unwrap();
-        let t = bisect_left(all_bars, e2.ts_nanos, |b| b.ts_nanos).unwrap();
-        let bars_of_trend = &all_bars[f..=t];
+    fn upd_trends_tn(&mut self, term: Term, bars: &[Bar]) {
+        let last_extr = match term {
+            T1 => self.e_t1.last().unwrap(),
+            T2 => self.e_t2.last().unwrap(),
+            T3 => self.e_t3.last().unwrap(),
+            T4 => self.e_t4.last().unwrap(),
+            T5 => self.e_t5.last().unwrap(),
+        };
+        let now_extr = match term {
+            T1 => self.e_t1_now.as_ref().unwrap(),
+            T2 => self.e_t2_now.as_ref().unwrap(),
+            T3 => self.e_t3_now.as_ref().unwrap(),
+            T4 => self.e_t4_now.as_ref().unwrap(),
+            T5 => self.e_t5_now.as_ref().unwrap(),
+        };
+        let last_trend = match term {
+            T1 => self.t_t1.last().unwrap(),
+            T2 => self.t_t2.last().unwrap(),
+            T3 => self.t_t3.last().unwrap(),
+            T4 => self.t_t4.last().unwrap(),
+            T5 => self.t_t5.last().unwrap(),
+        };
+        let now_trend = match term {
+            T1 => self.t_t1_now.as_ref().unwrap(),
+            T2 => self.t_t2_now.as_ref().unwrap(),
+            T3 => self.t_t3_now.as_ref().unwrap(),
+            T4 => self.t_t4_now.as_ref().unwrap(),
+            T5 => self.t_t5_now.as_ref().unwrap(),
+        };
 
-        Trend::new(e1, e2, bars_of_trend)
+        // если конец исторического тренда не равен последнему историческому
+        // экстремуму то обновился исторический экстремум. Значит нужно
+        // сделать новый исторический тренд и новый текущий тренд.
+        if last_trend.e2 != *last_extr {
+            let new_last_trend = build_trend(&last_trend.e2, last_extr, bars);
+            self.t_t1.push(new_last_trend);
+
+            let new_now_trend = build_trend(last_extr, now_extr, bars);
+            self.t_t1_now = Some(new_now_trend);
+            return;
+        }
+
+        // иначе конец исторического тренда равен последнему историческому
+        // экстремуму, возможно обновился текущий экстремум, без формирования
+        // нового исторического экстремума. Проверяем соответствие текущего
+        // экстремума и обновляем текущий тренд если нужно.
+        if now_trend.e2 != *now_extr {
+            let new_now_trend = build_trend(last_extr, now_extr, bars);
+            self.t_t1_now = Some(new_now_trend);
+        }
     }
+}
+
+#[inline]
+fn build_trend(e1: &Extremum, e2: &Extremum, all_bars: &[Bar]) -> Trend {
+    // select bars of trend
+    let f = bisect_right(all_bars, e1.ts_nanos, |b| b.ts_nanos).unwrap();
+    let t = bisect_left(all_bars, e2.ts_nanos, |b| b.ts_nanos).unwrap();
+    let bars_of_trend = &all_bars[f..=t];
+
+    Trend::new(e1, e2, bars_of_trend)
 }
 
 #[cfg(test)]

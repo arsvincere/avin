@@ -97,6 +97,14 @@ impl Asset {
             }
         }
     }
+    /// Return vector with all shares whose have market data in user dir.
+    ///
+    /// # ru
+    /// Возвращает вектор с акциями, для которых есть рыночные данные в
+    /// папке пользователя.
+    pub fn all_shares() -> Vec<Share> {
+        Share::all()
+    }
 
     /// Return instrument id.
     ///

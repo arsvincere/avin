@@ -1,5 +1,5 @@
 /****************************************************************************
- * URL:         http://arsvincere.com
+ * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
@@ -10,15 +10,14 @@
 //! Ставит стоп 1% от входа и тейк 2% от входа.
 //!
 //! Не надо пытаться заработать этой стратегией! Это просто пример как
-//! сделать стратегию исползуя библиотеку.
+//! сделать стратегию исползуя библиотеку. Стратегия убыточна.
 
+use crate::_strategy::Strategy;
 use avin_core::{
     Account, Action, Asset, Direction, Iid, MarketOrder, Order, OrderAction,
     OrderEvent, StopOrder, StopOrderKind, TimeFrame, Trade, TradeKind,
 };
 use avin_utils as utils;
-
-use super::Strategy;
 
 /// Имя стратегии для себя, имя должно быть уникальным, используется как
 /// ключ в HashMap. К одному инструменту может быть подключено несколько

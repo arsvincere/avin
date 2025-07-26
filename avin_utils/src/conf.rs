@@ -49,7 +49,7 @@ impl Configuration {
         let mut path = std::env::home_dir().unwrap();
         path.push("avin");
         path.push("res");
-        path.push("default_config.toml");
+        path.push("config.toml");
         if Cmd::is_exist(&path) {
             return Configuration::read(&path);
         };
@@ -93,6 +93,12 @@ impl DirSettings {
     pub fn asset(&self) -> PathBuf {
         let mut path = self.root();
         path.push("asset");
+
+        path
+    }
+    pub fn scan(&self) -> PathBuf {
+        let mut path = self.root();
+        path.push("scan");
 
         path
     }

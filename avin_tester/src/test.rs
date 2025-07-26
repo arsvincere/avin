@@ -1,5 +1,5 @@
 /****************************************************************************
- * URL:         http://arsvincere.com
+ * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
@@ -35,6 +35,8 @@ pub struct Test {
 }
 impl Test {
     pub fn new(strategy: &impl Strategy, iid: &Iid) -> Self {
+        let trade_list_name = format!("{}_{}", strategy.name(), iid.ticker());
+
         Self {
             strategy_name: strategy.name().to_string(),
             iid: iid.clone(),
@@ -51,7 +53,7 @@ impl Test {
                 .timestamp_nanos_opt()
                 .unwrap(),
             status: TestStatus::New,
-            trade_list: TradeList::new("trades"),
+            trade_list: TradeList::new(&trade_list_name),
         }
     }
     pub fn from_bin(bytes: &[u8]) -> Self {

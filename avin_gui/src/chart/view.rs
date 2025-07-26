@@ -1,5 +1,5 @@
 /****************************************************************************
- * URL:         http://arsvincere.com
+ * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
@@ -23,6 +23,15 @@ pub struct ChartView {
     scale_x: bool,
     scale_y: bool,
     theme: Theme,
+}
+impl Default for ChartView {
+    fn default() -> Self {
+        Self {
+            scale_x: true,
+            scale_y: false,
+            theme: Theme::default(),
+        }
+    }
 }
 impl ChartView {
     pub fn draw(
@@ -150,15 +159,6 @@ impl ChartView {
     ) {
         if let Some(f) = footprint {
             f.draw_hist(plot_ui, &self.theme);
-        }
-    }
-}
-impl Default for ChartView {
-    fn default() -> Self {
-        Self {
-            scale_x: true,
-            scale_y: false,
-            theme: Theme::default(),
         }
     }
 }

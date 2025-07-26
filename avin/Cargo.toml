@@ -25,18 +25,21 @@ chrono = { workspace = true }
 eframe = { workspace = true }
 ##############################################################################
 
-# [[bin]]
-# name = "analyse"
-# path = "src/bin/a-analyse.rs"
-# [[bin]]
-# name = "backtest"
-# path = "src/bin/a-backtest.rs"
-# [[bin]]
-# name = "etester"
-# path = "src/bin/a-tester.rs"
-# [[bin]]
-# name = "trader"
-# path = "src/bin/a-trader.rs"
-# [[bin]]
-# name = "eterminal"
-# path = "src/bin/a-terminal.rs"
+[[bin]]
+name = "avin-analyse"
+path = "src/bin/a-analyse.rs"
+[[bin]]
+name = "avin-backscan"
+path = "src/bin/a-backscan.rs"
+[[bin]]
+name = "avin-backtest"
+path = "src/bin/a-backtest.rs"
+[[bin]]
+name = "avin-tester"
+path = "src/bin/a-tester.rs"
+[[bin]]
+name = "avin-trader"
+path = "src/bin/a-trader.rs"
+[[bin]]
+name = "avin-terminal"
+path = "src/bin/a-terminal.rs"

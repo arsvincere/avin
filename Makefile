@@ -86,16 +86,18 @@ clean: ## Clean up caches, build artifacts, and the venv
 run: ## Run temp bin (gitignored)
 	cargo run --bin a-aaa --jobs 4
 analyse:
-	cargo run --bin a-analyse --jobs 4 --release
+	cargo run --bin avin-analyse --jobs 4 --release
+backscan:
+	cargo run --bin avin-backscan --jobs 4 --release
 backtest:
-	cargo run --bin a-backtest --jobs 4 --release
+	cargo run --bin avin-backtest --jobs 4 --release
 tester:
-	cargo run --bin a-tester --jobs 4 --release
+	cargo run --bin avin-tester --jobs 4 --release
 trader:
-	cargo run --bin a-trader --jobs 4 --release
-e-terminal:
-	cargo run --bin a-terminal --jobs 4 --release
+	cargo run --bin avin-trader --jobs 4 --release
 terminal:
+	cargo run --bin avin-terminal --jobs 4 --release
+iced_terminal:
 	cargo run --bin avin_terminal --jobs 4 --release
 
 T1="\033[1m"
@@ -129,6 +131,7 @@ help:
 	@echo -e $(T1)Run:$(T2)
 	@echo -e $(B1)r$(B2)"              Run temp bin (gitignored main.rs)"
 	@echo -e $(B1)analyse$(B2)"        Run analyse"
+	@echo -e $(B1)backscan$(B2)"       Run backscan"
 	@echo -e $(B1)backtest$(B2)"       Run backtest"
 	@echo -e $(B1)tester$(B2)"         Run tester"
 	@echo -e $(B1)trader$(B2)"         Run trader"

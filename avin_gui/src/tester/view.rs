@@ -1,5 +1,5 @@
 /****************************************************************************
- * URL:         http://arsvincere.com
+ * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
@@ -24,13 +24,23 @@ use crate::draw::{ChartDraw, FootprintDraw};
 use crate::tester::toolbar::TestToolbar;
 use crate::theme::Theme;
 
-#[derive(Default)]
 pub struct TestView {
     chart_toolbar: ChartToolbar,
     test_toolbar: TestToolbar,
     scale_x: bool,
     scale_y: bool,
     theme: Theme,
+}
+impl Default for TestView {
+    fn default() -> Self {
+        Self {
+            chart_toolbar: ChartToolbar::default(),
+            test_toolbar: TestToolbar::default(),
+            scale_x: true,
+            scale_y: false,
+            theme: Theme::default(),
+        }
+    }
 }
 impl TestView {
     // pub
@@ -92,15 +102,12 @@ impl TestView {
                     repeat: _,
                     modifiers: _,
                 } => {
-                    if *key == Key::D && *pressed {
-                        self.scale_x = true;
-                        self.scale_y = false;
-                    } else if *key == Key::F && *pressed {
+                    if *key == Key::F && *pressed {
                         self.scale_x = false;
                         self.scale_y = true;
                     } else {
                         self.scale_x = true;
-                        self.scale_y = true;
+                        self.scale_y = false;
                     };
                     Some(())
                 }

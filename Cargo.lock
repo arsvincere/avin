@@ -641,11 +641,14 @@ dependencies = [
 name = "avin_strategy"
 version = "0.3.7"
 dependencies = [
+ "avin_analyse",
  "avin_core",
  "avin_utils",
  "chrono",
  "log",
+ "serde",
  "tokio",
+ "toml",
 ]
 
 [[package]]

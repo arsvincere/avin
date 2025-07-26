@@ -160,7 +160,7 @@ impl std::fmt::Display for Iid {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "Iid={}_{}_{}",
+            "{}_{}_{}",
             self.exchange(),
             self.category(),
             self.ticker()

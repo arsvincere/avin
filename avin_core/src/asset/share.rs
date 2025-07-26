@@ -60,36 +60,6 @@ pub struct Share {
 }
 
 impl Share {
-    /// Return vector with all shares whose have market data in user dir.
-    ///
-    /// # ru
-    /// Возвращает вектор с акциями, для которых есть рыночные данные в
-    /// папке пользователя.
-    pub fn all() -> Vec<Share> {
-        let mut shares: Vec<Share> = Vec::new();
-
-        // shares dir path
-        let mut dir_path = CFG.dir.data();
-        dir_path.push("MOEX");
-        dir_path.push("SHARE");
-
-        // shares dirs: dir name == ticker
-        let dirs = Cmd::get_dirs(&dir_path).unwrap();
-        if dirs.is_empty() {
-            log::warn!("Shares not found! Dir empty: {}", dir_path.display());
-            return shares;
-        }
-
-        // create shares from dir name (ticker)
-        for dir in dirs.iter() {
-            let ticker = Cmd::name(dir).unwrap();
-            let s = format!("MOEX_SHARE_{ticker}");
-            let share = Share::new(&s).unwrap();
-            shares.push(share);
-        }
-
-        shares
-    }
     /// Create new share from str (case insensitive).
     ///
     /// # ru
@@ -135,6 +105,36 @@ impl Share {
         let iid = Iid::new(info);
 
         Share::from_iid(iid)
+    }
+    /// Return vector with all shares whose have market data in user dir.
+    ///
+    /// # ru
+    /// Возвращает вектор с акциями, для которых есть рыночные данные в
+    /// папке пользователя.
+    pub fn all() -> Vec<Share> {
+        let mut shares: Vec<Share> = Vec::new();
+
+        // shares dir path
+        let mut dir_path = CFG.dir.data();
+        dir_path.push("MOEX");
+        dir_path.push("SHARE");
+
+        // shares dirs: dir name == ticker
+        let dirs = Cmd::get_dirs(&dir_path).unwrap();
+        if dirs.is_empty() {
+            log::warn!("Shares not found! Dir empty: {}", dir_path.display());
+            return shares;
+        }
+
+        // create shares from dir name (ticker)
+        for dir in dirs.iter() {
+            let ticker = Cmd::name(dir).unwrap();
+            let s = format!("MOEX_SHARE_{ticker}");
+            let share = Share::new(&s).unwrap();
+            shares.push(share);
+        }
+
+        shares
     }
 
     /// Return instrument id.

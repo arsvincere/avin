@@ -1,5 +1,5 @@
 /****************************************************************************
- * URL:         http://arsvincere.com
+ * URL:         http://avin.info
  * AUTHOR:      Alex Avin
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
@@ -15,6 +15,7 @@ pub enum Indicator {
     // MA(MAData),
     // EMA(EMAData),
     // RSI(RSIData),
+    // MACD(MACDData),
 }
 impl Indicator {
     pub fn id(&self) -> &'static str {
