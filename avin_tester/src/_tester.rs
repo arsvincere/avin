@@ -51,22 +51,12 @@ impl Tester {
         while let Some(e) = broker.next_event() {
             match e {
                 Event::Bar(e) => {
-                    // PERF: чтобы 5 раз не дергать стратегию на обновление
-                    // после 1М, 5М, 10М, 1Н, Day... дергаю ее только на
-                    // обновлении Day бара, чаще все равно смысла нет,
-                    // а вызовов в 5 раз меньше. Бар стрим выдает бары от
-                    // 1М до Day, то есть в момент прихода Day как раз
-                    // все графики обновлены на текущую минуту.
-                    if e.tf == TimeFrame::Day {
-                        asset.bar_event(e);
-                        strategy.process(&asset);
-                    } else {
-                        asset.bar_event(e);
-                    }
+                    asset.bar_event(e);
+                    strategy.process(&asset);
                 }
                 Event::Tic(e) => {
                     asset.tic_event(e);
-                    // strategy.process(&asset).await;
+                    strategy.process(&asset);
                 }
                 Event::Order(e) => strategy.order_event(e),
             }

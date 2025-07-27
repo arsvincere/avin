@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use chrono::{DateTime, TimeDelta, Timelike};
+use chrono::{DateTime, Datelike, TimeDelta, Timelike};
 use strum::EnumIter;
 use time_unit::TimeUnit;
 
@@ -94,7 +94,17 @@ impl TimeFrame {
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + TimeUnit::Days.get_unit_nanoseconds() as i64
             }
-            other => todo!("TimeFrame::next_ts({}, {})", ts, other),
+            TimeFrame::Week => {
+                let dt = dt.with_minute(0).unwrap();
+                let dt = dt.with_hour(0).unwrap();
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                let need_days = 6 - dt.weekday() as i64;
+                ts + need_days * TimeUnit::Days.get_unit_nanoseconds() as i64
+            }
+            TimeFrame::Month => {
+                let dt = avin_utils::next_month(dt);
+                dt.timestamp_nanos_opt().unwrap()
+            }
         }
     }
     pub fn prev_ts(&self, ts: i64) -> i64 {

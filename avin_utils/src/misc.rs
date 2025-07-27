@@ -55,6 +55,43 @@ pub fn ts(dt: &DateTime<Utc>) -> i64 {
 pub fn dt(ts_nanos: i64) -> DateTime<Utc> {
     DateTime::from_timestamp_nanos(ts_nanos)
 }
+/// Return datetime with first day of next month
+///
+/// # ru
+/// Возвращает datetime первое число следующего месяца от полученного dt
+pub fn next_month(dt: DateTime<Utc>) -> DateTime<Utc> {
+    if dt.month() == 12 {
+        let next_year = dt.year() + 1;
+        dt.with_year(next_year)
+            .unwrap()
+            .with_month(1)
+            .unwrap()
+            .with_day(1)
+            .unwrap()
+            .with_hour(0)
+            .unwrap()
+            .with_minute(0)
+            .unwrap()
+            .with_second(0)
+            .unwrap()
+            .with_nanosecond(0)
+            .unwrap()
+    } else {
+        let next_month = dt.month() + 1;
+        dt.with_month(next_month)
+            .unwrap()
+            .with_day(1)
+            .unwrap()
+            .with_hour(0)
+            .unwrap()
+            .with_minute(0)
+            .unwrap()
+            .with_second(0)
+            .unwrap()
+            .with_nanosecond(0)
+            .unwrap()
+    }
+}
 /// Replace column 'ts_nanos' to 'dt' (naive UTC datetime)
 pub fn replace_ts(mut df: DataFrame) -> DataFrame {
     // get iter of column 'ts_nanos'

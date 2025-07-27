@@ -14,11 +14,6 @@ use avin_core::{Bar, BarEvent, Event, Iid, Manager, MarketData, TimeFrame};
 pub struct DataStream {
     pub iid: Iid,
     bars_1m: VecDeque<Bar>,
-    queue: VecDeque<Event>,
-    // bar_5m: Option<Bar>,
-    bar_10m: Option<Bar>,
-    bar_1h: Option<Bar>,
-    bar_d: Option<Bar>,
 }
 
 impl DataStream {
@@ -32,32 +27,20 @@ impl DataStream {
         Self {
             iid: iid.clone(),
             bars_1m,
-            queue: VecDeque::new(),
-            // bar_5m: None,
-            bar_10m: None,
-            bar_1h: None,
-            bar_d: None,
         }
     }
 
     pub fn next_event(&mut self) -> Option<Event> {
-        // если в очереди есть event - выдать его
-        let e = self.queue.pop_front();
-        if e.is_some() {
-            return e;
-        }
-
-        // Иначе: достать 1М бар
+        // достать 1М бар
         if let Some(bar) = self.bars_1m.pop_front() {
-            self.create_event_1m(bar);
-            self.create_event_10m(bar);
-            self.create_event_1h(bar);
-            self.create_event_d(bar);
+            // собрать и вернуть эвент
+            let figi = self.iid.figi().clone();
+            let tf = TimeFrame::M1;
 
-            // достать из очереди первый эвент и выдать его
-            return self.queue.pop_front();
+            return Some(Event::Bar(BarEvent::new(figi, tf, bar)));
         }
 
+        // если бары кончились
         None
     }
 
@@ -121,118 +104,6 @@ impl DataStream {
 
         bars_1m
     }
-    fn create_event_1m(&mut self, bar_1m: Bar) {
-        let figi = self.iid.figi().clone();
-        let tf = TimeFrame::M1;
-        let event = BarEvent::new(figi, tf, bar_1m);
-
-        self.queue.push_back(Event::Bar(event));
-    }
-    fn create_event_10m(&mut self, bar_1m: Bar) {
-        // first bar
-        if self.bar_10m.is_none() {
-            self.bar_10m = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::M10;
-            let event = BarEvent::new(figi, tf, self.bar_10m.unwrap());
-            self.queue.push_back(Event::Bar(event));
-            return;
-        }
-
-        // else
-        let bar_10m = self.bar_10m.take().unwrap();
-        let next_ts = TimeFrame::M10.next_ts(bar_10m.ts_nanos);
-
-        // only update
-        if bar_1m.ts_nanos < next_ts {
-            self.bar_10m = Some(bar_10m.join(bar_1m));
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::M10;
-            let event = BarEvent::new(figi, tf, self.bar_10m.unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-        // create new
-        else {
-            self.bar_10m = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::M10;
-            let event = BarEvent::new(figi, tf, self.bar_10m.unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-    }
-    fn create_event_1h(&mut self, bar_1m: Bar) {
-        // first bar
-        if self.bar_1h.is_none() {
-            self.bar_1h = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::H1;
-            let event = BarEvent::new(figi, tf, self.bar_1h.unwrap());
-            self.queue.push_back(Event::Bar(event));
-            return;
-        }
-
-        // else
-        let bar_1h = self.bar_1h.take().unwrap();
-        let next_ts = TimeFrame::H1.next_ts(bar_1h.ts_nanos);
-
-        // only update
-        if bar_1m.ts_nanos < next_ts {
-            self.bar_1h = Some(bar_1h.join(bar_1m));
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::H1;
-            let event = BarEvent::new(figi, tf, self.bar_1h.unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-        // create new
-        else {
-            self.bar_1h = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::H1;
-            let event = BarEvent::new(figi, tf, self.bar_1h.unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-    }
-    fn create_event_d(&mut self, bar_1m: Bar) {
-        // first bar
-        if self.bar_d.is_none() {
-            self.bar_d = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::Day;
-            let event = BarEvent::new(figi, tf, self.bar_d.unwrap());
-            self.queue.push_back(Event::Bar(event));
-            return;
-        }
-
-        // else
-        let bar_d = self.bar_d.take().unwrap();
-        let next_ts = TimeFrame::Day.next_ts(bar_d.ts_nanos);
-
-        // only update
-        if bar_1m.ts_nanos < next_ts {
-            self.bar_d = Some(bar_d.join(bar_1m));
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::Day;
-            let event = BarEvent::new(figi, tf, self.bar_d.unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-        // create new
-        else {
-            self.bar_d = Some(bar_1m);
-
-            let figi = self.iid.figi().clone();
-            let tf = TimeFrame::Day;
-            let event = BarEvent::new(figi, tf, self.bar_d.unwrap());
-            self.queue.push_back(Event::Bar(event));
-        }
-    }
 }
 
 #[cfg(test)]
@@ -264,6 +135,10 @@ mod tests {
             }
         }
         assert_eq!(bars_1m_count, 10);
-        assert_eq!(bars_10m_count, 10);
+
+        // после изменения логики работы графиков - теперь они принимают
+        // только 1М бары и дальше с них клеят свой таймфрейм, дата стрим
+        // теперь тоже выдает только 1М бары
+        assert_eq!(bars_10m_count, 0);
     }
 }
