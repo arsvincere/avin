@@ -39,7 +39,6 @@ enum Feat {
     Full,
     Lower,
     Upper,
-    Value,
     Volume,
 }
 impl Feat {
@@ -51,7 +50,6 @@ impl Feat {
             Self::Lower => "lower",
             Self::Upper => "upper",
             Self::Volume => "volume",
-            Self::Value => "value",
         }
     }
 }
@@ -103,14 +101,12 @@ pub trait BarAnalytic {
     fn bar_lower_cdf(&self, bar: &Bar) -> Option<f64>;
     fn bar_upper_cdf(&self, bar: &Bar) -> Option<f64>;
     fn bar_vol_cdf(&self, bar: &Bar) -> Option<f64>;
-    fn bar_val_cdf(&self, bar: &Bar) -> Option<f64>;
 
     fn bar_body_size(&self, bar: &Bar) -> Option<Size>;
     fn bar_full_size(&self, bar: &Bar) -> Option<Size>;
     fn bar_lower_size(&self, bar: &Bar) -> Option<Size>;
     fn bar_upper_size(&self, bar: &Bar) -> Option<Size>;
     fn bar_vol_size(&self, bar: &Bar) -> Option<Size>;
-    fn bar_val_size(&self, bar: &Bar) -> Option<Size>;
 }
 impl BarAnalytic for Chart {
     fn init(&mut self) {}
@@ -144,12 +140,6 @@ impl BarAnalytic for Chart {
             Err(_) => None,
         }
     }
-    fn bar_val_cdf(&self, bar: &Bar) -> Option<f64> {
-        match get_cdf_df(self, &Feat::Value) {
-            Ok(cdf_df) => Some(Bar::cdf(bar.val.unwrap(), cdf_df)),
-            Err(_) => None,
-        }
-    }
 
     fn bar_body_size(&self, bar: &Bar) -> Option<Size> {
         match get_sizes_df(self, &Feat::Body) {
@@ -178,12 +168,6 @@ impl BarAnalytic for Chart {
     fn bar_vol_size(&self, bar: &Bar) -> Option<Size> {
         match get_sizes_df(self, &Feat::Volume) {
             Ok(sizes) => Some(Bar::size(bar.v, &sizes)),
-            Err(_) => None,
-        }
-    }
-    fn bar_val_size(&self, bar: &Bar) -> Option<Size> {
-        match get_sizes_df(self, &Feat::Value) {
-            Ok(sizes) => Some(Bar::size(bar.val.unwrap(), &sizes)),
             Err(_) => None,
         }
     }
@@ -227,7 +211,6 @@ fn create_df(chart: &Chart) -> DataFrame {
     let mut upper = Vec::new();
     let mut lower = Vec::new();
     let mut volumes = Vec::new();
-    let mut values = Vec::new();
 
     // collect values
     for bar in chart.bars().iter() {
@@ -237,7 +220,6 @@ fn create_df(chart: &Chart) -> DataFrame {
         upper.push(bar.upper().abs_p());
         lower.push(bar.lower().abs_p());
         volumes.push(bar.v);
-        values.push(bar.val);
     }
 
     // create df
@@ -247,7 +229,6 @@ fn create_df(chart: &Chart) -> DataFrame {
             Feat::Full.name() => full,
             Feat::Lower.name() => lower,
             Feat::Upper.name() => upper,
-            Feat::Value.name() => values,
             Feat::Volume.name() => volumes,
     )
     .unwrap()
@@ -334,9 +315,6 @@ fn set_metrics(chart: &Chart, vol_df: &mut DataFrame) {
     let mut vol_cdf = Vec::new();
     let mut vol_size = Vec::new();
     let mut vol_sz = Vec::new();
-    let mut val_cdf = Vec::new();
-    let mut val_size = Vec::new();
-    let mut val_sz = Vec::new();
 
     // collect values
     for bar in chart.bars().iter() {
@@ -374,13 +352,6 @@ fn set_metrics(chart: &Chart, vol_df: &mut DataFrame) {
         vol_cdf.push(cdf);
         vol_size.push(size.name());
         vol_sz.push(sz.name());
-
-        let cdf = chart.bar_val_cdf(bar).unwrap();
-        let size = Size::from_cdf(cdf);
-        let sz = size.sz();
-        val_cdf.push(cdf);
-        val_size.push(size.name());
-        val_sz.push(sz.name());
     }
 
     // Vec -> Series
@@ -404,10 +375,6 @@ fn set_metrics(chart: &Chart, vol_df: &mut DataFrame) {
     let vol_size = Series::new("vol_size".into(), vol_size);
     let vol_sz = Series::new("vol_sz".into(), vol_sz);
 
-    let val_cdf = Series::new("val_cdf".into(), val_cdf);
-    let val_size = Series::new("val_size".into(), val_size);
-    let val_sz = Series::new("val_sz".into(), val_sz);
-
     // add columns
     vol_df.with_column(body_cdf).unwrap();
     vol_df.with_column(body_size).unwrap();
@@ -428,8 +395,4 @@ fn set_metrics(chart: &Chart, vol_df: &mut DataFrame) {
     vol_df.with_column(vol_cdf).unwrap();
     vol_df.with_column(vol_size).unwrap();
     vol_df.with_column(vol_sz).unwrap();
-
-    vol_df.with_column(val_cdf).unwrap();
-    vol_df.with_column(val_size).unwrap();
-    vol_df.with_column(val_sz).unwrap();
 }

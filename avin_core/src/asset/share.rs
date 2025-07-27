@@ -492,6 +492,10 @@ mod tests {
         );
         assert_eq!(
             chart.last().unwrap().dt(),
+            Utc.with_ymd_and_hms(2025, 1, 31, 19, 0, 0).unwrap()
+        );
+        assert_eq!(
+            chart.now().unwrap().dt(),
             Utc.with_ymd_and_hms(2025, 1, 31, 20, 0, 0).unwrap()
         );
     }

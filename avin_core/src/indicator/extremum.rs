@@ -246,6 +246,10 @@ pub trait ExtremumIndicator {
 }
 impl ExtremumIndicator for Chart {
     fn init(&mut self) {
+        // todo!();
+        // XXX: выпилен now бар из графика, и теперь текущий бар
+        // идет в общем векторе bars, проверить не повлияет ли это
+        // на алгоритмы тут
         self.add_ind(Indicator::Extremum(ExtremumData::default()));
     }
     fn extr(&self, term: Term, n: usize) -> Option<&Extremum> {
@@ -322,7 +326,7 @@ impl ExtremumData {
     pub fn name(&self) -> &'static str {
         NAME
     }
-    pub fn init(&mut self, bars: &[Bar], _now: Option<&Bar>) {
+    pub fn init(&mut self, bars: &[Bar]) {
         self.calc_e1(bars);
         self.calc_en(T2);
         self.calc_en(T3);
@@ -335,7 +339,7 @@ impl ExtremumData {
         self.calc_trends(T4, bars);
         self.calc_trends(T5, bars);
     }
-    pub fn update(&mut self, bars: &[Bar], _now: Option<&Bar>) {
+    pub fn update(&mut self, bars: &[Bar]) {
         // В тестере/сканере, после init на пустом графике нет ни одного
         // экстремума и нет исторических баров. Поэтому, первое смотрим на
         // наличие исторических баров в принципе.
@@ -354,7 +358,7 @@ impl ExtremumData {
         if bars.len() < 50 {
             return;
         } else if bars.len() == 50 {
-            self.init(bars, _now);
+            self.init(bars);
             return;
         }
 

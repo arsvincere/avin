@@ -1135,7 +1135,6 @@ impl From<api::marketdata::HistoricCandle> for Bar {
             l: value.low.unwrap().into(),
             c: value.close.unwrap().into(),
             v: value.volume as u64,
-            val: None,
         }
     }
 }
@@ -1857,7 +1856,6 @@ impl From<api::marketdata::Candle> for BarEvent {
             l: value.low.unwrap().into(),
             c: value.close.unwrap().into(),
             v: value.volume as u64,
-            val: None,
         };
 
         BarEvent { bar, tf, figi }

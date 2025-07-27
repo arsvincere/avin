@@ -21,7 +21,6 @@ pub struct Chart {
     iid: Iid,
     tf: TimeFrame,
     bars: Vec<Bar>,
-    now: Option<Bar>,
     ind: HashMap<String, Indicator>,
     user_data: HashMap<String, Box<dyn UserData>>,
 }
@@ -38,8 +37,8 @@ impl Chart {
     /// let iid = Manager::find_iid("moex_share_sber").unwrap();
     /// let tf = TimeFrame::Day;
     ///
-    /// let b1 = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10, None);
-    /// let b2 = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10, None);
+    /// let b1 = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10);
+    /// let b2 = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10);
     /// let bars = vec![b1, b2];
     ///
     /// let chart = Chart::new(&iid, tf, bars);
@@ -51,7 +50,6 @@ impl Chart {
             iid: iid.clone(),
             tf,
             bars,
-            now: None,
             ind: HashMap::new(),
             user_data: HashMap::new(),
         }
@@ -127,22 +125,17 @@ impl Chart {
     /// Возвращает ссылку на бар по номеру или None, если такой отсутствует.
     ///
     /// Поведение как Pine от TradingView.
-    /// Бар с индексом 0 == текущий реалтайм бар, тоже что chart.now()
-    /// Бар с индексом 1 == последний исторический бар
-    /// Бар с индексом 2 == предпоследний бар в графике
-    /// ...
+    /// Бар с индексом 0 == текущий реалтайм бар, тоже что chart.now().
+    /// Бар с индексом 1 == последний исторический бар.
+    /// Бар с индексом 2 == предпоследний бар в графике.
+    /// И так далее...
     pub fn bar(&self, n: usize) -> Option<&Bar> {
         if n == 0 {
-            return self.now.as_ref();
+            return self.bars.last();
         };
 
-        let bars_count = self.bars.len();
-        if bars_count < n {
-            None
-        } else {
-            let index = self.bars.len() - n;
-            self.bars.get(index)
-        }
+        let index = self.bars.len() - n;
+        self.bars.get(index)
     }
     /// Return fist historical bar of chart.
     ///
@@ -158,7 +151,7 @@ impl Chart {
     /// Возвращает ссылку на последний исторический бар или None,
     /// если график не содержит баров.
     pub fn last(&self) -> Option<&Bar> {
-        self.bars.last()
+        self.bars.get(self.bars.len() - 2)
     }
     /// Return real-time bar of chart
     ///
@@ -166,7 +159,7 @@ impl Chart {
     /// Возвращает ссылку на текущий real-time бар или None,
     /// если график не содержит баров.
     pub fn now(&self) -> Option<&Bar> {
-        self.now.as_ref()
+        self.bars.last()
     }
     /// Return last price
     ///
@@ -175,11 +168,8 @@ impl Chart {
     /// или последнего исторического бара. Если график не содержит баров,
     /// возвращает None.
     pub fn last_price(&self) -> Option<f64> {
-        if let Some(bar) = self.now() {
-            Some(bar.c)
-        } else {
-            self.last().map(|bar| bar.c)
-        }
+        let last_bar = self.bars.last()?;
+        Some(last_bar.c)
     }
     /// Select bars in closed range [from, till].
     ///
@@ -204,35 +194,43 @@ impl Chart {
     /// Добавляет в график новый бар. В зависимости от даты и
     /// времени добавляемого бара функция:
     /// - обновит текущий реал-тайм бар новым баром;
-    /// - сделает текущий реал-тайм бар историческим, а новый
-    ///   поставит текущим;
+    /// - сделает текущий реал-тайм бар историческим (last), а новый
+    ///   поставит текущим (now);
     pub fn add_bar(&mut self, new_bar: Bar) {
-        match self.now.take() {
-            None => {
-                // receive first real time bar
-                self.now = Some(new_bar);
-            }
-            Some(old_bar) => {
-                // only update now bar
-                if old_bar.ts_nanos == new_bar.ts_nanos {
-                    self.now = Some(new_bar);
-                // new historical bar and update now bar
-                } else if old_bar.ts_nanos < new_bar.ts_nanos {
-                    self.bars.push(old_bar);
-                    self.now = Some(new_bar);
-                }
-                // old_bar.ts_nanos > new_bar.ts_nanos
-                // Тинькофф бывает прокидывает в дата стриме
-                // исторические бары законченные уже после новых
-                // реал-тайм баров. По факту же - последний
-                // реал-тайм бар который был в потоке как незаконченный
-                // он равен этому законченному историческому бару
-                // так что в моем алгоритме приема баров он не нужен, игнор.
-                else {
-                    return;
-                }
-            }
-        };
+        let last_bar = self.bars.last_mut();
+
+        // если баров не было - в пустой график добавляем первый бар
+        if last_bar.is_none() {
+            self.bars.push(new_bar);
+            return;
+        }
+
+        // далее ситуации когда в графике есть бары
+        let last_bar = last_bar.unwrap();
+
+        // если время одинаковое - только обновить текущий бар
+        if last_bar.ts_nanos == new_bar.ts_nanos {
+            *last_bar = new_bar;
+            return;
+        }
+
+        // время смены бара
+        let next_ts = self.tf.next_ts(last_bar.ts_nanos);
+
+        // если время пришедшего нового бара больше текущего последнего
+        // и при этом меньше чем время смены бара, - джоинить этот бар
+        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos < next_ts
+        {
+            *last_bar = last_bar.join(new_bar);
+            return;
+        }
+
+        // если время пришедшего нового бара больше текущего последнего
+        // и при этом равно времени смены бара, - новый текущий
+        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos == next_ts
+        {
+            self.bars.push(new_bar);
+        }
 
         self.update_ind();
         self.update_user_data();
@@ -253,32 +251,23 @@ impl Chart {
     /// справа от графика, где нет баров, то отображается информация
     /// по последнему бару в графике.
     pub fn get_bar_of_ts(&self, ts: i64) -> Option<&Bar> {
-        // если первый бар в графике есть
-        if let Some(bar) = self.first() {
-            // если время меньше чем время первого бара -> None
-            if ts < bar.ts_nanos {
-                return None;
-            }
+        // если вообще баров нет -> None
+        if self.bars.is_empty() {
+            return None;
         }
-        // если первого бара нет (то есть вообще баров нет) -> None
-        else {
+
+        // если первый бар в графике есть
+        // и если время меньше чем время первого бара -> None
+        let bar = self.bars.first()?;
+        if ts < bar.ts_nanos {
             return None;
         }
 
         // если текущий бар есть
-        if let Some(bar) = self.now {
-            // если время больше чем время текущего бара -> текущий бар
-            if ts > bar.ts_nanos {
-                return self.now();
-            }
-        }
-        // если текущего бара нет
-        else {
-            // если время больше чем время последнего бара -> последний бар
-            let bar = self.last().unwrap();
-            if ts > bar.ts_nanos {
-                return self.last();
-            }
+        // и если время больше чем время текущего бара -> текущий бар
+        let bar = self.bars.last()?;
+        if ts > bar.ts_nanos {
+            return Some(bar);
         }
 
         // Иначе время где-то в пределах имеющихся баров, делаем поиск
@@ -288,7 +277,7 @@ impl Chart {
 
     // XXX: Unstable experimental features
     pub fn add_ind(&mut self, mut i: Indicator) {
-        i.init(&self.bars, self.now.as_ref());
+        i.init(&self.bars);
 
         let id = i.id().to_string();
         self.ind.insert(id, i);
@@ -301,7 +290,7 @@ impl Chart {
     }
 
     pub fn add_data(&mut self, mut data: impl UserData + 'static) {
-        data.init(self.bars(), self.now());
+        data.init(self.bars());
         let id = data.id().to_string();
         self.user_data.insert(id, Box::new(data));
     }
@@ -310,13 +299,13 @@ impl Chart {
     #[inline]
     fn update_ind(&mut self) {
         for i in self.ind.iter_mut() {
-            i.1.update(&self.bars, self.now.as_ref());
+            i.1.update(&self.bars);
         }
     }
     #[inline]
     fn update_user_data(&mut self) {
         for i in self.user_data.iter_mut() {
-            i.1.update(&self.bars, self.now.as_ref());
+            i.1.update(&self.bars);
         }
     }
 }
@@ -349,7 +338,6 @@ mod tests {
         assert_eq!(chart.iid, iid);
         assert_eq!(chart.tf, tf);
         assert_eq!(chart.bars.len(), 256);
-        assert!(chart.now.is_none());
     }
     #[test]
     fn empty() {
@@ -359,7 +347,6 @@ mod tests {
         let chart = Chart::empty(&iid, tf);
         assert_eq!(chart.tf, tf);
         assert_eq!(chart.bars.len(), 0);
-        assert!(chart.now.is_none());
     }
     #[test]
     fn load() {
@@ -371,13 +358,17 @@ mod tests {
         let chart = Chart::load(&iid, tf, &begin, &end).unwrap();
         assert_eq!(chart.tf(), tf);
         assert_eq!(chart.bars().len(), 23);
-        assert!(chart.now().is_none());
+        assert!(chart.now().is_some());
 
         assert_eq!(chart.first().unwrap().dt(), begin);
         assert_eq!(
             chart.last().unwrap().dt(),
+            Utc.with_ymd_and_hms(2023, 8, 29, 21, 0, 0).unwrap(),
+        );
+        assert_eq!(
+            chart.now().unwrap().dt(),
             Utc.with_ymd_and_hms(2023, 8, 30, 21, 0, 0).unwrap(),
-        )
+        );
     }
     #[test]
     fn select_on_d() {
@@ -417,5 +408,296 @@ mod tests {
 
         let selected = chart.select(from, till);
         assert_eq!(selected.len(), 3);
+    }
+    #[test]
+    fn add_bar_10m() {
+        // 1M
+        // Bar: dt=2025-01-03 09:59:00 o=280 h=280 l=280 c=280 v=158150
+        // Bar: dt=2025-01-03 10:00:00 o=279.99 h=280 l=279.55 c=279.7 v=476620
+        // Bar: dt=2025-01-03 10:01:00 o=279.64 h=279.9 l=279.2 c=279.85 v=643880
+        // Bar: dt=2025-01-03 10:02:00 o=279.85 h=280.41 l=279.74 c=280.1 v=584470
+        // Bar: dt=2025-01-03 10:03:00 o=280.17 h=280.2 l=279.87 c=279.9 v=369760
+        // Bar: dt=2025-01-03 10:04:00 o=279.9 h=279.95 l=279.54 c=279.54 v=338140
+        // Bar: dt=2025-01-03 10:05:00 o=279.54 h=279.56 l=279 c=279.44 v=767470
+        // Bar: dt=2025-01-03 10:06:00 o=279.43 h=279.44 l=278.58 c=278.91 v=520310
+        // Bar: dt=2025-01-03 10:07:00 o=278.99 h=279.38 l=278.71 c=279.07 v=281490
+        // Bar: dt=2025-01-03 10:08:00 o=279.07 h=279.07 l=278.11 c=278.31 v=304020
+        // Bar: dt=2025-01-03 10:09:00 o=278.34 h=278.91 l=278.15 c=278.4 v=416040
+        // Bar: dt=2025-01-03 10:10:00 o=278.53 h=278.89 l=278.14 c=278.62 v=233030
+        // Bar: dt=2025-01-03 10:11:00 o=278.62 h=278.93 l=278.58 c=278.93 v=164140
+        // Bar: dt=2025-01-03 10:12:00 o=278.91 h=279.21 l=278.85 c=278.86 v=208890
+        // Bar: dt=2025-01-03 10:13:00 o=278.86 h=278.88 l=278.51 c=278.73 v=153850
+        // ---> 10M
+        // Bar: dt=2025-01-03 09:59:00 o=280 h=280 l=280 c=280 v=158150
+        // Bar: dt=2025-01-03 10:00:00 o=279.99 h=280.41 l=278.11 c=278.4 v=4702200
+        // Bar: dt=2025-01-03 10:10:00 o=278.53 h=279.21 l=278.14 c=278.73 v=759910
+
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let tf = TimeFrame::M10;
+        let mut chart = Chart::empty(&iid, tf);
+
+        let bars_data = bars();
+        for b in bars_data.iter() {
+            let bar = Bar::new(b.0, b.1, b.2, b.3, b.4, b.5 as u64);
+            chart.add_bar(bar);
+        }
+
+        let bars = chart.bars();
+        assert_eq!(bars.len(), 3);
+        assert_eq!(
+            bars[0],
+            Bar::new(
+                1735887540000000000_i64,
+                280.0,
+                280.0,
+                280.0,
+                280.0,
+                158150
+            )
+        );
+        assert_eq!(
+            bars[1],
+            Bar::new(
+                1735887600000000000_i64,
+                279.99,
+                280.41,
+                278.11,
+                278.4,
+                4702200
+            )
+        );
+        // Bar: dt=2025-01-03 10:10:00 o=278.53 h=279.21 l=278.14 c=278.73 v=759910
+        assert_eq!(
+            bars[2],
+            Bar::new(
+                1735888200000000000_i64,
+                278.53,
+                279.21,
+                278.14,
+                278.73,
+                759910
+            )
+        );
+    }
+    #[test]
+    fn add_bar_1h() {
+        // 1M
+        // Bar: dt=2025-01-03 09:59:00 o=280 h=280 l=280 c=280 v=158150
+        // Bar: dt=2025-01-03 10:00:00 o=279.99 h=280 l=279.55 c=279.7 v=476620
+        // Bar: dt=2025-01-03 10:01:00 o=279.64 h=279.9 l=279.2 c=279.85 v=643880
+        // Bar: dt=2025-01-03 10:02:00 o=279.85 h=280.41 l=279.74 c=280.1 v=584470
+        // Bar: dt=2025-01-03 10:03:00 o=280.17 h=280.2 l=279.87 c=279.9 v=369760
+        // Bar: dt=2025-01-03 10:04:00 o=279.9 h=279.95 l=279.54 c=279.54 v=338140
+        // Bar: dt=2025-01-03 10:05:00 o=279.54 h=279.56 l=279 c=279.44 v=767470
+        // Bar: dt=2025-01-03 10:06:00 o=279.43 h=279.44 l=278.58 c=278.91 v=520310
+        // Bar: dt=2025-01-03 10:07:00 o=278.99 h=279.38 l=278.71 c=279.07 v=281490
+        // Bar: dt=2025-01-03 10:08:00 o=279.07 h=279.07 l=278.11 c=278.31 v=304020
+        // Bar: dt=2025-01-03 10:09:00 o=278.34 h=278.91 l=278.15 c=278.4 v=416040
+        // Bar: dt=2025-01-03 10:10:00 o=278.53 h=278.89 l=278.14 c=278.62 v=233030
+        // Bar: dt=2025-01-03 10:11:00 o=278.62 h=278.93 l=278.58 c=278.93 v=164140
+        // Bar: dt=2025-01-03 10:12:00 o=278.91 h=279.21 l=278.85 c=278.86 v=208890
+        // Bar: dt=2025-01-03 10:13:00 o=278.86 h=278.88 l=278.51 c=278.73 v=153850
+        // ---> 1H
+        // Bar: dt=2025-01-03 09:59:00 o=280 h=280 l=280 c=280 v=158150
+        // Bar: dt=2025-01-03 10:00:00 o=279.99 h=280.41 l=278.11 c=278.73 v=5462110
+
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let tf = TimeFrame::H1;
+        let mut chart = Chart::empty(&iid, tf);
+
+        let bars_data = bars();
+        for b in bars_data.iter() {
+            let bar = Bar::new(b.0, b.1, b.2, b.3, b.4, b.5 as u64);
+            chart.add_bar(bar);
+        }
+
+        let bars = chart.bars();
+        assert_eq!(bars.len(), 2);
+        assert_eq!(
+            bars[0],
+            Bar::new(
+                1735887540000000000_i64,
+                280.0,
+                280.0,
+                280.0,
+                280.0,
+                158150
+            )
+        );
+        assert_eq!(
+            bars[1],
+            Bar::new(
+                1735887600000000000_i64,
+                279.99,
+                280.41,
+                278.11,
+                278.73,
+                5462110
+            )
+        );
+    }
+    #[test]
+    fn add_bar_day() {
+        // 1M
+        // Bar: dt=2025-01-03 09:59:00 o=280 h=280 l=280 c=280 v=158150
+        // Bar: dt=2025-01-03 10:00:00 o=279.99 h=280 l=279.55 c=279.7 v=476620
+        // Bar: dt=2025-01-03 10:01:00 o=279.64 h=279.9 l=279.2 c=279.85 v=643880
+        // Bar: dt=2025-01-03 10:02:00 o=279.85 h=280.41 l=279.74 c=280.1 v=584470
+        // Bar: dt=2025-01-03 10:03:00 o=280.17 h=280.2 l=279.87 c=279.9 v=369760
+        // Bar: dt=2025-01-03 10:04:00 o=279.9 h=279.95 l=279.54 c=279.54 v=338140
+        // Bar: dt=2025-01-03 10:05:00 o=279.54 h=279.56 l=279 c=279.44 v=767470
+        // Bar: dt=2025-01-03 10:06:00 o=279.43 h=279.44 l=278.58 c=278.91 v=520310
+        // Bar: dt=2025-01-03 10:07:00 o=278.99 h=279.38 l=278.71 c=279.07 v=281490
+        // Bar: dt=2025-01-03 10:08:00 o=279.07 h=279.07 l=278.11 c=278.31 v=304020
+        // Bar: dt=2025-01-03 10:09:00 o=278.34 h=278.91 l=278.15 c=278.4 v=416040
+        // Bar: dt=2025-01-03 10:10:00 o=278.53 h=278.89 l=278.14 c=278.62 v=233030
+        // Bar: dt=2025-01-03 10:11:00 o=278.62 h=278.93 l=278.58 c=278.93 v=164140
+        // Bar: dt=2025-01-03 10:12:00 o=278.91 h=279.21 l=278.85 c=278.86 v=208890
+        // Bar: dt=2025-01-03 10:13:00 o=278.86 h=278.88 l=278.51 c=278.73 v=153850
+        // ---> Day
+        // Bar: dt=2025-01-03 09:59:00 o=280 h=280.41 l=278.11 c=278.73 v=5620260
+
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let tf = TimeFrame::Day;
+        let mut chart = Chart::empty(&iid, tf);
+
+        let bars_data = bars();
+        for b in bars_data.iter() {
+            let bar = Bar::new(b.0, b.1, b.2, b.3, b.4, b.5 as u64);
+            chart.add_bar(bar);
+        }
+
+        let bars = chart.bars();
+        assert_eq!(bars.len(), 1);
+        assert_eq!(
+            bars[0],
+            Bar::new(
+                1735887540000000000_i64,
+                280.0,
+                280.41,
+                278.11,
+                278.73,
+                5620260
+            )
+        );
+    }
+
+    // data for testing chart.add_bar(...)
+    fn bars() -> std::vec::Vec<(i64, f64, f64, f64, f64, i32)> {
+        vec![
+            (1735887540000000000_i64, 280.0, 280.0, 280.0, 280.0, 158150),
+            (
+                1735887600000000000_i64,
+                279.99,
+                280.0,
+                279.55,
+                279.7,
+                476620,
+            ),
+            (
+                1735887660000000000_i64,
+                279.64,
+                279.9,
+                279.2,
+                279.85,
+                643880,
+            ),
+            (
+                1735887720000000000_i64,
+                279.85,
+                280.41,
+                279.74,
+                280.1,
+                584470,
+            ),
+            (
+                1735887780000000000_i64,
+                280.17,
+                280.2,
+                279.87,
+                279.9,
+                369760,
+            ),
+            (
+                1735887840000000000_i64,
+                279.9,
+                279.95,
+                279.54,
+                279.54,
+                338140,
+            ),
+            (
+                1735887900000000000_i64,
+                279.54,
+                279.56,
+                279.0,
+                279.44,
+                767470,
+            ),
+            (
+                1735887960000000000_i64,
+                279.43,
+                279.44,
+                278.58,
+                278.91,
+                520310,
+            ),
+            (
+                1735888020000000000_i64,
+                278.99,
+                279.38,
+                278.71,
+                279.07,
+                281490,
+            ),
+            (
+                1735888080000000000_i64,
+                279.07,
+                279.07,
+                278.11,
+                278.31,
+                304020,
+            ),
+            (
+                1735888140000000000_i64,
+                278.34,
+                278.91,
+                278.15,
+                278.4,
+                416040,
+            ),
+            (
+                1735888200000000000_i64,
+                278.53,
+                278.89,
+                278.14,
+                278.62,
+                233030,
+            ),
+            (
+                1735888260000000000_i64,
+                278.62,
+                278.93,
+                278.58,
+                278.93,
+                164140,
+            ),
+            (
+                1735888320000000000_i64,
+                278.91,
+                279.21,
+                278.85,
+                278.86,
+                208890,
+            ),
+            (
+                1735888380000000000_i64,
+                278.86,
+                278.88,
+                278.51,
+                278.73,
+                153850,
+            ),
+        ]
     }
 }

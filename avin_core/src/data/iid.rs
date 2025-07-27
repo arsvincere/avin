@@ -227,7 +227,7 @@ mod tests {
 
         let iid = Iid::new(info);
         let s = iid.to_string();
-        assert_eq!("Iid=MOEX_SHARE_SBER", s);
+        assert_eq!("MOEX_SHARE_SBER", s);
     }
     #[test]
     fn path() {
