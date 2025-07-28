@@ -1,6 +1,15 @@
-use std::fmt;
+/*****************************************************************************
+ * URL:         http://avin.info
+ * AUTHOR:      H1ghSpeed
+ * E-MAIL:
+ * LICENSE:     MIT
+ ****************************************************************************/
 
-#[derive(Debug)]
+/// List for selecting the instrument category.
+///
+/// # ru
+/// Перечисление для выбора категории инструмента.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum Category {
     CURRENCY,
     INDEX,
@@ -11,9 +20,26 @@ pub enum Category {
     ETF,
 }
 
+impl Category {
+    /// Return category name
+    ///
+    /// # ru
+    /// Возвращает название категории инструмента
+    pub fn name(&self) -> &str {
+        match self {
+            Self::CURRENCY => "CURRENCY",
+            Self::INDEX => "INDEX",
+            Self::SHARE => "SHARE",
+            Self::BOND => "BOND",
+            Self::FUTURE => "FUTURE",
+            Self::OPTION => "OPTION",
+            Self::ETF => "ETF",
+        }
+    }
+}
 
-impl fmt::Display for Category {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Display for Category {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Category::CURRENCY => write!(f, "CURRENCY"),
             Category::INDEX => write!(f, "INDEX"),
@@ -37,7 +63,33 @@ impl From<&str> for Category {
             "FUTURE" => Category::FUTURE,
             "OPTION" => Category::OPTION,
             "ETF" => Category::ETF,
-            _ => todo!("not implemented"),
+            _ => todo!("not implemented {}", value),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn category_to_string() {
+        assert_eq!(Category::CURRENCY.to_string(), "CURRENCY");
+        assert_eq!(Category::INDEX.to_string(), "INDEX");
+        assert_eq!(Category::SHARE.to_string(), "SHARE");
+        assert_eq!(Category::BOND.to_string(), "BOND");
+        assert_eq!(Category::FUTURE.to_string(), "FUTURE");
+        assert_eq!(Category::OPTION.to_string(), "OPTION");
+        assert_eq!(Category::ETF.to_string(), "ETF");
+    }
+    #[test]
+    fn category_from_str() {
+        assert_eq!(Category::from("CURRENCY"), Category::CURRENCY);
+        assert_eq!(Category::from("INDEX"), Category::INDEX);
+        assert_eq!(Category::from("SHARE"), Category::SHARE);
+        assert_eq!(Category::from("BOND"), Category::BOND);
+        assert_eq!(Category::from("FUTURE"), Category::FUTURE);
+        assert_eq!(Category::from("OPTION"), Category::OPTION);
+        assert_eq!(Category::from("ETF"), Category::ETF);
     }
 }
