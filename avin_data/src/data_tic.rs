@@ -10,10 +10,7 @@ use polars::prelude::*;
 
 use avin_utils::{self as utils, AvinError, Cmd};
 
-use crate::{Iid, MarketData, Tic};
-
-// TODO: можно это вынести в MarketData, и там уже метод load,
-// будет гораздо логичнее.
+use crate::{Iid, MarketData};
 
 #[derive(Debug)]
 pub struct DataTic {}
@@ -25,7 +22,15 @@ impl DataTic {
         end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
-        let schema = Tic::schema();
+        let schema = Schema::from_iter(vec![
+            Field::new("ts_nanos".into(), DataType::Int64),
+            Field::new("direction".into(), DataType::String),
+            Field::new("lots".into(), DataType::Int64),
+            Field::new("price".into(), DataType::Float64),
+            Field::new("value".into(), DataType::Float64),
+            Field::new("session".into(), DataType::Int8),
+            Field::new("tradeno".into(), DataType::Int64),
+        ]);
         let mut df = DataFrame::empty_with_schema(&schema);
 
         // load data by days

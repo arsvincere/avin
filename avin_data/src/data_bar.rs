@@ -10,10 +10,7 @@ use polars::prelude::*;
 
 use avin_utils::{self as utils, AvinError, Cmd};
 
-use crate::{Bar, Iid, MarketData};
-
-// TODO: можно это вынести в MarketData, и там уже метод load,
-// будет гораздо логичнее.
+use crate::{Iid, MarketData};
 
 #[derive(Debug)]
 pub struct DataBar {}
@@ -25,7 +22,16 @@ impl DataBar {
         end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
-        let schema = Bar::schema();
+        let schema = Schema::from_iter(vec![
+            Field::new("ts_nanos".into(), DataType::Int64),
+            Field::new("open".into(), DataType::Float64),
+            Field::new("high".into(), DataType::Float64),
+            Field::new("low".into(), DataType::Float64),
+            Field::new("close".into(), DataType::Float64),
+            Field::new("volume".into(), DataType::Int64),
+            Field::new("value".into(), DataType::Float64),
+        ]);
+
         let mut df = DataFrame::empty_with_schema(&schema);
 
         // load data by years

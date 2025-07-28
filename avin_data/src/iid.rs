@@ -8,7 +8,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use bitcode::{Decode, Encode};
 use polars::frame::DataFrame;
 
 use avin_utils::{AvinError, CFG};
@@ -23,7 +22,7 @@ use avin_utils::{AvinError, CFG};
 /// Не предполагается ручное создание объектов этой структуры. Воспользуйтесь
 /// методом [`crate::Manager::find_iid`]. Так же iid автоматически находится
 /// и включается в актив при создании: [`crate::Asset::new`]
-#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Iid {
     info: HashMap<String, String>,
 }

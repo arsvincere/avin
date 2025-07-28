@@ -10,10 +10,7 @@ use polars::prelude::*;
 
 use avin_utils::{AvinError, CFG, Cmd};
 
-use crate::category::Category;
-use crate::exchange::Exchange;
-use crate::iid::Iid;
-use crate::source::Source;
+use crate::{Category, Exchange, Iid, Source};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct IidCache {
@@ -59,6 +56,7 @@ impl IidCache {
     //     Self { source, category, iid_df: df }
     // }
 
+    #[allow(dead_code)]
     pub fn save(cache: IidCache) {
         // create file path
         let mut path = CFG.dir.cache();
@@ -67,7 +65,7 @@ impl IidCache {
 
         // save parquet
         let mut df = cache.iid_df;
-        Cmd::write_pqt(&mut df, &path);
+        Cmd::write_pqt(&mut df, &path).unwrap();
     }
 }
 

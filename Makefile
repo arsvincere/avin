@@ -85,6 +85,8 @@ clean: ## Clean up caches, build artifacts, and the venv
 
 run: ## Run temp bin (gitignored)
 	cargo run --bin a-aaa --jobs 4
+data:
+	cargo run --bin avin-data --jobs 4 --release
 analyse:
 	cargo run --bin avin-analyse --jobs 4 --release
 backscan:
@@ -135,6 +137,8 @@ help:
 	@echo -e $(B1)analyse$(B2)"        Run analyse"
 	@echo -e $(B1)backscan$(B2)"       Run backscan"
 	@echo -e $(B1)backtest$(B2)"       Run backtest"
+	@echo -e $(B1)data$(B2)"       	   Run data"
+	@echo -e $(B1)scanner$(B2)"        Run scanner"
 	@echo -e $(B1)tester$(B2)"         Run tester"
 	@echo -e $(B1)trader$(B2)"         Run trader"
 	@echo -e $(B1)terminal$(B2)"       Run terminal"
@@ -150,4 +154,5 @@ help:
 
 # Each entry of .PHONY is a target that is not a file
 .PHONY: check, fmt, test, pre-commit, build, install, publish, clean
-.PHONY: requirements, dev, r, help, test_ignored
+.PHONY: requirements, dev, run, help, test_ignored
+.PHONY: analyse, data, backscan, backtest, scanner, tester, trader, terminal
