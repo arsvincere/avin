@@ -7,7 +7,7 @@
 
 use std::collections::VecDeque;
 
-use avin_core::{Asset, Bar, Iid, Manager, MarketData};
+use avin_core::{Asset, Bar, BarEvent, Iid, Manager, MarketData, TimeFrame};
 use chrono::{DateTime, Utc};
 
 pub struct Simulator {
@@ -18,19 +18,19 @@ pub struct Simulator {
 }
 impl Simulator {
     pub fn new(iid: &Iid, begin: DateTime<Utc>, end: DateTime<Utc>) -> Self {
-        let df = Manager::load(iid, MarketData::BAR_1M, begin, end).unwrap();
-        let vec_bars = Bar::from_df(&df).unwrap();
-
         Self {
             asset: Asset::from_iid(iid.clone()),
             begin,
             end,
-            bars_1m: VecDeque::from(vec_bars),
+            bars_1m: load_bars(iid, begin, end),
         }
     }
 
     pub fn asset(&self) -> &Asset {
         &self.asset
+    }
+    pub fn asset_mut(&mut self) -> &mut Asset {
+        &mut self.asset
     }
     pub fn begin(&self) -> DateTime<Utc> {
         self.begin // DateTime has Copy trait
@@ -48,7 +48,72 @@ impl Simulator {
         self.end = dt
     }
 
-    pub fn start(&mut self) {
-        //
+    pub fn activate(&mut self, tf: TimeFrame) {
+        self.asset.load_chart_empty(tf);
+    }
+
+    pub fn step(&mut self, n: usize) -> &Asset {
+        let mut i = 0;
+        while i != n {
+            self.next_bar();
+            i += 1;
+        }
+
+        &self.asset
+    }
+    pub fn next_bar(&mut self) -> Option<&Asset> {
+        let bar = self.bars_1m.pop_front()?;
+        let figi = self.asset.figi().clone();
+        let e = BarEvent::new(figi, TimeFrame::M1, bar);
+        self.asset.bar_event(e);
+
+        Some(&self.asset)
+    }
+    pub fn restart(&mut self) {
+        self.asset.clear();
+        self.bars_1m = load_bars(self.asset.iid(), self.begin, self.end);
+    }
+}
+
+fn load_bars(iid: &Iid, b: DateTime<Utc>, e: DateTime<Utc>) -> VecDeque<Bar> {
+    let df = Manager::load(iid, MarketData::BAR_1M, b, e).unwrap();
+    let vec_bars = Bar::from_df(&df).unwrap();
+
+    VecDeque::from(vec_bars)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use avin_utils::*;
+
+    #[test]
+    fn simulate_1m() {
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let begin = str_date_to_utc("2023-08-01");
+        let end = str_date_to_utc("2023-09-01");
+        let tf = TimeFrame::M1;
+
+        let mut simulator = Simulator::new(&iid, begin, end);
+        simulator.activate(tf);
+
+        let chart = simulator.asset().chart(tf).unwrap();
+        assert!(chart.now().is_none());
+
+        simulator.next_bar();
+        let chart = simulator.asset().chart(tf).unwrap();
+        assert!(chart.now().is_some());
+
+        for _i in 0..10 {
+            simulator.next_bar();
+        }
+
+        let chart = simulator.asset().chart(tf).unwrap();
+        let now_bar = chart.now().unwrap();
+        let expect_dt = str_dt_to_utc("2023-08-01 10:09:00");
+        let expect_ts = expect_dt.timestamp_nanos_opt().unwrap();
+        let expect_bar =
+            Bar::new(expect_ts, 267.52, 267.61, 266.84, 267.07, 1304400);
+        assert_eq!(*now_bar, expect_bar);
     }
 }
