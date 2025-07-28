@@ -413,6 +413,12 @@ impl Asset {
     pub fn tic_event(&mut self, _e: TicEvent) {
         todo!();
     }
+
+    pub fn clear(&mut self) {
+        match self {
+            Self::SHARE(s) => s.clear(),
+        }
+    }
 }
 impl std::fmt::Display for Asset {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

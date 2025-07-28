@@ -448,6 +448,12 @@ impl Share {
     pub fn tic_event(&mut self, _e: TicEvent) {
         todo!();
     }
+
+    pub fn clear(&mut self) {
+        self.charts.clear();
+        self.tics.clear();
+        self.footprints.clear();
+    }
 }
 impl std::fmt::Display for Share {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
