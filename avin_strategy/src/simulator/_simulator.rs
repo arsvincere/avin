@@ -88,7 +88,7 @@ mod tests {
     use avin_utils::*;
 
     #[test]
-    fn simulate_1m() {
+    fn simulate_1m_next() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let begin = str_date_to_utc("2023-08-01");
         let end = str_date_to_utc("2023-09-01");
@@ -114,6 +114,77 @@ mod tests {
         let expect_ts = expect_dt.timestamp_nanos_opt().unwrap();
         let expect_bar =
             Bar::new(expect_ts, 267.52, 267.61, 266.84, 267.07, 1304400);
+        assert_eq!(*now_bar, expect_bar);
+    }
+    #[test]
+    fn simulate_1m_step() {
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let begin = str_date_to_utc("2023-08-01");
+        let end = str_date_to_utc("2023-09-01");
+        let tf = TimeFrame::M1;
+
+        let mut simulator = Simulator::new(&iid, begin, end);
+        simulator.activate(tf);
+
+        let chart = simulator.asset().chart(tf).unwrap();
+        assert!(chart.now().is_none());
+
+        simulator.next_bar();
+        let chart = simulator.asset().chart(tf).unwrap();
+        assert!(chart.now().is_some());
+
+        simulator.step(10);
+
+        let chart = simulator.asset().chart(tf).unwrap();
+        let now_bar = chart.now().unwrap();
+        let expect_dt = str_dt_to_utc("2023-08-01 10:09:00");
+        let expect_ts = expect_dt.timestamp_nanos_opt().unwrap();
+        let expect_bar =
+            Bar::new(expect_ts, 267.52, 267.61, 266.84, 267.07, 1304400);
+        assert_eq!(*now_bar, expect_bar);
+    }
+    #[test]
+    fn simulate_10m() {
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let begin = str_date_to_utc("2023-08-01");
+        let end = str_date_to_utc("2023-09-01");
+        let tf = TimeFrame::M10;
+
+        let mut simulator = Simulator::new(&iid, begin, end);
+        simulator.activate(tf);
+
+        simulator.next_bar();
+        simulator.next_bar();
+        simulator.step(60);
+
+        let chart = simulator.asset().chart(tf).unwrap();
+        let now_bar = chart.now().unwrap();
+        let expect_dt = str_dt_to_utc("2023-08-01 11:00:00");
+        let expect_ts = expect_dt.timestamp_nanos_opt().unwrap();
+        let expect_bar =
+            Bar::new(expect_ts, 267.29, 267.35, 266.33, 266.5, 521050);
+        assert_eq!(*now_bar, expect_bar);
+    }
+    #[test]
+    fn simulate_1h() {
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let begin = str_date_to_utc("2023-08-01");
+        let end = str_date_to_utc("2023-09-01");
+        let tf = TimeFrame::H1;
+
+        let mut simulator = Simulator::new(&iid, begin, end);
+        simulator.activate(tf);
+
+        simulator.next_bar();
+        simulator.next_bar();
+        simulator.step(120);
+
+        let chart = simulator.asset().chart(tf).unwrap();
+        let now_bar = chart.now().unwrap();
+        let expect_dt = str_dt_to_utc("2023-08-01 12:00:00");
+        let expect_ts = expect_dt.timestamp_nanos_opt().unwrap();
+        let expect_bar =
+            Bar::new(expect_ts, 267.89, 268.39, 267.83, 268.31, 245660);
         assert_eq!(*now_bar, expect_bar);
     }
 }
