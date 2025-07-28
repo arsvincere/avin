@@ -1,6 +1,6 @@
 [package]
 name = "avin_utils"
-description = "Utils of the Avin Trade System library"
+description = "Utils for the 'avin' library"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }

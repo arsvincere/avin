@@ -5,6 +5,7 @@ members = [
     "avin_analyse",
     "avin_connect",
     "avin_core",
+    "avin_data",
     "avin_gui",
     "avin_strategy",
     "avin_terminal",
@@ -75,6 +76,7 @@ avin = { version = "0.3.7", path = "avin" }
 avin_analyse = { version = "0.3.7", path = "avin_analyse" }
 avin_connect = { version = "0.3.7", path = "avin_connect" }
 avin_core = { version = "0.3.7", path = "avin_core" }
+avin_data = { version = "0.3.7", path = "avin_data" }
 avin_gui = { version = "0.3.7", path = "avin_gui" }
 avin_strategy = { version = "0.3.7", path = "avin_strategy" }
 avin_terminal = { version = "0.3.7", path = "avin_terminal" }

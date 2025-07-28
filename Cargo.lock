@@ -619,6 +619,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "avin_data"
+version = "0.3.7"
+dependencies = [
+ "avin_utils",
+ "cached",
+ "chrono",
+ "log",
+ "polars",
+ "serde",
+ "strum 0.27.1",
+ "time-unit",
+]
+
+[[package]]
 name = "avin_gui"
 version = "0.3.7"
 dependencies = [
