@@ -20,9 +20,9 @@ pub struct DataBar {}
 impl DataBar {
     pub fn load(
         iid: &Iid,
-        market_data: &MarketData,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        market_data: MarketData,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
         let schema = Bar::schema();
@@ -60,7 +60,7 @@ impl DataBar {
 
 fn load_file(
     iid: &Iid,
-    market_data: &MarketData,
+    market_data: MarketData,
     year: i32,
 ) -> Result<DataFrame, AvinError> {
     // get path

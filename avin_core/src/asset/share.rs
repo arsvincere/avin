@@ -225,7 +225,7 @@ impl Share {
         let end = Utc::now();
         let begin = end - tf.timedelta() * CFG.core.default_bars_count as i32;
 
-        self.load_chart_period(tf, &begin, &end)
+        self.load_chart_period(tf, begin, end)
     }
     /// Load chart with default bars count. Return mutable reference of
     /// loaded chart.
@@ -241,7 +241,7 @@ impl Share {
         let end = Utc::now();
         let begin = end - tf.timedelta() * CFG.core.default_bars_count as i32;
 
-        self.load_chart_period(tf, &begin, &end).unwrap();
+        self.load_chart_period(tf, begin, end).unwrap();
 
         Ok(self.charts.get_mut(&tf).unwrap())
     }
@@ -254,8 +254,8 @@ impl Share {
     pub fn load_chart_period(
         &mut self,
         tf: TimeFrame,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
         let chart = Chart::load(&self.iid, tf, begin, end)?;
         self.charts.insert(tf, chart);
@@ -318,7 +318,7 @@ impl Share {
         let begin = Utc::now().with_time(NaiveTime::MIN).unwrap();
         let end = Utc::now();
 
-        match Manager::load(&self.iid, &MarketData::TIC, &begin, &end) {
+        match Manager::load(&self.iid, MarketData::TIC, begin, end) {
             Ok(df) => {
                 self.tics = Tic::from_df(&df).unwrap();
                 Ok(())
@@ -485,7 +485,7 @@ mod tests {
         let begin = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 2, 1, 0, 0, 0).unwrap();
 
-        let chart = share.load_chart_period(tf, &begin, &end).unwrap();
+        let chart = share.load_chart_period(tf, begin, end).unwrap();
 
         assert_eq!(chart.tf(), tf);
         assert_eq!(

@@ -118,8 +118,8 @@ pub fn replace_ts(mut df: DataFrame) -> DataFrame {
 }
 /// Filter datetime in dataframe
 pub fn filter_dt(
-    begin: &DateTime<Utc>,
-    end: &DateTime<Utc>,
+    begin: DateTime<Utc>,
+    end: DateTime<Utc>,
     df: DataFrame,
 ) -> DataFrame {
     // filter begin end datetime by timestamp

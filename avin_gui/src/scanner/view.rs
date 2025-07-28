@@ -70,7 +70,7 @@ impl ScanView {
             None => {
                 let b = scan_result.begin();
                 let e = scan_result.end();
-                asset.load_chart_period(tf, &b, &e).unwrap();
+                asset.load_chart_period(tf, b, e).unwrap();
 
                 let chart = asset.chart_mut(tf).unwrap();
                 ExtremumIndicator::init(chart);

@@ -20,9 +20,9 @@ pub struct DataTic {}
 impl DataTic {
     pub fn load(
         iid: &Iid,
-        market_data: &MarketData,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        market_data: MarketData,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
         let schema = Tic::schema();
@@ -32,7 +32,7 @@ impl DataTic {
         let mut day = begin.date_naive();
         let end_day = end.date_naive();
         while day <= end_day {
-            match Self::load_file(iid, market_data, &day) {
+            match Self::load_file(iid, market_data, day) {
                 Ok(file_df) => {
                     df.extend(&file_df).unwrap();
                     day = day.checked_add_days(Days::new(1)).unwrap();
@@ -58,8 +58,8 @@ impl DataTic {
     }
     pub fn load_file(
         iid: &Iid,
-        md: &MarketData,
-        day: &NaiveDate,
+        md: MarketData,
+        day: NaiveDate,
     ) -> Result<DataFrame, AvinError> {
         // get path
         let mut path = iid.path();

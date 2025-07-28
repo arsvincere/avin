@@ -314,7 +314,7 @@ fn load_chart(iid: &Iid, tf: TimeFrame) -> Result<Chart, AvinError> {
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();
 
-    let chart = Chart::load(iid, tf, &begin, &end).unwrap();
+    let chart = Chart::load(iid, tf, begin, end).unwrap();
 
     Ok(chart)
 }

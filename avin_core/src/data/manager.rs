@@ -85,18 +85,18 @@ impl Manager {
     /// use avin_utils as utils;
     ///
     /// let iid = Manager::find_iid("MOEX_SHARE_SBER").unwrap();
-    /// let md = MarketData::BAR_W;
+    /// let md = MarketData::BAR_1H;
     /// let begin = utils::str_date_to_utc("2024-01-01");
     /// let end = utils::str_date_to_utc("2025-01-01");
     ///
-    /// let df = Manager::load(&iid, &md, &begin, &end).unwrap();
+    /// let df = Manager::load(&iid, md, begin, end).unwrap();
     /// println!("{}", df);
     /// ```
     pub fn load(
         iid: &Iid,
-        md: &MarketData,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        md: MarketData,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         match md {
             MarketData::TIC => DataTic::load(iid, md, begin, end),
@@ -122,11 +122,11 @@ mod tests {
     #[test]
     fn request_1m() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
-        let data = MarketData::BAR_1M;
+        let md = MarketData::BAR_1M;
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 7, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 8, 1, 8, 0, 0).unwrap();
 
-        let df = Manager::load(&iid, &data, &begin, &end).unwrap();
+        let df = Manager::load(&iid, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
@@ -140,11 +140,11 @@ mod tests {
     #[test]
     fn request_10m() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
-        let data = MarketData::BAR_10M;
+        let md = MarketData::BAR_10M;
         let begin = utils::str_dt_to_utc("2023-08-01 10:00:00");
         let end = utils::str_dt_to_utc("2023-08-01 11:00:00");
 
-        let df = Manager::load(&iid, &data, &begin, &end).unwrap();
+        let df = Manager::load(&iid, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
@@ -158,11 +158,11 @@ mod tests {
     #[test]
     fn request_1h() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
-        let data = MarketData::BAR_1H;
+        let md = MarketData::BAR_1H;
         let begin = utils::str_dt_to_utc("2023-08-01 10:00:00");
         let end = utils::str_dt_to_utc("2023-08-01 13:00:00");
 
-        let df = Manager::load(&iid, &data, &begin, &end).unwrap();
+        let df = Manager::load(&iid, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
@@ -176,11 +176,11 @@ mod tests {
     #[test]
     fn request_d() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
-        let data = MarketData::BAR_D;
+        let md = MarketData::BAR_D;
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-09-01");
 
-        let df = Manager::load(&iid, &data, &begin, &end).unwrap();
+        let df = Manager::load(&iid, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
@@ -194,11 +194,11 @@ mod tests {
     #[test]
     fn request_w() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
-        let data = MarketData::BAR_W;
+        let md = MarketData::BAR_W;
         let begin = utils::str_date_to_utc("2024-01-01");
         let end = utils::str_date_to_utc("2025-01-01");
 
-        let df = Manager::load(&iid, &data, &begin, &end).unwrap();
+        let df = Manager::load(&iid, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();
@@ -212,11 +212,11 @@ mod tests {
     #[test]
     fn request_m() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
-        let data = MarketData::BAR_M;
+        let md = MarketData::BAR_M;
         let begin = utils::str_date_to_utc("2024-01-01");
         let end = utils::str_date_to_utc("2025-01-01");
 
-        let df = Manager::load(&iid, &data, &begin, &end).unwrap();
+        let df = Manager::load(&iid, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
         let first = bars.first().unwrap();
         let last = bars.last().unwrap();

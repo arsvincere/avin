@@ -42,8 +42,8 @@ impl VirtualBroker {
         let (tx, rx) = mpsc::unbounded_channel();
         let data_stream = Self::create_marketdata_stream(
             &test.iid,
-            &test.begin(),
-            &test.end(),
+            test.begin(),
+            test.end(),
         )
         .unwrap();
 
@@ -131,8 +131,8 @@ impl VirtualBroker {
     // private
     fn create_marketdata_stream(
         iid: &Iid,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<DataStream, &'static str> {
         let stream = DataStream::new(iid, begin, end);
 

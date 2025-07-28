@@ -5,20 +5,27 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_core::{Asset, Iid};
+use std::collections::VecDeque;
+
+use avin_core::{Asset, Bar, Iid, Manager, MarketData};
 use chrono::{DateTime, Utc};
 
 pub struct Simulator {
     asset: Asset,
     begin: DateTime<Utc>,
     end: DateTime<Utc>,
+    bars_1m: VecDeque<Bar>,
 }
 impl Simulator {
     pub fn new(iid: &Iid, begin: DateTime<Utc>, end: DateTime<Utc>) -> Self {
+        let df = Manager::load(iid, MarketData::BAR_1M, begin, end).unwrap();
+        let vec_bars = Bar::from_df(&df).unwrap();
+
         Self {
             asset: Asset::from_iid(iid.clone()),
             begin,
             end,
+            bars_1m: VecDeque::from(vec_bars),
         }
     }
 

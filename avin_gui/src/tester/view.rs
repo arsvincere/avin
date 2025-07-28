@@ -71,7 +71,7 @@ impl TestView {
             None => {
                 let b = test.begin();
                 let e = test.end();
-                asset.load_chart_period(tf, &b, &e).unwrap();
+                asset.load_chart_period(tf, b, e).unwrap();
 
                 let chart = asset.chart_mut(tf).unwrap();
                 ExtremumIndicator::init(chart);

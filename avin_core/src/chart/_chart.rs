@@ -74,10 +74,10 @@ impl Chart {
     pub fn load(
         iid: &Iid,
         tf: TimeFrame,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<Self, AvinError> {
-        match Manager::load(iid, &tf.market_data(), begin, end) {
+        match Manager::load(iid, tf.market_data(), begin, end) {
             Ok(df) => {
                 let bars = Bar::from_df(&df).unwrap();
                 let chart = Self::new(iid, tf, bars);
@@ -330,8 +330,7 @@ mod tests {
         let tf = TimeFrame::Day;
         let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
-        let df =
-            Manager::load(&iid, &tf.market_data(), &begin, &end).unwrap();
+        let df = Manager::load(&iid, tf.market_data(), begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
 
         let chart = Chart::new(&iid, tf, bars);
@@ -355,7 +354,7 @@ mod tests {
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-09-01");
 
-        let chart = Chart::load(&iid, tf, &begin, &end).unwrap();
+        let chart = Chart::load(&iid, tf, begin, end).unwrap();
         assert_eq!(chart.tf(), tf);
         assert_eq!(chart.bars().len(), 23);
         assert!(chart.now().is_some());
@@ -376,7 +375,7 @@ mod tests {
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        let chart = share.load_chart_period(tf, &begin, &end).unwrap();
+        let chart = share.load_chart_period(tf, begin, end).unwrap();
 
         let from = utils::str_date_to_utc("2024-12-23")
             .timestamp_nanos_opt()
@@ -395,7 +394,7 @@ mod tests {
 
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-08-02");
-        let chart = share.load_chart_period(tf, &begin, &end).unwrap();
+        let chart = share.load_chart_period(tf, begin, end).unwrap();
 
         // выборка с 12:30 до 15:30
         // должно войти 3 бара 13:00 14:00 15:00

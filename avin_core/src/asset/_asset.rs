@@ -240,8 +240,8 @@ impl Asset {
     pub fn load_chart_period(
         &mut self,
         tf: TimeFrame,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
         match self {
             Self::SHARE(share) => share.load_chart_period(tf, begin, end),

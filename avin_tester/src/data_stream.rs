@@ -17,16 +17,10 @@ pub struct DataStream {
 }
 
 impl DataStream {
-    pub fn new(
-        iid: &Iid,
-        begin: &DateTime<Utc>,
-        end: &DateTime<Utc>,
-    ) -> Self {
-        let bars_1m = DataStream::load_bars(iid, begin, end);
-
+    pub fn new(iid: &Iid, begin: DateTime<Utc>, end: DateTime<Utc>) -> Self {
         Self {
             iid: iid.clone(),
-            bars_1m,
+            bars_1m: load_bars(iid, begin, end),
         }
     }
 
@@ -45,65 +39,61 @@ impl DataStream {
     }
 
     // private
-    fn load_bars(
-        iid: &Iid,
-        b: &DateTime<Utc>,
-        e: &DateTime<Utc>,
-    ) -> VecDeque<Bar> {
-        let df = Manager::load(iid, &MarketData::BAR_1M, b, e).unwrap();
+}
 
-        let ts = df
-            .column("ts_nanos")
-            .unwrap()
-            .i64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut o = df
-            .column("open")
-            .unwrap()
-            .f64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut h = df
-            .column("high")
-            .unwrap()
-            .f64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut l =
-            df.column("low").unwrap().f64().unwrap().into_no_null_iter();
-        let mut c = df
-            .column("close")
-            .unwrap()
-            .f64()
-            .unwrap()
-            .into_no_null_iter();
-        let mut v = df
-            .column("volume")
-            .unwrap()
-            .i64()
-            .unwrap()
-            .into_no_null_iter();
+fn load_bars(iid: &Iid, b: DateTime<Utc>, e: DateTime<Utc>) -> VecDeque<Bar> {
+    let df = Manager::load(iid, MarketData::BAR_1M, b, e).unwrap();
 
-        let mut bars_1m = VecDeque::with_capacity(df.height());
-        for t in ts {
-            let bar = Bar::new(
-                t,
-                o.next().unwrap(),
-                h.next().unwrap(),
-                l.next().unwrap(),
-                c.next().unwrap(),
-                v.next().unwrap() as u64,
-            );
-            bars_1m.push_back(bar);
-        }
+    let ts = df
+        .column("ts_nanos")
+        .unwrap()
+        .i64()
+        .unwrap()
+        .into_no_null_iter();
+    let mut o = df
+        .column("open")
+        .unwrap()
+        .f64()
+        .unwrap()
+        .into_no_null_iter();
+    let mut h = df
+        .column("high")
+        .unwrap()
+        .f64()
+        .unwrap()
+        .into_no_null_iter();
+    let mut l = df.column("low").unwrap().f64().unwrap().into_no_null_iter();
+    let mut c = df
+        .column("close")
+        .unwrap()
+        .f64()
+        .unwrap()
+        .into_no_null_iter();
+    let mut v = df
+        .column("volume")
+        .unwrap()
+        .i64()
+        .unwrap()
+        .into_no_null_iter();
 
-        if bars_1m.is_empty() {
-            log::warn!("No data for {iid}");
-        }
-
-        bars_1m
+    let mut bars_1m = VecDeque::with_capacity(df.height());
+    for t in ts {
+        let bar = Bar::new(
+            t,
+            o.next().unwrap(),
+            h.next().unwrap(),
+            l.next().unwrap(),
+            c.next().unwrap(),
+            v.next().unwrap() as u64,
+        );
+        bars_1m.push_back(bar);
     }
+
+    if bars_1m.is_empty() {
+        log::warn!("No data for {iid}");
+    }
+
+    bars_1m
 }
 
 #[cfg(test)]
@@ -118,7 +108,7 @@ mod tests {
         let iid = share.iid();
         let begin = Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2023, 8, 1, 10, 10, 0).unwrap();
-        let mut ds = DataStream::new(iid, &begin, &end);
+        let mut ds = DataStream::new(iid, begin, end);
 
         let mut bars_1m_count = 0;
         let mut bars_10m_count = 0;
