@@ -15,7 +15,7 @@ pub enum Category {
 impl fmt::Display for Category {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Category::CURRENCY => write!(f, "MOEX"),
+            Category::CURRENCY => write!(f, "CURRENCY"),
             Category::INDEX => write!(f, "INDEX"),
             Category::SHARE => write!(f, "SHARE"),
             Category::BOND => write!(f, "BOND"),
@@ -37,7 +37,7 @@ impl From<&str> for Category {
             "FUTURE" => Category::FUTURE,
             "OPTION" => Category::OPTION,
             "ETF" => Category::ETF,
-            _ => panic!("not implemented"),
+            _ => todo!("not implemented"),
         }
     }
 }

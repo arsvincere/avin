@@ -1,6 +1,6 @@
 [package]
 name = "avin_data"
-description = "Data of the Avin Trade System library"
+description = "Market data for the 'avin' library"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
@@ -11,7 +11,6 @@ readme = "../README.md"
 
 [dependencies]
 avin_utils = { workspace = true }
-bitcode = { workspace = true }
 cached = { workspace = true }
 chrono = { workspace = true }
 log = { workspace = true }

@@ -21,7 +21,7 @@ impl From<&str> for Source {
         match value.as_str() {
             "MOEX" => Source::MOEX,
             "TINKOFF" => Source::TINKOFF,
-            _ => panic!("not implemented"),
+            _ => todo!("not implemented"),
         }
     }
 }
