@@ -7,4 +7,4 @@
 
 mod item;
 
-pub use item::{Line, Point, Rect};
+pub use item::{Item, Line, Point, Rect};
