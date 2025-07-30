@@ -343,24 +343,13 @@ impl ExtremumData {
         // В тестере/сканере, после init на пустом графике нет ни одного
         // экстремума и нет исторических баров. Поэтому, первое смотрим на
         // наличие исторических баров в принципе.
-        // Если bars.len() < 10 значит в тестере только появились первые бары
-        // и значит индикатор еще не инициализирован вообще, алгоритмы
-        // обновления не отработают корректно.
-        // Цифра 10 взята эмпирически, этого достаточно чтобы после вызова
-        // инит в индикаторе появились первые тренды и экстремумы.
-        // Дело в том что первоначально вызванная инициализация закончилась
-        // ничем - calc_e1 при отсутствии баров просто возвращает
-        // пустой список экстремумов, а текущий равен None. В дальнейшем же
-        // функции обновления ориентированы на то что уже есть какие-то
-        // экстремумы в графике...
-        // Поэтому сначала делаем инициализацию на 10 историческом баре,
-        // там можно сформировать первые экстремумы и тренды.
-        dbg!(bars.len());
-        if bars.len() < 10 {
+        if bars.is_empty() {
             return;
-        } else if bars.len() == 10 {
+        }
+
+        // когда пришел первый бар надо инициализировать
+        if bars.len() == 1 {
             self.init(bars);
-            return;
         }
 
         // update вызывается на каждом тике,
@@ -743,37 +732,48 @@ impl ExtremumData {
     }
     fn upd_trends_tn(&mut self, term: Term, bars: &[Bar]) {
         let last_extr = match term {
-            T1 => self.e_t1.last().unwrap(),
-            T2 => self.e_t2.last().unwrap(),
-            T3 => self.e_t3.last().unwrap(),
-            T4 => self.e_t4.last().unwrap(),
-            T5 => self.e_t5.last().unwrap(),
+            T1 => self.e_t1.last(),
+            T2 => self.e_t2.last(),
+            T3 => self.e_t3.last(),
+            T4 => self.e_t4.last(),
+            T5 => self.e_t5.last(),
         };
         let now_extr = match term {
-            T1 => self.e_t1_now.as_ref().unwrap(),
-            T2 => self.e_t2_now.as_ref().unwrap(),
-            T3 => self.e_t3_now.as_ref().unwrap(),
-            T4 => self.e_t4_now.as_ref().unwrap(),
-            T5 => self.e_t5_now.as_ref().unwrap(),
+            T1 => self.e_t1_now.as_ref(),
+            T2 => self.e_t2_now.as_ref(),
+            T3 => self.e_t3_now.as_ref(),
+            T4 => self.e_t4_now.as_ref(),
+            T5 => self.e_t5_now.as_ref(),
         };
-        // FIX: тут может и не быть тренда, например D таймфрейм
-        // там вообще трендов 4 порядка не бывает, тут надо проверять...
-        // причем на каждом шаге, причем лучше начать с экстремумов.
-        // с last_extr & now_extr
+        // если нет исторического экстремума, то не может быть и трендов.
+        if last_extr.is_none() {
+            return;
+        }
+        let last_extr = last_extr.unwrap();
+        let now_extr = now_extr.unwrap();
+
         let last_trend = match term {
-            T1 => self.t_t1.last().unwrap(),
-            T2 => self.t_t2.last().unwrap(),
-            T3 => self.t_t3.last().unwrap(),
-            T4 => self.t_t4.last().unwrap(),
-            T5 => self.t_t5.last().unwrap(),
+            T1 => self.t_t1.last(),
+            T2 => self.t_t2.last(),
+            T3 => self.t_t3.last(),
+            T4 => self.t_t4.last(),
+            T5 => self.t_t5.last(),
         };
         let now_trend = match term {
-            T1 => self.t_t1_now.as_ref().unwrap(),
-            T2 => self.t_t2_now.as_ref().unwrap(),
-            T3 => self.t_t3_now.as_ref().unwrap(),
-            T4 => self.t_t4_now.as_ref().unwrap(),
-            T5 => self.t_t5_now.as_ref().unwrap(),
+            T1 => self.t_t1_now.as_ref(),
+            T2 => self.t_t2_now.as_ref(),
+            T3 => self.t_t3_now.as_ref(),
+            T4 => self.t_t4_now.as_ref(),
+            T5 => self.t_t5_now.as_ref(),
         };
+        // если нет исторического тренда, в графике еще мало баров,
+        // попробовать снова посчитать тренды:
+        if last_trend.is_none() {
+            self.calc_trends(term, bars);
+            return;
+        }
+        let last_trend = last_trend.unwrap();
+        let now_trend = now_trend.unwrap();
 
         // если конец исторического тренда не равен последнему историческому
         // экстремуму то обновился исторический экстремум. Значит нужно
