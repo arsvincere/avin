@@ -11,8 +11,8 @@ use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
 use avin_core::{
-    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator, Term,
-    TimeFrame,
+    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator,
+    MarketData, Term, TimeFrame,
 };
 use avin_utils::{CFG, Cmd};
 
@@ -225,11 +225,8 @@ impl AssetWidget {
         let iid = asset.iid();
 
         let mut market_data = Vec::new();
-        for tf in TimeFrame::all() {
-            // collect market data type
-            let md = tf.market_data();
-            market_data.push(md);
-        }
+        market_data.push(MarketData::BAR_1M);
+        // market_data.push(MarketData::TIC);
 
         // create action
         let action =
