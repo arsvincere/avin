@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod message;
-mod terminal;
-
-pub use terminal::Terminal;
+#[derive(Debug, Clone, Copy)]
+pub enum Message {
+    // AssetChanged(Asset),
+}

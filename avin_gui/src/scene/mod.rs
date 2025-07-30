@@ -5,7 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod message;
-mod terminal;
+mod item;
 
-pub use terminal::Terminal;
+pub use item::{Line, Point, Rect};

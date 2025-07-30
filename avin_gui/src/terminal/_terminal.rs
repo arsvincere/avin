@@ -75,9 +75,8 @@ impl eframe::App for Terminal {
         egui_extras::install_image_loaders(ctx);
 
         ui_top(self, ctx);
-
         ui_left(self, ctx);
-        ui_right(self, ctx);
+        ui_center(self, ctx);
 
         if self.is_active_mode {
             ctx.request_repaint();
@@ -113,7 +112,7 @@ fn ui_left(app: &mut Terminal, ctx: &egui::Context) {
         app.asset_widget.ui(ctx, ui);
     });
 }
-fn ui_right(app: &mut Terminal, ctx: &egui::Context) {
+fn ui_center(app: &mut Terminal, ctx: &egui::Context) {
     egui::CentralPanel::default().show(ctx, |ui| {
         let asset = app.asset_widget.current_asset();
         app.chart_widget.ui(ui, asset);

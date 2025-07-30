@@ -30,7 +30,6 @@ impl AssetWidget {
     ) -> Self {
         let mut path = CFG.dir.asset();
         path.push(&CFG.core.default_asset_list);
-
         let asset_list = if Cmd::is_exist(&path) {
             AssetList::load(&path).unwrap()
         } else {
