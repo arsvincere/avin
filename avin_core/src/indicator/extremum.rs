@@ -27,7 +27,7 @@ const ID: &str = "9479c78b-d54e-4042-8893-19f7a2a9ed53";
 // may be used later in gui for display human readable indicator name
 const NAME: &str = "Extremum";
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, EnumIter)]
 pub enum Term {
     T1 = 1,
     T2 = 2,
