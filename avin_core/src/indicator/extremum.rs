@@ -35,6 +35,26 @@ pub enum Term {
     T4 = 4,
     T5 = 5,
 }
+impl Term {
+    pub fn next_term(&self) -> Option<Term> {
+        match self {
+            T1 => Some(T2),
+            T2 => Some(T3),
+            T3 => Some(T4),
+            T4 => Some(T5),
+            T5 => None,
+        }
+    }
+    pub fn prev_term(&self) -> Option<Term> {
+        match self {
+            T1 => None,
+            T2 => Some(T1),
+            T3 => Some(T2),
+            T4 => Some(T3),
+            T5 => Some(T4),
+        }
+    }
+}
 impl std::fmt::Display for Term {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
