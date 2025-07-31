@@ -7,6 +7,7 @@ members = [
     "avin_core",
     "avin_data",
     "avin_gui",
+    "avin_simulator",
     "avin_strategy",
     "avin_terminal",
     "avin_tester",
@@ -23,17 +24,23 @@ readme = "README.md"
 authors = ["Alex Avin <mr.alexavin@gmail.com>"]
 repository = "https://github.com/arsvincere/avin"
 homepage = "https://avin.info"
-keywords = [
-    "algo-trading",
-    "algorithmic trading",
-    "moex",
-    "t-bank",
-    "tinkoff",
-    "trading",
-]
+keywords = [ "algorithmic trading", "trading", "moex", "t-bank", "tinkoff" ]
 categories = ["Algorithmic Trading"]
 
 [workspace.dependencies]
+avin = { version = "0.4.0", path = "avin" }
+avin_analyse = { version = "0.4.0", path = "avin_analyse" }
+avin_connect = { version = "0.4.0", path = "avin_connect" }
+avin_core = { version = "0.4.0", path = "avin_core" }
+avin_data = { version = "0.4.0", path = "avin_data" }
+avin_gui = { version = "0.4.0", path = "avin_gui" }
+avin_simulator = { version = "0.4.0", path = "avin_simulator" }
+avin_strategy = { version = "0.4.0", path = "avin_strategy" }
+avin_terminal = { version = "0.4.0", path = "avin_terminal" }
+avin_tester = { version = "0.4.0", path = "avin_tester" }
+avin_trader = { version = "0.4.0", path = "avin_trader" }
+avin_utils = { version = "0.4.0", path = "avin_utils" }
+
 bitcode = "0.6.5"
 cached = "0.55.1"
 chrono = "0.4.41"
@@ -68,18 +75,16 @@ uuid = {version = "1.16.0", features = [ "v4" ]}
 prost-types = "0.12"
 prost = "0.12"
 
-iced = {version="0.13.1", features = ["tokio", "lazy"]}
+iced = { git = "https://github.com/iced-rs/iced.git", features = [
+     "image", "svg", "canvas", "tokio", "debug", "advanced",
+     "highlighter", "iced_highlighter", "lazy", "markdown",
+     "qr_code", "smol", "system", "web-colors", "webgl"
+] }
+# iced = { version = "0.13.1", features = [
+#     "image", "svg", "canvas", "tokio", "debug", "advanced",
+#     "async-std", "highlighter", "iced_highlighter", "lazy", "markdown",
+#     "multi-window", "qr_code", "smol", "system", "web-colors", "webgl"
+# ] }
+iced_aw = { version = "0.12.0", features = []}
 iced_table = "0.13.0"
 
-# self crates
-avin = { version = "0.4.0", path = "avin" }
-avin_analyse = { version = "0.4.0", path = "avin_analyse" }
-avin_connect = { version = "0.4.0", path = "avin_connect" }
-avin_core = { version = "0.4.0", path = "avin_core" }
-avin_data = { version = "0.4.0", path = "avin_data" }
-avin_gui = { version = "0.4.0", path = "avin_gui" }
-avin_strategy = { version = "0.4.0", path = "avin_strategy" }
-avin_terminal = { version = "0.4.0", path = "avin_terminal" }
-avin_tester = { version = "0.4.0", path = "avin_tester" }
-avin_trader = { version = "0.4.0", path = "avin_trader" }
-avin_utils = { version = "0.4.0", path = "avin_utils" }

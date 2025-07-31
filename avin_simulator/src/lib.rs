@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod _simulator;
+mod app;
+mod simulator;
 
-pub use _simulator::Simulator;
+pub use app::UiSimulator;
+pub use simulator::Simulator;
