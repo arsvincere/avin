@@ -16,7 +16,7 @@ members = [
 
 [workspace.package]
 description = "Open source cross-platform trading system"
-version = "0.3.7"
+version = "0.4.0"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -72,14 +72,14 @@ iced = {version="0.13.1", features = ["tokio", "lazy"]}
 iced_table = "0.13.0"
 
 # self crates
-avin = { version = "0.3.7", path = "avin" }
-avin_analyse = { version = "0.3.7", path = "avin_analyse" }
-avin_connect = { version = "0.3.7", path = "avin_connect" }
-avin_core = { version = "0.3.7", path = "avin_core" }
-avin_data = { version = "0.3.7", path = "avin_data" }
-avin_gui = { version = "0.3.7", path = "avin_gui" }
-avin_strategy = { version = "0.3.7", path = "avin_strategy" }
-avin_terminal = { version = "0.3.7", path = "avin_terminal" }
-avin_tester = { version = "0.3.7", path = "avin_tester" }
-avin_trader = { version = "0.3.7", path = "avin_trader" }
-avin_utils = { version = "0.3.7", path = "avin_utils" }
+avin = { version = "0.4.0", path = "avin" }
+avin_analyse = { version = "0.4.0", path = "avin_analyse" }
+avin_connect = { version = "0.4.0", path = "avin_connect" }
+avin_core = { version = "0.4.0", path = "avin_core" }
+avin_data = { version = "0.4.0", path = "avin_data" }
+avin_gui = { version = "0.4.0", path = "avin_gui" }
+avin_strategy = { version = "0.4.0", path = "avin_strategy" }
+avin_terminal = { version = "0.4.0", path = "avin_terminal" }
+avin_tester = { version = "0.4.0", path = "avin_tester" }
+avin_trader = { version = "0.4.0", path = "avin_trader" }
+avin_utils = { version = "0.4.0", path = "avin_utils" }

@@ -558,7 +558,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
 name = "avin"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_analyse",
  "avin_connect",
@@ -576,7 +576,7 @@ dependencies = [
 
 [[package]]
 name = "avin_analyse"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_core",
  "avin_utils",
@@ -589,7 +589,7 @@ dependencies = [
 
 [[package]]
 name = "avin_connect"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_core",
  "avin_utils",
@@ -605,7 +605,7 @@ dependencies = [
 
 [[package]]
 name = "avin_core"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_utils",
  "bitcode",
@@ -620,7 +620,7 @@ dependencies = [
 
 [[package]]
 name = "avin_data"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_utils",
  "cached",
@@ -634,7 +634,7 @@ dependencies = [
 
 [[package]]
 name = "avin_gui"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_analyse",
  "avin_connect",
@@ -654,7 +654,7 @@ dependencies = [
 
 [[package]]
 name = "avin_strategy"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_analyse",
  "avin_core",
@@ -668,7 +668,7 @@ dependencies = [
 
 [[package]]
 name = "avin_terminal"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_analyse",
  "avin_connect",
@@ -682,7 +682,7 @@ dependencies = [
 
 [[package]]
 name = "avin_tester"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_core",
  "avin_strategy",
@@ -696,7 +696,7 @@ dependencies = [
 
 [[package]]
 name = "avin_trader"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "avin_connect",
  "avin_core",
@@ -707,7 +707,7 @@ dependencies = [
 
 [[package]]
 name = "avin_utils"
-version = "0.3.7"
+version = "0.4.0"
 dependencies = [
  "chrono",
  "log",

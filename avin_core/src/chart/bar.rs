@@ -12,6 +12,13 @@ use polars::prelude::{DataFrame, DataType, Field, Schema};
 use crate::Range;
 use avin_utils as utils;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum BarKind {
+    Bull = 1,
+    Dodji = 0,
+    Bear = -1,
+}
+
 /// Like cundle, but more shortly name.
 ///
 /// # ru
@@ -159,6 +166,7 @@ impl Bar {
     /// # ru
     /// Возвращает polars схему датафрейма
     pub fn schema() -> Schema {
+        // TODO: move to utils
         Schema::from_iter(vec![
             Field::new("ts_nanos".into(), DataType::Int64),
             Field::new("open".into(), DataType::Float64),
@@ -200,6 +208,16 @@ impl Bar {
 
         local.naive_local()
     }
+    #[inline]
+    pub fn kind(&self) -> BarKind {
+        if self.is_bull() {
+            BarKind::Bull
+        } else if self.is_bear() {
+            BarKind::Bear
+        } else {
+            BarKind::Dodji
+        }
+    }
 
     /// Check for bar is bear.
     ///
@@ -232,6 +250,21 @@ impl Bar {
     #[inline]
     pub fn is_bull(&self) -> bool {
         self.o < self.c
+    }
+    /// Check for bar is dodji.
+    ///
+    /// # ru
+    /// Если открытие равно закрытию -> true, иначе -> false
+    ///
+    /// ## Examples
+    /// ```
+    /// use avin_core::Bar;
+    ///
+    /// let b = Bar::new(123456789, 320.5, 321.2, 320.1, 320.5, 10);
+    /// assert_eq!(b.is_dodji(), true);
+    /// ```
+    pub fn is_dodji(&self) -> bool {
+        self.o == self.c
     }
 
     /// Full range of bar [bar.l, bar.h]

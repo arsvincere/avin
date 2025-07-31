@@ -5,8 +5,9 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+// TODO: move to extremum, rename TrendKind
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Kind {
-    Bear,
-    Bull,
+    Bear = -1,
+    Bull = 1,
 }
