@@ -382,8 +382,39 @@ impl ExtremumData {
         }
 
         // вот теперь есть что обновлять
-        self.upd_extr(current);
-        self.upd_trends(bars);
+        // а точнее будем все пересчитывать заново...
+        self.e_t1.clear();
+        self.e_t2.clear();
+        self.e_t3.clear();
+        self.e_t4.clear();
+        self.e_t5.clear();
+        self.e_t1_now = None;
+        self.e_t2_now = None;
+        self.e_t3_now = None;
+        self.e_t4_now = None;
+        self.e_t5_now = None;
+        self.t_t1.clear();
+        self.t_t2.clear();
+        self.t_t3.clear();
+        self.t_t4.clear();
+        self.t_t5.clear();
+        self.t_t1_now = None;
+        self.t_t2_now = None;
+        self.t_t3_now = None;
+        self.t_t4_now = None;
+        self.t_t5_now = None;
+
+        self.calc_e1(bars);
+        self.calc_en(T2);
+        self.calc_en(T3);
+        self.calc_en(T4);
+        self.calc_en(T5);
+
+        self.calc_trends(T1, bars);
+        self.calc_trends(T2, bars);
+        self.calc_trends(T3, bars);
+        self.calc_trends(T4, bars);
+        self.calc_trends(T5, bars);
 
         // сохраняем время последнего обработанного бара
         self.last_ts = current.ts_nanos;
@@ -458,7 +489,7 @@ impl ExtremumData {
 
     fn calc_e1(&mut self, bars: &[Bar]) {
         // if chart is empty
-        if bars.is_empty() {
+        if bars.len() < 2 {
             self.e_t1 = Vec::new();
             self.e_t1_now = None;
             return;
@@ -577,122 +608,6 @@ impl ExtremumData {
             }
         };
     }
-    fn upd_extr(&mut self, bar: &Bar) {
-        if !self.upd_extr_t1(bar) {
-            return;
-        }
-        if !self.upd_extr_tn(T2) {
-            return;
-        }
-        if !self.upd_extr_tn(T3) {
-            return;
-        }
-        if !self.upd_extr_tn(T4) {
-            return;
-        }
-        self.upd_extr_tn(T5);
-    }
-    fn upd_extr_t1(&mut self, bar: &Bar) -> bool {
-        let mut now_extr = self.e_t1_now.take().unwrap();
-        let mut updated = false;
-
-        // if now extremum is max
-        if now_extr.is_max() {
-            if bar.h > now_extr.price {
-                now_extr = Extremum::new(bar.ts_nanos, T1, Max, bar.h);
-                self.e_t1_now = Some(now_extr);
-            } else {
-                updated = true;
-                self.e_t1.push(now_extr);
-                now_extr = Extremum::new(bar.ts_nanos, T1, Min, bar.l);
-                self.e_t1_now = Some(now_extr);
-            }
-        } else if now_extr.is_min() {
-            if bar.l < now_extr.price {
-                now_extr = Extremum::new(bar.ts_nanos, T1, Min, bar.l);
-                self.e_t1_now = Some(now_extr);
-            } else {
-                updated = true;
-                self.e_t1.push(now_extr);
-                now_extr = Extremum::new(bar.ts_nanos, T1, Max, bar.h);
-                self.e_t1_now = Some(now_extr);
-            }
-        };
-
-        updated
-    }
-    fn upd_extr_tn(&mut self, out_term: Term) -> bool {
-        let in_last;
-        let in_prev;
-        let out_extr;
-        let mut out_now;
-        match out_term {
-            T1 => panic!(),
-            T2 => {
-                in_last = self.e_t1[self.e_t1.len() - 1].clone();
-                in_prev = self.e_t1[self.e_t1.len() - 2].clone();
-                out_now = self.e_t2_now.clone().unwrap();
-                out_extr = &mut self.e_t2;
-            }
-            T3 => {
-                in_last = self.e_t2[self.e_t2.len() - 1].clone();
-                in_prev = self.e_t2[self.e_t2.len() - 2].clone();
-                out_now = self.e_t3_now.clone().unwrap();
-                out_extr = &mut self.e_t3;
-            }
-            T4 => {
-                in_last = self.e_t3[self.e_t3.len() - 1].clone();
-                in_prev = self.e_t3[self.e_t3.len() - 2].clone();
-                out_now = self.e_t4_now.clone().unwrap();
-                out_extr = &mut self.e_t4;
-            }
-            T5 => {
-                in_last = self.e_t4[self.e_t4.len() - 1].clone();
-                in_prev = self.e_t4[self.e_t4.len() - 2].clone();
-                out_now = self.e_t5_now.clone().unwrap();
-                out_extr = &mut self.e_t5;
-            }
-        }
-
-        // если текущий младший тип != текущий старший тип -> делать ничего
-        let mut updated = false;
-        if in_last.kind != out_now.kind {
-            return updated;
-        }
-
-        // if now extremum is max
-        if out_now.is_max() {
-            if in_last.price > out_now.price {
-                out_now = in_last;
-            } else {
-                updated = true;
-                out_extr.push(out_now);
-                out_now = in_prev;
-            }
-        } else if out_now.is_min() {
-            if in_last.price < out_now.price {
-                out_now = in_last;
-            } else {
-                updated = true;
-                out_extr.push(out_now);
-                out_now = in_prev;
-            }
-        }
-
-        // replace Term
-        out_now.term = out_term;
-
-        // wrap & put back now extremum
-        match out_now.term {
-            T1 => panic!(),
-            T2 => self.e_t2_now = Some(out_now),
-            T3 => self.e_t3_now = Some(out_now),
-            T4 => self.e_t4_now = Some(out_now),
-            T5 => self.e_t5_now = Some(out_now),
-        };
-
-        updated
-    }
     fn calc_trends(&mut self, term: Term, bars: &[Bar]) {
         let in_extr = match term {
             T1 => &self.e_t1,
@@ -742,79 +657,6 @@ impl ExtremumData {
                 T4 => self.t_t4_now = Some(trend),
                 T5 => self.t_t5_now = Some(trend),
             };
-        }
-    }
-    fn upd_trends(&mut self, bars: &[Bar]) {
-        self.upd_trends_tn(T1, bars);
-        self.upd_trends_tn(T2, bars);
-        self.upd_trends_tn(T3, bars);
-        self.upd_trends_tn(T4, bars);
-        self.upd_trends_tn(T5, bars);
-    }
-    fn upd_trends_tn(&mut self, term: Term, bars: &[Bar]) {
-        let last_extr = match term {
-            T1 => self.e_t1.last(),
-            T2 => self.e_t2.last(),
-            T3 => self.e_t3.last(),
-            T4 => self.e_t4.last(),
-            T5 => self.e_t5.last(),
-        };
-        let now_extr = match term {
-            T1 => self.e_t1_now.as_ref(),
-            T2 => self.e_t2_now.as_ref(),
-            T3 => self.e_t3_now.as_ref(),
-            T4 => self.e_t4_now.as_ref(),
-            T5 => self.e_t5_now.as_ref(),
-        };
-        // если нет исторического экстремума, то не может быть и трендов.
-        if last_extr.is_none() {
-            return;
-        }
-        let last_extr = last_extr.unwrap();
-        let now_extr = now_extr.unwrap();
-
-        let last_trend = match term {
-            T1 => self.t_t1.last(),
-            T2 => self.t_t2.last(),
-            T3 => self.t_t3.last(),
-            T4 => self.t_t4.last(),
-            T5 => self.t_t5.last(),
-        };
-        let now_trend = match term {
-            T1 => self.t_t1_now.as_ref(),
-            T2 => self.t_t2_now.as_ref(),
-            T3 => self.t_t3_now.as_ref(),
-            T4 => self.t_t4_now.as_ref(),
-            T5 => self.t_t5_now.as_ref(),
-        };
-        // если нет исторического тренда, в графике еще мало баров,
-        // попробовать снова посчитать тренды:
-        if last_trend.is_none() {
-            self.calc_trends(term, bars);
-            return;
-        }
-        let last_trend = last_trend.unwrap();
-        let now_trend = now_trend.unwrap();
-
-        // если конец исторического тренда не равен последнему историческому
-        // экстремуму то обновился исторический экстремум. Значит нужно
-        // сделать новый исторический тренд и новый текущий тренд.
-        if last_trend.e2 != *last_extr {
-            let new_last_trend = build_trend(&last_trend.e2, last_extr, bars);
-            self.t_t1.push(new_last_trend);
-
-            let new_now_trend = build_trend(last_extr, now_extr, bars);
-            self.t_t1_now = Some(new_now_trend);
-            return;
-        }
-
-        // иначе конец исторического тренда равен последнему историческому
-        // экстремуму, возможно обновился текущий экстремум, без формирования
-        // нового исторического экстремума. Проверяем соответствие текущего
-        // экстремума и обновляем текущий тренд если нужно.
-        if now_trend.e2 != *now_extr {
-            let new_now_trend = build_trend(last_extr, now_extr, bars);
-            self.t_t1_now = Some(new_now_trend);
         }
     }
 }
