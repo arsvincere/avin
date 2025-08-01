@@ -14,7 +14,5 @@ avin_analyse = { workspace = true }
 avin_connect = { workspace = true }
 avin_core = { workspace = true }
 avin_utils = { workspace = true }
-iced = { workspace = true }
-iced_table = { workspace = true }
 log = { workspace = true }
 tokio = { workspace = true }

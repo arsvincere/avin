@@ -75,16 +75,16 @@ uuid = {version = "1.16.0", features = [ "v4" ]}
 prost-types = "0.12"
 prost = "0.12"
 
-iced = { git = "https://github.com/iced-rs/iced.git", features = [
-     "image", "svg", "canvas", "tokio", "debug", "advanced",
-     "highlighter", "iced_highlighter", "lazy", "markdown",
-     "qr_code", "smol", "system", "web-colors", "webgl"
-] }
+# iced = { git = "https://github.com/iced-rs/iced.git", features = [
+#      "image", "svg", "canvas", "tokio", "debug", "advanced",
+#      "highlighter", "iced_highlighter", "lazy", "markdown",
+#      "qr_code", "smol", "system", "web-colors", "webgl"
+# ] }
 # iced = { version = "0.13.1", features = [
 #     "image", "svg", "canvas", "tokio", "debug", "advanced",
 #     "async-std", "highlighter", "iced_highlighter", "lazy", "markdown",
 #     "multi-window", "qr_code", "smol", "system", "web-colors", "webgl"
 # ] }
-iced_aw = { version = "0.12.0", features = []}
-iced_table = "0.13.0"
+# iced_aw = { version = "0.12.0", features = []}
+# iced_table = "0.13.0"
 

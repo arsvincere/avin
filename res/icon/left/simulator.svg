@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
-   sodipodi:docname="trade.svg"
+   sodipodi:docname="simulator.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,11 +23,11 @@
      inkscape:pagecheckerboard="1"
      inkscape:deskcolor="#505050"
      inkscape:document-units="px"
-     inkscape:zoom="13.578125"
-     inkscape:cx="29.090908"
-     inkscape:cy="25.408515"
-     inkscape:window-width="1920"
-     inkscape:window-height="1080"
+     inkscape:zoom="2.4002961"
+     inkscape:cx="-81.656591"
+     inkscape:cy="25.830146"
+     inkscape:window-width="1918"
+     inkscape:window-height="1052"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -51,6 +51,30 @@
   </sodipodi:namedview>
   <defs
      id="defs1">
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect1"
+       is_visible="true"
+       lpeversion="1.3"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false"
+       uniform="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect4"
+       is_visible="true"
+       lpeversion="1.3"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false"
+       uniform="false" />
     <inkscape:path-effect
        effect="bspline"
        id="path-effect8"
@@ -79,32 +103,27 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
-    <circle
-       id="path5"
-       style="fill:#1c2bc8;stroke:#d1bfae"
-       cx="19.060148"
-       cy="17.601995"
-       r="0" />
+     id="layer1"
+     style="opacity:1">
     <path
-       style="fill:#1c2bc8;fill-opacity:0.165039;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 32.147296,12 32,54"
-       id="path9-5"
+       style="opacity:1;fill:none;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0"
+       d="M 14,54 V 10"
+       id="path1"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:#1c2bc8;fill-opacity:0.165039;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-       d="m 54,12 v 8"
-       id="path9-5-3"
+       style="opacity:1;fill:none;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0"
+       d="M 14,10 40,32"
+       id="path2"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:#1c2bc8;fill-opacity:0.165039;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-       d="m 10,12 v 8"
-       id="path9-5-3-1"
+       style="fill:none;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0"
+       d="M 14,54 40,32"
+       id="path2-3"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:#1c2bc8;fill-opacity:0.165039;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 10,12 H 54"
-       id="path9-5-2"
+       style="opacity:1;fill:none;stroke:#cccccc;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0"
+       d="M 50,10 V 54"
+       id="path3"
        sodipodi:nodetypes="cc" />
   </g>
 </svg>
