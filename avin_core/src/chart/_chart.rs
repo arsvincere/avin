@@ -243,9 +243,7 @@ impl Chart {
     }
 
     // XXX: Unstable experimental features
-    pub fn add_ind(&mut self, mut i: Indicator) {
-        i.init(&self.bars);
-
+    pub fn add_ind(&mut self, i: Indicator) {
         let id = i.id().to_string();
         self.ind.insert(id, i);
     }

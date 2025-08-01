@@ -28,11 +28,6 @@ impl Indicator {
             Self::Extremum(i) => i.name(),
         }
     }
-    pub fn init(&mut self, bars: &[Bar]) {
-        match self {
-            Self::Extremum(i) => i.init(bars),
-        }
-    }
     pub fn update(&mut self, bars: &[Bar]) {
         match self {
             Self::Extremum(i) => i.update(bars),

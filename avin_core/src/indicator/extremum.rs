@@ -271,11 +271,8 @@ pub trait ExtremumIndicator {
 }
 impl ExtremumIndicator for Chart {
     fn init(&mut self) {
-        // todo!();
-        // XXX: выпилен now бар из графика, и теперь текущий бар
-        // идет в общем векторе bars, проверить не повлияет ли это
-        // на алгоритмы тут
-        self.add_ind(Indicator::Extremum(ExtremumData::default()));
+        let ind = ExtremumData::new(self);
+        self.add_ind(Indicator::Extremum(ind));
     }
     fn extr(&self, term: Term, n: usize) -> Option<&Extremum> {
         // get indicator data
@@ -351,18 +348,22 @@ impl ExtremumData {
     pub fn name(&self) -> &'static str {
         NAME
     }
-    pub fn init(&mut self, bars: &[Bar]) {
-        self.calc_e1(bars);
-        self.calc_en(T2);
-        self.calc_en(T3);
-        self.calc_en(T4);
-        self.calc_en(T5);
+    pub fn new(chart: &Chart) -> Self {
+        let mut data = ExtremumData::default();
 
-        self.calc_trends(T1, bars);
-        self.calc_trends(T2, bars);
-        self.calc_trends(T3, bars);
-        self.calc_trends(T4, bars);
-        self.calc_trends(T5, bars);
+        data.calc_e1(chart.bars());
+        data.calc_en(T2);
+        data.calc_en(T3);
+        data.calc_en(T4);
+        data.calc_en(T5);
+
+        data.calc_trends(T1, chart.bars());
+        data.calc_trends(T2, chart.bars());
+        data.calc_trends(T3, chart.bars());
+        data.calc_trends(T4, chart.bars());
+        data.calc_trends(T5, chart.bars());
+
+        data
     }
     pub fn update(&mut self, bars: &[Bar]) {
         // В тестере/сканере, после init на пустом графике нет ни одного
@@ -370,11 +371,6 @@ impl ExtremumData {
         // наличие исторических баров в принципе.
         if bars.is_empty() {
             return;
-        }
-
-        // когда пришел первый бар надо инициализировать
-        if bars.len() == 1 {
-            self.init(bars);
         }
 
         // update вызывается на каждом тике,
