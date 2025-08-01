@@ -672,6 +672,7 @@ dependencies = [
  "avin_connect",
  "avin_core",
  "avin_gui",
+ "avin_simulator",
  "avin_strategy",
  "avin_tester",
  "avin_trader",

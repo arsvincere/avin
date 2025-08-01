@@ -8,15 +8,15 @@
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use strum::EnumIter;
 
-use crate::{Bar, Chart, Kind};
+use crate::{Bar, Chart};
 use ExtremumKind::Max;
 use ExtremumKind::Min;
-use Kind::{Bear, Bull};
 use Term::T1;
 use Term::T2;
 use Term::T3;
 use Term::T4;
 use Term::T5;
+use TrendKind::{Bear, Bull};
 use avin_utils::{self as utils, bisect_left, bisect_right};
 
 use super::Indicator;
@@ -67,7 +67,7 @@ impl std::fmt::Display for Term {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ExtremumKind {
     Max,
     Min,
@@ -155,13 +155,18 @@ impl std::fmt::Display for Extremum {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum TrendKind {
+    Bear = -1,
+    Bull = 1,
+}
 #[derive(Debug, Clone, PartialEq)]
 pub struct Trend {
     e1: Extremum,
     e2: Extremum,
     len: usize,
     vol: u64,
-    kind: Kind,
+    kind: TrendKind,
 }
 impl Trend {
     pub fn new(e1: &Extremum, e2: &Extremum, bars: &[Bar]) -> Trend {
@@ -189,7 +194,7 @@ impl Trend {
     pub fn term(&self) -> Term {
         utils::min(self.e1.term, self.e2.term)
     }
-    pub fn kind(&self) -> Kind {
+    pub fn kind(&self) -> TrendKind {
         self.kind
     }
 

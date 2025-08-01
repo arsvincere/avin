@@ -6,9 +6,7 @@
  ****************************************************************************/
 
 mod direction;
-mod kind;
 mod timeframe;
 
 pub use direction::Direction;
-pub use kind::Kind;
 pub use timeframe::TimeFrame;

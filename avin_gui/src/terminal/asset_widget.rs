@@ -224,8 +224,7 @@ impl AssetWidget {
         let asset = self.asset_list.get(self.current_index).unwrap();
         let iid = asset.iid();
 
-        let mut market_data = Vec::new();
-        market_data.push(MarketData::BAR_1M);
+        let market_data = vec![MarketData::BAR_1M];
         // market_data.push(MarketData::TIC);
 
         // create action
