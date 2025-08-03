@@ -44,7 +44,7 @@ impl Tester {
 
         log::info!(":: Tester load strategys");
         let sender = self.tx.clone();
-        strategy.init(sender, account, asset.iid().clone());
+        strategy.init(sender, account, &mut asset);
 
         log::info!(":: Tester start main loop");
         test.status = TestStatus::Process;
