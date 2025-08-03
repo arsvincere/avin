@@ -5,9 +5,9 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod _scanner;
+mod scanner;
 
-pub use _scanner::{
+pub use scanner::{
     Filter, Marker, MarkerColor, MarkerShape, MarkerSize, Scanner,
     ScannerResult, ScannerResultList,
 };

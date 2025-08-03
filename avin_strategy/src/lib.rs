@@ -5,11 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod scanner;
-mod strategy;
+mod _strategy;
+mod examples;
 
-pub use scanner::{
-    Filter, Marker, MarkerColor, MarkerShape, MarkerSize, Scanner,
-    ScannerResult, ScannerResultList,
-};
-pub use strategy::{BuySell, PinBarLong, Strategy};
+pub use _strategy::Strategy;
+pub use examples::{BuySell, PinBarLong};

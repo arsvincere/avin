@@ -527,6 +527,7 @@ dependencies = [
  "avin_connect",
  "avin_core",
  "avin_gui",
+ "avin_scanner",
  "avin_simulator",
  "avin_strategy",
  "avin_tester",
@@ -603,6 +604,7 @@ dependencies = [
  "avin_analyse",
  "avin_connect",
  "avin_core",
+ "avin_scanner",
  "avin_strategy",
  "avin_tester",
  "avin_utils",
@@ -614,6 +616,18 @@ dependencies = [
  "log",
  "serde",
  "tokio",
+]
+
+[[package]]
+name = "avin_scanner"
+version = "0.4.0"
+dependencies = [
+ "avin_analyse",
+ "avin_core",
+ "avin_utils",
+ "chrono",
+ "serde",
+ "toml",
 ]
 
 [[package]]
