@@ -541,7 +541,7 @@ fn cached_posterior_0(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
     let step = get_step(chart.tf());
 
     // eval posterior
-    let mut df = calc_posgerior(all, obs, step);
+    let mut df = calc_posterior(all, obs, step);
 
     // Если тренд бычий, значит следующий медвежий.
     // abs по модулю посчитан, так что для определения цен
@@ -572,7 +572,7 @@ fn cached_posterior_1(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
     let step = get_step(chart.tf());
 
     // eval posterior
-    let mut df = calc_posgerior(all, obs, step);
+    let mut df = calc_posterior(all, obs, step);
 
     // Если тренд бычий, значит следующий медвежий.
     // abs по модулю посчитан, так что для определения цен
@@ -639,7 +639,7 @@ fn get_step(tf: TimeFrame) -> f64 {
         TimeFrame::Month => 1.00,
     }
 }
-fn calc_posgerior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
+fn calc_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     // obs_id - observation trend id
     // h_id - hypothesis trend id
     let obs_id = obs.column("id").unwrap();
