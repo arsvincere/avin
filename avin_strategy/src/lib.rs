@@ -9,4 +9,4 @@ mod _strategy;
 mod examples;
 
 pub use _strategy::Strategy;
-pub use examples::{BuySell, PinBarLong};
+pub use examples::*;
