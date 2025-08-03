@@ -439,7 +439,6 @@ impl VirtualBroker {
         let mut i = 0;
 
         while i < self.limit_orders.len() {
-            // unwrap PostedLimitOrder
             let posted = &self.limit_orders[i];
 
             if posted.broker_id() == order.broker_id() {
@@ -463,7 +462,6 @@ impl VirtualBroker {
         let mut i = 0;
 
         while i < self.stop_orders.len() {
-            // unwrap PostedLimitOrder
             let posted = &self.stop_orders[i];
 
             if posted.broker_id() == order.broker_id() {
