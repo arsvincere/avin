@@ -60,10 +60,8 @@ pub fn dt(ts_nanos: i64) -> DateTime<Utc> {
 /// # ru
 /// Возвращает datetime первое число следующего месяца от полученного dt
 pub fn next_month(dt: DateTime<Utc>) -> DateTime<Utc> {
-    dbg!(&dt);
     if dt.month() == 12 {
         let next_year = dt.year() + 1;
-        dbg!(&next_year);
         dt.with_nanosecond(0)
             .unwrap()
             .with_second(0)
@@ -80,7 +78,6 @@ pub fn next_month(dt: DateTime<Utc>) -> DateTime<Utc> {
             .unwrap()
     } else {
         let next_month = dt.month() + 1;
-        dbg!(&next_month);
         dt.with_nanosecond(0)
             .unwrap()
             .with_second(0)
