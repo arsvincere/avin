@@ -231,6 +231,6 @@ mod tests {
     #[test]
     fn configuration() {
         let p = CFG.dir.root();
-        assert_eq!(p.display().to_string(), "/home/alex/trading")
+        assert_eq!(p.display().to_string(), "/home/alex/trading/usr")
     }
 }

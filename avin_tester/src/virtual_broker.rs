@@ -430,8 +430,7 @@ impl VirtualBroker {
             let e = Event::Order(e);
             self.queue.push_back(e);
         } else {
-            log::error!("How you fuck want to cancel not posted order?!");
-            log::error!("Action: {action:#?}");
+            log::error!("WTF?! Action: {action:#?}");
             unreachable!();
         }
     }
@@ -479,6 +478,12 @@ impl VirtualBroker {
             i += 1;
         }
 
-        None
+        // ордер не найден, значит уже сработал или уже отменяли
+        // пофигу отправим его как отмененный
+        let order = order.as_posted().unwrap();
+        let canceled = order.cancel();
+
+        // wrap and return
+        Some(Order::Stop(StopOrder::Canceled(canceled)))
     }
 }

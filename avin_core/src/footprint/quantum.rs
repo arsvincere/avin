@@ -113,7 +113,8 @@ mod tests {
     #[test]
     fn quantum() {
         let path = std::path::Path::new(
-            "/home/alex/trading/data/MOEX/SHARE/GAZP/TIC/2025/2025-06-06.parquet",
+            "/home/alex/trading/usr\
+            /data/MOEX/SHARE/GAZP/TIC/2025/2025-06-06.parquet",
         );
         let df = utils::Cmd::read_pqt(path).unwrap();
         let df = df.tail(Some(10));

@@ -644,7 +644,7 @@ fn calc_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     // h_id - hypothesis trend id
     let obs_id = obs.column("id").unwrap();
     let h_id = obs_id + 1;
-    let h_id = h_id.as_materialized_series().clone();
+    let h_id = h_id.as_materialized_series();
 
     // tmp variables
     let mut abs = Vec::new(); // tmp Vec for create df
@@ -656,7 +656,7 @@ fn calc_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     while p >= MIN_P {
         combo = combo
             .lazy()
-            .filter(col("id").is_in(lit(h_id.clone()), false))
+            .filter(col("id").is_in(lit(h_id.clone()).implode(), false))
             .filter(col("abs").gt(lit(cur_abs)))
             .collect()
             .unwrap();
