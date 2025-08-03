@@ -1,16 +1,16 @@
 [dir]
     # Specify the path to the working directory relative to the home folder
-    root = "trading" # == /home/_user_/trading
+    root = "trading/usr" # == /home/<user>/trading
 
     # Specify path to market data dir
-    data = "trading/data"
+    data = "trading/usr/data"
 
 [connect]
     # Path to tinkoff token
-    tinkoff = "trading/connect/tinkoff/token.txt"
+    tinkoff = "trading/usr/connect/tinkoff/token.txt"
 
     # Path to moex account
-    moexalgo = "trading/connect/moex/account.txt"
+    moexalgo = "trading/usr/connect/moex/account.txt"
 
 [usr]
     # Your local timeshift from UTC+0
