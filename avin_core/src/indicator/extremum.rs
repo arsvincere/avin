@@ -464,6 +464,10 @@ impl ExtremumData {
                 T5 => &self.t_t5,
             };
 
+            if n > all_trends.len() {
+                return None;
+            }
+
             let index = all_trends.len() - n;
             all_trends.get(index)
         }
