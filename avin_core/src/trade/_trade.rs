@@ -22,8 +22,8 @@ pub enum TradeKind {
 impl TradeKind {
     pub fn to_str(&self) -> &'static str {
         match self {
-            TradeKind::Long => "l",
-            TradeKind::Short => "s",
+            TradeKind::Long => "L",
+            TradeKind::Short => "S",
         }
     }
 }
