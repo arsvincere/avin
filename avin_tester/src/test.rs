@@ -96,7 +96,7 @@ impl Test {
     }
 
     pub fn name(&self) -> String {
-        format!("{}_{}", self.strategy_name, self.iid.ticker())
+        format!("{}-{}", self.strategy_name, self.iid.ticker())
     }
     pub fn begin(&self) -> DateTime<Utc> {
         DateTime::from_timestamp_nanos(self.begin_ts_nanos)
@@ -136,7 +136,7 @@ mod tests {
         let asset = Asset::new("moex_share_ydex").unwrap();
         let test = Test::new(&strategy, asset.iid());
 
-        assert_eq!(test.name(), "PinBarLong_YDEX");
+        assert_eq!(test.name(), "PinBarLong-YDEX");
         assert_eq!(test.strategy_name, "PinBarLong");
         assert_eq!(test.iid, *asset.iid());
         assert_eq!(test.deposit, 100_000.0);

@@ -205,16 +205,16 @@ pub fn toggle(on: &mut bool) -> impl egui::Widget + '_ {
 
 async fn start_broker(mut broker: Tinkoff) {
     broker.connect().await.unwrap();
-    log::debug!(":: Broker connected!");
+    log::debug!("Broker connected!");
 
     broker.create_marketdata_stream().await.unwrap();
-    log::debug!(":: Data stream started!");
+    log::debug!("Data stream started!");
 
     broker.create_transactions_stream().await.unwrap();
-    log::debug!(":: Transaction stream started!");
+    log::debug!("Transaction stream started!");
 
     tokio::spawn(async move {
         broker.start().await;
     });
-    log::debug!(":: Broker started!");
+    log::debug!("Broker started!");
 }

@@ -1,6 +1,7 @@
 #![allow(clippy::tabs_in_doc_comments)]
 #![allow(clippy::large_enum_variant)]
 #![allow(clippy::enum_variant_names)]
+#![allow(unused)]
 
 /// Денежная сумма в определенной валюте
 #[allow(clippy::derive_partial_eq_without_eq)]

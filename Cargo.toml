@@ -29,45 +29,47 @@ keywords = [ "algorithmic trading", "trading", "moex", "t-bank", "tinkoff" ]
 categories = ["Algorithmic Trading"]
 
 [workspace.dependencies]
-avin = { version = "0.4.0", path = "avin" }
-avin_analyse = { version = "0.4.0", path = "avin_analyse" }
-avin_connect = { version = "0.4.0", path = "avin_connect" }
-avin_core = { version = "0.4.0", path = "avin_core" }
-avin_data = { version = "0.4.0", path = "avin_data" }
-avin_gui = { version = "0.4.0", path = "avin_gui" }
-avin_scanner = { version = "0.4.0", path = "avin_scanner" }
-avin_simulator = { version = "0.4.0", path = "avin_simulator" }
-avin_strategy = { version = "0.4.0", path = "avin_strategy" }
-avin_terminal = { version = "0.4.0", path = "avin_terminal" }
-avin_tester = { version = "0.4.0", path = "avin_tester" }
-avin_trader = { version = "0.4.0", path = "avin_trader" }
-avin_utils = { version = "0.4.0", path = "avin_utils" }
+avin =              { version = "0.4.0", path = "avin" }
+avin_analyse =      { version = "0.4.0", path = "avin_analyse" }
+avin_connect =      { version = "0.4.0", path = "avin_connect" }
+avin_core =         { version = "0.4.0", path = "avin_core" }
+avin_data =         { version = "0.4.0", path = "avin_data" }
+avin_gui =          { version = "0.4.0", path = "avin_gui" }
+avin_scanner =      { version = "0.4.0", path = "avin_scanner" }
+avin_simulator =    { version = "0.4.0", path = "avin_simulator" }
+avin_strategy =     { version = "0.4.0", path = "avin_strategy" }
+avin_terminal =     { version = "0.4.0", path = "avin_terminal" }
+avin_tester =       { version = "0.4.0", path = "avin_tester" }
+avin_trader =       { version = "0.4.0", path = "avin_trader" }
+avin_utils =        { version = "0.4.0", path = "avin_utils" }
 
 bitcode = "0.6.5"
 cached = "0.55.1"
 chrono = "0.4.41"
 eframe = { version = "0.31", default-features = false, features = [
-    "accesskit",     # Make egui compatible with screen readers.
-    "default_fonts", # Embed the default egui fonts.
-    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
-    "persistence",   # Enable restoring app state when restarting the app.
-    "wayland",       # To support Linux (and CI)
-    "x11",           # To support older Linux distributions
+    "accesskit",
+    "default_fonts",
+    "glow",
+    "persistence",
+    "wayland",
+    "x11",
 ] }
 egui-file-dialog = "0.10.0"
 egui_extras = { version= "0.31.1", features = ["all_loaders", "image", "svg"]}
 egui_plot = "0.32.1"
 flume = "0.11.1"
 log = "0.4.27"
-# polars = { version = "0.46", features = [
 polars = { version = "0.50", features = [
-    "cum_agg", # for Expr.cum_sum()
+    "cum_agg",
     "describe",
     "is_in",
     "lazy",
     "parquet",
     "temporal",
 ] }
+prost = "0.12"
+prost-types = "0.12"
+reqwest = "0.12.22"
 serde = { version = "1.0.219", features = ["derive"] }
 strum = { version = "0.27.1", features = ["derive", "strum_macros"]}
 time-unit = "0.1"
@@ -75,19 +77,3 @@ tokio = { version = "1", features = ["full"] }
 toml = "0.8.23"
 tonic = { version = "0.11", features = ["tls", "tls-roots", "gzip"] }
 uuid = {version = "1.16.0", features = [ "v4" ]}
-prost-types = "0.12"
-prost = "0.12"
-
-# iced = { git = "https://github.com/iced-rs/iced.git", features = [
-#      "image", "svg", "canvas", "tokio", "debug", "advanced",
-#      "highlighter", "iced_highlighter", "lazy", "markdown",
-#      "qr_code", "smol", "system", "web-colors", "webgl"
-# ] }
-# iced = { version = "0.13.1", features = [
-#     "image", "svg", "canvas", "tokio", "debug", "advanced",
-#     "async-std", "highlighter", "iced_highlighter", "lazy", "markdown",
-#     "multi-window", "qr_code", "smol", "system", "web-colors", "webgl"
-# ] }
-# iced_aw = { version = "0.12.0", features = []}
-# iced_table = "0.13.0"
-

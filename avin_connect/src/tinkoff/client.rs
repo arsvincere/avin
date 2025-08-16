@@ -223,8 +223,8 @@ impl Tinkoff {
                     self.subscribe_action(a).await;
                 }
                 Action::Unsubscribe(_) => todo!(),
-                Action::TradeClosed(_) => panic!(),
-                Action::TradeOpened(_) => panic!(),
+                Action::TradeClosed(_) => unreachable!(),
+                Action::TradeOpened(_) => unreachable!(),
             }
         }
     }

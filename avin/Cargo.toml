@@ -26,5 +26,6 @@ polars = { workspace = true }
 tokio = { workspace = true }
 chrono = { workspace = true }
 eframe = { workspace = true }
+reqwest = {workspace = true }
 ##############################################################################
 

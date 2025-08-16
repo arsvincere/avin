@@ -98,14 +98,14 @@ backtest:
 	cargo run --bin avin-backtest --jobs 4 --release
 scanner:
 	cargo run --bin avin-scanner --jobs 4 --release
+simulator:
+	cargo run --bin avin-simulator --jobs 4 --release
 tester:
 	cargo run --bin avin-tester --jobs 4 --release
 trader:
 	cargo run --bin avin-trader --jobs 4 --release
 terminal:
 	cargo run --bin avin-terminal --jobs 4 --release
-iced_terminal:
-	cargo run --bin avin_terminal --jobs 4 --release
 
 T1="\033[1m"
 T2="\033[0m"
@@ -136,12 +136,13 @@ help:
 	@echo -e $(B1)clean$(B2)"          Clean the project"
 	@echo ""
 	@echo -e $(T1)Run:$(T2)
-	@echo -e $(B1)r$(B2)"              Run temp bin (gitignored main.rs)"
+	@echo -e $(B1)run$(B2)"            Run temp bin aaa"
 	@echo -e $(B1)analyse$(B2)"        Run analyse"
 	@echo -e $(B1)backscan$(B2)"       Run backscan"
 	@echo -e $(B1)backtest$(B2)"       Run backtest"
 	@echo -e $(B1)data$(B2)"       	   Run data"
 	@echo -e $(B1)scanner$(B2)"        Run scanner"
+	@echo -e $(B1)simulator$(B2)"      Run scanner"
 	@echo -e $(B1)tester$(B2)"         Run tester"
 	@echo -e $(B1)trader$(B2)"         Run trader"
 	@echo -e $(B1)terminal$(B2)"       Run terminal"

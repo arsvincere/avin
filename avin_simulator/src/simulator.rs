@@ -7,7 +7,11 @@
 
 use std::collections::VecDeque;
 
-use avin_core::{Asset, Bar, BarEvent, Iid, Manager, MarketData, TimeFrame};
+use avin_analyse::TrendAnalytic;
+use avin_core::{
+    Asset, Bar, BarEvent, ExtremumIndicator, Iid, Manager, MarketData,
+    TimeFrame,
+};
 use chrono::{DateTime, Utc};
 
 pub struct Simulator {
@@ -18,8 +22,17 @@ pub struct Simulator {
 }
 impl Simulator {
     pub fn new(iid: &Iid, begin: DateTime<Utc>, end: DateTime<Utc>) -> Self {
+        // create asset and empty charts
+        let mut asset = Asset::from_iid(iid.clone());
+        for tf in TimeFrame::all() {
+            asset.load_chart_empty(tf);
+            let chart = asset.chart_mut(tf).unwrap();
+            ExtremumIndicator::init(chart);
+            TrendAnalytic::init(chart);
+        }
+
         Self {
-            asset: Asset::from_iid(iid.clone()),
+            asset,
             begin,
             end,
             bars_1m: load_bars(iid, begin, end),
@@ -46,10 +59,6 @@ impl Simulator {
     }
     pub fn set_end(&mut self, dt: DateTime<Utc>) {
         self.end = dt
-    }
-
-    pub fn activate(&mut self, tf: TimeFrame) {
-        self.asset.load_chart_empty(tf);
     }
 
     pub fn step(&mut self, n: usize) -> &Asset {
@@ -95,7 +104,6 @@ mod tests {
         let tf = TimeFrame::M1;
 
         let mut simulator = Simulator::new(&iid, begin, end);
-        simulator.activate(tf);
 
         let chart = simulator.asset().chart(tf).unwrap();
         assert!(chart.now().is_none());
@@ -124,7 +132,6 @@ mod tests {
         let tf = TimeFrame::M1;
 
         let mut simulator = Simulator::new(&iid, begin, end);
-        simulator.activate(tf);
 
         let chart = simulator.asset().chart(tf).unwrap();
         assert!(chart.now().is_none());
@@ -151,7 +158,6 @@ mod tests {
         let tf = TimeFrame::M10;
 
         let mut simulator = Simulator::new(&iid, begin, end);
-        simulator.activate(tf);
 
         simulator.next_bar();
         simulator.next_bar();
@@ -173,7 +179,6 @@ mod tests {
         let tf = TimeFrame::H1;
 
         let mut simulator = Simulator::new(&iid, begin, end);
-        simulator.activate(tf);
 
         simulator.next_bar();
         simulator.next_bar();

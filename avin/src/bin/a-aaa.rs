@@ -10,5 +10,5 @@ use avin_utils::*;
 use polars::prelude::*;
 
 fn main() {
-    //
+    let client = reqwest::Client::new();
 }

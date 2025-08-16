@@ -23,7 +23,7 @@ use avin_utils::{self as utils, CFG};
 use crate::theme::Theme;
 
 pub trait ChartDraw {
-    fn bar_info(&self) -> egui_plot::CoordinatesFormatter;
+    fn bar_info(&'_ self) -> egui_plot::CoordinatesFormatter<'_>;
     fn price_info(&self, name: &str, value: &PlotPoint) -> String;
 
     fn draw_bars(&self, plot: &mut PlotUi, theme: &Theme);
@@ -33,7 +33,7 @@ pub trait ChartDraw {
     fn draw_posterior_1(&self, plot: &mut PlotUi, theme: &Theme, term: Term);
 }
 impl ChartDraw for Chart {
-    fn bar_info(&self) -> egui_plot::CoordinatesFormatter {
+    fn bar_info(&'_ self) -> egui_plot::CoordinatesFormatter<'_> {
         egui_plot::CoordinatesFormatter::new(|point, _bounds| {
             let nanos = point.x as i64;
             let utc = DateTime::from_timestamp_nanos(nanos);
@@ -412,9 +412,9 @@ impl TestDraw for Test {
                 Long => MarkerShape::Up,
                 Short => MarkerShape::Down,
             };
-            let color = match t.kind {
-                Long => theme.trade_take,
-                Short => theme.trade_stop,
+            let color = match t.is_win() {
+                true => theme.trade_take,
+                false => theme.trade_stop,
             };
             let points = Points::new("Long", vec![[x0, y_shape]])
                 .color(color)

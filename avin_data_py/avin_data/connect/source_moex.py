@@ -52,7 +52,8 @@ AVAILIBLE = [
 
 
 class SourceMoex:
-    __auth = False
+    __token = None
+    __account = None
 
     # public
     @classmethod
@@ -60,7 +61,7 @@ class SourceMoex:
         log.info("Caching instruments info from MOEX")
 
         # Without authorization - not work
-        cls.__authorizate()
+        cls.__ensure_auth()
 
         # moex_categories = ["index", "shares", "currency", "futures"]
         moex_categories = ["index", "shares", "futures", "currency"]
@@ -155,7 +156,7 @@ class SourceMoex:
             exit(1)
 
         # Without authorization - not work
-        cls.__authorizate()
+        cls.__ensure_auth()
 
         match market_data:
             case MarketData.BAR_1M:
@@ -192,36 +193,52 @@ class SourceMoex:
 
     # private
     @classmethod
-    def __authorizate(cls) -> None:
-        # if auth true -> return
-        if cls.__auth:
+    def __ensure_auth(cls) -> None:
+        # if token or account is some -> return
+        if cls.__token or cls.__account:
             return
 
-        # get login / password
+        token_path = cfg.moex_token
+        if Cmd.is_exist(token_path):
+            cls.__token = Cmd.read(token_path).strip()
+            moexalgo.session.TOKEN = cls.__token
+            log.info("MOEX Authorization with token successful")
+            return
+        else:
+            log.warning(
+                "MOEXALGO not exist token file, SuperCandles unavailible. "
+                f"Make a token and put it in a {token_path}. "
+                "Read more about token:\n"
+                "https://data.moex.com/products/algopack"
+            )
+
+        # try use account: login / password
         account_path = cfg.moex_account
         if Cmd.is_exist(account_path):
             login, password = Cmd.read_text(account_path)
             login, password = login.strip(), password.strip()
-        else:
-            log.error(
-                "MOEX not exist account file, operations with "
-                "market data unavailible. Register and put the file with "
-                f"login and password in '{account_path}'. Read more: "
-                "https://passport.moex.com/registration"
-            )
-            exit(1)
+            cls.__account = moexalgo.session.authorize(login, password)
+            if cls.__account:
+                log.info("MOEX Authorization with login/password successful")
+                return
+            else:
+                log.error(
+                    "MOEX authorization fault, check your login/password. "
+                    "Operations with market data unavailible. "
+                    f"Login='{login}' Password='{password}'"
+                )
+                exit(1)
+
+        # no token file, no account file
+        log.error(
+            "MOEX not exist account file, operations with "
+            "market data unavailible. Register and put the file with "
+            f"login and password in '{account_path}'. Read more:\n"
+            "https://passport.moex.com/registration"
+        )
+        exit(1)
 
         # try auth
-        cls.__auth = moexalgo.session.authorize(login, password)
-        if cls.__auth:
-            log.info("MOEX Authorization successful")
-        else:
-            log.error(
-                "MOEX authorization fault, check your login and password. "
-                "Operations with market data unavailible. "
-                f"Login='{login}' Password='{password}'"
-            )
-            exit(1)
 
     @classmethod
     def __request_instruments(cls, moex_category: str) -> pl.DataFrame:
@@ -587,9 +604,7 @@ def _get_safely(df: pl.DataFrame, key: str) -> pl.Series | None:
 
 
 if __name__ == "__main__":
-    # import moexalgo as ma
-
-    # SourceMoex._SourceMoex__authorizate()
+    # SourceMoex._SourceMoex__ensure_auth()
 
     # # Акции
     # eq = ma.Market("EQ")
@@ -597,16 +612,15 @@ if __name__ == "__main__":
     # print(r)
 
     # SBER
-    # Свечи по акциям SBER за период
-    # s = ma.Ticker("SBER")
+    # s = moexalgo.Ticker("SBER")
     # r = s.candles(start="2023-10-10", end="2023-10-18", period="1d").head()
     # print(r)
-
-    # s = ma.Ticker("SBER")
+    #
+    # s = moexalgo.Ticker("SBER")
     # r = s.tradestats(start="2023-10-10", end="2023-10-18").head()
     # print(r)
-
-    # s = ma.Ticker("SBER")
+    #
+    # s = moexalgo.Ticker("SBER")
     # r = s.orderstats(start="2023-10-10", end="2023-10-18").head()
     # print(r)
     ...

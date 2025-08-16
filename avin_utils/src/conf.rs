@@ -23,6 +23,7 @@ pub struct Configuration {
     pub data: DataSettings,
     pub core: CoreSettings,
     pub tester: TesterSettings,
+    pub trader: TraderSettings,
     pub gui: GuiSettings,
 }
 impl Configuration {
@@ -45,7 +46,7 @@ impl Configuration {
             return Configuration::read(&path);
         };
 
-        // try use default config in ~/avin/res/default_config.toml
+        // try use default config in ~/avin/res/config.toml
         let mut path = std::env::home_dir().unwrap();
         path.push("avin");
         path.push("res");
@@ -112,9 +113,16 @@ impl DirSettings {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConnectSettings {
     moexalgo: Option<String>,
+    moex_token: Option<String>,
     tinkoff: Option<String>,
 }
 impl ConnectSettings {
+    pub fn moex_token(&self) -> PathBuf {
+        let mut path = std::env::home_dir().unwrap();
+        path.push(self.moex_token.as_ref().unwrap());
+
+        path
+    }
     pub fn moexalgo(&self) -> PathBuf {
         let mut path = std::env::home_dir().unwrap();
         path.push(self.moexalgo.as_ref().unwrap());
@@ -163,6 +171,15 @@ pub struct CoreSettings {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TesterSettings {
     pub default_commission: f64,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct TraderSettings {
+    pub work_list: Vec<WorkCfg>,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct WorkCfg {
+    pub iid: String,
+    pub strategy: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

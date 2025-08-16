@@ -5,13 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin::trader::*;
-use avin::utils;
+mod gui_simulator;
 
-#[tokio::main]
-async fn main() {
-    utils::init_logger();
-
-    let mut trader = Trader::new();
-    trader.start().await;
-}
+pub use gui_simulator::GuiSimulator;

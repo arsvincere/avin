@@ -10,6 +10,7 @@ homepage = { workspace = true }
 readme = "../README.md"
 
 [dependencies]
+avin_analyse = { workspace = true }
 avin_core = { workspace = true }
 avin_utils = { workspace = true }
 chrono = { workspace = true }

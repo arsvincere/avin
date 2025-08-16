@@ -10,7 +10,8 @@
     tinkoff = "trading/usr/connect/tinkoff/token.txt"
 
     # Path to moex account
-    moexalgo = "trading/usr/connect/moex/account.txt"
+    moex_account = "trading/usr/connect/moex/account.txt"
+    moex_token = "trading/usr/connect/moex/token.txt"
 
 [usr]
     # Your local timeshift from UTC+0
@@ -58,6 +59,19 @@
     default_commission = 0.05 # %
 
 [trader]
+    work_list = [
+        { iid = "moex_share_afks", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_chmf", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_gazp", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_gmkn", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_lkoh", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_moex", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_nlmk", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_nvtk", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_rosn", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_sber", strategy = [ "BigTrendShort" ] },
+        { iid = "moex_share_vtbr", strategy = [ "BigTrendShort" ] },
+    ]
 
 [terminal]
 
@@ -116,5 +130,5 @@
     right_pane_width = 200.0
 
 [gui.test]
-    trade_shift = 1.05 # 5% upper
+    trade_shift = 1.03 # 3% upper
     trade_size = 5.0 # px

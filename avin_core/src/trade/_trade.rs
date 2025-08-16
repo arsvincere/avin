@@ -342,10 +342,10 @@ impl ClosedTrade {
         self.kind == TradeKind::Short
     }
     pub fn is_win(&self) -> bool {
-        todo!();
+        self.result() > 0.0
     }
     pub fn is_loss(&self) -> bool {
-        todo!();
+        self.result() <= 0.0
     }
 
     pub fn lots(&self) -> i32 {
