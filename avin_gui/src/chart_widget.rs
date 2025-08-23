@@ -177,33 +177,48 @@ impl ChartView {
         // draw trends
         if cfg.is_t1() {
             chart.draw_trends(plot_ui, &self.theme, T1);
-            chart.draw_posterior_1(plot_ui, &self.theme, T1);
-            chart.draw_posterior_0(plot_ui, &self.theme, T1);
+            if cfg.is_p1() {
+                chart.draw_posterior_1(plot_ui, &self.theme, T1);
+            }
+            if cfg.is_p0() {
+                chart.draw_posterior_0(plot_ui, &self.theme, T1);
+            }
         }
         if cfg.is_t2() {
             chart.draw_trends(plot_ui, &self.theme, T2);
-            chart.draw_posterior_1(plot_ui, &self.theme, T2);
-            chart.draw_posterior_0(plot_ui, &self.theme, T2);
+            if cfg.is_p1() {
+                chart.draw_posterior_1(plot_ui, &self.theme, T2);
+            }
+            if cfg.is_p0() {
+                chart.draw_posterior_0(plot_ui, &self.theme, T2);
+            }
         }
         if cfg.is_t3() {
             chart.draw_trends(plot_ui, &self.theme, T3);
-            chart.draw_posterior_1(plot_ui, &self.theme, T3);
-            chart.draw_posterior_0(plot_ui, &self.theme, T3);
+            if cfg.is_p1() {
+                chart.draw_posterior_1(plot_ui, &self.theme, T3);
+            }
+            if cfg.is_p0() {
+                chart.draw_posterior_0(plot_ui, &self.theme, T3);
+            }
         }
         if cfg.is_t4() {
             chart.draw_trends(plot_ui, &self.theme, T4);
-            chart.draw_posterior_1(plot_ui, &self.theme, T4);
-            chart.draw_posterior_0(plot_ui, &self.theme, T4);
+            if cfg.is_p1() {
+                chart.draw_posterior_1(plot_ui, &self.theme, T4);
+            }
+            if cfg.is_p0() {
+                chart.draw_posterior_0(plot_ui, &self.theme, T4);
+            }
         }
         if cfg.is_t5() {
             chart.draw_trends(plot_ui, &self.theme, T5);
-            chart.draw_posterior_1(plot_ui, &self.theme, T5);
-            chart.draw_posterior_0(plot_ui, &self.theme, T5);
-        }
-
-        // draw quantum
-        if cfg.is_quantum() {
-            // draw_quantum(plot_ui, &self.theme, footprint);
+            if cfg.is_p1() {
+                chart.draw_posterior_1(plot_ui, &self.theme, T5);
+            }
+            if cfg.is_p0() {
+                chart.draw_posterior_0(plot_ui, &self.theme, T5);
+            }
         }
     }
     fn draw_bottom(
@@ -221,9 +236,7 @@ impl ChartView {
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct ChartToolbar {
-    #[serde(skip)] // TODO: del it in 0.2.11
     tf1: TimeFrame,
-    #[serde(skip)] // TODO: del it in 0.2.11
     tf2: TimeFrame,
     bars: bool,
     quantum: bool,
@@ -232,6 +245,8 @@ pub struct ChartToolbar {
     t3: bool,
     t4: bool,
     t5: bool,
+    p1: bool,
+    p0: bool,
 }
 impl ChartToolbar {
     pub fn ui(&mut self, ui: &mut egui::Ui) {
@@ -280,12 +295,13 @@ impl ChartToolbar {
             };
             ui.separator();
 
-            // let img = egui::Image::new(egui::include_image!(
-            //     "../../../res/icon/btn/bar.svg"
-            // ));
-            // let btn = egui::Button::image(img);
-            // ui.add_sized(BTN_SIZE, btn);
-            // ui.separator();
+            if ui.selectable_label(self.p1, "P1").clicked() {
+                self.p1 = !self.p1;
+            };
+            if ui.selectable_label(self.p0, "P0").clicked() {
+                self.p0 = !self.p0;
+            };
+            ui.separator();
         });
     }
 
@@ -326,6 +342,14 @@ impl ChartToolbar {
     pub fn is_t5(&self) -> bool {
         self.t5
     }
+    #[inline]
+    pub fn is_p1(&self) -> bool {
+        self.p1
+    }
+    #[inline]
+    pub fn is_p0(&self) -> bool {
+        self.p0
+    }
 }
 impl Default for ChartToolbar {
     fn default() -> Self {
@@ -339,6 +363,8 @@ impl Default for ChartToolbar {
             t3: false,
             t4: false,
             t5: false,
+            p1: false,
+            p0: false,
         }
     }
 }

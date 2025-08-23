@@ -46,9 +46,6 @@ impl AssetWidget {
             event_rx,
             action_tx,
         }
-
-        // TODO: save/load state
-        // AssetWidget::default()
     }
 
     pub fn ui(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
@@ -101,14 +98,6 @@ impl AssetWidget {
             .column(Column::remainder())
             .column(Column::remainder())
             .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
             .min_scrolled_height(0.0)
             .max_scroll_height(available_height);
         table = table.sense(egui::Sense::click());
@@ -116,21 +105,6 @@ impl AssetWidget {
             .header(20.0, |mut header| {
                 header.col(|ui| {
                     ui.strong("Ticker");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-1");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-2");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-3");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-4");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-5");
                 });
                 header.col(|ui| {
                     ui.strong("10M-1");
@@ -162,15 +136,6 @@ impl AssetWidget {
                 header.col(|ui| {
                     ui.strong("1H-5");
                 });
-                header.col(|ui| {
-                    ui.strong("D-1");
-                });
-                header.col(|ui| {
-                    ui.strong("D-2");
-                });
-                header.col(|ui| {
-                    ui.strong("D-3");
-                });
             })
             .body(|body| {
                 body.rows(text_height, self.asset_list.len(), |mut row| {
@@ -183,10 +148,100 @@ impl AssetWidget {
                         ui.label(asset.ticker());
                     });
                     row.col(|ui| {
-                        let chart_opt = asset.chart(TimeFrame::M1);
+                        let chart_opt = asset.chart(TimeFrame::M10);
                         let p = match chart_opt {
                             Some(chart) => {
-                                chart.trend_posterior(Term::T1).unwrap()
+                                chart.trend_posterior(Term::T1).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T2).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T3).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T4).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T5).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T1).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T2).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T3).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T4).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T5).unwrap_or(0.0)
                             }
                             None => 0.0,
                         };

@@ -249,6 +249,7 @@ impl TrendAnalytic for Chart {
 
     /// Return probability in current price
     fn trend_posterior(&self, term: Term) -> Option<f64> {
+        let trend = self.trend(term, 1)?;
         let price = self.last_price()?;
         let df = self.trend_df_last(term)?;
         // ┌──────┬───────────┬────────────┐
@@ -269,21 +270,40 @@ impl TrendAnalytic for Chart {
         // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
         // └──────┴───────────┴────────────┘
 
-        let mask = df.column("price").unwrap().f64().unwrap().gt(price);
-        let df = df.filter(&mask).unwrap();
-
-        if df.is_empty() {
-            None
+        if trend.is_bull() {
+            let mask = df.column("price").unwrap().f64().unwrap().gt(price);
+            let df = df.filter(&mask).unwrap();
+            if df.is_empty() {
+                None
+            } else {
+                Some(
+                    df.column("p")
+                        .unwrap()
+                        .as_materialized_series()
+                        .first()
+                        .value()
+                        .try_extract::<f64>()
+                        .unwrap()
+                        .floor(),
+                )
+            }
         } else {
-            Some(
-                df.column("p")
-                    .unwrap()
-                    .as_materialized_series()
-                    .first()
-                    .value()
-                    .try_extract::<f64>()
-                    .unwrap(),
-            )
+            let mask = df.column("price").unwrap().f64().unwrap().lt(price);
+            let df = df.filter(&mask).unwrap();
+            if df.is_empty() {
+                None
+            } else {
+                Some(
+                    df.column("p")
+                        .unwrap()
+                        .as_materialized_series()
+                        .first()
+                        .value()
+                        .try_extract::<f64>()
+                        .unwrap()
+                        .floor(),
+                )
+            }
         }
     }
 }
