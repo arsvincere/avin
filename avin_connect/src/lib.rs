@@ -8,3 +8,4 @@
 mod tinkoff;
 
 pub use tinkoff::Tinkoff;
+pub use tinkoff::TinkoffClient;

@@ -74,6 +74,8 @@ impl VirtualBroker {
         // process actions from strategys
         while let Ok(a) = self.rx.try_recv() {
             match a {
+                Action::GetAccount(_) => todo!(),
+                Action::GetBars(_) => todo!(),
                 Action::Post(a) => self.post_action(a),
                 Action::Cancel(a) => self.cancel_action(a),
                 Action::TradeOpened(_) => unreachable!(),

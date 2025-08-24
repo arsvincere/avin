@@ -105,9 +105,9 @@ impl BigTrendShort {
             return;
         }
 
-        if !self.observe_d(asset) {
-            return;
-        }
+        // if !self.observe_d(asset) {
+        //     return;
+        // }
 
         // все выполнено, открываем сделку
         self.sell();
@@ -117,52 +117,85 @@ impl BigTrendShort {
         let tf = TimeFrame::M10;
         let chart = asset.chart(tf).unwrap();
 
-        // берем тренд
-        let trend = match chart.trend(Term::T3, 0) {
+        // T5
+        let trend = match chart.trend(Term::T5, 0) {
             Some(t) => t,
             None => return false,
         };
-        // если тренд медвежий выходим
         if trend.is_bear() {
             return false;
         }
-
-        // берем вероятность ласт прайса T5
         let p = match chart.trend_posterior(Term::T5) {
             Some(p) => p,
             None => return false,
         };
-        // если меньше __._% то выходим
-        if p < 80.0 {
+        if p < 20.0 {
             return false;
         }
-        // берем вероятность ласт прайса T4
-        let p = match chart.trend_posterior(Term::T4) {
-            Some(p) => p,
-            None => return false,
-        };
-        // если меньше __._% то выходим
-        if p < 80.0 {
-            return false;
-        }
-        // берем вероятность ласт прайса T3
-        let p = match chart.trend_posterior(Term::T3) {
-            Some(p) => p,
-            None => return false,
-        };
-        // если меньше __._% то выходим
-        if p < 80.0 {
-            return false;
-        }
-        // берем вероятность ласт прайса T2
-        let p = match chart.trend_posterior(Term::T2) {
-            Some(p) => p,
-            None => return false,
-        };
-        // если меньше __._% то выходим
-        if p < 80.0 {
-            return false;
-        }
+
+        // // T4
+        // let trend = match chart.trend(Term::T4, 0) {
+        //     Some(t) => t,
+        //     None => return false,
+        // };
+        // if trend.is_bear() {
+        //     return false;
+        // }
+        // let p = match chart.trend_posterior(Term::T4) {
+        //     Some(p) => p,
+        //     None => return false,
+        // };
+        // if p > 20.0 {
+        //     return false;
+        // }
+        //
+        // // T3
+        // let trend = match chart.trend(Term::T3, 0) {
+        //     Some(t) => t,
+        //     None => return false,
+        // };
+        // if trend.is_bear() {
+        //     return false;
+        // }
+        // let p = match chart.trend_posterior(Term::T3) {
+        //     Some(p) => p,
+        //     None => return false,
+        // };
+        // if p > 20.0 {
+        //     return false;
+        // }
+        //
+        // // T2
+        // let trend = match chart.trend(Term::T2, 0) {
+        //     Some(t) => t,
+        //     None => return false,
+        // };
+        // if trend.is_bear() {
+        //     return false;
+        // }
+        // let p = match chart.trend_posterior(Term::T2) {
+        //     Some(p) => p,
+        //     None => return false,
+        // };
+        // if p > 20.0 {
+        //     return false;
+        // }
+        //
+        // // T1
+        // let trend = match chart.trend(Term::T1, 0) {
+        //     Some(t) => t,
+        //     None => return false,
+        // };
+        // if trend.is_bear() {
+        //     return false;
+        // }
+        // let p = match chart.trend_posterior(Term::T1) {
+        //     Some(p) => p,
+        //     None => return false,
+        // };
+        // if p > 20.0 {
+        //     return false;
+        // }
 
         true
     }

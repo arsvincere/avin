@@ -29,9 +29,9 @@ pub struct Terminal {
 }
 impl Default for Terminal {
     fn default() -> Self {
+        let (action_tx, action_rx) = tokio::sync::mpsc::unbounded_channel();
         let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
-        let broker = Tinkoff::new(event_tx.clone());
-        let action_tx = broker.get_sender();
+        let broker = Tinkoff::new(action_rx, event_tx.clone());
 
         // create tokio runtime
         let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
@@ -192,26 +192,20 @@ pub fn toggle_ui(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
     // (hovered, clicked, ...) and maybe show a tooltip:
     response
 }
-// A wrapper that allows the more idiomatic usage pattern: `ui.add(toggle(&mut my_bool))`
-// iOS-style toggle switch.
-//
-// ## Example:
-// ``` ignore
-// ui.add(toggle(&mut my_bool));
-// ```
 pub fn toggle(on: &mut bool) -> impl egui::Widget + '_ {
+    // A wrapper that allows the more idiomatic usage pattern: `ui.add(toggle(&mut my_bool))`
+    // iOS-style toggle switch.
+    //
+    // ## Example:
+    // ``` ignore
+    // ui.add(toggle(&mut my_bool));
+    // ```
     move |ui: &mut egui::Ui| toggle_ui(ui, on)
 }
 
 async fn start_broker(mut broker: Tinkoff) {
     broker.connect().await.unwrap();
     log::debug!("Broker connected!");
-
-    broker.create_marketdata_stream().await.unwrap();
-    log::debug!("Data stream started!");
-
-    broker.create_transactions_stream().await.unwrap();
-    log::debug!("Transaction stream started!");
 
     tokio::spawn(async move {
         broker.start().await;

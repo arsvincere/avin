@@ -125,7 +125,7 @@
     trade_stop = "#E82424"
 
 [gui.chart]
-    bottom_pane_height = 200.0
+    bottom_pane_height = 100.0
     left_pane_width = 200.0
     right_pane_width = 200.0
 

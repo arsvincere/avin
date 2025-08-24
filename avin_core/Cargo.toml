@@ -19,3 +19,4 @@ polars = { workspace = true }
 serde = { workspace = true }
 strum = { workspace = true }
 time-unit = { workspace = true }
+tokio = { workspace = true }

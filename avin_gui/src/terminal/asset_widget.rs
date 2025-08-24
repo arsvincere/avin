@@ -11,8 +11,8 @@ use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
 use avin_core::{
-    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator,
-    MarketData, Term, TimeFrame,
+    Action, Asset, AssetList, Event, ExtremumIndicator, MarketData,
+    StreamAction, Term, TimeFrame,
 };
 use avin_utils::{CFG, Cmd};
 
@@ -284,7 +284,7 @@ impl AssetWidget {
 
         // create action
         let action =
-            Action::Subscribe(DataAction::new(iid.clone(), market_data));
+            Action::Subscribe(StreamAction::new(iid.clone(), market_data));
 
         // send action
         match self.action_tx.send(action) {
@@ -295,10 +295,13 @@ impl AssetWidget {
     fn receive_market_data(&mut self) {
         while let Ok(event) = self.event_rx.try_recv() {
             log::debug!("Asset widget receive {event}");
-            let asset = self.asset_list.get_mut(self.current_index).unwrap();
 
             match event {
-                Event::Bar(e) => asset.bar_event(e),
+                Event::Bar(e) => {
+                    let asset =
+                        self.asset_list.find_figi_mut(&e.figi).unwrap();
+                    asset.bar_event(e)
+                }
                 Event::Tic(e) => todo!("{:?}", e),
                 Event::Order(e) => todo!("{:?}", e),
             }

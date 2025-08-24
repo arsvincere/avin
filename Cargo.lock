@@ -582,6 +582,7 @@ dependencies = [
  "serde",
  "strum 0.27.2",
  "time-unit",
+ "tokio",
 ]
 
 [[package]]

@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::path::PathBuf;
 
-use chrono::prelude::*;
+use chrono::{Days, prelude::*};
 
 use avin_utils::{AvinError, CFG, Cmd};
 
@@ -315,8 +315,12 @@ impl Share {
     /// # ru
     /// Загружает тиковые данные по активу.
     pub fn load_tics(&mut self) -> Result<(), AvinError> {
-        let begin = Utc::now().with_time(NaiveTime::MIN).unwrap();
         let end = Utc::now();
+        let begin = end
+            .checked_sub_days(Days::new(7))
+            .unwrap()
+            .with_time(NaiveTime::MIN)
+            .unwrap();
 
         match Manager::load(&self.iid, MarketData::TIC, begin, end) {
             Ok(df) => {

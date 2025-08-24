@@ -31,22 +31,17 @@ impl Tester {
         log::info!("Tester run");
         test.clear();
 
-        log::info!("- load broker");
         let mut broker = VirtualBroker::new(test);
         let broker_tx = broker.get_sender();
 
-        log::info!("- load account");
         let account = broker.get_virtual_account();
 
-        log::info!("- load asset");
         let mut asset = Asset::from_iid(test.iid.clone());
         self.load_charts(&mut asset);
 
-        log::info!("- load strategys");
         let sender = self.tx.clone();
         strategy.init(sender, account, &mut asset);
 
-        log::info!("Start main loop");
         test.status = TestStatus::Process;
         while let Some(e) = broker.next_event() {
             match e {
@@ -78,8 +73,6 @@ impl Tester {
 
     // private
     fn load_charts(&mut self, asset: &mut Asset) {
-        log::info!("- load charts {asset}");
-
         for tf in TimeFrame::all() {
             asset.load_chart_empty(tf);
         }
