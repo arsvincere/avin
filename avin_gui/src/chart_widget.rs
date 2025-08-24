@@ -11,7 +11,7 @@ use egui_plot::{Corner, Plot, PlotUi};
 
 use avin_analyse::TrendAnalytic;
 use avin_core::{
-    Asset, Chart, ExtremumIndicator, Footprint,
+    Asset, ExtremumIndicator,
     Term::{T1, T2, T3, T4, T5},
     TimeFrame,
 };
@@ -143,7 +143,7 @@ impl ChartView {
             .cursor_color(self.theme.cross)
             .coordinates_formatter(Corner::LeftTop, chart.bar_info())
             .label_formatter(|name, value| chart.price_info(name, value))
-            .show(ui, |plot_ui| self.draw_center(plot_ui, chart, cfg))
+            .show(ui, |plot_ui| self.draw_center(plot_ui, asset, cfg))
     }
     fn build_bottom_plot(
         &self,
@@ -151,8 +151,6 @@ impl ChartView {
         asset: &Asset,
         cfg: &ChartToolbar,
     ) -> egui_plot::PlotResponse<()> {
-        let footprint = asset.footprint(cfg.tf());
-
         Plot::new("bottom_plot")
             .link_axis("link_group", [true, false])
             .link_cursor("link_group", [true, false])
@@ -161,17 +159,25 @@ impl ChartView {
             .show_axes([false, false])
             .allow_zoom([self.scale_x, self.scale_y])
             .cursor_color(self.theme.cross)
-            .show(ui, |plot_ui| self.draw_bottom(plot_ui, footprint, cfg))
+            .show(ui, |plot_ui| self.draw_bottom(plot_ui, asset, cfg))
     }
     fn draw_center(
         &self,
         plot_ui: &mut PlotUi,
-        chart: &Chart,
+        asset: &Asset,
         cfg: &ChartToolbar,
     ) {
+        let chart = asset.chart(cfg.tf()).unwrap();
+        let footprint = asset.footprint(cfg.tf()).unwrap();
+
         // draw bars
         if cfg.is_bars() {
             chart.draw_bars(plot_ui, &self.theme);
+        }
+
+        // draw quantum
+        if cfg.is_quantum() {
+            footprint.draw_quantum(plot_ui, &self.theme);
         }
 
         // draw trends
@@ -224,9 +230,11 @@ impl ChartView {
     fn draw_bottom(
         &self,
         plot_ui: &mut PlotUi,
-        footprint: Option<&Footprint>,
-        _cfg: &ChartToolbar,
+        asset: &Asset,
+        cfg: &ChartToolbar,
     ) {
+        let footprint = asset.footprint(cfg.tf());
+
         if let Some(f) = footprint {
             f.draw_hist(plot_ui, &self.theme);
         }

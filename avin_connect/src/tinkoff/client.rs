@@ -769,6 +769,7 @@ impl TinkoffClient {
             .get_candles(request)
             .await
             .unwrap();
+
         // api::marketdata::GetCandlesResponse
         let message = response.into_parts();
         // vec[api::marketdata::HistoricCandle]

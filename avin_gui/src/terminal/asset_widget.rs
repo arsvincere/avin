@@ -6,13 +6,14 @@
  ****************************************************************************/
 
 use avin_analyse::TrendAnalytic;
+use chrono::Utc;
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
 use avin_core::{
-    Action, Asset, AssetList, Event, ExtremumIndicator, MarketData,
-    StreamAction, Term, TimeFrame,
+    Action, Asset, AssetList, Event, ExtremumIndicator, GetBarsAction,
+    MarketData, StreamAction, Term, TimeFrame,
 };
 use avin_utils::{CFG, Cmd};
 
@@ -261,6 +262,7 @@ impl AssetWidget {
     fn load_charts(&mut self) {
         let asset = self.asset_list.get_mut(self.current_index).unwrap();
 
+        // load historical bars from hard drive
         for tf in TimeFrame::all() {
             match asset.chart(tf).is_some() {
                 true => (),
@@ -271,6 +273,31 @@ impl AssetWidget {
                     TrendAnalytic::init(chart);
                 }
             };
+        }
+
+        // request latest bars from broker
+        let iid = asset.iid().clone();
+        for tf in TimeFrame::all() {
+            let chart = asset.chart_mut(tf).unwrap();
+
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            let action = Action::GetBars(GetBarsAction::new(
+                iid.clone(),
+                tf,
+                chart.now().unwrap().dt(),
+                Utc::now(),
+                tx,
+            ));
+            self.action_tx.send(action).unwrap();
+
+            match rx.blocking_recv() {
+                Ok(bars) => {
+                    for bar in bars.iter() {
+                        chart.add_bar(*bar);
+                    }
+                }
+                Err(e) => log::error!("{e}"),
+            }
         }
     }
     fn subscribe_market_data(&mut self) {
