@@ -113,6 +113,7 @@ impl DirSettings {
 pub struct ConnectSettings {
     moexalgo: Option<String>,
     tinkoff: Option<String>,
+    moex_api_key: Option<String>,
 }
 impl ConnectSettings {
     pub fn moexalgo(&self) -> PathBuf {
@@ -124,6 +125,12 @@ impl ConnectSettings {
     pub fn tinkoff(&self) -> PathBuf {
         let mut path = std::env::home_dir().unwrap();
         path.push(self.tinkoff.as_ref().unwrap());
+
+        path
+    }
+    pub fn moex_api_key(&self) -> PathBuf {
+        let mut path = std::env::home_dir().unwrap();
+        path.push(self.moex_api_key.as_ref().unwrap());
 
         path
     }

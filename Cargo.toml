@@ -67,6 +67,8 @@ tonic = { version = "0.11", features = ["tls", "tls-roots", "gzip"] }
 uuid = {version = "1.16.0", features = [ "v4" ]}
 prost-types = "0.12"
 prost = "0.12"
+reqwest = "0.12.22"
+serde_json = "1.0.142"
 
 iced = {version="0.13.1", features = ["tokio", "lazy"]}
 iced_table = "0.13.0"
