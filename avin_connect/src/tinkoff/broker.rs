@@ -127,6 +127,9 @@ impl Tinkoff {
                     .subscribe_bar(&a.iid, &TimeFrame::Month)
                     .await
                     .unwrap(),
+                MarketData::TRADE_STATS => unreachable!(),
+                MarketData::ORDER_STATS => unreachable!(),
+                MarketData::OB_STATS => unreachable!(),
             };
         }
     }

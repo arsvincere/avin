@@ -22,6 +22,9 @@ pub enum MarketData {
     BAR_W,
     BAR_M,
     TIC,
+    TRADE_STATS,
+    ORDER_STATS,
+    OB_STATS,
 }
 impl MarketData {
     /// Return market data type name
@@ -38,6 +41,9 @@ impl MarketData {
             Self::BAR_W => "BAR_W".to_string(),
             Self::BAR_M => "BAR_M".to_string(),
             Self::TIC => "TIC".to_string(),
+            Self::TRADE_STATS => "TRADE_STATS".to_string(),
+            Self::ORDER_STATS => "ORDER_STATS".to_string(),
+            Self::OB_STATS => "OB_STATS".to_string(),
         }
     }
 }
@@ -59,6 +65,9 @@ impl From<&str> for MarketData {
             "BAR_W" => MarketData::BAR_W,
             "BAR_M" => MarketData::BAR_M,
             "TIC" => MarketData::TIC,
+            "TRADE_STATS" => MarketData::TRADE_STATS,
+            "ORDER_STATS" => MarketData::ORDER_STATS,
+            "OB_STATS" => MarketData::OB_STATS,
             _ => panic!("Invalid value for MarketData: {value}"),
         }
     }

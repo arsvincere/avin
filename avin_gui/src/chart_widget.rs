@@ -5,8 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use eframe::egui;
-use eframe::egui::Key;
+use eframe::egui::{self, Key};
 use egui_plot::{Corner, Plot, PlotUi};
 
 use avin_analyse::TrendAnalytic;

@@ -5,10 +5,11 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeZone, Utc};
 use polars::frame::DataFrame;
 
-use crate::{Iid, MarketData};
+use crate::data::SourceMoex;
+use crate::{Iid, MarketData, Source};
 use avin_utils::AvinError;
 
 use super::data_bar::DataBar;
@@ -107,7 +108,32 @@ impl Manager {
             MarketData::BAR_D => DataBar::load(iid, md, begin, end),
             MarketData::BAR_W => DataBar::load(iid, md, begin, end),
             MarketData::BAR_M => DataBar::load(iid, md, begin, end),
+            MarketData::TRADE_STATS => todo!(),
+            MarketData::ORDER_STATS => todo!(),
+            MarketData::OB_STATS => todo!(),
         }
+    }
+
+    pub async fn download(
+        source: Source,
+        iid: &Iid,
+        md: MarketData,
+        year: i32,
+    ) -> Result<(), AvinError> {
+        assert_eq!(source, Source::MOEX);
+
+        let source = match source {
+            Source::MOEX => SourceMoex::new(),
+            Source::TINKOFF => todo!(),
+        };
+
+        let begin = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
+        let end = Utc.with_ymd_and_hms(year + 1, 1, 1, 0, 0, 0).unwrap();
+
+        let df = source.get(iid, md, begin, end).await.unwrap();
+        dbg!(&df);
+
+        Ok(())
     }
 }
 

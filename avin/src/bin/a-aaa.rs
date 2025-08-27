@@ -9,6 +9,12 @@ use avin_utils::*;
 
 use polars::prelude::*;
 
-fn main() {
-    let client = reqwest::Client::new();
+#[tokio::main]
+async fn main() {
+    let source = Source::MOEX;
+    let iid = Manager::find_iid("moex_share_sber").unwrap();
+    let md = MarketData::TRADE_STATS;
+    let year = 2024;
+
+    Manager::download(source, &iid, md, year).await.unwrap();
 }
