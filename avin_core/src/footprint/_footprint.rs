@@ -21,8 +21,6 @@ use crate::{Cluster, Iid, Tic, TimeFrame};
 /// активе, график заимствует тики, рассчитывает по ним кластеры. То есть
 /// тики хранятся в одном экземпляре и используются всеми кластерными
 /// графиками разных таймфреймов.
-///
-/// Структура новая, возможны изменения. Документации по методам пока нет.
 #[derive(Debug)]
 pub struct Footprint {
     iid: Iid,
@@ -56,8 +54,8 @@ impl Footprint {
     pub fn iid(&self) -> &Iid {
         &self.iid
     }
-    pub fn tf(&self) -> &TimeFrame {
-        &self.tf
+    pub fn tf(&self) -> TimeFrame {
+        self.tf
     }
     pub fn clusters(&self) -> &Vec<Cluster> {
         &self.clusters

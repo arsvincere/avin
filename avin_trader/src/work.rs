@@ -29,6 +29,13 @@ impl Work {
     pub fn figi(&self) -> &String {
         self.asset.figi()
     }
+    pub fn asset(&mut self) -> &mut Asset {
+        &mut self.asset
+    }
+    pub fn strategys(&self) -> &Vec<Box<dyn Strategy>> {
+        &self.strategys
+    }
+
     pub fn add_strategy(&mut self, strategy: impl Strategy) {
         self.strategys.push(Box::new(strategy));
     }
@@ -45,7 +52,6 @@ impl Work {
                 }
                 Event::Tic(e) => {
                     self.asset.tic_event(e);
-                    // self.process_strategy();
                 }
                 Event::Order(e) => {
                     for strategy in self.strategys.iter_mut() {

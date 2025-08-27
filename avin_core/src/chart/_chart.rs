@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 
 use avin_utils::{AvinError, bisect_left, bisect_right};
+use polars::frame::DataFrame;
 
 use crate::{Bar, Iid, Indicator, Manager, TimeFrame, UserData};
 
@@ -197,41 +198,7 @@ impl Chart {
     /// - сделает текущий реал-тайм бар историческим (last), а новый
     ///   поставит текущим (now);
     pub fn add_bar(&mut self, new_bar: Bar) {
-        let last_bar = self.bars.last_mut();
-
-        // если баров не было - в пустой график добавляем первый бар
-        if last_bar.is_none() {
-            self.bars.push(new_bar);
-            return;
-        }
-
-        // далее ситуации когда в графике есть бары
-        let last_bar = last_bar.unwrap();
-
-        // если время одинаковое - только обновить текущий бар
-        if last_bar.ts_nanos == new_bar.ts_nanos {
-            *last_bar = new_bar;
-            return;
-        }
-
-        // время смены бара
-        let next_ts = self.tf.next_ts(last_bar.ts_nanos);
-
-        // если время пришедшего нового бара больше текущего последнего
-        // и при этом меньше чем время смены бара, - джоинить этот бар
-        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos < next_ts
-        {
-            *last_bar = last_bar.join(new_bar);
-            return;
-        }
-
-        // если время пришедшего нового бара больше текущего последнего
-        // и при этом равно времени смены бара, - новый текущий
-        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos == next_ts
-        {
-            self.bars.push(new_bar);
-        }
-
+        self.adding_bar(new_bar);
         self.update_ind();
         self.update_user_data();
     }
@@ -276,9 +243,7 @@ impl Chart {
     }
 
     // XXX: Unstable experimental features
-    pub fn add_ind(&mut self, mut i: Indicator) {
-        i.init(&self.bars);
-
+    pub fn add_ind(&mut self, i: Indicator) {
         let id = i.id().to_string();
         self.ind.insert(id, i);
     }
@@ -288,18 +253,59 @@ impl Chart {
     pub fn get_ind_mut(&mut self, id: &str) -> Option<&mut Indicator> {
         self.ind.get_mut(id)
     }
-
     pub fn add_data(&mut self, mut data: impl UserData + 'static) {
         data.init(self.bars());
         let id = data.id().to_string();
         self.user_data.insert(id, Box::new(data));
     }
+    pub fn get_data(self, _id: &str) -> Option<&DataFrame> {
+        todo!();
+    }
+    pub fn get_data_mut(&mut self, _id: &str) -> Option<&mut DataFrame> {
+        todo!();
+    }
 
     // private
+    fn adding_bar(&mut self, new_bar: Bar) {
+        let last_bar = self.bars.last_mut();
+
+        // если баров не было - в пустой график добавляем первый бар
+        if last_bar.is_none() {
+            self.bars.push(new_bar);
+            return;
+        }
+
+        // далее ситуации когда в графике есть бары
+        let last_bar = last_bar.unwrap();
+
+        // если время одинаковое - только обновить текущий бар
+        if last_bar.ts_nanos == new_bar.ts_nanos {
+            *last_bar = new_bar;
+            return;
+        }
+
+        // время смены бара
+        let next_ts = self.tf.next_ts(last_bar.ts_nanos);
+
+        // если время пришедшего нового бара больше текущего последнего
+        // и при этом меньше чем время смены бара, - джоинить этот бар
+        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos < next_ts
+        {
+            *last_bar = last_bar.join(new_bar);
+            return;
+        }
+
+        // если время пришедшего нового бара больше текущего последнего
+        // и при этом равно времени смены бара, - новый текущий
+        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos >= next_ts
+        {
+            self.bars.push(new_bar);
+        }
+    }
     #[inline]
     fn update_ind(&mut self) {
-        for i in self.ind.iter_mut() {
-            i.1.update(&self.bars);
+        for (_id, ind) in self.ind.iter_mut() {
+            ind.update(&self.bars);
         }
     }
     #[inline]

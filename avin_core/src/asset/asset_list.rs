@@ -146,6 +146,20 @@ impl AssetList {
     pub fn get_mut(&mut self, index: usize) -> Option<&mut Asset> {
         self.assets.get_mut(index)
     }
+    /// Find asset in asset list by figi.
+    ///
+    /// # ru
+    /// Возвращает ссылку на актив с заданным figi.
+    pub fn find_figi(&self, figi: &str) -> Option<&Asset> {
+        self.assets.iter().find(|&asset| asset.figi() == figi)
+    }
+    /// Find asset in asset list by figi.
+    ///
+    /// # ru
+    /// Возвращает ссылку на актив с заданным figi.
+    pub fn find_figi_mut(&mut self, figi: &str) -> Option<&mut Asset> {
+        self.assets.iter_mut().find(|asset| asset.figi() == figi)
+    }
 }
 
 #[cfg(test)]
@@ -186,7 +200,7 @@ mod tests {
 
     #[test]
     fn load() {
-        let path = Path::new("/home/alex/trading/asset/xxx.csv");
+        let path = Path::new("/home/alex/trading/usr/asset/xxx.csv");
         let asset_list = AssetList::load(path).unwrap();
 
         assert_eq!(asset_list.name(), "xxx");

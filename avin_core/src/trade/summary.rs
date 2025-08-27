@@ -29,6 +29,8 @@
 // ними.
 
 use crate::{Trade, TradeList};
+use avin_utils::round;
+use polars::prelude::*;
 
 #[derive(Debug)]
 pub struct Summary {
@@ -39,19 +41,19 @@ pub struct Summary {
     /// Процент прибыльности.
     pub percent_profitable: f64,
     /// Количество трейдов.
-    pub total_trades: usize,
+    pub total_trades: u32,
     /// Количество прибыльных трейдов.
-    pub win_trades: usize,
+    pub win_trades: u32,
     /// Количество убыточных трейдов.
-    pub loss_trades: usize,
+    pub loss_trades: u32,
     /// Отношение общей прибыли к общему убытку.
     pub ratio: f64,
     /// Математическое ожидание трейда.
     pub average_trade: f64,
     /// Максимальное количество последовательных выигрышей.
-    pub win_seq: usize,
+    pub win_seq: u32,
     /// Максимальное количество последовательных проигрышей.
-    pub loss_seq: usize,
+    pub loss_seq: u32,
     /// Средний выигрыш.
     pub avg_win: f64,
     /// Средний проигрыш.
@@ -99,11 +101,37 @@ impl Summary {
         }
     }
 }
+impl std::fmt::Display for Summary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let trades = format!(
+            "{}/{}/{}",
+            self.total_trades, self.win_trades, self.loss_trades
+        );
+        let gross = format!(
+            "{} / {}",
+            round(self.gross_profit, 2),
+            round(self.gross_loss, 2)
+        );
 
-fn total_trades(results: &[f64]) -> usize {
-    results.len()
+        let table = df!(
+            "Name" => [self.name.clone()],
+            "Profit" => [round(self.profit, 2)],
+            "%" => [round(self.percent_profitable, 2)],
+            "Trades" => [trades],
+            "Ratio" => [round(self.ratio, 2)],
+            "Avg" => [round(self.average_trade, 2)],
+            "Gross profit/loss" => [gross],
+        )
+        .unwrap();
+
+        write!(f, "{table}")
+    }
 }
-fn winning_trades(results: &[f64]) -> usize {
+
+fn total_trades(results: &[f64]) -> u32 {
+    results.len() as u32
+}
+fn winning_trades(results: &[f64]) -> u32 {
     let mut count = 0;
     for i in results.iter() {
         if *i > 0.0 {
@@ -113,7 +141,7 @@ fn winning_trades(results: &[f64]) -> usize {
 
     count
 }
-fn losing_trades(results: &[f64]) -> usize {
+fn losing_trades(results: &[f64]) -> u32 {
     let mut count = 0;
     for i in results.iter() {
         if *i < 0.0 {
@@ -217,7 +245,7 @@ fn average_trade(results: &[f64]) -> f64 {
         total_net_profit(results) / count as f64
     }
 }
-fn max_win_series(results: &[f64]) -> usize {
+fn max_win_series(results: &[f64]) -> u32 {
     let mut max_series = 0;
     let mut series = 0;
 
@@ -233,7 +261,7 @@ fn max_win_series(results: &[f64]) -> usize {
 
     max_series
 }
-fn max_loss_series(results: &[f64]) -> usize {
+fn max_loss_series(results: &[f64]) -> u32 {
     let mut max_series = 0;
     let mut series = 0;
 

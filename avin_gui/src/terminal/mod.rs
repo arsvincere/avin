@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod _terminal;
 mod asset_widget;
+mod gui_terminal;
 
-pub use _terminal::Terminal;
+pub use gui_terminal::Terminal;

@@ -249,6 +249,7 @@ impl TrendAnalytic for Chart {
 
     /// Return probability in current price
     fn trend_posterior(&self, term: Term) -> Option<f64> {
+        let trend = self.trend(term, 1)?;
         let price = self.last_price()?;
         let df = self.trend_df_last(term)?;
         // ┌──────┬───────────┬────────────┐
@@ -269,21 +270,40 @@ impl TrendAnalytic for Chart {
         // │ 0.28 ┆ 0.830335  ┆ 141.1441   │
         // └──────┴───────────┴────────────┘
 
-        let mask = df.column("price").unwrap().f64().unwrap().gt(price);
-        let df = df.filter(&mask).unwrap();
-
-        if df.is_empty() {
-            None
+        if trend.is_bull() {
+            let mask = df.column("price").unwrap().f64().unwrap().gt(price);
+            let df = df.filter(&mask).unwrap();
+            if df.is_empty() {
+                None
+            } else {
+                Some(
+                    df.column("p")
+                        .unwrap()
+                        .as_materialized_series()
+                        .first()
+                        .value()
+                        .try_extract::<f64>()
+                        .unwrap()
+                        .floor(),
+                )
+            }
         } else {
-            Some(
-                df.column("p")
-                    .unwrap()
-                    .as_materialized_series()
-                    .first()
-                    .value()
-                    .try_extract::<f64>()
-                    .unwrap(),
-            )
+            let mask = df.column("price").unwrap().f64().unwrap().lt(price);
+            let df = df.filter(&mask).unwrap();
+            if df.is_empty() {
+                None
+            } else {
+                Some(
+                    df.column("p")
+                        .unwrap()
+                        .as_materialized_series()
+                        .first()
+                        .value()
+                        .try_extract::<f64>()
+                        .unwrap()
+                        .floor(),
+                )
+            }
         }
     }
 }
@@ -541,7 +561,7 @@ fn cached_posterior_0(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
     let step = get_step(chart.tf());
 
     // eval posterior
-    let mut df = calc_posgerior(all, obs, step);
+    let mut df = calc_posterior(all, obs, step);
 
     // Если тренд бычий, значит следующий медвежий.
     // abs по модулю посчитан, так что для определения цен
@@ -572,7 +592,7 @@ fn cached_posterior_1(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
     let step = get_step(chart.tf());
 
     // eval posterior
-    let mut df = calc_posgerior(all, obs, step);
+    let mut df = calc_posterior(all, obs, step);
 
     // Если тренд бычий, значит следующий медвежий.
     // abs по модулю посчитан, так что для определения цен
@@ -639,12 +659,12 @@ fn get_step(tf: TimeFrame) -> f64 {
         TimeFrame::Month => 1.00,
     }
 }
-fn calc_posgerior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
+fn calc_posterior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     // obs_id - observation trend id
     // h_id - hypothesis trend id
     let obs_id = obs.column("id").unwrap();
     let h_id = obs_id + 1;
-    let h_id = h_id.as_materialized_series().clone();
+    let h_id = h_id.as_materialized_series();
 
     // tmp variables
     let mut abs = Vec::new(); // tmp Vec for create df
@@ -656,7 +676,7 @@ fn calc_posgerior(all: DataFrame, obs: DataFrame, step: f64) -> DataFrame {
     while p >= MIN_P {
         combo = combo
             .lazy()
-            .filter(col("id").is_in(lit(h_id.clone()), false))
+            .filter(col("id").is_in(lit(h_id.clone()).implode(), false))
             .filter(col("abs").gt(lit(cur_abs)))
             .collect()
             .unwrap();

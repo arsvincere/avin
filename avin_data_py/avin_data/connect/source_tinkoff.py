@@ -67,7 +67,7 @@ class SourceTinkoff:
     # private
     @classmethod
     def __ensure_auth(cls) -> None:
-        # if auth true -> return
+        # if token is some -> return
         if cls.__token:
             return
 

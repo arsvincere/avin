@@ -89,10 +89,10 @@ impl Strategy for PinBarLong {
     /// Этот метод вызывается один раз перед запуском стратегии. В нем
     /// же следует разместить логику подготовки стратегии к работе, может
     /// ей нужно загрузить какие то данные и тп.
-    fn init(&mut self, trader: Trader, account: Account, iid: Iid) {
+    fn init(&mut self, trader: Trader, account: Account, asset: &mut Asset) {
         self.trader = Some(trader);
         self.account = Some(account);
-        self.iid = Some(iid);
+        self.iid = Some(asset.iid().clone());
 
         self.last_ts = 0;
     }

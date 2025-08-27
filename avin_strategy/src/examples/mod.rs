@@ -5,8 +5,10 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod _strategy;
-mod examples;
+mod big_trend;
+mod buy_sell;
+mod pin_bar;
 
-pub use _strategy::Strategy;
-pub use examples::{BuySell, PinBarLong};
+pub use big_trend::BigTrendShort;
+pub use buy_sell::BuySell;
+pub use pin_bar::PinBarLong;

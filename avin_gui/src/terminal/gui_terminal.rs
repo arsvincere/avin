@@ -29,9 +29,9 @@ pub struct Terminal {
 }
 impl Default for Terminal {
     fn default() -> Self {
+        let (action_tx, action_rx) = tokio::sync::mpsc::unbounded_channel();
         let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
-        let broker = Tinkoff::new(event_tx.clone());
-        let action_tx = broker.get_sender();
+        let broker = Tinkoff::new(action_rx, event_tx.clone());
 
         // create tokio runtime
         let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
@@ -75,9 +75,8 @@ impl eframe::App for Terminal {
         egui_extras::install_image_loaders(ctx);
 
         ui_top(self, ctx);
-
         ui_left(self, ctx);
-        ui_right(self, ctx);
+        ui_center(self, ctx);
 
         if self.is_active_mode {
             ctx.request_repaint();
@@ -113,7 +112,7 @@ fn ui_left(app: &mut Terminal, ctx: &egui::Context) {
         app.asset_widget.ui(ctx, ui);
     });
 }
-fn ui_right(app: &mut Terminal, ctx: &egui::Context) {
+fn ui_center(app: &mut Terminal, ctx: &egui::Context) {
     egui::CentralPanel::default().show(ctx, |ui| {
         let asset = app.asset_widget.current_asset();
         app.chart_widget.ui(ui, asset);
@@ -193,29 +192,23 @@ pub fn toggle_ui(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
     // (hovered, clicked, ...) and maybe show a tooltip:
     response
 }
-// A wrapper that allows the more idiomatic usage pattern: `ui.add(toggle(&mut my_bool))`
-// iOS-style toggle switch.
-//
-// ## Example:
-// ``` ignore
-// ui.add(toggle(&mut my_bool));
-// ```
 pub fn toggle(on: &mut bool) -> impl egui::Widget + '_ {
+    // A wrapper that allows the more idiomatic usage pattern: `ui.add(toggle(&mut my_bool))`
+    // iOS-style toggle switch.
+    //
+    // ## Example:
+    // ``` ignore
+    // ui.add(toggle(&mut my_bool));
+    // ```
     move |ui: &mut egui::Ui| toggle_ui(ui, on)
 }
 
 async fn start_broker(mut broker: Tinkoff) {
     broker.connect().await.unwrap();
-    log::debug!(":: Broker connected!");
-
-    broker.create_marketdata_stream().await.unwrap();
-    log::debug!(":: Data stream started!");
-
-    broker.create_transactions_stream().await.unwrap();
-    log::debug!(":: Transaction stream started!");
+    log::debug!("Broker connected!");
 
     tokio::spawn(async move {
         broker.start().await;
     });
-    log::debug!(":: Broker started!");
+    log::debug!("Broker started!");
 }

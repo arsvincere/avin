@@ -1,0 +1,18 @@
+[package]
+name = "avin_scanner"
+description = { workspace = true }
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = "../README.md"
+
+[dependencies]
+avin_analyse = { workspace = true }
+avin_core = { workspace = true }
+avin_utils = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }

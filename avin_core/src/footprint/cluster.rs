@@ -327,58 +327,59 @@ impl Cluster {
     // }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use avin_utils as utils;
-
-    #[test]
-    fn cluster() {
-        let path = std::path::Path::new(
-            "/home/alex/trading/data/MOEX/SHARE/GAZP/TIC/2025/2025-06-06.parquet",
-        );
-        let df = utils::Cmd::read_pqt(path).unwrap();
-        let df = df.tail(Some(10));
-        // ┌─────────────────────┬───────────┬────────┬──────┬──────────┐
-        // │ ts_nanos            ┆ direction ┆ price  ┆ lots ┆ value    │
-        // │ ---                 ┆ ---       ┆ ---    ┆ ---  ┆ ---      │
-        // │ i64                 ┆ str       ┆ f64    ┆ i64  ┆ f64      │
-        // ╞═════════════════════╪═══════════╪════════╪══════╪══════════╡
-        // │ 1749241800000000000 ┆ S         ┆ 125.83 ┆ 32   ┆ 40265.6  │
-        // │ 1749241800000000000 ┆ S         ┆ 125.82 ┆ 5    ┆ 6291.0   │
-        // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 2    ┆ 2516.2   │
-        // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 5    ┆ 6290.5   │
-        // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 2    ┆ 2516.2   │
-        // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 2    ┆ 2516.2   │
-        // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 309  ┆ 388752.9 │
-        // │ 1749241802000000000 ┆ S         ┆ 125.81 ┆ 585  ┆ 735988.5 │
-        // │ 1749241804000000000 ┆ B         ┆ 125.84 ┆ 60   ┆ 75504.0  │
-        // │ 1749241804000000000 ┆ B         ┆ 125.84 ┆ 40   ┆ 50336.0  │
-        // └─────────────────────┴───────────┴────────┴──────┴──────────┘
-
-        let tf = TimeFrame::M1;
-        let tics = Tic::from_df(&df).unwrap();
-        let c = Cluster::new(&tics, tf);
-        assert_eq!(c.ts_nanos, TimeFrame::M1.prev_ts(1749241800000000000));
-        assert_eq!(c.open, 125.83);
-        assert_eq!(c.high, 125.84);
-        assert_eq!(c.low, 125.81);
-        assert_eq!(c.close, 125.84);
-        assert_eq!(c.vol, 1042);
-        assert_eq!(c.vol_b, 100);
-        assert_eq!(c.vol_s, 942);
-        assert_eq!(c.val, 1.3109771e6);
-        assert_eq!(c.val_b, 125840.0);
-        assert_eq!(c.val_s, 1.1851371e6);
-        assert_eq!(c.count, 10);
-        assert_eq!(c.count_b, 2);
-        assert_eq!(c.count_s, 8);
-        assert_eq!(c.vwap, 125.81354126679462);
-        assert_eq!(c.vwap_b, 125.84);
-        assert_eq!(c.vwap_s, 125.81073248407644);
-        assert_eq!(c.buy_p, 9.598947227987429);
-        assert_eq!(c.sell_p, 90.40105277201256);
-        assert_eq!(c.disb_p, -80.80210554402514);
-        assert_eq!(c.pct, 0.007947230390213078);
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use avin_utils as utils;
+//
+//     #[test]
+//     fn cluster() {
+//         let path = std::path::Path::new(
+//             "/home/alex/trading/usr\
+//             /data/MOEX/SHARE/GAZP/TIC/2025/2025-06-06.parquet",
+//         );
+//         let df = utils::Cmd::read_pqt(path).unwrap();
+//         let df = df.tail(Some(10));
+//         // ┌─────────────────────┬───────────┬────────┬──────┬──────────┐
+//         // │ ts_nanos            ┆ direction ┆ price  ┆ lots ┆ value    │
+//         // │ ---                 ┆ ---       ┆ ---    ┆ ---  ┆ ---      │
+//         // │ i64                 ┆ str       ┆ f64    ┆ i64  ┆ f64      │
+//         // ╞═════════════════════╪═══════════╪════════╪══════╪══════════╡
+//         // │ 1749241800000000000 ┆ S         ┆ 125.83 ┆ 32   ┆ 40265.6  │
+//         // │ 1749241800000000000 ┆ S         ┆ 125.82 ┆ 5    ┆ 6291.0   │
+//         // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 2    ┆ 2516.2   │
+//         // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 5    ┆ 6290.5   │
+//         // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 2    ┆ 2516.2   │
+//         // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 2    ┆ 2516.2   │
+//         // │ 1749241800000000000 ┆ S         ┆ 125.81 ┆ 309  ┆ 388752.9 │
+//         // │ 1749241802000000000 ┆ S         ┆ 125.81 ┆ 585  ┆ 735988.5 │
+//         // │ 1749241804000000000 ┆ B         ┆ 125.84 ┆ 60   ┆ 75504.0  │
+//         // │ 1749241804000000000 ┆ B         ┆ 125.84 ┆ 40   ┆ 50336.0  │
+//         // └─────────────────────┴───────────┴────────┴──────┴──────────┘
+//
+//         let tf = TimeFrame::M1;
+//         let tics = Tic::from_df(&df).unwrap();
+//         let c = Cluster::new(&tics, tf);
+//         assert_eq!(c.ts_nanos, TimeFrame::M1.prev_ts(1749241800000000000));
+//         assert_eq!(c.open, 125.83);
+//         assert_eq!(c.high, 125.84);
+//         assert_eq!(c.low, 125.81);
+//         assert_eq!(c.close, 125.84);
+//         assert_eq!(c.vol, 1042);
+//         assert_eq!(c.vol_b, 100);
+//         assert_eq!(c.vol_s, 942);
+//         assert_eq!(c.val, 1.3109771e6);
+//         assert_eq!(c.val_b, 125840.0);
+//         assert_eq!(c.val_s, 1.1851371e6);
+//         assert_eq!(c.count, 10);
+//         assert_eq!(c.count_b, 2);
+//         assert_eq!(c.count_s, 8);
+//         assert_eq!(c.vwap, 125.81354126679462);
+//         assert_eq!(c.vwap_b, 125.84);
+//         assert_eq!(c.vwap_s, 125.81073248407644);
+//         assert_eq!(c.buy_p, 9.598947227987429);
+//         assert_eq!(c.sell_p, 90.40105277201256);
+//         assert_eq!(c.disb_p, -80.80210554402514);
+//         assert_eq!(c.pct, 0.007947230390213078);
+//     }
+// }

@@ -6,11 +6,13 @@
  ****************************************************************************/
 
 mod _order;
+mod direction;
 mod limit_order;
 mod market_order;
 mod stop_order;
 
 pub use _order::Order;
+pub use direction::Direction;
 pub use limit_order::{
     CanceledLimitOrder, FilledLimitOrder, LimitOrder, NewLimitOrder,
     PostedLimitOrder, RejectedLimitOrder,

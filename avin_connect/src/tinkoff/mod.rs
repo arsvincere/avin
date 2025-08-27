@@ -7,6 +7,8 @@
 
 mod api;
 mod broker;
+mod client;
 mod interceptor;
 
 pub use broker::Tinkoff;
+pub use client::TinkoffClient;

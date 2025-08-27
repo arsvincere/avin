@@ -47,10 +47,10 @@ impl Strategy for BuySell {
     fn name(&self) -> &'static str {
         NAME
     }
-    fn init(&mut self, trader: Trader, account: Account, iid: Iid) {
+    fn init(&mut self, trader: Trader, account: Account, asset: &mut Asset) {
         self.trader = Some(trader);
         self.account = Some(account);
-        self.iid = Some(iid);
+        self.iid = Some(asset.iid().clone());
         self.last_ts = 0;
     }
     fn process(&mut self, asset: &Asset) {

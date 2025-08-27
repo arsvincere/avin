@@ -5,8 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Kind {
-    Bear,
-    Bull,
-}
+mod item;
+
+pub use item::{Item, Line, Point, Rect};

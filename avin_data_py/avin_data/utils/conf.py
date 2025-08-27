@@ -36,7 +36,11 @@ class Configuration:
 
     @property
     def moex_account(self) -> Path:
-        return Path.home() / self.__cfg["connect"]["moexalgo"]
+        return Path.home() / self.__cfg["connect"]["moex_account"]
+
+    @property
+    def moex_token(self) -> Path:
+        return Path.home() / self.__cfg["connect"]["moex_token"]
 
     @property
     def log(self) -> Path:

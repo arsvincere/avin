@@ -5,9 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod _scanner;
+mod gui_simulator;
 
-pub use _scanner::{
-    Filter, Marker, MarkerColor, MarkerShape, MarkerSize, Scanner,
-    ScannerResult, ScannerResultList,
-};
+pub use gui_simulator::GuiSimulator;

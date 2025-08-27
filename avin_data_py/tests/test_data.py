@@ -87,4 +87,4 @@ def test_iid():
     assert iid.name() == "Сбер Банк"
     assert iid.lot() == 10
     assert iid.step() == 0.01
-    assert iid.path() == "/home/alex/trading/data/MOEX/SHARE/SBER"
+    assert iid.path() == "/home/alex/trading/usr/data/MOEX/SHARE/SBER"

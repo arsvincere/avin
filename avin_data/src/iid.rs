@@ -240,7 +240,7 @@ mod tests {
         info.insert("step".to_string(), "0.01".to_string());
 
         let iid = Iid::new(info);
-        let path = Path::new("/home/alex/trading/data/MOEX/SHARE/SBER");
+        let path = Path::new("/home/alex/trading/usr/data/MOEX/SHARE/SBER");
         assert_eq!(iid.path(), path);
     }
 }

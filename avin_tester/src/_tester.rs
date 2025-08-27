@@ -28,25 +28,20 @@ impl Tester {
         mut strategy: impl Strategy,
         test: &mut Test,
     ) {
-        log::info!(":: Tester clear test");
+        log::info!("Tester run");
         test.clear();
 
-        log::info!(":: Tester load broker");
         let mut broker = VirtualBroker::new(test);
         let broker_tx = broker.get_sender();
 
-        log::info!(":: Tester load account");
         let account = broker.get_virtual_account();
 
-        log::info!(":: Tester load asset");
         let mut asset = Asset::from_iid(test.iid.clone());
         self.load_charts(&mut asset);
 
-        log::info!(":: Tester load strategys");
         let sender = self.tx.clone();
-        strategy.init(sender, account, asset.iid().clone());
+        strategy.init(sender, account, &mut asset);
 
-        log::info!(":: Tester start main loop");
         test.status = TestStatus::Process;
         while let Some(e) = broker.next_event() {
             match e {
@@ -78,10 +73,7 @@ impl Tester {
 
     // private
     fn load_charts(&mut self, asset: &mut Asset) {
-        log::info!(":: Tester load charts {asset}");
-
         for tf in TimeFrame::all() {
-            log::info!("   {tf}");
             asset.load_chart_empty(tf);
         }
     }

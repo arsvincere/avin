@@ -5,8 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod buy_sell;
-mod pin_bar;
+mod simulator;
 
-pub use buy_sell::BuySell;
-pub use pin_bar::PinBarLong;
+pub use simulator::Simulator;

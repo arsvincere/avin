@@ -58,7 +58,6 @@ mod asset;
 mod broker;
 mod chart;
 mod data;
-mod enums;
 mod event;
 mod footprint;
 mod indicator;
@@ -66,17 +65,18 @@ mod operation;
 mod order;
 mod trade;
 
-pub use action::{Action, DataAction, OrderAction};
+pub use action::{
+    Action, GetAccountAction, GetBarsAction, OrderAction, StreamAction,
+};
 pub use asset::{Asset, AssetList, Share};
 pub use broker::Account;
-pub use chart::{Bar, Chart, Range, UserData};
+pub use chart::{Bar, Chart, Range, TimeFrame, UserData};
 pub use data::{Category, Exchange, Iid, Manager, MarketData, Source};
-pub use enums::{Direction, Kind, TimeFrame};
 pub use event::{BarEvent, Event, OrderEvent, TicEvent};
 pub use footprint::{Cluster, Footprint, Quant, Quantum, Tic};
 pub use indicator::Indicator;
 pub use operation::{Operation, Transaction};
-pub use order::{LimitOrder, MarketOrder, Order, StopOrder};
+pub use order::{Direction, LimitOrder, MarketOrder, Order, StopOrder};
 pub use trade::{Summary, Trade, TradeKind, TradeList};
 
 // market order statuses

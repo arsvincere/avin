@@ -6,13 +6,14 @@
  ****************************************************************************/
 
 use avin_analyse::TrendAnalytic;
+use chrono::Utc;
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
 use avin_core::{
-    Action, Asset, AssetList, DataAction, Event, ExtremumIndicator, Term,
-    TimeFrame,
+    Action, Asset, AssetList, Event, ExtremumIndicator, GetBarsAction,
+    MarketData, StreamAction, Term, TimeFrame,
 };
 use avin_utils::{CFG, Cmd};
 
@@ -30,7 +31,6 @@ impl AssetWidget {
     ) -> Self {
         let mut path = CFG.dir.asset();
         path.push(&CFG.core.default_asset_list);
-
         let asset_list = if Cmd::is_exist(&path) {
             AssetList::load(&path).unwrap()
         } else {
@@ -47,9 +47,6 @@ impl AssetWidget {
             event_rx,
             action_tx,
         }
-
-        // TODO: save/load state
-        // AssetWidget::default()
     }
 
     pub fn ui(&mut self, ctx: &egui::Context, ui: &mut egui::Ui) {
@@ -102,14 +99,6 @@ impl AssetWidget {
             .column(Column::remainder())
             .column(Column::remainder())
             .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
-            .column(Column::remainder())
             .min_scrolled_height(0.0)
             .max_scroll_height(available_height);
         table = table.sense(egui::Sense::click());
@@ -117,21 +106,6 @@ impl AssetWidget {
             .header(20.0, |mut header| {
                 header.col(|ui| {
                     ui.strong("Ticker");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-1");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-2");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-3");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-4");
-                });
-                header.col(|ui| {
-                    ui.strong("1M-5");
                 });
                 header.col(|ui| {
                     ui.strong("10M-1");
@@ -163,15 +137,6 @@ impl AssetWidget {
                 header.col(|ui| {
                     ui.strong("1H-5");
                 });
-                header.col(|ui| {
-                    ui.strong("D-1");
-                });
-                header.col(|ui| {
-                    ui.strong("D-2");
-                });
-                header.col(|ui| {
-                    ui.strong("D-3");
-                });
             })
             .body(|body| {
                 body.rows(text_height, self.asset_list.len(), |mut row| {
@@ -184,10 +149,100 @@ impl AssetWidget {
                         ui.label(asset.ticker());
                     });
                     row.col(|ui| {
-                        let chart_opt = asset.chart(TimeFrame::M1);
+                        let chart_opt = asset.chart(TimeFrame::M10);
                         let p = match chart_opt {
                             Some(chart) => {
-                                chart.trend_posterior(Term::T1).unwrap()
+                                chart.trend_posterior(Term::T1).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T2).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T3).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T4).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::M10);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T5).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T1).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T2).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T3).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T4).unwrap_or(0.0)
+                            }
+                            None => 0.0,
+                        };
+                        ui.label(p.to_string());
+                    });
+                    row.col(|ui| {
+                        let chart_opt = asset.chart(TimeFrame::H1);
+                        let p = match chart_opt {
+                            Some(chart) => {
+                                chart.trend_posterior(Term::T5).unwrap_or(0.0)
                             }
                             None => 0.0,
                         };
@@ -207,6 +262,7 @@ impl AssetWidget {
     fn load_charts(&mut self) {
         let asset = self.asset_list.get_mut(self.current_index).unwrap();
 
+        // load historical bars from hard drive
         for tf in TimeFrame::all() {
             match asset.chart(tf).is_some() {
                 true => (),
@@ -218,6 +274,31 @@ impl AssetWidget {
                 }
             };
         }
+
+        // request latest bars from broker
+        let iid = asset.iid().clone();
+        for tf in TimeFrame::all() {
+            let chart = asset.chart_mut(tf).unwrap();
+
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            let action = Action::GetBars(GetBarsAction::new(
+                iid.clone(),
+                tf,
+                chart.now().unwrap().dt(),
+                Utc::now(),
+                tx,
+            ));
+            self.action_tx.send(action).unwrap();
+
+            match rx.blocking_recv() {
+                Ok(bars) => {
+                    for bar in bars.iter() {
+                        chart.add_bar(*bar);
+                    }
+                }
+                Err(e) => log::error!("{e}"),
+            }
+        }
     }
     fn subscribe_market_data(&mut self) {
         self.load_charts();
@@ -225,16 +306,12 @@ impl AssetWidget {
         let asset = self.asset_list.get(self.current_index).unwrap();
         let iid = asset.iid();
 
-        let mut market_data = Vec::new();
-        for tf in TimeFrame::all() {
-            // collect market data type
-            let md = tf.market_data();
-            market_data.push(md);
-        }
+        let market_data = vec![MarketData::BAR_1M];
+        // market_data.push(MarketData::TIC);
 
         // create action
         let action =
-            Action::Subscribe(DataAction::new(iid.clone(), market_data));
+            Action::Subscribe(StreamAction::new(iid.clone(), market_data));
 
         // send action
         match self.action_tx.send(action) {
@@ -245,10 +322,13 @@ impl AssetWidget {
     fn receive_market_data(&mut self) {
         while let Ok(event) = self.event_rx.try_recv() {
             log::debug!("Asset widget receive {event}");
-            let asset = self.asset_list.get_mut(self.current_index).unwrap();
 
             match event {
-                Event::Bar(e) => asset.bar_event(e),
+                Event::Bar(e) => {
+                    let asset =
+                        self.asset_list.find_figi_mut(&e.figi).unwrap();
+                    asset.bar_event(e)
+                }
                 Event::Tic(e) => todo!("{:?}", e),
                 Event::Order(e) => todo!("{:?}", e),
             }

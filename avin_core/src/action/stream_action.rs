@@ -18,11 +18,11 @@ use crate::{Iid, MarketData};
 ///
 /// Содержит идентификатор инструмента и вектор из типов рыночных данных.
 #[derive(Debug)]
-pub struct DataAction {
+pub struct StreamAction {
     pub iid: Iid,
     pub market_data_kinds: Vec<MarketData>,
 }
-impl DataAction {
+impl StreamAction {
     /// Create new data action
     ///
     /// # ru
@@ -34,8 +34,8 @@ impl DataAction {
         }
     }
 }
-impl std::fmt::Display for DataAction {
+impl std::fmt::Display for StreamAction {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "DataAction={} {:?}", self.iid, self.market_data_kinds)
+        write!(f, "StreamAction={} {:?}", self.iid, self.market_data_kinds)
     }
 }

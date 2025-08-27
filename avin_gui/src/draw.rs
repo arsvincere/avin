@@ -5,12 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_strategy::ScannerResult;
+use avin_scanner::ScannerResult;
 use avin_tester::Test;
 use chrono::{DateTime, Local};
 use egui_plot::{Line, LineStyle, MarkerShape, PlotPoint, PlotUi, Points};
 
-use avin_analyse::TrendAnalytic;
+use avin_analyse::{QuantumAnalytic, TrendAnalytic};
 use avin_core::{
     Chart, ExtremumIndicator, Footprint,
     Term::{self, T1, T2, T3, T4, T5},
@@ -23,7 +23,7 @@ use avin_utils::{self as utils, CFG};
 use crate::theme::Theme;
 
 pub trait ChartDraw {
-    fn bar_info(&self) -> egui_plot::CoordinatesFormatter;
+    fn bar_info(&'_ self) -> egui_plot::CoordinatesFormatter<'_>;
     fn price_info(&self, name: &str, value: &PlotPoint) -> String;
 
     fn draw_bars(&self, plot: &mut PlotUi, theme: &Theme);
@@ -33,7 +33,7 @@ pub trait ChartDraw {
     fn draw_posterior_1(&self, plot: &mut PlotUi, theme: &Theme, term: Term);
 }
 impl ChartDraw for Chart {
-    fn bar_info(&self) -> egui_plot::CoordinatesFormatter {
+    fn bar_info(&'_ self) -> egui_plot::CoordinatesFormatter<'_> {
         egui_plot::CoordinatesFormatter::new(|point, _bounds| {
             let nanos = point.x as i64;
             let utc = DateTime::from_timestamp_nanos(nanos);
@@ -330,7 +330,7 @@ impl ChartDraw for Chart {
 
 pub trait FootprintDraw {
     fn draw_hist(&self, plot: &mut PlotUi, theme: &Theme);
-    // fn draw_quantum(&self, plot: &mut PlotUi, theme: &Theme);
+    fn draw_quantum(&self, plot: &mut PlotUi, theme: &Theme);
 }
 impl FootprintDraw for Footprint {
     fn draw_hist(&self, plot: &mut PlotUi, theme: &Theme) {
@@ -341,53 +341,46 @@ impl FootprintDraw for Footprint {
             let x = (x1 + x0) / 2.0;
             let y = 0.0;
             let y_buy = cluster.val_b;
-            let y_sell = -cluster.val_s;
+            let y_sel = -cluster.val_s;
 
-            // create buy / sell bars
+            // create buy / sell hist
             let b = Line::new("", vec![[x, y], [x, y_buy]]).color(theme.bull);
-            let s =
-                Line::new("", vec![[x, y], [x, y_sell]]).color(theme.bear);
+            let s = Line::new("", vec![[x, y], [x, y_sel]]).color(theme.bear);
 
             // add lines on plot
             plot.line(b);
             plot.line(s);
         }
     }
-    // fn draw_quantum(plot: &mut PlotUi, theme: &Theme, footprint: &Footprint) {
-    //     for cluster in footprint.clusters().iter() {
-    //         for quant in cluster.quantum.quants().iter() {
-    //             // eval coordinate
-    //             let x0 = cluster.ts_nanos as f64;
-    //             let x1 = x0 + footprint.tf().nanos() as f64;
-    //             let x = (x1 + x0) / 2.0;
-    //             let width = x1 - x;
-    //             let y = quant.price;
-    //
-    //             if let Some((buy, sell)) =
-    //                 ClusterAnalytic::quant_cdf(footprint, quant)
-    //             {
-    //                 println!(
-    //                     "b={} ({})\t s={} ({})\t p={}",
-    //                     buy, quant.vol_b, sell, quant.vol_s, quant.price
-    //                 );
-    //                 let right = x + width * buy;
-    //                 let left = x - width * sell;
-    //
-    //                 // create buy / sell lines
-    //                 let b = Line::new("", vec![[x, y], [right, y]])
-    //                     .color(theme.bull);
-    //                 let s = Line::new("", vec![[x, y], [left, y]])
-    //                     .color(theme.bear);
-    //
-    //                 // add lines on plot
-    //                 plot.line(b);
-    //                 plot.line(s);
-    //             } else {
-    //                 return;
-    //             }
-    //         }
-    //     }
-    // }
+    fn draw_quantum(&self, plot: &mut PlotUi, theme: &Theme) {
+        for cluster in self.clusters().iter() {
+            for quant in cluster.quantum.quants().iter() {
+                // eval coordinate
+                let x0 = cluster.ts_nanos as f64;
+                let x1 = x0 + self.tf().nanos() as f64;
+                let x = (x1 + x0) / 2.0;
+                let width = x1 - x;
+                let y = quant.price;
+
+                if let Some((buy, sell)) = self.quant_cdf(quant) {
+                    let right = x + width * buy;
+                    let left = x - width * sell;
+
+                    // create buy / sell lines
+                    let b = Line::new("", vec![[x, y], [right, y]])
+                        .color(theme.bull);
+                    let s = Line::new("", vec![[x, y], [left, y]])
+                        .color(theme.bear);
+
+                    // add lines on plot
+                    plot.line(b);
+                    plot.line(s);
+                } else {
+                    return;
+                }
+            }
+        }
+    }
 }
 
 pub trait TestDraw {
@@ -412,9 +405,9 @@ impl TestDraw for Test {
                 Long => MarkerShape::Up,
                 Short => MarkerShape::Down,
             };
-            let color = match t.kind {
-                Long => theme.trade_take,
-                Short => theme.trade_stop,
+            let color = match t.is_win() {
+                true => theme.trade_take,
+                false => theme.trade_stop,
             };
             let points = Points::new("Long", vec![[x0, y_shape]])
                 .color(color)
@@ -459,7 +452,7 @@ impl ScanDraw for ScannerResult {
             let y = 311.0;
 
             // create shape
-            use avin_strategy::MarkerShape as ams;
+            use avin_scanner::MarkerShape as ams;
             use egui_plot::MarkerShape as ems;
             let shape = match self.marker().shape {
                 ams::Circle => ems::Circle,
@@ -473,7 +466,7 @@ impl ScanDraw for ScannerResult {
                 ams::Left => ems::Left,
                 ams::Right => ems::Right,
             };
-            use avin_strategy::MarkerColor as amc;
+            use avin_scanner::MarkerColor as amc;
             let color = match self.marker().color {
                 amc::Red => theme.red,
                 amc::Orange => theme.orange,

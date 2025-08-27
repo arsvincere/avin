@@ -7,8 +7,10 @@
 
 use crate::Trade;
 
-use super::DataAction;
+use super::GetAccountAction;
+use super::GetBarsAction;
 use super::OrderAction;
+use super::StreamAction;
 
 /// Comands or messages, that is sending from strategy to trader/broker.
 ///
@@ -18,16 +20,20 @@ use super::OrderAction;
 /// проинформировать что открыт трейд и тд.
 #[derive(Debug)]
 pub enum Action {
+    GetAccount(GetAccountAction),
+    GetBars(GetBarsAction),
     Post(OrderAction),
     Cancel(OrderAction),
-    Subscribe(DataAction),
-    Unsubscribe(DataAction),
+    Subscribe(StreamAction),
+    Unsubscribe(StreamAction),
     TradeOpened(Trade),
     TradeClosed(Trade),
 }
 impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            Action::GetAccount(a) => write!(f, "Action={a}"),
+            Action::GetBars(a) => write!(f, "Action={a}"),
             Action::Post(a) => write!(f, "Action={a}"),
             Action::Cancel(a) => write!(f, "Action={a}"),
             Action::Subscribe(a) => write!(f, "Action={a}"),

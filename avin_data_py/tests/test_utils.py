@@ -64,19 +64,19 @@ def test_next_month():
 
 def test_configuration():
     cfg = Configuration.read_config()
-    assert cfg.root == Path("/home/alex/trading")
-    assert cfg.data == Path("/home/alex/trading/data")
+    assert cfg.root == Path("/home/alex/trading/usr")
+    assert cfg.data == Path("/home/alex/trading/usr/data")
     assert cfg.tinkoff_token == Path(
-        "/home/alex/trading/connect/tinkoff/token.txt"
+        "/home/alex/trading/usr/connect/tinkoff/token.txt"
     )
     assert cfg.moex_account == Path(
-        "/home/alex/trading/connect/moex/account.txt"
+        "/home/alex/trading/usr/connect/moex/account.txt"
     )
-    assert cfg.log == Path("/home/alex/trading/log")
-    assert cfg.res == Path("/home/alex/trading/res")
-    assert cfg.tmp == Path("/home/alex/trading/tmp")
-    assert cfg.connect == Path("/home/alex/trading/connect")
-    assert cfg.cache == Path("/home/alex/trading/data/cache")
+    assert cfg.log == Path("/home/alex/trading/usr/log")
+    assert cfg.res == Path("/home/alex/trading/usr/res")
+    assert cfg.tmp == Path("/home/alex/trading/usr/tmp")
+    assert cfg.connect == Path("/home/alex/trading/usr/connect")
+    assert cfg.cache == Path("/home/alex/trading/usr/data/cache")
     assert cfg.log_history == 5
     assert cfg.log_debug
     assert cfg.log_info

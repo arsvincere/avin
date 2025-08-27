@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+pub type Result<T> = std::result::Result<T, AvinError>;
+
 #[derive(Debug, Clone)]
 pub enum AvinError {
     InvalidValue(String),
@@ -25,3 +27,5 @@ impl std::fmt::Display for AvinError {
         }
     }
 }
+
+impl std::error::Error for AvinError {}

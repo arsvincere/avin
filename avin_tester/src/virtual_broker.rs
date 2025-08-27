@@ -74,6 +74,8 @@ impl VirtualBroker {
         // process actions from strategys
         while let Ok(a) = self.rx.try_recv() {
             match a {
+                Action::GetAccount(_) => todo!(),
+                Action::GetBars(_) => todo!(),
                 Action::Post(a) => self.post_action(a),
                 Action::Cancel(a) => self.cancel_action(a),
                 Action::TradeOpened(_) => unreachable!(),
@@ -430,8 +432,7 @@ impl VirtualBroker {
             let e = Event::Order(e);
             self.queue.push_back(e);
         } else {
-            log::error!("How you fuck want to cancel not posted order?!");
-            log::error!("Action: {action:#?}");
+            log::error!("WTF?! Action: {action:#?}");
             unreachable!();
         }
     }
@@ -439,7 +440,6 @@ impl VirtualBroker {
         let mut i = 0;
 
         while i < self.limit_orders.len() {
-            // unwrap PostedLimitOrder
             let posted = &self.limit_orders[i];
 
             if posted.broker_id() == order.broker_id() {
@@ -463,7 +463,6 @@ impl VirtualBroker {
         let mut i = 0;
 
         while i < self.stop_orders.len() {
-            // unwrap PostedLimitOrder
             let posted = &self.stop_orders[i];
 
             if posted.broker_id() == order.broker_id() {
@@ -481,6 +480,12 @@ impl VirtualBroker {
             i += 1;
         }
 
-        None
+        // ордер не найден, значит уже сработал или уже отменяли
+        // пофигу отправим его как отмененный
+        let order = order.as_posted().unwrap();
+        let canceled = order.cancel();
+
+        // wrap and return
+        Some(Order::Stop(StopOrder::Canceled(canceled)))
     }
 }
