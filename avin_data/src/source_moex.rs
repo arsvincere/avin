@@ -5,22 +5,20 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_core::{Iid, Manager};
 use avin_utils::AvinError;
 use avin_utils::CFG;
 use avin_utils::Cmd;
-use chrono::prelude::*;
-use chrono::Utc;
 use chrono::TimeDelta;
+use chrono::Utc;
+use chrono::prelude::*;
 use polars::prelude::*;
-use avin_core::{Iid, Manager};
 use serde_json;
-
 
 use crate::MarketData;
 
 const MSK_TIME_DIF: TimeDelta = TimeDelta::new(10800, 0).unwrap();
 const DT_FMT: &'static str = "%Y-%m-%d %H:%M:%S";
-
 
 pub struct SourceMoex {
     service: String,
@@ -34,12 +32,14 @@ impl SourceMoex {
         let key_path = CFG.connect.moex_api_key();
         let api_key = Cmd::read(&key_path).unwrap().trim().to_string();
         let client = reqwest::Client::new();
-        let bar_schema = Schema::from_iter(vec![Field::new("dt".into(), DataType::String),
-             Field::new("open".into(), DataType::Float64),
-             Field::new("high".into(), DataType::Float64),
-             Field::new("low".into(), DataType::Float64),
-             Field::new("close".into(), DataType::Float64),
-             Field::new("volume".into(), DataType::UInt64),]);
+        let bar_schema = Schema::from_iter(vec![
+            Field::new("dt".into(), DataType::String),
+            Field::new("open".into(), DataType::Float64),
+            Field::new("high".into(), DataType::Float64),
+            Field::new("low".into(), DataType::Float64),
+            Field::new("close".into(), DataType::Float64),
+            Field::new("volume".into(), DataType::UInt64),
+        ]);
         Self {
             service,
             api_key,
@@ -49,18 +49,22 @@ impl SourceMoex {
     }
 
     #[warn(unused_variables)]
-    pub async fn get_bars(&self,
-        begin: &DateTime<Utc>, end: &DateTime<Utc>) -> Result<DataFrame, AvinError> {
-            let mut from = Self::utc_to_msk(begin);
-            let till = Self::utc_to_msk(end);
-            let iid = Manager::find_iid("MOEX_SHARE_GAZP").unwrap();    // убрать
-            let mut bars = DataFrame::empty_with_schema(&self.bar_schema);
+    pub async fn get_bars(
+        &self,
+        begin: &DateTime<Utc>,
+        end: &DateTime<Utc>,
+    ) -> Result<DataFrame, AvinError> {
+        let mut from = Self::utc_to_msk(begin);
+        let till = Self::utc_to_msk(end);
+        let iid = Manager::find_iid("MOEX_SHARE_GAZP").unwrap(); // убрать
+        let mut bars = DataFrame::empty_with_schema(&self.bar_schema);
 
-            while from < till {
-                let response = self.try_request(&iid, MarketData::BAR_1H, &from, &till)
-                    .await
-                    .unwrap();
-                let json: serde_json::Value = match response.json().await {
+        while from < till {
+            let response = self
+                .try_request(&iid, MarketData::BAR_1H, &from, &till)
+                .await
+                .unwrap();
+            let json: serde_json::Value = match response.json().await {
                 Err(e) => {
                     eprintln!("Error parsing response: {e}");
                     eprintln!("Try request again");
@@ -129,9 +133,7 @@ impl SourceMoex {
         let mut url = self.service.clone();
 
         assert_eq!(iid.category(), "SHARE");
-        url.push_str(
-            "/engines/stock/markets/shares/boards/tqbr/securities/",
-        );
+        url.push_str("/engines/stock/markets/shares/boards/tqbr/securities/");
 
         let ticker = &iid.ticker();
         let data = "/candles.json?";
@@ -191,7 +193,8 @@ impl SourceMoex {
         //             String("2025-01-06 00:00:00"),
         //             String("2025-01-06 23:59:59"),
         //         ],
-        let candles_data: &Vec<serde_json::Value> = json["candles"]["data"].as_array().unwrap();
+        let candles_data: &Vec<serde_json::Value> =
+            json["candles"]["data"].as_array().unwrap();
         let mut date_time: Vec<&str> = Vec::new();
         let mut open: Vec<f64> = Vec::new();
         let mut close: Vec<f64> = Vec::new();
@@ -257,7 +260,7 @@ impl SourceMoex {
             .unwrap()
     }
 
-        fn dt_to_timestamp(mut candles: DataFrame) -> DataFrame {
+    fn dt_to_timestamp(mut candles: DataFrame) -> DataFrame {
         let mut timestamp: Vec<i64> = Vec::new();
         for naive_opt in candles.column("dt").unwrap().str().unwrap().iter() {
             let utc_dt = Self::msk_to_utc(naive_opt.unwrap());
@@ -273,8 +276,6 @@ impl SourceMoex {
 
         candles
     }
-
-
 }
 //     fn get_last_dt(candles: &DataFrame) -> NaiveDateTime {
 //         let last = candles.column("dt").unwrap().len() - 1;
