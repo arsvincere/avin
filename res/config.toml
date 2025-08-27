@@ -13,6 +13,9 @@
     moex_account = "trading/usr/connect/moex/account.txt"
     moex_token = "trading/usr/connect/moex/token.txt"
 
+    # Path to moex api key
+    moex_api_key = "trading/connect/moex/api_key.txt"
+
 [usr]
     # Your local timeshift from UTC+0
     # set it if you want see time with offset-aware
