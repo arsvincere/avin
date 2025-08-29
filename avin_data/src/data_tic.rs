@@ -15,6 +15,13 @@ use crate::{Iid, MarketData};
 #[derive(Debug)]
 pub struct DataTic {}
 impl DataTic {
+    pub fn save(
+        _iid: &Iid,
+        _md: MarketData,
+        _df: DataFrame,
+    ) -> Result<(), AvinError> {
+        todo!()
+    }
     pub fn load(
         iid: &Iid,
         market_data: MarketData,

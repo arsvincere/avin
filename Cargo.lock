@@ -546,6 +546,7 @@ name = "avin_analyse"
 version = "0.4.0"
 dependencies = [
  "avin_core",
+ "avin_data",
  "avin_utils",
  "cached",
  "chrono",
@@ -559,6 +560,7 @@ name = "avin_connect"
 version = "0.4.0"
 dependencies = [
  "avin_core",
+ "avin_data",
  "avin_utils",
  "chrono",
  "flume",
@@ -574,6 +576,7 @@ dependencies = [
 name = "avin_core"
 version = "0.4.0"
 dependencies = [
+ "avin_data",
  "avin_utils",
  "bitcode",
  "cached",
@@ -592,8 +595,8 @@ dependencies = [
 name = "avin_data"
 version = "0.4.0"
 dependencies = [
- "avin_core",
  "avin_utils",
+ "bitcode",
  "cached",
  "chrono",
  "log",
@@ -612,6 +615,7 @@ dependencies = [
  "avin_analyse",
  "avin_connect",
  "avin_core",
+ "avin_data",
  "avin_scanner",
  "avin_simulator",
  "avin_strategy",
@@ -645,6 +649,7 @@ version = "0.4.0"
 dependencies = [
  "avin_analyse",
  "avin_core",
+ "avin_data",
  "avin_utils",
  "chrono",
 ]
@@ -655,6 +660,7 @@ version = "0.4.0"
 dependencies = [
  "avin_analyse",
  "avin_core",
+ "avin_data",
  "avin_utils",
  "chrono",
  "log",
@@ -670,6 +676,7 @@ dependencies = [
  "avin_analyse",
  "avin_connect",
  "avin_core",
+ "avin_data",
  "avin_utils",
  "log",
  "tokio",
@@ -680,6 +687,7 @@ name = "avin_tester"
 version = "0.4.0"
 dependencies = [
  "avin_core",
+ "avin_data",
  "avin_strategy",
  "avin_utils",
  "bitcode",
@@ -695,6 +703,7 @@ version = "0.4.0"
 dependencies = [
  "avin_connect",
  "avin_core",
+ "avin_data",
  "avin_strategy",
  "avin_utils",
  "log",

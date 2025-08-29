@@ -7,7 +7,7 @@
 
 use bitcode::{Decode, Encode};
 use chrono::prelude::*;
-use polars::prelude::{DataFrame, DataType, Field, Schema};
+use polars::prelude::DataFrame;
 
 use crate::Range;
 use avin_utils as utils;
@@ -160,22 +160,6 @@ impl Bar {
         }
 
         Ok(bars)
-    }
-    /// Polars dataframe schema for bars
-    ///
-    /// # ru
-    /// Возвращает polars схему датафрейма
-    pub fn schema() -> Schema {
-        // TODO: move to utils
-        Schema::from_iter(vec![
-            Field::new("ts_nanos".into(), DataType::Int64),
-            Field::new("open".into(), DataType::Float64),
-            Field::new("high".into(), DataType::Float64),
-            Field::new("low".into(), DataType::Float64),
-            Field::new("close".into(), DataType::Float64),
-            Field::new("volume".into(), DataType::Int64),
-            Field::new("value".into(), DataType::Float64),
-        ])
     }
 
     /// Return DateTime UTC of bar

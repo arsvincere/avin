@@ -6,9 +6,10 @@
  ****************************************************************************/
 
 use avin_core::{
-    Action, Event, GetBarsAction, LimitOrder, MarketData, MarketOrder, Order,
+    Action, Event, GetBarsAction, LimitOrder, MarketOrder, Order,
     OrderAction, OrderEvent, StreamAction, TimeFrame,
 };
+use avin_data::MarketData;
 use avin_utils::AvinError;
 
 use crate::tinkoff::TinkoffClient;
@@ -101,7 +102,6 @@ impl Tinkoff {
                     .subscribe_bar(&a.iid, &TimeFrame::M1)
                     .await
                     .unwrap(),
-                MarketData::BAR_5M => todo!(),
                 MarketData::BAR_10M => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::M10)

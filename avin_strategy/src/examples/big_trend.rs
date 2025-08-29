@@ -10,10 +10,11 @@
 use crate::Strategy;
 use avin_analyse::TrendAnalytic;
 use avin_core::{
-    Account, Action, Asset, Direction, ExtremumIndicator, Iid, MarketOrder,
-    Order, OrderAction, OrderEvent, StopOrder, StopOrderKind, Term,
-    TimeFrame, Trade, TradeKind,
+    Account, Action, Asset, Direction, ExtremumIndicator, MarketOrder, Order,
+    OrderAction, OrderEvent, StopOrder, StopOrderKind, Term, TimeFrame,
+    Trade, TradeKind,
 };
+use avin_data::{Iid, Manager, MarketData};
 use avin_utils as utils;
 
 const NAME: &str = "BigTrend-S-1.1";

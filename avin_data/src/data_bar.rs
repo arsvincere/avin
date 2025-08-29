@@ -10,11 +10,18 @@ use polars::prelude::*;
 
 use avin_utils::{self as utils, AvinError, Cmd};
 
-use crate::{Iid, MarketData};
+use crate::{Iid, MarketData, schema};
 
 #[derive(Debug)]
 pub struct DataBar {}
 impl DataBar {
+    pub fn save(
+        _iid: &Iid,
+        _md: MarketData,
+        _df: DataFrame,
+    ) -> Result<(), AvinError> {
+        todo!()
+    }
     pub fn load(
         iid: &Iid,
         market_data: MarketData,
@@ -22,16 +29,7 @@ impl DataBar {
         end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
-        let schema = Schema::from_iter(vec![
-            Field::new("ts_nanos".into(), DataType::Int64),
-            Field::new("open".into(), DataType::Float64),
-            Field::new("high".into(), DataType::Float64),
-            Field::new("low".into(), DataType::Float64),
-            Field::new("close".into(), DataType::Float64),
-            Field::new("volume".into(), DataType::Int64),
-            Field::new("value".into(), DataType::Float64),
-        ]);
-
+        let schema = schema::bar_schema();
         let mut df = DataFrame::empty_with_schema(&schema);
 
         // load data by years
@@ -74,11 +72,13 @@ fn load_file(
     path.push(market_data.name());
     path.push(format!("{year}.parquet"));
 
+    // check path is exist
     if !Cmd::is_exist(&path) {
         let msg = format!("{iid} {market_data}");
         return Err(AvinError::NotFound(msg.to_string()));
     }
 
+    // read file
     match Cmd::read_pqt(&path) {
         Ok(df) => Ok(df),
         Err(why) => {
@@ -86,14 +86,4 @@ fn load_file(
             Err(AvinError::ReadError(msg.to_string()))
         }
     }
-
-    // let data_file = DataBar::new(
-    //     iid.clone(),
-    //     market_data.clone(),
-    //     df,
-    //     year,
-    // )
-    // .unwrap();
-
-    // Ok(data_file)
 }

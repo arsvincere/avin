@@ -26,7 +26,6 @@ impl Source {
         }
     }
 }
-
 impl std::fmt::Display for Source {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -35,7 +34,6 @@ impl std::fmt::Display for Source {
         }
     }
 }
-
 impl From<&str> for Source {
     fn from(value: &str) -> Source {
         let value = value.to_uppercase();

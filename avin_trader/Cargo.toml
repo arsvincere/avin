@@ -12,6 +12,7 @@ readme = "../README.md"
 [dependencies]
 avin_connect = { workspace = true }
 avin_core = { workspace = true }
+avin_data = { workspace = true }
 avin_strategy = { workspace = true }
 avin_utils = { workspace = true }
 

@@ -9,7 +9,7 @@ use chrono::{DateTime, Datelike, TimeDelta, Timelike};
 use strum::EnumIter;
 use time_unit::TimeUnit;
 
-use crate::MarketData;
+use avin_data::MarketData;
 
 /// List for selecting the timeframe.
 ///

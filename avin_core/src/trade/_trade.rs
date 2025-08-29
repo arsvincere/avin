@@ -8,7 +8,8 @@
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeDelta, Utc};
 
-use crate::{Direction, Iid, Order, PostedStopOrder};
+use crate::{Direction, Order, PostedStopOrder};
+use avin_data::Iid;
 
 /// List for selecting the trade type.
 ///
@@ -590,7 +591,7 @@ mod tests {
     #[test]
     fn statuses() {
         // create trade
-        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let iid = avin_data::Manager::find_iid("moex_share_sber").unwrap();
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
@@ -631,7 +632,7 @@ mod tests {
     #[should_panic]
     fn close_unclosed_trade() {
         // create trade
-        let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let iid = avin_data::Manager::find_iid("moex_share_sber").unwrap();
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =

@@ -48,7 +48,7 @@ pub fn str_date_to_utc(d: &str) -> DateTime<Utc> {
     dt.to_utc()
 }
 /// Convert datetime UTC -> timestamp nanos
-pub fn ts(dt: &DateTime<Utc>) -> i64 {
+pub fn ts(dt: DateTime<Utc>) -> i64 {
     dt.timestamp_nanos_opt().unwrap()
 }
 /// Convert timestamp nanos -> datetime UTC

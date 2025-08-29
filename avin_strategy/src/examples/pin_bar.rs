@@ -14,9 +14,10 @@
 
 use crate::Strategy;
 use avin_core::{
-    Account, Action, Asset, Direction, Iid, MarketOrder, Order, OrderAction,
+    Account, Action, Asset, Direction, MarketOrder, Order, OrderAction,
     OrderEvent, StopOrder, StopOrderKind, TimeFrame, Trade, TradeKind,
 };
+use avin_data::Iid;
 use avin_utils as utils;
 
 /// Имя стратегии для себя, имя должно быть уникальным, используется как

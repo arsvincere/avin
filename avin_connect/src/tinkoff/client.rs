@@ -11,12 +11,13 @@ use chrono::{DateTime, Datelike, Timelike, Utc};
 use tonic::transport::{Channel, ClientTlsConfig};
 
 use avin_core::{
-    Account, Bar, BarEvent, Category, Direction, Event, FilledMarketOrder,
-    Iid, LimitOrder, MarketOrder, NewLimitOrder, NewMarketOrder,
-    NewStopOrder, Operation, Order, PostedLimitOrder, PostedMarketOrder,
-    PostedStopOrder, RejectedLimitOrder, RejectedMarketOrder, Share,
-    StopOrder, StopOrderKind, Tic, TicEvent, TimeFrame, Transaction,
+    Account, Bar, BarEvent, Direction, Event, FilledMarketOrder, LimitOrder,
+    MarketOrder, NewLimitOrder, NewMarketOrder, NewStopOrder, Operation,
+    Order, PostedLimitOrder, PostedMarketOrder, PostedStopOrder,
+    RejectedLimitOrder, RejectedMarketOrder, Share, StopOrder, StopOrderKind,
+    Tic, TicEvent, TimeFrame, Transaction,
 };
+use avin_data::{Category, Iid};
 use avin_utils::{self as utils, CFG, Cmd};
 
 use super::api;
@@ -1789,7 +1790,7 @@ impl From<api::marketdata::Trade> for TicEvent {
         let direction: Direction = t.direction().into();
 
         let figi = t.figi;
-        let iid = avin_core::Manager::find_figi(&figi).unwrap();
+        let iid = avin_data::Manager::find_figi(&figi).unwrap();
         let lot = iid.lot();
 
         let ts = t.time.unwrap();

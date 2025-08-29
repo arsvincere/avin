@@ -8,11 +8,12 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-
-use avin_utils::{AvinError, bisect_left, bisect_right};
 use polars::frame::DataFrame;
 
-use crate::{Bar, Iid, Indicator, Manager, TimeFrame, UserData};
+use avin_data::{Iid, Manager};
+use avin_utils::{AvinError, bisect_left, bisect_right};
+
+use crate::{Bar, Indicator, TimeFrame, UserData};
 
 /// Aggregation of instrument id, timeframe and bars.
 ///
@@ -33,7 +34,8 @@ impl Chart {
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::{Manager, TimeFrame, Bar, Chart};
+    /// use avin_core::{TimeFrame, Bar, Chart};
+    /// use avin_data::Manager;
     ///
     /// let iid = Manager::find_iid("moex_share_sber").unwrap();
     /// let tf = TimeFrame::Day;

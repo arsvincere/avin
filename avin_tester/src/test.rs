@@ -11,7 +11,8 @@ use avin_strategy::Strategy;
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, TimeZone, Utc};
 
-use avin_core::{Iid, TradeList};
+use avin_core::TradeList;
+use avin_data::Iid;
 use avin_utils::{CFG, Cmd};
 
 #[derive(Debug, PartialEq, Encode, Decode)]

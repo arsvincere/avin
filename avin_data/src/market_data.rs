@@ -13,13 +13,15 @@
 #[derive(Debug, PartialEq, Clone, Copy, strum::Display)]
 pub enum MarketData {
     BAR_1M,
-    BAR_5M,
     BAR_10M,
     BAR_1H,
     BAR_D,
     BAR_W,
     BAR_M,
     TIC,
+    TRADE_STATS,
+    ORDER_STATS,
+    OB_STATS,
 }
 impl MarketData {
     /// Return market data type name
@@ -29,13 +31,15 @@ impl MarketData {
     pub fn name(&self) -> String {
         match self {
             Self::BAR_1M => "BAR_1M".to_string(),
-            Self::BAR_5M => "BAR_5M".to_string(),
             Self::BAR_10M => "BAR_10M".to_string(),
             Self::BAR_1H => "BAR_1H".to_string(),
             Self::BAR_D => "BAR_D".to_string(),
             Self::BAR_W => "BAR_W".to_string(),
             Self::BAR_M => "BAR_M".to_string(),
             Self::TIC => "TIC".to_string(),
+            Self::TRADE_STATS => "TRADE_STATS".to_string(),
+            Self::ORDER_STATS => "ORDER_STATS".to_string(),
+            Self::OB_STATS => "OB_STATS".to_string(),
         }
     }
 }
@@ -43,20 +47,21 @@ impl From<&str> for MarketData {
     fn from(value: &str) -> Self {
         match value.to_uppercase().as_str() {
             "1M" => MarketData::BAR_1M,
-            "5M" => MarketData::BAR_5M,
             "10M" => MarketData::BAR_10M,
             "1H" => MarketData::BAR_1H,
             "D" => MarketData::BAR_D,
             "W" => MarketData::BAR_W,
             "M" => MarketData::BAR_M,
             "BAR_1M" => MarketData::BAR_1M,
-            "BAR_5M" => MarketData::BAR_5M,
             "BAR_10M" => MarketData::BAR_10M,
             "BAR_1H" => MarketData::BAR_1H,
             "BAR_D" => MarketData::BAR_D,
             "BAR_W" => MarketData::BAR_W,
             "BAR_M" => MarketData::BAR_M,
             "TIC" => MarketData::TIC,
+            "TRADE_STATS" => MarketData::TRADE_STATS,
+            "ORDER_STATS" => MarketData::ORDER_STATS,
+            "OB_STATS" => MarketData::OB_STATS,
             _ => panic!("Invalid value for MarketData: {value}"),
         }
     }
@@ -71,7 +76,6 @@ mod tests {
         assert_eq!(MarketData::TIC.to_string(), "TIC");
 
         assert_eq!(MarketData::BAR_1M.to_string(), "BAR_1M");
-        assert_eq!(MarketData::BAR_5M.to_string(), "BAR_5M");
         assert_eq!(MarketData::BAR_10M.to_string(), "BAR_10M");
         assert_eq!(MarketData::BAR_1H.to_string(), "BAR_1H");
         assert_eq!(MarketData::BAR_D.to_string(), "BAR_D");
@@ -83,7 +87,6 @@ mod tests {
         assert_eq!(MarketData::TIC.name(), "TIC");
 
         assert_eq!(MarketData::BAR_1M.name(), "BAR_1M");
-        assert_eq!(MarketData::BAR_5M.name(), "BAR_5M");
         assert_eq!(MarketData::BAR_10M.name(), "BAR_10M");
         assert_eq!(MarketData::BAR_1H.name(), "BAR_1H");
         assert_eq!(MarketData::BAR_D.name(), "BAR_D");

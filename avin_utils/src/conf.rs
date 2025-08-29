@@ -112,33 +112,26 @@ impl DirSettings {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConnectSettings {
-    moexalgo: Option<String>,
+    moex_account: Option<String>,
     moex_token: Option<String>,
-    tinkoff: Option<String>,
-    moex_api_key: Option<String>,
+    tinkoff_token: Option<String>,
 }
 impl ConnectSettings {
+    pub fn moex_account(&self) -> PathBuf {
+        let mut path = std::env::home_dir().unwrap();
+        path.push(self.moex_account.as_ref().unwrap());
+
+        path
+    }
     pub fn moex_token(&self) -> PathBuf {
         let mut path = std::env::home_dir().unwrap();
         path.push(self.moex_token.as_ref().unwrap());
 
         path
     }
-    pub fn moexalgo(&self) -> PathBuf {
-        let mut path = std::env::home_dir().unwrap();
-        path.push(self.moexalgo.as_ref().unwrap());
-
-        path
-    }
     pub fn tinkoff(&self) -> PathBuf {
         let mut path = std::env::home_dir().unwrap();
-        path.push(self.tinkoff.as_ref().unwrap());
-
-        path
-    }
-    pub fn moex_api_key(&self) -> PathBuf {
-        let mut path = std::env::home_dir().unwrap();
-        path.push(self.moex_api_key.as_ref().unwrap());
+        path.push(self.tinkoff_token.as_ref().unwrap());
 
         path
     }

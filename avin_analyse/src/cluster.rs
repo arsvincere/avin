@@ -5,12 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_core::{
-    Cluster, Footprint, Iid, Manager, MarketData, Share, Tic, TimeFrame,
-};
 use chrono::{Days, NaiveDate, NaiveTime, Utc};
 use polars::prelude::*;
 use strum::EnumIter;
+
+use avin_core::{Cluster, Footprint, Share, Tic, TimeFrame};
+use avin_data::{Iid, Manager, MarketData};
 
 use crate::Analyse;
 
@@ -50,7 +50,7 @@ impl Feat {
 
 impl Analyse for Cluster {
     fn analyse(
-        iid: &avin_core::Iid,
+        iid: &avin_data::Iid,
         tf: avin_core::TimeFrame,
     ) -> Result<(), avin_utils::AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);

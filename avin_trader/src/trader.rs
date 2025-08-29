@@ -9,9 +9,10 @@ use std::collections::HashMap;
 
 use avin_connect::Tinkoff;
 use avin_core::{
-    Action, Asset, Event, GetAccountAction, MarketData, StreamAction,
-    TimeFrame, TradeList,
+    Action, Asset, Event, GetAccountAction, StreamAction, TimeFrame,
+    TradeList,
 };
+use avin_data::MarketData;
 use avin_strategy::{BigTrendShort, Strategy};
 use avin_utils::CFG;
 

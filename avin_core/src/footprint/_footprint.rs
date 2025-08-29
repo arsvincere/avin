@@ -7,9 +7,10 @@
 
 use polars::frame::DataFrame;
 
+use avin_data::Iid;
 use avin_utils as utils;
 
-use crate::{Cluster, Iid, Tic, TimeFrame};
+use crate::{Cluster, Tic, TimeFrame};
 
 /// Aggregation of instrument id, timeframe and clusters.
 ///

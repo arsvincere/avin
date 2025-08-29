@@ -57,7 +57,6 @@ mod action;
 mod asset;
 mod broker;
 mod chart;
-mod data;
 mod event;
 mod footprint;
 mod indicator;
@@ -71,7 +70,6 @@ pub use action::{
 pub use asset::{Asset, AssetList, Share};
 pub use broker::Account;
 pub use chart::{Bar, Chart, Range, TimeFrame, UserData};
-pub use data::{Category, Exchange, Iid, Manager, MarketData, Source};
 pub use event::{BarEvent, Event, OrderEvent, TicEvent};
 pub use footprint::{Cluster, Footprint, Quant, Quantum, Tic};
 pub use indicator::Indicator;

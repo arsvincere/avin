@@ -12,7 +12,8 @@ use cached::proc_macro::cached;
 use polars::prelude::*;
 use strum::IntoEnumIterator;
 
-use avin_core::{Iid, TimeFrame};
+use avin_core::TimeFrame;
+use avin_data::Iid;
 use avin_utils::{AvinError, Cmd};
 
 use crate::{Size, Sz};

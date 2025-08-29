@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+#![allow(unused)]
+
 use avin::analyse::*;
 use avin::core::*;
 use avin::utils;
@@ -15,5 +17,5 @@ fn main() {
     // Trend::analyse_all().unwrap();
     // Bar::analyse_all().unwrap();
     // Cluster::analyse_all().unwrap();
-    Quantum::analyse_all().unwrap();
+    // Quantum::analyse_all().unwrap();
 }

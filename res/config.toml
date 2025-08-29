@@ -7,14 +7,12 @@
 
 [connect]
     # Path to tinkoff token
-    tinkoff = "trading/usr/connect/tinkoff/token.txt"
+    tinkoff_token = "trading/usr/connect/tinkoff/token.txt"
 
     # Path to moex account
     moex_account = "trading/usr/connect/moex/account.txt"
-    moex_token = "trading/usr/connect/moex/token.txt"
-
     # Path to moex api key
-    moex_api_key = "trading/connect/moex/api_key.txt"
+    moex_token = "trading/usr/connect/moex/token.txt"
 
 [usr]
     # Your local timeshift from UTC+0
