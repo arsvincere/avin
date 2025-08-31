@@ -69,6 +69,38 @@ pub fn trades_schema() -> Schema {
     ])
 }
 
+/// Polars dataframe schema for orders stat (SuperCandle)
+///
+/// # ru
+/// Возвращает polars схему датафрейма для orders stat (SuperCandle)
+pub fn orders_schema() -> Schema {
+    Schema::from_iter(vec![
+        Field::new("ts_nanos".into(), DataType::Int64),
+        Field::new("put_orders_b".into(), DataType::Int64),
+        Field::new("put_orders_s".into(), DataType::Int64),
+        Field::new("put_val_b".into(), DataType::Float64),
+        Field::new("put_val_s".into(), DataType::Float64),
+        Field::new("put_vol_b".into(), DataType::Int64),
+        Field::new("put_vol_s".into(), DataType::Int64),
+        Field::new("put_vwap_b".into(), DataType::Float64),
+        Field::new("put_vwap_s".into(), DataType::Float64),
+        Field::new("put_vol".into(), DataType::Int64),
+        Field::new("put_val".into(), DataType::Float64),
+        Field::new("put_orders".into(), DataType::Int64),
+        Field::new("cancel_orders_b".into(), DataType::Int64),
+        Field::new("cancel_orders_s".into(), DataType::Int64),
+        Field::new("cancel_val_b".into(), DataType::Float64),
+        Field::new("cancel_val_s".into(), DataType::Float64),
+        Field::new("cancel_vol_b".into(), DataType::Int64),
+        Field::new("cancel_vol_s".into(), DataType::Int64),
+        Field::new("cancel_vwap_b".into(), DataType::Float64),
+        Field::new("cancel_vwap_s".into(), DataType::Float64),
+        Field::new("cancel_vol".into(), DataType::Int64),
+        Field::new("cancel_val".into(), DataType::Float64),
+        Field::new("cancel_orders".into(), DataType::Int64),
+    ])
+}
+
 /// Polars dataframe schema for order book stat (SuperCandle)
 ///
 /// # ru

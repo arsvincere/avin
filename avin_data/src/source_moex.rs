@@ -70,7 +70,7 @@ impl SourceMoex {
             MarketData::BAR_M => self.get_bars(iid, md, from, till).await,
             MarketData::TIC => todo!(),
             MarketData::TRADE_STATS => self.get_trades(iid, from, till).await,
-            MarketData::ORDER_STATS => todo!(),
+            MarketData::ORDER_STATS => self.get_orders(iid, from, till).await,
             MarketData::OB_STATS => self.get_ob(iid, from, till).await,
         }
     }
@@ -243,7 +243,83 @@ impl SourceMoex {
     }
 
     // get orders
-    // TODO:
+    async fn get_orders(
+        &self,
+        iid: &Iid,
+        from: NaiveDateTime,
+        till: NaiveDateTime,
+    ) -> Result<DataFrame, AvinError> {
+        let mut ob = DataFrame::empty_with_schema(&schema::orders_schema());
+
+        let mut f = from;
+        while f < till {
+            // NOTE: данные отдает не более 1000шт за раз, поэтому
+            // качаем по 3 дня. Время игнорится, from-till учитывается
+            // только дата дня, время отбрасывается.
+            let t = f.checked_add_days(Days::new(3)).unwrap();
+            let response = self.try_request_orders(iid, f, t).await.unwrap();
+
+            let json: serde_json::Value = match response.json().await {
+                Err(e) => {
+                    log::error!("Error parsing response to json: {e}");
+                    panic!();
+                }
+                Ok(json) => json,
+            };
+
+            let part = parse_json_orders_stat(json);
+            ob.extend(&part).unwrap();
+
+            if f < till {
+                f = t;
+            } else {
+                break;
+            }
+        }
+
+        ob = drop_duplicate_timestamp(ob);
+
+        Ok(ob)
+    }
+    async fn try_request_orders(
+        &self,
+        iid: &Iid,
+        from: NaiveDateTime,
+        till: NaiveDateTime,
+    ) -> Result<reqwest::Response, AvinError> {
+        let url = self.get_url_orders_stat(iid, from, till);
+        let request = self
+            .client
+            .get(&url)
+            .bearer_auth(&self.token)
+            .build()
+            .unwrap();
+        let response = self.client.execute(request).await.unwrap();
+
+        Ok(response)
+    }
+    fn get_url_orders_stat(
+        &self,
+        iid: &Iid,
+        from: NaiveDateTime,
+        till: NaiveDateTime,
+    ) -> String {
+        // # пример
+        // https://apim.moex.com/iss/datashop/algopack/eq/orderstats/ABIO.json?
+        // from=2024-04-17&
+        // till=2024-04-19
+
+        let from = from.date();
+        let till = till.date();
+
+        let mut url = String::from(SERVICE);
+        url += "/datashop/algopack/eq/orderstats";
+        url += format!("/{}.json?", iid.ticker()).as_str();
+        url += format!("from={from}&").as_str();
+        url += format!("till={till}").as_str();
+
+        url
+    }
 
     // get ob
     async fn get_ob(
@@ -692,6 +768,248 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
         "disb" => disb,
         "vwap_b" => vwap_b,
         "vwap_s" => vwap_s,
+    );
+
+    df.unwrap()
+}
+fn parse_json_orders_stat(json: serde_json::Value) -> DataFrame {
+    // json["data"]["columns"] = Array [
+    //     String("tradedate"),
+    //     String("tradetime"),
+    //     String("secid"),
+    //     String("put_orders_b"),
+    //     String("put_orders_s"),
+    //     String("put_val_b"),
+    //     String("put_val_s"),
+    //     String("put_vol_b"),
+    //     String("put_vol_s"),
+    //     String("put_vwap_b"),
+    //     String("put_vwap_s"),
+    //     String("put_vol"),
+    //     String("put_val"),
+    //     String("put_orders"),
+    //     String("cancel_orders_b"),
+    //     String("cancel_orders_s"),
+    //     String("cancel_val_b"),
+    //     String("cancel_val_s"),
+    //     String("cancel_vol_b"),
+    //     String("cancel_vol_s"),
+    //     String("cancel_vwap_b"),
+    //     String("cancel_vwap_s"),
+    //     String("cancel_vol"),
+    //     String("cancel_val"),
+    //     String("cancel_orders"),
+    //     String("SYSTIME"),
+    // ]
+
+    // json["data"]["metadata"] = Object {
+    //     "SYSTIME": Object {
+    //         "bytes": Number(19),
+    //         "max_size": Number(0),
+    //         "type": String("datetime"),
+    //     },
+    //     "cancel_orders": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "cancel_orders_b": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "cancel_orders_s": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "cancel_val": Object {
+    //         "type": String("double"),
+    //     },
+    //     "cancel_val_b": Object {
+    //         "type": String("double"),
+    //     },
+    //     "cancel_val_s": Object {
+    //         "type": String("double"),
+    //     },
+    //     "cancel_vol": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "cancel_vol_b": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "cancel_vol_s": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "cancel_vwap_b": Object {
+    //         "type": String("double"),
+    //     },
+    //     "cancel_vwap_s": Object {
+    //         "type": String("double"),
+    //     },
+    //     "put_orders": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "put_orders_b": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "put_orders_s": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "put_val": Object {
+    //         "type": String("double"),
+    //     },
+    //     "put_val_b": Object {
+    //         "type": String("double"),
+    //     },
+    //     "put_val_s": Object {
+    //         "type": String("double"),
+    //     },
+    //     "put_vol": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "put_vol_b": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "put_vol_s": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "put_vwap_b": Object {
+    //         "type": String("double"),
+    //     },
+    //     "put_vwap_s": Object {
+    //         "type": String("double"),
+    //     },
+    //     "secid": Object {
+    //         "bytes": Number(36),
+    //         "max_size": Number(0),
+    //         "type": String("string"),
+    //     },
+    //     "tradedate": Object {
+    //         "bytes": Number(10),
+    //         "max_size": Number(0),
+    //         "type": String("date"),
+    //     },
+    //     "tradetime": Object {
+    //         "bytes": Number(10),
+    //         "max_size": Number(0),
+    //         "type": String("time"),
+    //     },
+    // }
+
+    // Array [
+    //     String("2025-01-03"),
+    //     String("23:50:00"),
+    //     String("SBER"),
+    //     Number(3228),
+    //     Number(277),
+    //     Number(529675423),
+    //     Number(104444143),
+    //     Number(198557),
+    //     Number(46465),
+    //     Number(266.76),
+    //     Number(224.78),
+    //     Number(245022),
+    //     Number(634119566),
+    //     Number(3505),
+    //     Number(3112),
+    //     Number(269),
+    //     Number(502970767),
+    //     Number(197531368),
+    //     Number(185138),
+    //     Number(70461),
+    //     Number(271.67),
+    //     Number(280.34),
+    //     Number(255599),
+    //     Number(700502136),
+    //     Number(3381),
+    //     String("2025-01-03 23:50:13"),
+    // ],
+
+    // tmp Vec for create DataFrame
+    let mut date: Vec<&str> = Vec::new(); // 0
+    let mut time: Vec<&str> = Vec::new(); // 1
+    let mut put_orders_b: Vec<i64> = Vec::new(); // 3
+    let mut put_orders_s: Vec<i64> = Vec::new(); // 4
+    let mut put_val_b: Vec<f64> = Vec::new(); // 5
+    let mut put_val_s: Vec<f64> = Vec::new(); // 6
+    let mut put_vol_b: Vec<i64> = Vec::new(); // 7
+    let mut put_vol_s: Vec<i64> = Vec::new(); // 8
+    let mut put_vwap_b: Vec<Option<f64>> = Vec::new(); // 9
+    let mut put_vwap_s: Vec<Option<f64>> = Vec::new(); // 10
+    let mut put_vol: Vec<i64> = Vec::new(); // 11
+    let mut put_val: Vec<f64> = Vec::new(); // 12
+    let mut put_orders: Vec<i64> = Vec::new(); // 13
+    let mut cancel_orders_b: Vec<i64> = Vec::new(); // 14
+    let mut cancel_orders_s: Vec<i64> = Vec::new(); // 15
+    let mut cancel_val_b: Vec<f64> = Vec::new(); // 16
+    let mut cancel_val_s: Vec<f64> = Vec::new(); // 17
+    let mut cancel_vol_b: Vec<i64> = Vec::new(); // 18
+    let mut cancel_vol_s: Vec<i64> = Vec::new(); // 19
+    let mut cancel_vwap_b: Vec<Option<f64>> = Vec::new(); // 20
+    let mut cancel_vwap_s: Vec<Option<f64>> = Vec::new(); // 21
+    let mut cancel_vol: Vec<i64> = Vec::new(); // 22
+    let mut cancel_val: Vec<f64> = Vec::new(); // 23
+    let mut cancel_orders: Vec<i64> = Vec::new(); // 24
+
+    // collect values
+    let data = json["data"]["data"].as_array().unwrap();
+    for i in data {
+        date.push(i[0].as_str().unwrap());
+        time.push(i[1].as_str().unwrap());
+        put_orders_b.push(i[3].as_i64().unwrap());
+        put_orders_s.push(i[4].as_i64().unwrap());
+        put_val_b.push(i[5].as_f64().unwrap());
+        put_val_s.push(i[6].as_f64().unwrap());
+        put_vol_b.push(i[7].as_i64().unwrap());
+        put_vol_s.push(i[8].as_i64().unwrap());
+        put_vwap_b.push(i[9].as_f64());
+        put_vwap_s.push(i[10].as_f64());
+        put_vol.push(i[11].as_i64().unwrap());
+        put_val.push(i[12].as_f64().unwrap());
+        put_orders.push(i[13].as_i64().unwrap());
+        cancel_orders_b.push(i[14].as_i64().unwrap());
+        cancel_orders_s.push(i[15].as_i64().unwrap());
+        cancel_val_b.push(i[16].as_f64().unwrap());
+        cancel_val_s.push(i[17].as_f64().unwrap());
+        cancel_vol_b.push(i[18].as_i64().unwrap());
+        cancel_vol_s.push(i[19].as_i64().unwrap());
+        cancel_vwap_b.push(i[20].as_f64());
+        cancel_vwap_s.push(i[21].as_f64());
+        cancel_vol.push(i[22].as_i64().unwrap());
+        cancel_val.push(i[23].as_f64().unwrap());
+        cancel_orders.push(i[24].as_i64().unwrap());
+    }
+
+    // convert date & time to timestamp
+    let mut timestamps: Vec<i64> = Vec::new();
+    let zipped_vec = date.iter().zip(time.iter());
+    for (d, t) in zipped_vec {
+        let str_dt = format!("{d} {t}+03:00");
+        let dt = DateTime::parse_from_str(&str_dt, "%Y-%m-%d %H:%M:%S%z");
+        let ts = dt.unwrap().timestamp_nanos_opt().unwrap();
+        timestamps.push(ts);
+    }
+
+    // create DataFrame
+    let df = df!(
+        "ts_nanos" => timestamps,
+        "put_orders_b" => put_orders_b,
+        "put_orders_s" => put_orders_s,
+        "put_val_b" => put_val_b,
+        "put_val_s" => put_val_s,
+        "put_vol_b" => put_vol_b,
+        "put_vol_s" => put_vol_s,
+        "put_vwap_b" => put_vwap_b,
+        "put_vwap_s" => put_vwap_s,
+        "put_vol" => put_vol,
+        "put_val" => put_val,
+        "put_orders" => put_orders,
+        "cancel_orders_b" => cancel_orders_b,
+        "cancel_orders_s" => cancel_orders_s,
+        "cancel_val_b" => cancel_val_b,
+        "cancel_val_s" => cancel_val_s,
+        "cancel_vol_b" => cancel_vol_b,
+        "cancel_vol_s" => cancel_vol_s,
+        "cancel_vwap_b" => cancel_vwap_b,
+        "cancel_vwap_s" => cancel_vwap_s,
+        "cancel_vol" => cancel_vol,
+        "cancel_val" => cancel_val,
+        "cancel_orders" => cancel_orders,
     );
 
     df.unwrap()

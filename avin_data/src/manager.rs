@@ -9,6 +9,7 @@ use chrono::prelude::*;
 use polars::frame::DataFrame;
 
 use crate::data_ob::DataOB;
+use crate::data_orders::DataOrders;
 use crate::data_trades::DataTrades;
 use crate::{Iid, MarketData, Source, SourceMoex};
 use avin_utils::AvinError;
@@ -113,7 +114,7 @@ impl Manager {
             MarketData::BAR_M => DataBar::save(iid, md, df),
             MarketData::TIC => DataTic::save(iid, md, df),
             MarketData::TRADE_STATS => DataTrades::save(iid, md, df),
-            MarketData::ORDER_STATS => todo!(),
+            MarketData::ORDER_STATS => DataOrders::save(iid, md, df),
             MarketData::OB_STATS => DataOB::save(iid, md, df),
         }
     }
@@ -154,8 +155,8 @@ impl Manager {
             MarketData::BAR_M => DataBar::load(iid, md, begin, end),
             MarketData::TIC => DataTic::load(iid, md, begin, end),
             MarketData::TRADE_STATS => DataTrades::load(iid, md, begin, end),
-            MarketData::ORDER_STATS => DataOB::load(iid, md, begin, end),
-            MarketData::OB_STATS => todo!(),
+            MarketData::ORDER_STATS => DataOrders::load(iid, md, begin, end),
+            MarketData::OB_STATS => DataOB::load(iid, md, begin, end),
         }
     }
 
@@ -183,10 +184,17 @@ impl Manager {
         source.get(iid, md, from, till).await
     }
     async fn download_orders(
-        _iid: &Iid,
-        _year: Option<i32>,
+        iid: &Iid,
+        year: Option<i32>,
     ) -> Result<DataFrame, AvinError> {
-        todo!()
+        let source = SourceMoex::new();
+
+        let md = MarketData::ORDER_STATS;
+        let year = year.unwrap();
+        let from = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
+        let till = Utc.with_ymd_and_hms(year, 12, 31, 23, 59, 59).unwrap();
+
+        source.get(iid, md, from, till).await
     }
     async fn download_ob(
         iid: &Iid,
