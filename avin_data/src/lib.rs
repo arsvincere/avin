@@ -7,6 +7,7 @@
 
 mod category;
 mod data_bar;
+mod data_ob;
 mod data_tic;
 mod data_trades;
 mod exchange;

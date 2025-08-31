@@ -47,6 +47,9 @@ impl SourceMoex {
     }
 
     // public
+    pub async fn cache_instruments_info() -> Result<(), AvinError> {
+        todo!()
+    }
     pub async fn get(
         &self,
         iid: &Iid,
@@ -68,7 +71,7 @@ impl SourceMoex {
             MarketData::TIC => todo!(),
             MarketData::TRADE_STATS => self.get_trades(iid, from, till).await,
             MarketData::ORDER_STATS => todo!(),
-            MarketData::OB_STATS => todo!(),
+            MarketData::OB_STATS => self.get_ob(iid, from, till).await,
         }
     }
 
@@ -80,6 +83,8 @@ impl SourceMoex {
         from: NaiveDateTime,
         till: NaiveDateTime,
     ) -> Result<DataFrame, AvinError> {
+        // TODO: make this function private
+
         let iid = Manager::find_iid("MOEX_SHARE_GAZP").unwrap(); // убрать
         let mut bars = DataFrame::empty_with_schema(&schema::bar_schema());
 
@@ -158,6 +163,9 @@ impl SourceMoex {
         Ok(url)
     }
 
+    // get tics
+    // TODO:
+
     // get trades
     async fn get_trades(
         &self,
@@ -233,6 +241,88 @@ impl SourceMoex {
 
         url
     }
+
+    // get orders
+    // TODO:
+
+    // get ob
+    async fn get_ob(
+        &self,
+        iid: &Iid,
+        from: NaiveDateTime,
+        till: NaiveDateTime,
+    ) -> Result<DataFrame, AvinError> {
+        let mut ob = DataFrame::empty_with_schema(&schema::ob_schema());
+
+        let mut f = from;
+        while f < till {
+            // NOTE: данные отдает не более 1000шт за раз, поэтому
+            // качаем по 3 дня. Время игнорится, from-till учитывается
+            // только дата дня, время отбрасывается.
+            let t = f.checked_add_days(Days::new(3)).unwrap();
+            let response = self.try_request_ob(iid, f, t).await.unwrap();
+
+            let json: serde_json::Value = match response.json().await {
+                Err(e) => {
+                    log::error!("Error parsing response to json: {e}");
+                    panic!();
+                }
+                Ok(json) => json,
+            };
+
+            let part = parse_json_ob_stat(json);
+            ob.extend(&part).unwrap();
+
+            if f < till {
+                f = t;
+            } else {
+                break;
+            }
+        }
+
+        ob = drop_duplicate_timestamp(ob);
+
+        Ok(ob)
+    }
+    async fn try_request_ob(
+        &self,
+        iid: &Iid,
+        from: NaiveDateTime,
+        till: NaiveDateTime,
+    ) -> Result<reqwest::Response, AvinError> {
+        let url = self.get_url_ob_stat(iid, from, till);
+        let request = self
+            .client
+            .get(&url)
+            .bearer_auth(&self.token)
+            .build()
+            .unwrap();
+        let response = self.client.execute(request).await.unwrap();
+
+        Ok(response)
+    }
+    fn get_url_ob_stat(
+        &self,
+        iid: &Iid,
+        from: NaiveDateTime,
+        till: NaiveDateTime,
+    ) -> String {
+        // # пример
+        // https://apim.moex.com/iss/datashop/algopack/eq/obstats/ABIO.json?
+        // from=2024-04-17&
+        // till=2024-04-19
+
+        let from = from.date();
+        let till = till.date();
+
+        let mut url = String::from(SERVICE);
+        url += "/datashop/algopack/eq/obstats";
+        url += format!("/{}.json?", iid.ticker()).as_str();
+        url += format!("from={from}&").as_str();
+        url += format!("till={till}").as_str();
+
+        url
+    }
 }
 
 fn utc_to_msk(dt: DateTime<Utc>) -> NaiveDateTime {
@@ -283,7 +373,7 @@ fn drop_duplicate_timestamp(df: DataFrame) -> DataFrame {
     // дублей на DataFrame.
     let col_name = String::from("ts_nanos");
 
-    df.unique_stable(Some(&[col_name]), UniqueKeepStrategy::Any, None)
+    df.unique_stable(Some(&[col_name]), UniqueKeepStrategy::Last, None)
         .unwrap()
 }
 fn get_last_dt(df: &DataFrame) -> NaiveDateTime {
@@ -497,34 +587,28 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
     //         },
     //     },
 
-    // json["data"]["data"] = Array [
-    //     String("2024-01-11"),
-    //     String("12:50:00"),
+    // Array [
+    //     String("2025-01-03"),
+    //     String("23:45:00"),
     //     String("SBER"),
-    //     Number(275.08),
-    //     Number(275.15),
-    //     Number(275.05),
-    //     Number(275.13),
-    //     Number(0),
-    //     Number(11491),
-    //     Number(31615539),
-    //     Number(194),
-    //     Number(275.13),
-    //     Number(0.0182),
-    //     Number(124),
-    //     Number(70),
-    //     Number(27739332),
-    //     Number(3876207),
-    //     Number(10082),
-    //     Number(1409),
-    //     Number(0.75),
-    //     Number(275.14),
-    //     Number(275.1),
-    //     String("2024-08-13 19:10:26"),
-    //     Number(1),
-    //     Number(234),
-    //     Number(28),
-    //     Number(297),
+    //     Number(0.8),
+    //     Number(9.8),
+    //     Number(1.8),
+    //     Number(741),
+    //     Number(1050),
+    //     Number(285433),
+    //     Number(306540),
+    //     Number(760228680),
+    //     Number(866640230),
+    //     Number(-0.39),
+    //     Number(-0.39),
+    //     Number(-0.04),
+    //     Number(-0.07),
+    //     Number(266.34),
+    //     Number(282.72),
+    //     Number(272.37),
+    //     Number(272.42),
+    //     String("2025-06-10 14:54:58"),
     // ],
 
     // tmp Vec for create DataFrame
@@ -547,11 +631,10 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
     let mut vol_b: Vec<u64> = Vec::new(); // 17
     let mut vol_s: Vec<u64> = Vec::new(); // 18
     let mut disb: Vec<f64> = Vec::new(); // 19
-    let mut vwap_b: Vec<f64> = Vec::new(); // 20
-    let mut vwap_s: Vec<f64> = Vec::new(); // 21
+    let mut vwap_b: Vec<Option<f64>> = Vec::new(); // 20
+    let mut vwap_s: Vec<Option<f64>> = Vec::new(); // 21
 
-    // exaple row:
-    // ["2024-01-11","12:45:00","SBER",275.15,275.15,275,275.08,0.0001,10246,28182035,167,275.05,-0.0254,83,84,5298652,22883383,1926,8320,-0.62,275.11,275.04,"2024-08-13 19:10:26",1,1,8,298]
+    // collect values
     let data = json["data"]["data"].as_array().unwrap();
     for i in data {
         date.push(i[0].as_str().unwrap()); // 0
@@ -573,8 +656,8 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
         vol_b.push(i[17].as_u64().unwrap()); // 17
         vol_s.push(i[18].as_u64().unwrap()); // 18
         disb.push(i[19].as_f64().unwrap()); // 19
-        vwap_b.push(i[20].as_f64().unwrap_or(0.0)); // 20
-        vwap_s.push(i[21].as_f64().unwrap_or(0.0)); // 21
+        vwap_b.push(i[20].as_f64()); // 20
+        vwap_s.push(i[21].as_f64()); // 21
     }
 
     // convert date & time to timestamp
@@ -609,6 +692,209 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
         "disb" => disb,
         "vwap_b" => vwap_b,
         "vwap_s" => vwap_s,
+    );
+
+    df.unwrap()
+}
+fn parse_json_ob_stat(json: serde_json::Value) -> DataFrame {
+    // json["data"]["columns"] = Array [
+    //     String("tradedate"),
+    //     String("tradetime"),
+    //     String("secid"),
+    //     String("spread_bbo"),
+    //     String("spread_lv10"),
+    //     String("spread_1mio"),
+    //     String("levels_b"),
+    //     String("levels_s"),
+    //     String("vol_b"),
+    //     String("vol_s"),
+    //     String("val_b"),
+    //     String("val_s"),
+    //     String("imbalance_vol_bbo"),
+    //     String("imbalance_val_bbo"),
+    //     String("imbalance_vol"),
+    //     String("imbalance_val"),
+    //     String("vwap_b"),
+    //     String("vwap_s"),
+    //     String("vwap_b_1mio"),
+    //     String("vwap_s_1mio"),
+    //     String("SYSTIME"),
+    // ]
+
+    // json["data"]["metadata"] = Object {
+    //     "SYSTIME": Object {
+    //         "bytes": Number(19),
+    //         "max_size": Number(0),
+    //         "type": String("datetime"),
+    //     },
+    //     "imbalance_val": Object {
+    //         "type": String("double"),
+    //     },
+    //     "imbalance_val_bbo": Object {
+    //         "type": String("double"),
+    //     },
+    //     "imbalance_vol": Object {
+    //         "type": String("double"),
+    //     },
+    //     "imbalance_vol_bbo": Object {
+    //         "type": String("double"),
+    //     },
+    //     "levels_b": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "levels_s": Object {
+    //         "type": String("int32"),
+    //     },
+    //     "secid": Object {
+    //         "bytes": Number(36),
+    //         "max_size": Number(0),
+    //         "type": String("string"),
+    //     },
+    //     "spread_1mio": Object {
+    //         "type": String("double"),
+    //     },
+    //     "spread_bbo": Object {
+    //         "type": String("double"),
+    //     },
+    //     "spread_lv10": Object {
+    //         "type": String("double"),
+    //     },
+    //     "tradedate": Object {
+    //         "bytes": Number(10),
+    //         "max_size": Number(0),
+    //         "type": String("date"),
+    //     },
+    //     "tradetime": Object {
+    //         "bytes": Number(10),
+    //         "max_size": Number(0),
+    //         "type": String("time"),
+    //     },
+    //     "val_b": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "val_s": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "vol_b": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "vol_s": Object {
+    //         "type": String("int64"),
+    //     },
+    //     "vwap_b": Object {
+    //         "type": String("double"),
+    //     },
+    //     "vwap_b_1mio": Object {
+    //         "type": String("double"),
+    //     },
+    //     "vwap_s": Object {
+    //         "type": String("double"),
+    //     },
+    //     "vwap_s_1mio": Object {
+    //         "type": String("double"),
+    //     },
+    // }
+
+    // json["data"]["data"] = Object {
+    // Array [
+    //     String("2025-01-03"),
+    //     String("23:50:00"),
+    //     String("SBER"),
+    //     Number(1),
+    //     Number(11.4),
+    //     Number(2.3),
+    //     Number(709),
+    //     Number(1044),
+    //     Number(267125),
+    //     Number(283553),
+    //     Number(711028247),
+    //     Number(800643986),
+    //     Number(-0.02),
+    //     Number(-0.02),
+    //     Number(-0.03),
+    //     Number(-0.06),
+    //     Number(266.18),
+    //     Number(282.34),
+    //     Number(272.17),
+    //     Number(272.23),
+    //     String("2025-06-10 14:54:58"),
+    // ],
+
+    // tmp Vec for create DataFrame
+    let mut date: Vec<&str> = Vec::new(); // 0
+    let mut time: Vec<&str> = Vec::new(); // 1
+    let mut spread_bbo: Vec<Option<f64>> = Vec::new(); // 3
+    let mut spread_lv10: Vec<Option<f64>> = Vec::new(); // 4
+    let mut spread_1mio: Vec<Option<f64>> = Vec::new(); // 5
+    let mut levels_b: Vec<Option<i64>> = Vec::new(); // 6
+    let mut levels_s: Vec<Option<i64>> = Vec::new(); // 7
+    let mut vol_b: Vec<Option<i64>> = Vec::new(); // 8
+    let mut vol_s: Vec<Option<i64>> = Vec::new(); // 9
+    let mut val_b: Vec<Option<i64>> = Vec::new(); // 10
+    let mut val_s: Vec<Option<i64>> = Vec::new(); // 11
+    let mut imbalance_vol_bbo: Vec<Option<f64>> = Vec::new(); // 12
+    let mut imbalance_val_bbo: Vec<Option<f64>> = Vec::new(); // 13
+    let mut imbalance_vol: Vec<Option<f64>> = Vec::new(); // 14
+    let mut imbalance_val: Vec<Option<f64>> = Vec::new(); // 15
+    let mut vwap_b: Vec<Option<f64>> = Vec::new(); // 16
+    let mut vwap_s: Vec<Option<f64>> = Vec::new(); // 17
+    let mut vwap_b_1mio: Vec<Option<f64>> = Vec::new(); // 18
+    let mut vwap_s_1mio: Vec<Option<f64>> = Vec::new(); // 19
+
+    // collect values
+    let data = json["data"]["data"].as_array().unwrap();
+    for i in data {
+        date.push(i[0].as_str().unwrap());
+        time.push(i[1].as_str().unwrap());
+        spread_bbo.push(i[3].as_f64());
+        spread_lv10.push(i[4].as_f64());
+        spread_1mio.push(i[5].as_f64());
+        levels_b.push(i[6].as_i64());
+        levels_s.push(i[7].as_i64());
+        vol_b.push(i[8].as_i64());
+        vol_s.push(i[9].as_i64());
+        val_b.push(i[10].as_i64());
+        val_s.push(i[11].as_i64());
+        imbalance_vol_bbo.push(i[12].as_f64());
+        imbalance_val_bbo.push(i[13].as_f64());
+        imbalance_vol.push(i[14].as_f64());
+        imbalance_val.push(i[15].as_f64());
+        vwap_b.push(i[16].as_f64());
+        vwap_s.push(i[17].as_f64());
+        vwap_b_1mio.push(i[18].as_f64());
+        vwap_s_1mio.push(i[19].as_f64());
+    }
+
+    // convert date & time to timestamp
+    let mut timestamps: Vec<i64> = Vec::new();
+    let zipped_vec = date.iter().zip(time.iter());
+    for (d, t) in zipped_vec {
+        let str_dt = format!("{d} {t}+03:00");
+        let dt = DateTime::parse_from_str(&str_dt, "%Y-%m-%d %H:%M:%S%z");
+        let ts = dt.unwrap().timestamp_nanos_opt().unwrap();
+        timestamps.push(ts);
+    }
+
+    // create DataFrame
+    let df = df!(
+        "ts_nanos" => timestamps,
+        "spread_bbo" => spread_bbo,
+        "spread_lv10" => spread_lv10,
+        "spread_1mio" => spread_1mio,
+        "levels_b" => levels_b,
+        "levels_s" => levels_s,
+        "vol_b" => vol_b,
+        "vol_s" => vol_s,
+        "val_b" => val_b,
+        "val_s" => val_s,
+        "imbalance_vol_bbo" => imbalance_vol_bbo,
+        "imbalance_val_bbo" => imbalance_val_bbo,
+        "imbalance_vol" => imbalance_vol,
+        "imbalance_val" => imbalance_val,
+        "vwap_b" => vwap_b,
+        "vwap_s" => vwap_s,
+        "vwap_b_1mio" => vwap_b_1mio,
+        "vwap_s_1mio" => vwap_s_1mio,
     );
 
     df.unwrap()

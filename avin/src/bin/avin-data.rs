@@ -7,8 +7,8 @@ async fn main() {
 
     let source = Source::MOEX;
     let iid = Manager::find_iid("moex_share_sber").unwrap();
-    let md = MarketData::TRADE_STATS;
-    let year = Some(2019);
+    let md = MarketData::OB_STATS;
+    let year = Some(2020);
 
     Manager::download(source, &iid, md, year).await.unwrap();
 }
