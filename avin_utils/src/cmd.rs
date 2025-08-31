@@ -98,6 +98,12 @@ impl Cmd {
     }
 
     pub fn write(string: &str, path: &Path) -> Result<(), AvinError> {
+        // check dir, create if not exist
+        let dir_path = path.parent().unwrap();
+        if !Cmd::is_exist(dir_path) {
+            Cmd::make_dirs(dir_path).unwrap();
+        }
+
         let mut file = File::create(path).unwrap();
         write!(file, "{string}").unwrap();
 
@@ -129,6 +135,7 @@ impl Cmd {
         df: &mut DataFrame,
         path: &Path,
     ) -> Result<(), AvinError> {
+        // check dir, create if not exist
         let dir_path = path.parent().unwrap();
         if !Cmd::is_exist(dir_path) {
             Cmd::make_dirs(dir_path).unwrap();

@@ -14,17 +14,18 @@ use avin_utils::*;
 async fn main() {
     avin_utils::init_logger();
 
-    let iid = Manager::find_iid("moex_share_sber").unwrap();
-    let tf = TimeFrame::Day;
-    let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-    let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
-    let df = Manager::load(&iid, tf.market_data(), begin, end).unwrap();
-    let bars = Bar::from_df(&df).unwrap();
+    let mut asset = Asset::new("moex_share_sber").unwrap();
+    let tf = TimeFrame::M10;
+    asset.load_chart(tf).unwrap();
+    let chart = asset.chart_mut(tf).unwrap();
 
-    let chart = Chart::new(&iid, tf, bars);
-    assert_eq!(*chart.iid(), iid);
-    assert_eq!(chart.tf(), tf);
-    assert_eq!(chart.bars().len(), 256);
+    let b2 = chart.bar(2).unwrap();
+    let b1 = chart.bar(1).unwrap();
+    let b0 = chart.bar(0).unwrap();
+
+    println!("{b2}");
+    println!("{b1}");
+    println!("{b0}");
 
     // let iid = Manager::find_iid("moex_share_sber").unwrap();
     // let md = MarketData::BAR_1M;

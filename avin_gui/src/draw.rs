@@ -444,12 +444,12 @@ pub trait ScanDraw {
 }
 impl ScanDraw for ScannerResult {
     fn draw_points(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame) {
-        for ts in self.points().iter() {
+        for p in self.points().iter() {
             // eval coordinate X
-            let x0 = *ts as f64;
-            let x1 = (ts + tf.nanos()) as f64;
+            let x0 = p.ts as f64;
+            let x1 = (p.ts + tf.nanos()) as f64;
             let x = (x1 - x0) / 2.0 + x0;
-            let y = 311.0;
+            let y = p.price;
 
             // create shape
             use avin_scanner::MarkerShape as ams;

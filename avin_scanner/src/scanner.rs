@@ -79,16 +79,16 @@ impl std::fmt::Display for MarkerColor {
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum MarkerSize {
-    S = 3,
-    M = 5,
-    L = 8,
+    Small = 3,
+    Medium = 5,
+    Large = 8,
 }
 impl std::fmt::Display for MarkerSize {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::S => write!(f, "S"),
-            Self::M => write!(f, "M"),
-            Self::L => write!(f, "L"),
+            Self::Small => write!(f, "S"),
+            Self::Medium => write!(f, "M"),
+            Self::Large => write!(f, "L"),
         }
     }
 }
@@ -108,20 +108,31 @@ impl Marker {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct Point {
+    pub ts: i64,
+    pub price: f64,
+}
+impl Point {
+    pub fn new(ts: i64, price: f64) -> Self {
+        Self { ts, price }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ScannerResult {
     scan_name: String,
     iid_name: String,
     tf: TimeFrame,
     marker: Marker,
-    points: Vec<i64>,
+    points: Vec<Point>,
 }
 impl ScannerResult {
     pub fn new(
         chart: &Chart,
         filter: impl Filter,
         marker: Marker,
-        points: Vec<i64>,
+        points: Vec<Point>,
     ) -> Self {
         Self {
             scan_name: format!("{}_{}", filter.name(), chart.ticker()),
@@ -159,19 +170,19 @@ impl ScannerResult {
     pub fn marker(&self) -> &Marker {
         &self.marker
     }
-    pub fn points(&self) -> &Vec<i64> {
+    pub fn points(&self) -> &Vec<Point> {
         &self.points
     }
     pub fn begin(&self) -> DateTime<Utc> {
-        let ts = self.points.first().unwrap();
+        let ts = self.points.first().unwrap().ts;
         DateTime::from_timestamp_nanos(
-            *ts - 24 * 60 * 60 * 1_000_000_000, // -1 day
+            ts - 24 * 60 * 60 * 1_000_000_000, // -1 day
         )
     }
     pub fn end(&self) -> DateTime<Utc> {
-        let ts = self.points.last().unwrap();
+        let ts = self.points.last().unwrap().ts;
         DateTime::from_timestamp_nanos(
-            *ts + 24 * 60 * 60 * 1_000_000_000, // +1 day
+            ts + 24 * 60 * 60 * 1_000_000_000, // +1 day
         )
     }
 }
@@ -278,8 +289,9 @@ impl Scanner {
             let result = filter.apply(&new_chart);
 
             if result {
-                let point = new_chart.now().unwrap().ts_nanos;
-                points.push(point);
+                let ts = new_chart.now().unwrap().ts_nanos;
+                let price = new_chart.now().unwrap().h * 1.003;
+                points.push(Point::new(ts, price));
             }
         }
 

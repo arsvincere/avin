@@ -10,17 +10,18 @@
 use crate::Strategy;
 use avin_analyse::TrendAnalytic;
 use avin_core::{
-    Account, Action, Asset, Direction, ExtremumIndicator, MarketOrder, Order,
-    OrderAction, OrderEvent, StopOrder, StopOrderKind, Term, TimeFrame,
-    Trade, TradeKind,
+    Account, Action, Asset, Chart, Direction, ExtremumIndicator, MarketOrder,
+    Order, OrderAction, OrderEvent, StopOrder, StopOrderKind, Term,
+    TimeFrame, Trade, TradeKind,
 };
 use avin_data::{Iid, Manager, MarketData};
+use avin_scanner::Filter;
 use avin_utils as utils;
 
 const NAME: &str = "BigTrend-S-1.1";
 const LOTS: u32 = 10;
-const STOP: f64 = 1.01;
-const TAKE: f64 = 0.98;
+const STOP: f64 = 1.02;
+const TAKE: f64 = 0.96;
 
 type Trader = tokio::sync::mpsc::UnboundedSender<Action>;
 
@@ -114,11 +115,9 @@ impl BigTrendShort {
         self.sell();
     }
     fn observe_10m(&mut self, asset: &Asset) -> bool {
-        // берем график
         let tf = TimeFrame::M10;
         let chart = asset.chart(tf).unwrap();
 
-        // T5
         let trend = match chart.trend(Term::T5, 0) {
             Some(t) => t,
             None => return false,
@@ -126,15 +125,11 @@ impl BigTrendShort {
         if trend.is_bear() {
             return false;
         }
-        let p = match chart.trend_posterior(Term::T5) {
-            Some(p) => p,
-            None => return false,
-        };
-        if p < 20.0 {
+        let cdf = chart.trend_abs_cdf(trend).unwrap();
+        if cdf < 0.80 {
             return false;
         }
 
-        // // T4
         // let trend = match chart.trend(Term::T4, 0) {
         //     Some(t) => t,
         //     None => return false,
@@ -142,62 +137,11 @@ impl BigTrendShort {
         // if trend.is_bear() {
         //     return false;
         // }
-        // let p = match chart.trend_posterior(Term::T4) {
-        //     Some(p) => p,
-        //     None => return false,
-        // };
-        // if p > 20.0 {
+        // let cdf = chart.trend_abs_cdf(trend).unwrap();
+        // if cdf < 0.70 {
         //     return false;
         // }
         //
-        // // T3
-        // let trend = match chart.trend(Term::T3, 0) {
-        //     Some(t) => t,
-        //     None => return false,
-        // };
-        // if trend.is_bear() {
-        //     return false;
-        // }
-        // let p = match chart.trend_posterior(Term::T3) {
-        //     Some(p) => p,
-        //     None => return false,
-        // };
-        // if p > 20.0 {
-        //     return false;
-        // }
-        //
-        // // T2
-        // let trend = match chart.trend(Term::T2, 0) {
-        //     Some(t) => t,
-        //     None => return false,
-        // };
-        // if trend.is_bear() {
-        //     return false;
-        // }
-        // let p = match chart.trend_posterior(Term::T2) {
-        //     Some(p) => p,
-        //     None => return false,
-        // };
-        // if p > 20.0 {
-        //     return false;
-        // }
-        //
-        // // T1
-        // let trend = match chart.trend(Term::T1, 0) {
-        //     Some(t) => t,
-        //     None => return false,
-        // };
-        // if trend.is_bear() {
-        //     return false;
-        // }
-        // let p = match chart.trend_posterior(Term::T1) {
-        //     Some(p) => p,
-        //     None => return false,
-        // };
-        // if p > 20.0 {
-        //     return false;
-        // }
-
         true
     }
     fn observe_d(&mut self, asset: &Asset) -> bool {
@@ -581,5 +525,40 @@ impl BigTrendShort {
             // все один рабочий цикл закончен, снова ставим статус Observe
             self.status = Status::Observe;
         }
+    }
+}
+
+#[derive(Default)]
+struct Filter10M {}
+impl Filter for Filter10M {
+    fn name(&self) -> &'static str {
+        "my_filter"
+    }
+    fn apply(&self, chart: &Chart) -> bool {
+        let trend = match chart.trend(Term::T1, 0) {
+            Some(t) => t,
+            None => return false,
+        };
+        if trend.is_bear() {
+            return false;
+        }
+        let cdf = chart.trend_abs_cdf(trend).unwrap();
+        if cdf < 0.80 {
+            return false;
+        }
+
+        let trend = match chart.trend(Term::T2, 0) {
+            Some(t) => t,
+            None => return false,
+        };
+        if trend.is_bear() {
+            return false;
+        }
+        let cdf = chart.trend_abs_cdf(trend).unwrap();
+        if cdf < 0.60 {
+            return false;
+        }
+
+        true
     }
 }

@@ -137,7 +137,7 @@ impl Chart {
             return self.bars.last();
         };
 
-        let index = self.bars.len() - n;
+        let index = self.bars.len() - n - 1;
         self.bars.get(index)
     }
     /// Return fist historical bar of chart.

@@ -661,6 +661,7 @@ dependencies = [
  "avin_analyse",
  "avin_core",
  "avin_data",
+ "avin_scanner",
  "avin_utils",
  "chrono",
  "log",
