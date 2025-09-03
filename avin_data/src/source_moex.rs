@@ -505,7 +505,7 @@ fn parse_json_bars(json: serde_json::Value) -> DataFrame {
     let mut close: Vec<f64> = Vec::new();
     let mut high: Vec<f64> = Vec::new();
     let mut low: Vec<f64> = Vec::new();
-    let mut vol: Vec<u64> = Vec::new();
+    let mut vol: Vec<i64> = Vec::new();
     // let val: Vec<f64> = Vec::new();
 
     for candle in candles_data {
@@ -516,7 +516,7 @@ fn parse_json_bars(json: serde_json::Value) -> DataFrame {
         let h = array[2].as_f64().unwrap();
         let l = array[3].as_f64().unwrap();
         // let val = array[4].as_f64().unwrap();
-        let v = array[5].as_u64().unwrap();
+        let v = array[5].as_i64().unwrap();
         let dt = array[6].as_str().unwrap();
 
         date_time.push(dt);
@@ -690,23 +690,23 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
     // tmp Vec for create DataFrame
     let mut date: Vec<&str> = Vec::new(); // 0
     let mut time: Vec<&str> = Vec::new(); // 1
-    let mut open: Vec<f64> = Vec::new(); // 3
-    let mut high: Vec<f64> = Vec::new(); // 4
-    let mut low: Vec<f64> = Vec::new(); // 5
-    let mut close: Vec<f64> = Vec::new(); // 6
-    let mut std: Vec<f64> = Vec::new(); // 7
-    let mut vol: Vec<u64> = Vec::new(); // 8
-    let mut val: Vec<f64> = Vec::new(); // 9
-    let mut trades: Vec<u64> = Vec::new(); // 10
-    let mut vwap: Vec<f64> = Vec::new(); // 11
-    let mut change: Vec<f64> = Vec::new(); // 12
-    let mut trades_b: Vec<u64> = Vec::new(); // 13
-    let mut trades_s: Vec<u64> = Vec::new(); // 14
-    let mut val_b: Vec<f64> = Vec::new(); // 15
-    let mut val_s: Vec<f64> = Vec::new(); // 16
-    let mut vol_b: Vec<u64> = Vec::new(); // 17
-    let mut vol_s: Vec<u64> = Vec::new(); // 18
-    let mut disb: Vec<f64> = Vec::new(); // 19
+    let mut open: Vec<Option<f64>> = Vec::new(); // 3
+    let mut high: Vec<Option<f64>> = Vec::new(); // 4
+    let mut low: Vec<Option<f64>> = Vec::new(); // 5
+    let mut close: Vec<Option<f64>> = Vec::new(); // 6
+    let mut std: Vec<Option<f64>> = Vec::new(); // 7
+    let mut vol: Vec<Option<i64>> = Vec::new(); // 8
+    let mut val: Vec<Option<f64>> = Vec::new(); // 9
+    let mut trades: Vec<Option<i64>> = Vec::new(); // 10
+    let mut vwap: Vec<Option<f64>> = Vec::new(); // 11
+    let mut change: Vec<Option<f64>> = Vec::new(); // 12
+    let mut trades_b: Vec<Option<i64>> = Vec::new(); // 13
+    let mut trades_s: Vec<Option<i64>> = Vec::new(); // 14
+    let mut val_b: Vec<Option<f64>> = Vec::new(); // 15
+    let mut val_s: Vec<Option<f64>> = Vec::new(); // 16
+    let mut vol_b: Vec<Option<i64>> = Vec::new(); // 17
+    let mut vol_s: Vec<Option<i64>> = Vec::new(); // 18
+    let mut disb: Vec<Option<f64>> = Vec::new(); // 19
     let mut vwap_b: Vec<Option<f64>> = Vec::new(); // 20
     let mut vwap_s: Vec<Option<f64>> = Vec::new(); // 21
 
@@ -715,23 +715,23 @@ fn parse_json_trades_stat(json: serde_json::Value) -> DataFrame {
     for i in data {
         date.push(i[0].as_str().unwrap()); // 0
         time.push(i[1].as_str().unwrap()); // 1
-        open.push(i[3].as_f64().unwrap()); // 3
-        high.push(i[4].as_f64().unwrap()); // 4
-        low.push(i[5].as_f64().unwrap()); // 5
-        close.push(i[6].as_f64().unwrap()); // 6
-        std.push(i[7].as_f64().unwrap()); // 7
-        vol.push(i[8].as_u64().unwrap()); // 8
-        val.push(i[9].as_f64().unwrap()); // 9
-        trades.push(i[10].as_u64().unwrap()); // 10
-        vwap.push(i[11].as_f64().unwrap()); // 11
-        change.push(i[12].as_f64().unwrap()); // 12
-        trades_b.push(i[13].as_u64().unwrap()); // 13
-        trades_s.push(i[14].as_u64().unwrap()); // 14
-        val_b.push(i[15].as_f64().unwrap()); // 15
-        val_s.push(i[16].as_f64().unwrap()); // 16
-        vol_b.push(i[17].as_u64().unwrap()); // 17
-        vol_s.push(i[18].as_u64().unwrap()); // 18
-        disb.push(i[19].as_f64().unwrap()); // 19
+        open.push(i[3].as_f64()); // 3
+        high.push(i[4].as_f64()); // 4
+        low.push(i[5].as_f64()); // 5
+        close.push(i[6].as_f64()); // 6
+        std.push(i[7].as_f64()); // 7
+        vol.push(i[8].as_i64()); // 8
+        val.push(i[9].as_f64()); // 9
+        trades.push(i[10].as_i64()); // 10
+        vwap.push(i[11].as_f64()); // 11
+        change.push(i[12].as_f64()); // 12
+        trades_b.push(i[13].as_i64()); // 13
+        trades_s.push(i[14].as_i64()); // 14
+        val_b.push(i[15].as_f64()); // 15
+        val_s.push(i[16].as_f64()); // 16
+        vol_b.push(i[17].as_i64()); // 17
+        vol_s.push(i[18].as_i64()); // 18
+        disb.push(i[19].as_f64()); // 19
         vwap_b.push(i[20].as_f64()); // 20
         vwap_s.push(i[21].as_f64()); // 21
     }
@@ -923,56 +923,56 @@ fn parse_json_orders_stat(json: serde_json::Value) -> DataFrame {
     // tmp Vec for create DataFrame
     let mut date: Vec<&str> = Vec::new(); // 0
     let mut time: Vec<&str> = Vec::new(); // 1
-    let mut put_orders_b: Vec<i64> = Vec::new(); // 3
-    let mut put_orders_s: Vec<i64> = Vec::new(); // 4
-    let mut put_val_b: Vec<f64> = Vec::new(); // 5
-    let mut put_val_s: Vec<f64> = Vec::new(); // 6
-    let mut put_vol_b: Vec<i64> = Vec::new(); // 7
-    let mut put_vol_s: Vec<i64> = Vec::new(); // 8
+    let mut put_orders_b: Vec<Option<i64>> = Vec::new(); // 3
+    let mut put_orders_s: Vec<Option<i64>> = Vec::new(); // 4
+    let mut put_val_b: Vec<Option<f64>> = Vec::new(); // 5
+    let mut put_val_s: Vec<Option<f64>> = Vec::new(); // 6
+    let mut put_vol_b: Vec<Option<i64>> = Vec::new(); // 7
+    let mut put_vol_s: Vec<Option<i64>> = Vec::new(); // 8
     let mut put_vwap_b: Vec<Option<f64>> = Vec::new(); // 9
     let mut put_vwap_s: Vec<Option<f64>> = Vec::new(); // 10
-    let mut put_vol: Vec<i64> = Vec::new(); // 11
-    let mut put_val: Vec<f64> = Vec::new(); // 12
-    let mut put_orders: Vec<i64> = Vec::new(); // 13
-    let mut cancel_orders_b: Vec<i64> = Vec::new(); // 14
-    let mut cancel_orders_s: Vec<i64> = Vec::new(); // 15
-    let mut cancel_val_b: Vec<f64> = Vec::new(); // 16
-    let mut cancel_val_s: Vec<f64> = Vec::new(); // 17
-    let mut cancel_vol_b: Vec<i64> = Vec::new(); // 18
-    let mut cancel_vol_s: Vec<i64> = Vec::new(); // 19
+    let mut put_vol: Vec<Option<i64>> = Vec::new(); // 11
+    let mut put_val: Vec<Option<f64>> = Vec::new(); // 12
+    let mut put_orders: Vec<Option<i64>> = Vec::new(); // 13
+    let mut cancel_orders_b: Vec<Option<i64>> = Vec::new(); // 14
+    let mut cancel_orders_s: Vec<Option<i64>> = Vec::new(); // 15
+    let mut cancel_val_b: Vec<Option<f64>> = Vec::new(); // 16
+    let mut cancel_val_s: Vec<Option<f64>> = Vec::new(); // 17
+    let mut cancel_vol_b: Vec<Option<i64>> = Vec::new(); // 18
+    let mut cancel_vol_s: Vec<Option<i64>> = Vec::new(); // 19
     let mut cancel_vwap_b: Vec<Option<f64>> = Vec::new(); // 20
     let mut cancel_vwap_s: Vec<Option<f64>> = Vec::new(); // 21
-    let mut cancel_vol: Vec<i64> = Vec::new(); // 22
-    let mut cancel_val: Vec<f64> = Vec::new(); // 23
-    let mut cancel_orders: Vec<i64> = Vec::new(); // 24
+    let mut cancel_vol: Vec<Option<i64>> = Vec::new(); // 22
+    let mut cancel_val: Vec<Option<f64>> = Vec::new(); // 23
+    let mut cancel_orders: Vec<Option<i64>> = Vec::new(); // 24
 
     // collect values
     let data = json["data"]["data"].as_array().unwrap();
     for i in data {
         date.push(i[0].as_str().unwrap());
         time.push(i[1].as_str().unwrap());
-        put_orders_b.push(i[3].as_i64().unwrap());
-        put_orders_s.push(i[4].as_i64().unwrap());
-        put_val_b.push(i[5].as_f64().unwrap());
-        put_val_s.push(i[6].as_f64().unwrap());
-        put_vol_b.push(i[7].as_i64().unwrap());
-        put_vol_s.push(i[8].as_i64().unwrap());
+        put_orders_b.push(i[3].as_i64());
+        put_orders_s.push(i[4].as_i64());
+        put_val_b.push(i[5].as_f64());
+        put_val_s.push(i[6].as_f64());
+        put_vol_b.push(i[7].as_i64());
+        put_vol_s.push(i[8].as_i64());
         put_vwap_b.push(i[9].as_f64());
         put_vwap_s.push(i[10].as_f64());
-        put_vol.push(i[11].as_i64().unwrap());
-        put_val.push(i[12].as_f64().unwrap());
-        put_orders.push(i[13].as_i64().unwrap());
-        cancel_orders_b.push(i[14].as_i64().unwrap());
-        cancel_orders_s.push(i[15].as_i64().unwrap());
-        cancel_val_b.push(i[16].as_f64().unwrap());
-        cancel_val_s.push(i[17].as_f64().unwrap());
-        cancel_vol_b.push(i[18].as_i64().unwrap());
-        cancel_vol_s.push(i[19].as_i64().unwrap());
+        put_vol.push(i[11].as_i64());
+        put_val.push(i[12].as_f64());
+        put_orders.push(i[13].as_i64());
+        cancel_orders_b.push(i[14].as_i64());
+        cancel_orders_s.push(i[15].as_i64());
+        cancel_val_b.push(i[16].as_f64());
+        cancel_val_s.push(i[17].as_f64());
+        cancel_vol_b.push(i[18].as_i64());
+        cancel_vol_s.push(i[19].as_i64());
         cancel_vwap_b.push(i[20].as_f64());
         cancel_vwap_s.push(i[21].as_f64());
-        cancel_vol.push(i[22].as_i64().unwrap());
-        cancel_val.push(i[23].as_f64().unwrap());
-        cancel_orders.push(i[24].as_i64().unwrap());
+        cancel_vol.push(i[22].as_i64());
+        cancel_val.push(i[23].as_f64());
+        cancel_orders.push(i[24].as_i64());
     }
 
     // convert date & time to timestamp

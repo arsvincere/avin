@@ -8,7 +8,7 @@
 #![allow(unused)]
 
 use crate::Strategy;
-use avin_analyse::TrendAnalytic;
+use avin_analyse::{Size, TrendAnalytic};
 use avin_core::{
     Account, Action, Asset, Chart, Direction, ExtremumIndicator, MarketOrder,
     Order, OrderAction, OrderEvent, StopOrder, StopOrderKind, Term,
@@ -18,10 +18,10 @@ use avin_data::{Iid, Manager, MarketData};
 use avin_scanner::Filter;
 use avin_utils as utils;
 
-const NAME: &str = "BigTrend-S-1.1";
+const NAME: &str = "BigTrend-L-1.1";
 const LOTS: u32 = 10;
-const STOP: f64 = 1.02;
-const TAKE: f64 = 0.96;
+const STOP: f64 = 0.98;
+const TAKE: f64 = 1.04;
 
 type Trader = tokio::sync::mpsc::UnboundedSender<Action>;
 
@@ -31,7 +31,7 @@ enum Status {
     /// Стратегия наблюдает, ждет условий для входа
     Observe,
     /// Условия наступили, постит ордер открытия позиции
-    PostingSell,
+    PostingLong,
     /// Ожидает исполнения ордера
     Opening,
     /// Когда трейд открыт постит стоп лосс
@@ -45,7 +45,7 @@ enum Status {
 }
 
 #[derive(Debug, Default)]
-pub struct BigTrendShort {
+pub struct BigTrendLong {
     trader: Option<Trader>,
     account: Option<Account>,
     iid: Option<Iid>,
@@ -53,12 +53,12 @@ pub struct BigTrendShort {
     status: Status,
     last_ts: i64,
     trade: Option<Trade>,
-    sell_order: Option<Order>,
+    buy_order: Option<Order>,
     stop_loss: Option<Order>,
     take_profit: Option<Order>,
 }
 
-impl Strategy for BigTrendShort {
+impl Strategy for BigTrendLong {
     fn name(&self) -> &'static str {
         NAME
     }
@@ -92,7 +92,7 @@ impl Strategy for BigTrendShort {
     fn order_event(&mut self, e: OrderEvent) {
         match self.status {
             Status::Observe => unreachable!(),
-            Status::PostingSell => self.on_sell_event(e),
+            Status::PostingLong => self.on_sell_event(e),
             Status::Opening => self.on_opening_event(e),
             Status::PostingStop => self.on_posting_stop_event(e),
             Status::PostingTake => self.on_posting_take_event(e),
@@ -101,9 +101,13 @@ impl Strategy for BigTrendShort {
         }
     }
 }
-impl BigTrendShort {
+impl BigTrendLong {
     fn observe(&mut self, asset: &Asset) {
         if !self.observe_10m(asset) {
+            return;
+        }
+
+        if !self.observe_1h(asset) {
             return;
         }
 
@@ -112,37 +116,43 @@ impl BigTrendShort {
         // }
 
         // все выполнено, открываем сделку
-        self.sell();
+        self.buy();
     }
     fn observe_10m(&mut self, asset: &Asset) -> bool {
         let tf = TimeFrame::M10;
         let chart = asset.chart(tf).unwrap();
 
-        let trend = match chart.trend(Term::T5, 0) {
+        let trend = match chart.trend(Term::T3, 0) {
             Some(t) => t,
             None => return false,
         };
         if trend.is_bear() {
             return false;
         }
-        let cdf = chart.trend_abs_cdf(trend).unwrap();
-        if cdf < 0.80 {
-            return false;
+        let size = chart.trend_abs_size(trend).unwrap();
+        if size == Size::Biggest {
+            return true;
         }
 
-        // let trend = match chart.trend(Term::T4, 0) {
-        //     Some(t) => t,
-        //     None => return false,
-        // };
-        // if trend.is_bear() {
-        //     return false;
+        false
+    }
+    fn observe_1h(&mut self, asset: &Asset) -> bool {
+        let tf = TimeFrame::H1;
+        let chart = asset.chart(tf).unwrap();
+
+        let trend = match chart.trend(Term::T1, 0) {
+            Some(t) => t,
+            None => return false,
+        };
+        if trend.is_bull() {
+            return true;
+        }
+        // let size = chart.trend_abs_size(trend).unwrap();
+        // if size == Size::Mid {
+        //     return true;
         // }
-        // let cdf = chart.trend_abs_cdf(trend).unwrap();
-        // if cdf < 0.70 {
-        //     return false;
-        // }
-        //
-        true
+
+        false
     }
     fn observe_d(&mut self, asset: &Asset) -> bool {
         // берем график
@@ -161,28 +171,28 @@ impl BigTrendShort {
         true
     }
 
-    fn sell(&mut self) {
+    fn buy(&mut self) {
         // создаем трейд
         self.create_trade();
 
         // отправляем ордер трейдеру
-        self.send_sell_order();
+        self.send_buy_order();
     }
     fn create_trade(&mut self) {
         let trade = Trade::new(
             self.last_ts,
             self.name(),
-            TradeKind::Short,
+            TradeKind::Long,
             self.iid.clone().unwrap(),
         );
         self.trade = Some(Trade::New(trade));
     }
-    fn send_sell_order(&mut self) {
+    fn send_buy_order(&mut self) {
         // Создаем ордер
-        let order = MarketOrder::new(Direction::Sell, LOTS);
+        let order = MarketOrder::new(Direction::Buy, LOTS);
         let order = MarketOrder::New(order);
         let order = Order::Market(order);
-        self.sell_order = Some(order.clone());
+        self.buy_order = Some(order.clone());
 
         // Заворачиваем в экшен
         let a = OrderAction::new(
@@ -197,10 +207,10 @@ impl BigTrendShort {
         self.trader.as_ref().unwrap().send(a).unwrap();
 
         // Ставим статус - отправка ордера на покупку
-        self.status = Status::PostingSell;
+        self.status = Status::PostingLong;
     }
     fn on_sell_event(&mut self, e: OrderEvent) {
-        // Функция вызывается когда стратегия находится в статусе PostingSell
+        // Функция вызывается когда стратегия находится в статусе PostingLong
         // и прилетает ордер эвент, по отправленному ордеру на продажу.
 
         // Достаем из эвента ордер
@@ -211,7 +221,7 @@ impl BigTrendShort {
         // исполнится сразу. Но если бы открывались по лимитке что более
         // практично, то такая логика была бы уместна.
         if order.is_posted() {
-            self.sell_order = Some(order);
+            self.buy_order = Some(order);
             self.status = Status::Opening;
             return;
         }
@@ -274,7 +284,7 @@ impl BigTrendShort {
         // создаем стоп лосс
         let stop_order = StopOrder::new(
             StopOrderKind::StopLoss,
-            Direction::Buy,
+            Direction::Sell,
             LOTS,
             stop,
             None, // цена сработки ордера, None - будет рыночное исполнение
@@ -364,7 +374,7 @@ impl BigTrendShort {
         // создаем тейк профит
         let stop_order = StopOrder::new(
             StopOrderKind::TakeProfit,
-            Direction::Buy,
+            Direction::Sell,
             LOTS,
             stop,
             Some(stop), // цена исполнения ордера == цена сработки

@@ -16,8 +16,9 @@ async fn main() {
 
     let tickers = ["SBER"];
     // let tickers = [
-    //     "AFKS", "CHMF", "GAZP", "GMKN", "LKOH", "MOEX", "NLMK", "NVTK",
-    //     "OZON", "PLZL", "ROSN", "SBER", "SNGS", "T", "TATN", "VTBR",
+    //     "AFKS", "AFLT", "ASTR", "CHMF", "GAZP", "GMKN", "LKOH", "MOEX",
+    //     "NLMK", "NVTK", "OZON", "PIKK", "PLZL", "ROSN", "SBER", "SNGS", "T",
+    //     "TATN", "VTBR", "YDEX",
     // ];
 
     for ticker in tickers {

@@ -16,7 +16,7 @@ async fn main() {
     utils::init_logger();
 
     let mut asset = Asset::new("moex_share_sber").unwrap();
-    let tf = TimeFrame::M10;
+    let tf = TimeFrame::H1;
     asset.load_chart(tf).unwrap();
     let chart = asset.chart_mut(tf).unwrap();
 
@@ -44,23 +44,53 @@ impl Filter for MyFilter {
         if trend.is_bear() {
             return false;
         }
+
         let cdf = chart.trend_abs_cdf(trend).unwrap();
-        if cdf < 0.80 {
+        if cdf < 0.70 || cdf > 0.90 {
             return false;
         }
 
-        let trend = match chart.trend(Term::T2, 0) {
-            Some(t) => t,
-            None => return false,
-        };
-        if trend.is_bear() {
-            return false;
-        }
-        let cdf = chart.trend_abs_cdf(trend).unwrap();
-        if cdf < 0.60 {
+        if trend.len() < 5 {
             return false;
         }
 
         true
+
+        // let trend = match chart.trend(Term::T1, 0) {
+        //     Some(t) => t,
+        //     None => return false,
+        // };
+        // if trend.is_bear() {
+        //     return false;
+        // }
+        //
+        // let cdf = chart.trend_abs_cdf(trend).unwrap();
+        // if cdf > 0.80 && cdf < 0.90 {
+        //     return true;
+        // }
+        //
+        // false
     }
 }
+// #[derive(Default)]
+// struct MyFilter {}
+// impl Filter for MyFilter {
+//     fn name(&self) -> &'static str {
+//         "my_filter"
+//     }
+//     fn apply(&self, chart: &Chart) -> bool {
+//         let trend = match chart.trend(Term::T3, 0) {
+//             Some(t) => t,
+//             None => return false,
+//         };
+//         if trend.is_bear() {
+//             return false;
+//         }
+//         let size = chart.trend_abs_size(trend).unwrap();
+//         if size == Size::Biggest {
+//             return true;
+//         }
+//
+//         false
+//     }
+// }
