@@ -41,12 +41,12 @@ impl Filter for MyFilter {
             Some(t) => t,
             None => return false,
         };
-        if trend.is_bear() {
+        if !trend.is_bear() {
             return false;
         }
 
         let cdf = chart.trend_abs_cdf(trend).unwrap();
-        if cdf < 0.70 || cdf > 0.90 {
+        if !(0.90..=0.95).contains(&cdf) {
             return false;
         }
 

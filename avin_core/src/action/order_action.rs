@@ -11,7 +11,8 @@ use avin_data::Iid;
 /// Message to post or cancel order.
 ///
 /// # ru
-/// Сообщение о необходимости выставить или отменить ордер.
+/// Сообщение выставить или отменить ордер.
+///
 /// Их формирует стратегия в ходе своей работы. Используются
 /// в боевом режиме, тестере и терминале. В боевом режиме их принимает
 /// `Trader` и передает брокеру. В тестере их принимает `Tester` и передает
@@ -33,10 +34,10 @@ pub struct OrderAction {
     pub order: Order,
 }
 impl OrderAction {
-    /// Create new order action
+    /// Create new order action.
     ///
     /// # ru
-    /// Создает новое действие с ордером
+    /// Создает новое действие с ордером.
     pub fn new(
         account: Account,
         iid: Iid,

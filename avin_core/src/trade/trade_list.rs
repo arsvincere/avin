@@ -133,7 +133,8 @@ mod tests {
 
         assert_eq!(trade_list, loaded);
 
-        // delete file
+        // delete file and dir
         utils::Cmd::delete(path).unwrap();
+        utils::Cmd::delete_dir(Path::new("tmp")).unwrap();
     }
 }

@@ -149,7 +149,7 @@ impl BigTrendShort {
         }
 
         let cdf = chart.trend_abs_cdf(trend).unwrap();
-        if cdf < 0.70 || cdf > 0.90 {
+        if !(0.70..=0.90).contains(&cdf) {
             return false;
         }
 

@@ -1,6 +1,6 @@
 [package]
 name = "avin_simulator"
-description = { workspace = true }
+description = "Simple market simulator, part of 'avin' library"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
