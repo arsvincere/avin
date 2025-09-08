@@ -83,6 +83,12 @@ class Manager:
         match market_data:
             case MarketData.TIC:
                 cls.__update_tics(source, iid, market_data)
+            case MarketData.TRADE_STATS:
+                log.error(f"Not implemented: {market_data}")
+            case MarketData.ORDER_STATS:
+                log.error(f"Not implemented: {market_data}")
+            case MarketData.OB_STATS:
+                log.error(f"Not implemented: {market_data}")
             case _:  # bars
                 cls.__update_bars(source, iid, market_data)
 

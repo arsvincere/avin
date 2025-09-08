@@ -185,8 +185,17 @@ class SourceMoex:
                 df = cls.__get_bars(iid, market_data, begin, end)
             case MarketData.TIC:
                 df = cls.__get_tics(iid, market_data, tradeno)
+            case MarketData.TRADE_STATS:
+                log.error(f"Not implemented: {market_data}")
+                exit(1)
+            case MarketData.ORDER_STATS:
+                log.error(f"Not implemented: {market_data}")
+                exit(1)
+            case MarketData.OB_STATS:
+                log.error(f"Not implemented: {market_data}")
+                exit(1)
             case _:
-                log.error("Not implemented")
+                log.error(f"Not implemented: {market_data}")
                 exit(1)
 
         return df

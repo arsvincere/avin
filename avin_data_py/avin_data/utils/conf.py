@@ -32,7 +32,7 @@ class Configuration:
 
     @property
     def tinkoff_token(self) -> Path:
-        return Path.home() / self.__cfg["connect"]["tinkoff"]
+        return Path.home() / self.__cfg["connect"]["tinkoff_token"]
 
     @property
     def moex_account(self) -> Path:
