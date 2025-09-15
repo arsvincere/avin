@@ -32,7 +32,7 @@ class Iid:
         return s
 
     def __hash__(self):
-        return hash(self.figi)
+        return hash(self.figi())
 
     def __eq__(self, other: object):
         assert isinstance(other, Iid)

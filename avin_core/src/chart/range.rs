@@ -133,7 +133,7 @@ impl Range {
     /// assert_eq!(r.contains(99.9), false);
     /// ```
     pub fn contains(&self, value: f64) -> bool {
-        self.from <= value && value <= self.till
+        self.min() <= value && value <= self.max()
     }
 
     /// Abs of range

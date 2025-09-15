@@ -15,9 +15,11 @@ use avin::utils;
 async fn main() {
     utils::init_logger();
 
-    let mut asset = Asset::new("moex_share_sber").unwrap();
-    let tf = TimeFrame::H1;
-    asset.load_chart(tf).unwrap();
+    let mut asset = Asset::new("moex_share_vtbr").unwrap();
+    let tf = TimeFrame::M10;
+    let begin = utils::str_date_to_utc("2024-01-01");
+    let end = utils::str_date_to_utc("2025-01-01");
+    asset.load_chart_period(tf, begin, end).unwrap();
     let chart = asset.chart_mut(tf).unwrap();
 
     let filter = MyFilter::default();
@@ -45,8 +47,8 @@ impl Filter for MyFilter {
             return false;
         }
 
-        let cdf = chart.trend_abs_cdf(trend).unwrap();
-        if !(0.90..=0.95).contains(&cdf) {
+        let cdf = chart.trend_speed_cdf(trend).unwrap();
+        if !(0.80..=0.90).contains(&cdf) {
             return false;
         }
 
