@@ -1,7 +1,7 @@
 /*****************************************************************************
  * URL:         http://avin.info
- * AUTHOR:      H1ghSpeed
- * E-MAIL:
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
@@ -9,7 +9,7 @@
 ///
 /// # ru
 /// Перечисление для выбора категории инструмента.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, strum::Display)]
 pub enum Category {
     CURRENCY,
     INDEX,
@@ -19,13 +19,12 @@ pub enum Category {
     OPTION,
     ETF,
 }
-
 impl Category {
     /// Return category name
     ///
     /// # ru
     /// Возвращает название категории инструмента
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &'static str {
         match self {
             Self::CURRENCY => "CURRENCY",
             Self::INDEX => "INDEX",
@@ -37,25 +36,9 @@ impl Category {
         }
     }
 }
-
-impl std::fmt::Display for Category {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Category::CURRENCY => write!(f, "CURRENCY"),
-            Category::INDEX => write!(f, "INDEX"),
-            Category::SHARE => write!(f, "SHARE"),
-            Category::BOND => write!(f, "BOND"),
-            Category::FUTURE => write!(f, "FUTURE"),
-            Category::OPTION => write!(f, "OPTION"),
-            Category::ETF => write!(f, "ETF"),
-        }
-    }
-}
-
 impl From<&str> for Category {
     fn from(value: &str) -> Category {
-        let value = value.to_uppercase();
-        match value.as_str() {
+        match value.to_uppercase().as_str() {
             "CURRENCY" => Category::CURRENCY,
             "INDEX" => Category::INDEX,
             "SHARE" => Category::SHARE,
@@ -63,7 +46,7 @@ impl From<&str> for Category {
             "FUTURE" => Category::FUTURE,
             "OPTION" => Category::OPTION,
             "ETF" => Category::ETF,
-            _ => todo!("not implemented {}", value),
+            _ => todo!("Invalid value for category: {value}"),
         }
     }
 }
@@ -73,7 +56,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn category_to_string() {
+    fn name() {
+        assert_eq!(Category::CURRENCY.name(), "CURRENCY");
+        assert_eq!(Category::INDEX.name(), "INDEX");
+        assert_eq!(Category::SHARE.name(), "SHARE");
+        assert_eq!(Category::BOND.name(), "BOND");
+        assert_eq!(Category::FUTURE.name(), "FUTURE");
+        assert_eq!(Category::OPTION.name(), "OPTION");
+        assert_eq!(Category::ETF.name(), "ETF");
+    }
+
+    #[test]
+    fn to_str() {
         assert_eq!(Category::CURRENCY.to_string(), "CURRENCY");
         assert_eq!(Category::INDEX.to_string(), "INDEX");
         assert_eq!(Category::SHARE.to_string(), "SHARE");
@@ -83,7 +77,7 @@ mod tests {
         assert_eq!(Category::ETF.to_string(), "ETF");
     }
     #[test]
-    fn category_from_str() {
+    fn from_str() {
         assert_eq!(Category::from("CURRENCY"), Category::CURRENCY);
         assert_eq!(Category::from("INDEX"), Category::INDEX);
         assert_eq!(Category::from("SHARE"), Category::SHARE);

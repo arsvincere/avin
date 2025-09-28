@@ -21,7 +21,7 @@ use crate::{Direction, Quantum, Tic, TimeFrame};
 ///
 /// Quant - это ценовой уровень. Внутри него посчитано раздельно количество
 /// продаж и покупок именно по этой цене. Группа квантов в пределах одного
-/// бара объединяется в Quantum.
+/// бара объединяется в [`Quantum`].
 ///
 /// Остальные метрики рассчитаны по всем тикам в целом, без привязки к
 /// конкретной цене.
@@ -55,22 +55,22 @@ pub struct Cluster {
 impl Cluster {
     // build
     pub fn new(tics: &[Tic], tf: TimeFrame) -> Cluster {
-        let open = Self::eval_open(tics);
-        let high = Self::eval_high(tics);
-        let low = Self::eval_low(tics);
-        let close = Self::eval_close(tics);
+        let open = Self::calc_open(tics);
+        let high = Self::calc_high(tics);
+        let low = Self::calc_low(tics);
+        let close = Self::calc_close(tics);
         let pct = (close - open) / open * 100.0;
 
-        let vol_b = Self::eval_vol_b(tics);
-        let vol_s = Self::eval_vol_s(tics);
+        let vol_b = Self::calc_vol_b(tics);
+        let vol_s = Self::calc_vol_s(tics);
         let vol = vol_b + vol_s;
 
-        let val_b = Self::eval_val_b(tics);
-        let val_s = Self::eval_val_s(tics);
+        let val_b = Self::calc_val_b(tics);
+        let val_s = Self::calc_val_s(tics);
         let val = val_b + val_s;
 
-        let count_b = Self::eval_count_b(tics);
-        let count_s = Self::eval_count_s(tics);
+        let count_b = Self::calc_count_b(tics);
+        let count_s = Self::calc_count_s(tics);
         let count = count_b + count_s;
 
         let buy_p = val_b / val * 100.0;
@@ -78,7 +78,7 @@ impl Cluster {
         let disb_p = buy_p - sell_p;
 
         Self {
-            ts_nanos: Self::eval_ts(tics, tf),
+            ts_nanos: Self::calc_ts(tics, tf),
             open,
             high,
             low,
@@ -92,9 +92,9 @@ impl Cluster {
             count,
             count_b,
             count_s,
-            vwap: Self::eval_vwap(tics),
-            vwap_b: Self::eval_vwap_b(tics),
-            vwap_s: Self::eval_vwap_s(tics),
+            vwap: Self::calc_vwap(tics),
+            vwap_b: Self::calc_vwap_b(tics),
+            vwap_s: Self::calc_vwap_s(tics),
             buy_p,
             sell_p,
             disb_p,
@@ -169,15 +169,15 @@ impl Cluster {
     }
 
     // private
-    fn eval_ts(tics: &[Tic], tf: TimeFrame) -> i64 {
+    fn calc_ts(tics: &[Tic], tf: TimeFrame) -> i64 {
         let first_tic_ts = tics.first().unwrap().ts_nanos;
 
         tf.prev_ts(first_tic_ts)
     }
-    fn eval_open(tics: &[Tic]) -> f64 {
+    fn calc_open(tics: &[Tic]) -> f64 {
         tics.first().unwrap().price
     }
-    fn eval_high(tics: &[Tic]) -> f64 {
+    fn calc_high(tics: &[Tic]) -> f64 {
         let mut max = 0.0;
 
         for tic in tics.iter() {
@@ -188,7 +188,7 @@ impl Cluster {
 
         max
     }
-    fn eval_low(tics: &[Tic]) -> f64 {
+    fn calc_low(tics: &[Tic]) -> f64 {
         let mut min = tics.first().unwrap().price;
 
         for tic in tics.iter() {
@@ -199,10 +199,10 @@ impl Cluster {
 
         min
     }
-    fn eval_close(tics: &[Tic]) -> f64 {
+    fn calc_close(tics: &[Tic]) -> f64 {
         tics.last().unwrap().price
     }
-    fn eval_vol_b(tics: &[Tic]) -> u64 {
+    fn calc_vol_b(tics: &[Tic]) -> u64 {
         let mut vol = 0;
 
         for tic in tics.iter() {
@@ -213,7 +213,7 @@ impl Cluster {
 
         vol
     }
-    fn eval_vol_s(tics: &[Tic]) -> u64 {
+    fn calc_vol_s(tics: &[Tic]) -> u64 {
         let mut vol = 0;
 
         for tic in tics.iter() {
@@ -224,7 +224,7 @@ impl Cluster {
 
         vol
     }
-    fn eval_val_b(tics: &[Tic]) -> f64 {
+    fn calc_val_b(tics: &[Tic]) -> f64 {
         let mut val = 0.0;
 
         for tic in tics.iter() {
@@ -235,7 +235,7 @@ impl Cluster {
 
         val
     }
-    fn eval_val_s(tics: &[Tic]) -> f64 {
+    fn calc_val_s(tics: &[Tic]) -> f64 {
         let mut val = 0.0;
 
         for tic in tics.iter() {
@@ -246,7 +246,7 @@ impl Cluster {
 
         val
     }
-    fn eval_count_b(tics: &[Tic]) -> u64 {
+    fn calc_count_b(tics: &[Tic]) -> u64 {
         let mut count = 0;
 
         for tic in tics.iter() {
@@ -257,7 +257,7 @@ impl Cluster {
 
         count
     }
-    fn eval_count_s(tics: &[Tic]) -> u64 {
+    fn calc_count_s(tics: &[Tic]) -> u64 {
         let mut count = 0;
 
         for tic in tics.iter() {
@@ -268,7 +268,7 @@ impl Cluster {
 
         count
     }
-    fn eval_vwap(tics: &[Tic]) -> f64 {
+    fn calc_vwap(tics: &[Tic]) -> f64 {
         // Средневзвешенная цена — средняя цена сделок с учетом объема
         let mut sum = 0.0;
         let mut vol = 0;
@@ -279,7 +279,7 @@ impl Cluster {
 
         sum / vol as f64
     }
-    fn eval_vwap_b(tics: &[Tic]) -> f64 {
+    fn calc_vwap_b(tics: &[Tic]) -> f64 {
         // Средневзвешенная цена покупки — это средняя цена покупки,
         // весом которых является объем соответствующих сделок
         let mut sum = 0.0;
@@ -292,7 +292,7 @@ impl Cluster {
         }
         sum / vol as f64
     }
-    fn eval_vwap_s(tics: &[Tic]) -> f64 {
+    fn calc_vwap_s(tics: &[Tic]) -> f64 {
         // Средневзвешенная цена покупки — это средняя цена покупки,
         // весом которых является объем соответствующих сделок
         let mut sum = 0.0;
@@ -305,7 +305,7 @@ impl Cluster {
         }
         sum / vol as f64
     }
-    // fn eval_var(tics: &[Tic]) -> f64 {
+    // fn calc_var(tics: &[Tic]) -> f64 {
     //     // Дисперсия цены — мера разброса значений цены относительно
     //     // её средневзвешенной цены
     //     // Дисперсией называют среднее квадрата отклонения величины
@@ -319,7 +319,7 @@ impl Cluster {
     //     }
     //     todo!()
     // }
-    // fn eval_std(tics: &[Tic]) -> f64 {
+    // fn calc_std(tics: &[Tic]) -> f64 {
     //     // Стандартное отклонение цены
     //     // — это мера волатильности, показывающая, насколько сильно цена
     //     // акции отклоняется от средневзвешенной.

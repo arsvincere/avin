@@ -112,17 +112,17 @@ impl Tinkoff {
                     .subscribe_bar(&a.iid, &TimeFrame::H1)
                     .await
                     .unwrap(),
-                MarketData::BAR_D => self
+                MarketData::BAR_DAY => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::Day)
                     .await
                     .unwrap(),
-                MarketData::BAR_W => self
+                MarketData::BAR_WEEK => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::Week)
                     .await
                     .unwrap(),
-                MarketData::BAR_M => self
+                MarketData::BAR_MONTH => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::Month)
                     .await

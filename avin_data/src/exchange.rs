@@ -9,12 +9,16 @@
 ///
 /// # ru
 /// Перечисление для выбора биржи.
-#[derive(Debug, PartialEq, Clone, strum::Display)]
+#[derive(Debug, PartialEq, Clone, Copy, strum::Display)]
 pub enum Exchange {
     MOEX,
 }
 impl Exchange {
-    pub fn name(&self) -> &str {
+    /// Return exchange name
+    ///
+    /// # ru
+    /// Возвращает название биржи
+    pub fn name(&self) -> &'static str {
         match self {
             Self::MOEX => "MOEX",
         }
@@ -34,8 +38,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn to_string() {
-        assert_eq!(Exchange::MOEX.to_string(), "MOEX");
+    fn name() {
         assert_eq!(Exchange::MOEX.name(), "MOEX");
+    }
+    #[test]
+    fn to_str() {
+        assert_eq!(Exchange::MOEX.to_string(), "MOEX");
+    }
+    #[test]
+    fn from_str() {
+        assert_eq!(Exchange::from("MOEX"), Exchange::MOEX);
     }
 }

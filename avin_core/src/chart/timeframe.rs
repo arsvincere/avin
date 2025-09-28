@@ -129,7 +129,7 @@ impl TimeFrame {
                 let dt = dt.with_minute(0).unwrap().with_hour(0).unwrap();
                 dt.timestamp_nanos_opt().unwrap()
             }
-            other => todo!("TimeFrame::next_ts({}, {})", ts, other),
+            other => todo!("TimeFrame::prev_ts({}, {})", ts, other),
         }
     }
 
@@ -163,9 +163,9 @@ impl TimeFrame {
             // "5M" => MarketData::BAR_5M,
             Self::M10 => MarketData::BAR_10M,
             Self::H1 => MarketData::BAR_1H,
-            Self::Day => MarketData::BAR_D,
-            Self::Week => MarketData::BAR_W,
-            Self::Month => MarketData::BAR_M,
+            Self::Day => MarketData::BAR_DAY,
+            Self::Week => MarketData::BAR_WEEK,
+            Self::Month => MarketData::BAR_MONTH,
         }
     }
 }
@@ -193,9 +193,9 @@ mod tests {
         assert_eq!(TimeFrame::M1.market_data(), MarketData::BAR_1M);
         assert_eq!(TimeFrame::M10.market_data(), MarketData::BAR_10M);
         assert_eq!(TimeFrame::H1.market_data(), MarketData::BAR_1H);
-        assert_eq!(TimeFrame::Day.market_data(), MarketData::BAR_D);
-        assert_eq!(TimeFrame::Week.market_data(), MarketData::BAR_W);
-        assert_eq!(TimeFrame::Month.market_data(), MarketData::BAR_M);
+        assert_eq!(TimeFrame::Day.market_data(), MarketData::BAR_DAY);
+        assert_eq!(TimeFrame::Week.market_data(), MarketData::BAR_WEEK);
+        assert_eq!(TimeFrame::Month.market_data(), MarketData::BAR_MONTH);
     }
     #[test]
     fn next_ts() {
