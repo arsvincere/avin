@@ -7,10 +7,10 @@
 
 use polars::prelude::{DataType, Field, Schema};
 
-/// Polars dataframe schema for bars
+/// Polars dataframe schema for bars.
 ///
 /// # ru
-/// Возвращает polars схему датафрейма для баров
+/// Возвращает polars схему датафрейма для баров.
 pub fn bar_schema() -> Schema {
     Schema::from_iter(vec![
         Field::new("ts_nanos".into(), DataType::Int64),
@@ -23,10 +23,10 @@ pub fn bar_schema() -> Schema {
     ])
 }
 
-/// Polars dataframe schema for tics
+/// Polars dataframe schema for tics.
 ///
 /// # ru
-/// Возвращает polars схему датафрейма для тиков
+/// Возвращает polars схему датафрейма для тиков.
 #[allow(unused)]
 pub fn tic_schema() -> Schema {
     Schema::from_iter(vec![
@@ -40,10 +40,10 @@ pub fn tic_schema() -> Schema {
     ])
 }
 
-/// Polars dataframe schema for trades stat (SuperCandle)
+/// Polars dataframe schema for trades stat (SuperCandle).
 ///
 /// # ru
-/// Возвращает polars схему датафрейма для trades stat (SuperCandle)
+/// Возвращает polars схему датафрейма для trades stat (SuperCandle).
 pub fn trades_schema() -> Schema {
     Schema::from_iter(vec![
         Field::new("ts_nanos".into(), DataType::Int64),
@@ -69,10 +69,10 @@ pub fn trades_schema() -> Schema {
     ])
 }
 
-/// Polars dataframe schema for orders stat (SuperCandle)
+/// Polars dataframe schema for orders stat (SuperCandle).
 ///
 /// # ru
-/// Возвращает polars схему датафрейма для orders stat (SuperCandle)
+/// Возвращает polars схему датафрейма для orders stat (SuperCandle).
 pub fn orders_schema() -> Schema {
     Schema::from_iter(vec![
         Field::new("ts_nanos".into(), DataType::Int64),
@@ -101,10 +101,10 @@ pub fn orders_schema() -> Schema {
     ])
 }
 
-/// Polars dataframe schema for order book stat (SuperCandle)
+/// Polars dataframe schema for order book stat (SuperCandle).
 ///
 /// # ru
-/// Возвращает polars схему датафрейма для order book stat (SuperCandle)
+/// Возвращает polars схему датафрейма для order book stat (SuperCandle).
 pub fn ob_schema() -> Schema {
     Schema::from_iter(vec![
         Field::new("ts_nanos".into(), DataType::Int64),

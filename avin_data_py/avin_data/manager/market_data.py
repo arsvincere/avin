@@ -22,9 +22,9 @@ class MarketData(enum.Enum):
     BAR_5M = "5M"
     BAR_10M = "10M"
     BAR_1H = "1H"
-    BAR_D = "D"
-    BAR_W = "W"
-    BAR_M = "M"
+    BAR_DAY = "D"
+    BAR_WEEK = "W"
+    BAR_MONTH = "M"
     TIC = "TIC"
     BOOK = "BOOK"
     TRADE_STATS = "TRADE_STATS"
@@ -82,15 +82,15 @@ class MarketData(enum.Enum):
             case MarketData.BAR_1H:
                 prev = dt.replace(minute=0, second=0, microsecond=0)
 
-            case MarketData.BAR_D:
+            case MarketData.BAR_DAY:
                 prev = dt.replace(hour=0, minute=0, second=0, microsecond=0)
 
-            case MarketData.BAR_W:
+            case MarketData.BAR_WEEK:
                 prev = dt.replace(hour=0, minute=0, second=0, microsecond=0)
                 past = dt.weekday()
                 prev -= TimeDelta(days=past)
 
-            case MarketData.BAR_M:
+            case MarketData.BAR_MONTH:
                 prev = dt.replace(
                     day=1, hour=0, minute=0, second=0, microsecond=0
                 )
@@ -133,16 +133,16 @@ class MarketData(enum.Enum):
                 next = dt.replace(minute=0, second=0, microsecond=0)
                 next += TimeDelta(hours=1)
 
-            case MarketData.BAR_D:
+            case MarketData.BAR_DAY:
                 next = dt.replace(hour=0, minute=0, second=0, microsecond=0)
                 next += TimeDelta(days=1)
 
-            case MarketData.BAR_W:
+            case MarketData.BAR_WEEK:
                 next = dt.replace(hour=0, minute=0, second=0, microsecond=0)
                 need_days = 7 - dt.weekday()
                 next += TimeDelta(days=need_days)
 
-            case MarketData.BAR_M:
+            case MarketData.BAR_MONTH:
                 if dt.month == 12:
                     next = dt.replace(
                         year=dt.year + 1,
@@ -180,16 +180,16 @@ class MarketData(enum.Enum):
             "5M": MarketData.BAR_5M,
             "10M": MarketData.BAR_10M,
             "1H": MarketData.BAR_1H,
-            "D": MarketData.BAR_D,
-            "W": MarketData.BAR_W,
-            "M": MarketData.BAR_M,
+            "D": MarketData.BAR_DAY,
+            "W": MarketData.BAR_WEEK,
+            "M": MarketData.BAR_MONTH,
             "BAR_1M": MarketData.BAR_1M,
             "BAR_5M": MarketData.BAR_5M,
             "BAR_10M": MarketData.BAR_10M,
             "BAR_1H": MarketData.BAR_1H,
-            "BAR_D": MarketData.BAR_D,
-            "BAR_W": MarketData.BAR_W,
-            "BAR_M": MarketData.BAR_M,
+            "BAR_D": MarketData.BAR_DAY,
+            "BAR_W": MarketData.BAR_WEEK,
+            "BAR_M": MarketData.BAR_MONTH,
             "TIC": MarketData.TIC,
             "BOOK": MarketData.BOOK,
             "TRADE_STATS": MarketData.TRADE_STATS,

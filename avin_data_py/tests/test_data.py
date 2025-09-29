@@ -43,14 +43,14 @@ def test_market_data():
     assert MarketData.BAR_1H.prev_dt(dt) == DateTime(2025, 6, 5, 12, 0, 0)
     assert MarketData.BAR_1H.next_dt(dt) == DateTime(2025, 6, 5, 13, 0, 0)
 
-    assert MarketData.BAR_D.prev_dt(dt) == DateTime(2025, 6, 5, 0, 0, 0)
-    assert MarketData.BAR_D.next_dt(dt) == DateTime(2025, 6, 6, 0, 0, 0)
+    assert MarketData.BAR_DAY.prev_dt(dt) == DateTime(2025, 6, 5, 0, 0, 0)
+    assert MarketData.BAR_DAY.next_dt(dt) == DateTime(2025, 6, 6, 0, 0, 0)
 
-    assert MarketData.BAR_W.prev_dt(dt) == DateTime(2025, 6, 2, 0, 0, 0)
-    assert MarketData.BAR_W.next_dt(dt) == DateTime(2025, 6, 9, 0, 0, 0)
+    assert MarketData.BAR_WEEK.prev_dt(dt) == DateTime(2025, 6, 2, 0, 0, 0)
+    assert MarketData.BAR_WEEK.next_dt(dt) == DateTime(2025, 6, 9, 0, 0, 0)
 
-    assert MarketData.BAR_M.prev_dt(dt) == DateTime(2025, 6, 1, 0, 0, 0)
-    assert MarketData.BAR_M.next_dt(dt) == DateTime(2025, 7, 1, 0, 0, 0)
+    assert MarketData.BAR_MONTH.prev_dt(dt) == DateTime(2025, 6, 1, 0, 0, 0)
+    assert MarketData.BAR_MONTH.next_dt(dt) == DateTime(2025, 7, 1, 0, 0, 0)
 
 
 def test_source():

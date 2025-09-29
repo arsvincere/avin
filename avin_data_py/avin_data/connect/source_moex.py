@@ -41,9 +41,9 @@ AVAILIBLE = [
     MarketData.BAR_1M,
     MarketData.BAR_10M,
     MarketData.BAR_1H,
-    MarketData.BAR_D,
-    MarketData.BAR_W,
-    MarketData.BAR_M,
+    MarketData.BAR_DAY,
+    MarketData.BAR_WEEK,
+    MarketData.BAR_MONTH,
     MarketData.TIC,
     MarketData.TRADE_STATS,
     MarketData.ORDER_STATS,
@@ -171,15 +171,15 @@ class SourceMoex:
                 assert begin is not None
                 assert end is not None
                 df = cls.__get_bars(iid, market_data, begin, end)
-            case MarketData.BAR_D:
+            case MarketData.BAR_DAY:
                 assert begin is not None
                 assert end is not None
                 df = cls.__get_bars(iid, market_data, begin, end)
-            case MarketData.BAR_W:
+            case MarketData.BAR_WEEK:
                 assert begin is not None
                 assert end is not None
                 df = cls.__get_bars(iid, market_data, begin, end)
-            case MarketData.BAR_M:
+            case MarketData.BAR_MONTH:
                 assert begin is not None
                 assert end is not None
                 df = cls.__get_bars(iid, market_data, begin, end)
@@ -350,7 +350,7 @@ class SourceMoex:
         # то условие ложно, и еще одна неделя не будет вычтена.
         # А если начало недели 1 января то будет вычтено.
         if corrected == end:
-            if market_data == MarketData.BAR_M:
+            if market_data == MarketData.BAR_MONTH:
                 corrected = prev_month(corrected)
             else:
                 corrected -= market_data.timedelta()
@@ -363,7 +363,7 @@ class SourceMoex:
         msk_dt_now = cls.__to_msk(now())
         msk_current_bar = market_data.prev_dt(msk_dt_now)
         if corrected >= msk_current_bar:
-            if market_data == MarketData.BAR_M:
+            if market_data == MarketData.BAR_MONTH:
                 corrected = prev_month(msk_current_bar)
             else:
                 corrected = msk_current_bar - market_data.timedelta()
