@@ -1,7 +1,7 @@
 /*****************************************************************************
  * URL:         http://avin.info
- * AUTHOR:      H1ghSpeed
- * E-MAIL:
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
@@ -26,4 +26,3 @@ pub use iid::Iid;
 pub use manager::Manager;
 pub use market_data::MarketData;
 pub use source::Source;
-pub use source_moex::SourceMoex;

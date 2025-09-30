@@ -47,6 +47,7 @@ impl SourceMoex {
     }
 
     // public
+    #[allow(dead_code)]
     pub async fn cache_instruments_info() -> Result<(), AvinError> {
         todo!()
     }

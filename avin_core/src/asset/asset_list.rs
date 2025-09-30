@@ -53,7 +53,7 @@ impl AssetList {
         match result {
             Err(why) => {
                 let msg = format!("file {}, {}", path.display(), why);
-                let e = AvinError::ReadError(msg);
+                let e = AvinError::IOError(msg);
                 Err(e)
             }
             ok => ok,
@@ -86,7 +86,7 @@ impl AssetList {
                 Ok(asset) => assets.push(asset),
                 Err(why) => {
                     let msg = format!("line number {n}, {why}");
-                    let e = AvinError::ReadError(msg);
+                    let e = AvinError::IOError(msg);
                     return Err(e);
                 }
             };

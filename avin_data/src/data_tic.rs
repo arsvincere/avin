@@ -88,7 +88,7 @@ impl DataTic {
             Ok(df) => Ok(df),
             Err(why) => {
                 let msg = format!("read {} - {}", path.display(), why);
-                Err(AvinError::ReadError(msg.to_string()))
+                Err(AvinError::IOError(msg.to_string()))
             }
         }
     }

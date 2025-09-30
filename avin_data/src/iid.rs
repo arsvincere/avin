@@ -13,7 +13,7 @@ use polars::frame::DataFrame;
 
 use avin_utils::{AvinError, CFG};
 
-/// Iid - Instrument ID
+/// Iid - Instrument ID.
 ///
 /// # ru
 /// Идентификатор инструмента. Обертка над HashMap содержащим информацию
@@ -22,24 +22,24 @@ use avin_utils::{AvinError, CFG};
 ///
 /// Не предполагается ручное создание объектов этой структуры. Воспользуйтесь
 /// методом [`crate::Manager::find_iid`]. Так же iid автоматически находится
-/// и включается в актив при создании: [`crate::Asset::new`]
+/// и включается при создании активов, например: Share::new("MOEX_SHARE_SBER").
 #[derive(Debug, PartialEq, Eq, Clone, Encode, Decode)]
 pub struct Iid {
     info: HashMap<String, String>,
 }
 impl Iid {
-    /// Create Instrument ID, don't use this method directly
+    /// Create Instrument ID, don't use this method directly.
     ///
     /// # ru
     /// Конструктор. Не используйте этот метод напрямую.
     pub fn new(info: HashMap<String, String>) -> Iid {
-        debug_assert_ne!(info.get("exchange"), None);
-        debug_assert_ne!(info.get("category"), None);
-        debug_assert_ne!(info.get("ticker"), None);
-        debug_assert_ne!(info.get("figi"), None);
-        debug_assert_ne!(info.get("name"), None);
-        debug_assert_ne!(info.get("lot"), None);
-        debug_assert_ne!(info.get("step"), None);
+        assert!(info.contains_key("exchange"));
+        assert!(info.contains_key("category"));
+        assert!(info.contains_key("ticker"));
+        assert!(info.contains_key("figi"));
+        assert!(info.contains_key("name"));
+        assert!(info.contains_key("lot"));
+        assert!(info.contains_key("step"));
 
         Iid { info }
     }
@@ -125,7 +125,7 @@ impl Iid {
     /// Return instrument name.
     ///
     /// # ru
-    /// Возвращает название инструмента
+    /// Возвращает название инструмента.
     pub fn name(&self) -> &String {
         self.info.get("name").unwrap()
     }

@@ -21,7 +21,7 @@ mod timer;
 
 pub use cmd::Cmd;
 pub use conf::{CFG, Configuration};
-pub use error::{AvinError, Result};
+pub use error::AvinError;
 pub use logger::init_logger;
 pub use misc::{
     DAY_BEGIN, DAY_END, MINUTES_IN_DAY, MSK_OFFSET, bisect_left,

@@ -5,15 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-pub type Result<T> = std::result::Result<T, AvinError>;
-
 #[derive(Debug, Clone)]
 pub enum AvinError {
     InvalidValue(String),
     NotFound(String),
     NotLoaded(String),
-    ReadError(String),
-    WriteError(String),
+    IOError(String),
 }
 
 impl std::fmt::Display for AvinError {
@@ -22,8 +19,7 @@ impl std::fmt::Display for AvinError {
             Self::InvalidValue(s) => write!(f, "InvalidValue: {s}"),
             Self::NotFound(s) => write!(f, "NotFound: {s}"),
             Self::NotLoaded(s) => write!(f, "NotLoaded: {s}"),
-            Self::ReadError(s) => write!(f, "ReadError: {s}"),
-            Self::WriteError(s) => write!(f, "WriteError: {s}"),
+            Self::IOError(s) => write!(f, "IOError: {s}"),
         }
     }
 }

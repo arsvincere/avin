@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use std::path::PathBuf;
+
 use cached::proc_macro::cached;
 use polars::prelude::*;
 
@@ -29,10 +31,7 @@ impl IidCache {
 
     #[allow(dead_code)]
     pub fn save(cache: IidCache) {
-        // create file path
-        let mut path = CFG.dir.cache();
-        path.push(cache.source.name());
-        path.push(format!("{}.parquet", cache.category.name()));
+        let path = create_file_path(cache.source, cache.category);
 
         // save parquet
         let mut df = cache.iid_df;
@@ -91,13 +90,16 @@ fn cached_load_df(
     source: Source,
     category: Category,
 ) -> Result<DataFrame, AvinError> {
-    // create file path
+    let path = create_file_path(source, category);
+    let df = Cmd::read_pqt(&path).unwrap();
+
+    Ok(df)
+}
+
+fn create_file_path(source: Source, category: Category) -> PathBuf {
     let mut path = CFG.dir.cache();
     path.push(source.name());
     path.push(format!("{}.parquet", category.name()));
 
-    // load parquet
-    let df = Cmd::read_pqt(&path).unwrap();
-
-    Ok(df)
+    path
 }
