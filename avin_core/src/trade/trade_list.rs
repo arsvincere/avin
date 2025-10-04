@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn save_load() {
         // create trade
-        let iid = avin_data::Manager::find_iid("moex_share_sber").unwrap();
+        let iid = Manager::find_iid("moex_share_sber").unwrap();
         let dt = Utc.with_ymd_and_hms(2025, 4, 5, 14, 50, 0).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =

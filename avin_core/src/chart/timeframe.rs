@@ -6,10 +6,9 @@
  ****************************************************************************/
 
 use chrono::{DateTime, Datelike, TimeDelta, Timelike};
-use strum::EnumIter;
 use time_unit::TimeUnit;
 
-use avin_data::MarketData;
+use crate::MarketData;
 
 /// List for selecting the timeframe.
 ///
@@ -23,9 +22,9 @@ use avin_data::MarketData;
     PartialEq,
     Eq,
     Hash,
+    strum::EnumIter,
     bitcode::Encode,
     bitcode::Decode,
-    EnumIter,
     serde::Deserialize,
     serde::Serialize,
 )]

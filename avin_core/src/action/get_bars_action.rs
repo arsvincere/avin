@@ -7,8 +7,7 @@
 
 use chrono::{DateTime, Utc};
 
-use crate::{Bar, TimeFrame};
-use avin_data::Iid;
+use crate::{Bar, Iid, TimeFrame};
 
 /// Message to get bars.
 ///

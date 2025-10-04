@@ -9,8 +9,7 @@ use chrono::{TimeZone, Utc};
 use polars::prelude::*;
 use strum::{EnumIter, IntoEnumIterator};
 
-use avin_core::{Bar, Chart, Share, TimeFrame};
-use avin_data::Iid;
+use avin_core::{Bar, Chart, Iid, Share, TimeFrame};
 use avin_utils::AvinError;
 
 use crate::{Analyse, Size};

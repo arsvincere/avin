@@ -15,6 +15,7 @@ use crate::{Iid, MarketData};
 #[derive(Debug)]
 pub struct DataTic {}
 impl DataTic {
+    #[allow(dead_code)]
     pub fn save(
         _iid: &Iid,
         _md: MarketData,

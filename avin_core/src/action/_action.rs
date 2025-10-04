@@ -20,14 +20,17 @@ use super::StreamAction;
 /// проинформировать что открыт трейд и тд.
 #[derive(Debug)]
 pub enum Action {
-    GetAccount(GetAccountAction),
-    GetBars(GetBarsAction),
     Post(OrderAction),
     Cancel(OrderAction),
+
+    TradeClosed(Trade),
+    TradeOpened(Trade),
+
     Subscribe(StreamAction),
     Unsubscribe(StreamAction),
-    TradeOpened(Trade),
-    TradeClosed(Trade),
+
+    GetAccount(GetAccountAction),
+    GetBars(GetBarsAction),
 }
 impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

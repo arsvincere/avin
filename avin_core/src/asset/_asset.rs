@@ -9,9 +9,11 @@ use std::{collections::HashMap, path::PathBuf};
 
 use chrono::{DateTime, Utc};
 
-use crate::{BarEvent, Chart, Footprint, Share, Tic, TicEvent, TimeFrame};
-use avin_data::{Iid, Manager};
 use avin_utils::AvinError;
+
+use crate::{
+    BarEvent, Chart, Footprint, Iid, Manager, Share, Tic, TicEvent, TimeFrame,
+};
 
 /// Aggregation of instrument id, charts, tics.
 ///

@@ -12,11 +12,12 @@ use polars::prelude::*;
 
 use avin_utils::{self as utils, AvinError, Cmd};
 
-use crate::{Iid, MarketData, schema};
+use crate::{DataSchema, Iid, MarketData};
 
 #[derive(Debug)]
-pub struct DataOrders {}
-impl DataOrders {
+pub struct DataTrades {}
+impl DataTrades {
+    #[allow(dead_code)]
     pub fn save(
         iid: &Iid,
         md: MarketData,
@@ -75,7 +76,7 @@ impl DataOrders {
         end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
-        let schema = schema::trades_schema();
+        let schema = DataSchema::trades();
         let mut df = DataFrame::empty_with_schema(&schema);
 
         // load data by years

@@ -13,8 +13,9 @@ use polars::prelude::{
 };
 use strum::{EnumIter, IntoEnumIterator};
 
-use avin_core::{Chart, ExtremumIndicator, Share, Term, TimeFrame, Trend};
-use avin_data::Iid;
+use avin_core::{
+    Chart, ExtremumIndicator, Iid, Share, Term, TimeFrame, Trend,
+};
 use avin_utils::{self as utils, AvinError};
 
 use crate::{Analyse, Size};

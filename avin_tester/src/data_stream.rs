@@ -9,8 +9,7 @@ use std::collections::VecDeque;
 
 use chrono::{DateTime, Utc};
 
-use avin_core::{Bar, BarEvent, Event, TimeFrame};
-use avin_data::{Iid, Manager, MarketData};
+use avin_core::{Bar, BarEvent, Event, Iid, Manager, MarketData, TimeFrame};
 
 pub struct DataStream {
     pub iid: Iid,

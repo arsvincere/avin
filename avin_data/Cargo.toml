@@ -10,6 +10,7 @@ homepage = { workspace = true }
 readme = "../README.md"
 
 [dependencies]
+avin_core = { workspace = true }
 avin_utils = { workspace = true }
 bitcode = { workspace = true }
 cached = { workspace = true }

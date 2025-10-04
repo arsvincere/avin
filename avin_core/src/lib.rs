@@ -48,15 +48,12 @@
 //!    выставить ордер, отменить ордер, подписаться на бары по инструменту...
 //!    И отправляет их через канал тестеру/трейдеру который уже по очереди
 //!    их передает брокеру (или VirtualBroker в режиме тестера).
-//! 4. Подмодуль [`data`] отвечает за загрузку рыночных данных, которые
-//!    загружены утилитой avin-data.
-//!
-//! ## Getting start.
 
 mod action;
 mod asset;
 mod broker;
 mod chart;
+mod data;
 mod event;
 mod footprint;
 mod indicator;
@@ -67,16 +64,17 @@ mod trade;
 pub use action::{
     Action, GetAccountAction, GetBarsAction, OrderAction, StreamAction,
 };
-pub use asset::{Asset, AssetList, Share};
+pub use asset::{Asset, AssetList, Category, Exchange, Iid, Share};
 pub use broker::Account;
 pub use chart::{Bar, Chart, Range, TimeFrame, UserData};
+pub use data::{DataSchema, Manager, MarketData, Source};
 pub use event::{BarEvent, Event, OrderEvent, TicEvent};
 pub use footprint::{Cluster, Footprint, Quant, Quantum, Tic};
-pub use indicator::Indicator;
 pub use operation::{Operation, Transaction};
-pub use order::{Direction, LimitOrder, MarketOrder, Order, StopOrder};
 pub use trade::{Summary, Trade, TradeKind, TradeList};
 
+// order
+pub use order::{Direction, LimitOrder, MarketOrder, Order, StopOrder};
 // market order statuses
 pub use order::{
     FilledMarketOrder, NewMarketOrder, PostedMarketOrder, RejectedMarketOrder,
@@ -92,5 +90,7 @@ pub use order::{
     StopOrderKind, TriggeredStopOrder,
 };
 
+// indicator
+pub use indicator::Indicator;
 // extrumum indicator
 pub use indicator::{Extremum, ExtremumIndicator, ExtremumKind, Term, Trend};

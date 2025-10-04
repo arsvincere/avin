@@ -9,8 +9,10 @@ use chrono::{Days, NaiveDate, NaiveTime, Utc};
 use polars::prelude::*;
 use strum::EnumIter;
 
-use avin_core::{Footprint, Quant, Quantum, Share, Tic, TimeFrame};
-use avin_data::{Iid, Manager, MarketData};
+use avin_core::{
+    Footprint, Iid, Manager, MarketData, Quant, Quantum, Share, Tic,
+    TimeFrame,
+};
 use avin_utils::AvinError;
 
 use crate::Analyse;
@@ -51,8 +53,8 @@ impl Feat {
 
 impl Analyse for Quantum {
     fn analyse(
-        iid: &avin_data::Iid,
-        tf: avin_core::TimeFrame,
+        iid: &Iid,
+        tf: TimeFrame,
     ) -> Result<(), avin_utils::AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
 

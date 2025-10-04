@@ -5,8 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use crate::{Account, Order};
-use avin_data::Iid;
+use crate::{Account, Iid, Order};
 
 /// Message to post or cancel order.
 ///

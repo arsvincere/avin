@@ -576,7 +576,6 @@ dependencies = [
 name = "avin_core"
 version = "0.4.0"
 dependencies = [
- "avin_data",
  "avin_utils",
  "bitcode",
  "cached",
@@ -595,6 +594,7 @@ dependencies = [
 name = "avin_data"
 version = "0.4.0"
 dependencies = [
+ "avin_core",
  "avin_utils",
  "bitcode",
  "cached",

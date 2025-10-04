@@ -83,6 +83,10 @@
 //! avin-data --help
 //! ```
 //!
+//! Посмотреть доступные опции для команды, например "download":
+//! ```bash
+//! avin-data download --help
+//! ```
 
 pub use avin_analyse as analyse;
 pub use avin_connect as connect;

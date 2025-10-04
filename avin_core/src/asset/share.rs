@@ -11,10 +11,12 @@ use std::path::PathBuf;
 
 use chrono::{Days, prelude::*};
 
-use avin_data::{Iid, Manager, MarketData};
 use avin_utils::{AvinError, CFG, Cmd};
 
-use crate::{BarEvent, Chart, Footprint, Tic, TicEvent, TimeFrame};
+use crate::{
+    BarEvent, Chart, Footprint, Iid, Manager, MarketData, Tic, TicEvent,
+    TimeFrame,
+};
 
 /// Aggregation of instrument id, charts, tics, footprint charts.
 ///

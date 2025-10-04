@@ -8,8 +8,10 @@
 use std::collections::VecDeque;
 
 use avin_analyse::TrendAnalytic;
-use avin_core::{Asset, Bar, BarEvent, ExtremumIndicator, TimeFrame};
-use avin_data::{Iid, Manager, MarketData};
+use avin_core::{
+    Asset, Bar, BarEvent, ExtremumIndicator, Iid, Manager, MarketData,
+    TimeFrame,
+};
 use chrono::{DateTime, Utc};
 
 pub struct Simulator {

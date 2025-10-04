@@ -6,10 +6,9 @@
  ****************************************************************************/
 
 use avin_core::{
-    Action, Event, GetBarsAction, LimitOrder, MarketOrder, Order,
+    Action, Event, GetBarsAction, LimitOrder, MarketData, MarketOrder, Order,
     OrderAction, OrderEvent, StreamAction, TimeFrame,
 };
-use avin_data::MarketData;
 use avin_utils::AvinError;
 
 use crate::tinkoff::TinkoffClient;

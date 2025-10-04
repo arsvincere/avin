@@ -7,7 +7,6 @@
 
 use chrono::Days;
 use chrono::TimeDelta;
-use chrono::Utc;
 use chrono::prelude::*;
 use polars::prelude::*;
 
@@ -15,14 +14,9 @@ use avin_utils::AvinError;
 use avin_utils::CFG;
 use avin_utils::Cmd;
 
-use crate::Iid;
-use crate::Manager;
-
-use super::MarketData;
-use super::schema;
+use avin_core::{DataSchema, Iid, MarketData};
 
 const SERVICE: &str = "https://apim.moex.com/iss";
-// const DT_FMT: &str = "%Y-%m-%d %H:%M:%S";
 const MSK_TIME_DIF: TimeDelta = TimeDelta::new(10800, 0).unwrap();
 
 pub struct SourceMoex {
@@ -31,6 +25,12 @@ pub struct SourceMoex {
 }
 impl Default for SourceMoex {
     fn default() -> Self {
+        SourceMoex::new()
+    }
+}
+impl SourceMoex {
+    // build
+    pub fn new() -> Self {
         let token_path = CFG.connect.moex_token();
         let token = Cmd::read(&token_path).unwrap().trim().to_string();
 
@@ -38,12 +38,6 @@ impl Default for SourceMoex {
             token,
             client: reqwest::Client::new(),
         }
-    }
-}
-impl SourceMoex {
-    // build
-    pub fn new() -> Self {
-        SourceMoex::default()
     }
 
     // public
@@ -79,20 +73,19 @@ impl SourceMoex {
     // get bars
     pub async fn get_bars(
         &self,
-        _iid: &Iid,
+        iid: &Iid,
         _md: MarketData,
         from: NaiveDateTime,
         till: NaiveDateTime,
     ) -> Result<DataFrame, AvinError> {
         // TODO: make this function private
 
-        let iid = Manager::find_iid("MOEX_SHARE_GAZP").unwrap(); // убрать
-        let mut bars = DataFrame::empty_with_schema(&schema::bar_schema());
+        let mut bars = DataFrame::empty_with_schema(&DataSchema::bar());
 
         let mut dt = from;
         while dt < till {
             let response = self
-                .try_request_bars(&iid, MarketData::BAR_1M, &dt, &till)
+                .try_request_bars(iid, MarketData::BAR_1M, &dt, &till)
                 .await
                 .unwrap();
             let json: serde_json::Value = match response.json().await {
@@ -174,8 +167,7 @@ impl SourceMoex {
         from: NaiveDateTime,
         till: NaiveDateTime,
     ) -> Result<DataFrame, AvinError> {
-        let mut trades =
-            DataFrame::empty_with_schema(&schema::trades_schema());
+        let mut trades = DataFrame::empty_with_schema(&DataSchema::trades());
 
         let mut f = from;
         while f < till {
@@ -250,7 +242,7 @@ impl SourceMoex {
         from: NaiveDateTime,
         till: NaiveDateTime,
     ) -> Result<DataFrame, AvinError> {
-        let mut ob = DataFrame::empty_with_schema(&schema::orders_schema());
+        let mut ob = DataFrame::empty_with_schema(&DataSchema::orders());
 
         let mut f = from;
         while f < till {
@@ -329,7 +321,7 @@ impl SourceMoex {
         from: NaiveDateTime,
         till: NaiveDateTime,
     ) -> Result<DataFrame, AvinError> {
-        let mut ob = DataFrame::empty_with_schema(&schema::ob_schema());
+        let mut ob = DataFrame::empty_with_schema(&DataSchema::ob());
 
         let mut f = from;
         while f < till {

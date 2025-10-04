@@ -12,13 +12,13 @@
 //! Не надо пытаться заработать этой стратегией! Это просто пример как
 //! сделать стратегию исползуя библиотеку. Стратегия убыточна.
 
-use crate::Strategy;
 use avin_core::{
-    Account, Action, Asset, Direction, MarketOrder, Order, OrderAction,
+    Account, Action, Asset, Direction, Iid, MarketOrder, Order, OrderAction,
     OrderEvent, StopOrder, StopOrderKind, TimeFrame, Trade, TradeKind,
 };
-use avin_data::Iid;
 use avin_utils as utils;
+
+use crate::Strategy;
 
 /// Имя стратегии для себя, имя должно быть уникальным, используется как
 /// ключ в HashMap. К одному инструменту может быть подключено несколько

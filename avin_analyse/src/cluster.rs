@@ -9,8 +9,9 @@ use chrono::{Days, NaiveDate, NaiveTime, Utc};
 use polars::prelude::*;
 use strum::EnumIter;
 
-use avin_core::{Cluster, Footprint, Share, Tic, TimeFrame};
-use avin_data::{Iid, Manager, MarketData};
+use avin_core::{
+    Cluster, Footprint, Iid, Manager, MarketData, Share, Tic, TimeFrame,
+};
 
 use crate::Analyse;
 
@@ -50,8 +51,8 @@ impl Feat {
 
 impl Analyse for Cluster {
     fn analyse(
-        iid: &avin_data::Iid,
-        tf: avin_core::TimeFrame,
+        iid: &Iid,
+        tf: TimeFrame,
     ) -> Result<(), avin_utils::AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
 

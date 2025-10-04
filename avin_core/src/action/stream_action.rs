@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_data::{Iid, MarketData};
+use crate::{Iid, MarketData};
 
 /// Message to subscribe or unsubscribe market data.
 ///

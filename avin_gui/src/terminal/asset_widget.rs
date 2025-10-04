@@ -13,9 +13,8 @@ use egui_file_dialog::FileDialog;
 
 use avin_core::{
     Action, Asset, AssetList, Event, ExtremumIndicator, GetBarsAction,
-    StreamAction, Term, TimeFrame,
+    MarketData, StreamAction, Term, TimeFrame,
 };
-use avin_data::MarketData;
 use avin_utils::{CFG, Cmd};
 
 pub struct AssetWidget {

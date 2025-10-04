@@ -13,12 +13,11 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 use avin_core::{
     Account, Action, Bar,
     Direction::{self, Sell},
-    Event, LimitOrder, MarketOrder, Order, OrderAction, OrderEvent,
+    Event, Iid, LimitOrder, MarketOrder, Order, OrderAction, OrderEvent,
     PostedLimitOrder, PostedMarketOrder, PostedStopOrder, StopOrder,
     StopOrderKind::{StopLoss, TakeProfit},
     TimeFrame, Transaction, TriggeredStopOrder,
 };
-use avin_data::Iid;
 
 use super::data_stream::DataStream;
 use super::test::Test;

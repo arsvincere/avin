@@ -9,10 +9,12 @@ use avin_core::Chart;
 
 use super::Filter;
 
+const NAME: &str = "bull_3";
+
 pub struct MyFilter {}
 impl Filter for MyFilter {
     fn name(&self) -> &'static str {
-        "bull_3"
+        NAME
     }
     fn apply(&self, chart: &Chart) -> bool {
         let b2 = match chart.bar(2) {
