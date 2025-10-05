@@ -86,7 +86,7 @@ impl ChartDraw for Chart {
             };
 
             // eval coordinate X
-            let x0 = bar.ts_nanos as f64;
+            let x0 = bar.ts as f64;
             let x1 = x0 + self.tf().nanos() as f64;
             let x = (x1 + x0) / 2.0;
 
@@ -115,7 +115,7 @@ impl ChartDraw for Chart {
             };
 
             // eval coordinate X
-            let x0 = bar.ts_nanos as f64;
+            let x0 = bar.ts as f64;
             let x1 = x0 + self.tf().nanos() as f64;
             let x = (x1 + x0) / 2.0;
 
@@ -147,11 +147,9 @@ impl ChartDraw for Chart {
             };
 
             // eval coordinates
-            let x0 = trend.begin().ts_nanos as f64
-                + self.tf().nanos() as f64 / 2.0;
+            let x0 = trend.begin().ts as f64 + self.tf().nanos() as f64 / 2.0;
             let y0 = trend.begin().price;
-            let x1 =
-                trend.end().ts_nanos as f64 + self.tf().nanos() as f64 / 2.0;
+            let x1 = trend.end().ts as f64 + self.tf().nanos() as f64 / 2.0;
             let y1 = trend.end().price;
 
             // create trend line
@@ -178,11 +176,9 @@ impl ChartDraw for Chart {
             };
 
             // eval coordinates
-            let x0 = trend.begin().ts_nanos as f64
-                + self.tf().nanos() as f64 / 2.0;
+            let x0 = trend.begin().ts as f64 + self.tf().nanos() as f64 / 2.0;
             let y0 = trend.begin().price;
-            let x1 =
-                trend.end().ts_nanos as f64 + self.tf().nanos() as f64 / 2.0;
+            let x1 = trend.end().ts as f64 + self.tf().nanos() as f64 / 2.0;
             let y1 = trend.end().price;
 
             // create trend line
@@ -231,10 +227,10 @@ impl ChartDraw for Chart {
         };
 
         // eval coordinates
-        let x0 = (trend.end().ts_nanos + self.tf().nanos() / 2) as f64;
+        let x0 = (trend.end().ts + self.tf().nanos() / 2) as f64;
         let y0 = trend.end().price;
         let shift = self.tf().nanos() * median;
-        let x1 = (trend.end().ts_nanos + shift) as f64;
+        let x1 = (trend.end().ts + shift) as f64;
         let y1 = p.column("price").unwrap().f64().unwrap().last().unwrap();
 
         // line equation
@@ -294,10 +290,10 @@ impl ChartDraw for Chart {
         };
 
         // eval coordinates
-        let x0 = (trend.end().ts_nanos + self.tf().nanos() / 2) as f64;
+        let x0 = (trend.end().ts + self.tf().nanos() / 2) as f64;
         let y0 = trend.end().price;
         let shift = self.tf().nanos() * median;
-        let x1 = (trend.end().ts_nanos + shift) as f64;
+        let x1 = (trend.end().ts + shift) as f64;
         let y1 = p.column("price").unwrap().f64().unwrap().last().unwrap();
 
         // line equation
@@ -336,7 +332,7 @@ impl FootprintDraw for Footprint {
     fn draw_hist(&self, plot: &mut PlotUi, theme: &Theme) {
         for cluster in self.clusters().iter() {
             // eval coordinate X
-            let x0 = cluster.ts_nanos as f64;
+            let x0 = cluster.ts as f64;
             let x1 = x0 + self.tf().nanos() as f64;
             let x = (x1 + x0) / 2.0;
             let y = 0.0;
@@ -356,7 +352,7 @@ impl FootprintDraw for Footprint {
         for cluster in self.clusters().iter() {
             for quant in cluster.quantum.quants().iter() {
                 // eval coordinate
-                let x0 = cluster.ts_nanos as f64;
+                let x0 = cluster.ts as f64;
                 let x1 = x0 + self.tf().nanos() as f64;
                 let x = (x1 + x0) / 2.0;
                 let width = x1 - x;

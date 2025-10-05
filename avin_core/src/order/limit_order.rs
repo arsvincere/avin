@@ -171,9 +171,8 @@ impl PostedLimitOrder {
     pub fn add_transaction(&mut self, t: Transaction) {
         self.transactions.push(t);
     }
-    pub fn fill(self, ts_nanos: i64, commission: f64) -> FilledLimitOrder {
-        let operation =
-            Operation::build(ts_nanos, &self.transactions, commission);
+    pub fn fill(self, ts: i64, commission: f64) -> FilledLimitOrder {
+        let operation = Operation::build(ts, &self.transactions, commission);
         FilledLimitOrder {
             direction: self.direction,
             lots: self.lots,
@@ -296,7 +295,7 @@ mod tests {
         let ts = dt.timestamp_nanos_opt().unwrap();
         let order = posted.fill(ts, 4.5);
         assert_eq!(order.operation.dt(), dt);
-        assert_eq!(order.operation.ts_nanos, ts);
+        assert_eq!(order.operation.ts, ts);
         assert_eq!(order.operation.quantity, 2);
         assert_eq!(order.operation.value, 9010.0);
         assert_eq!(order.operation.commission, 4.5);

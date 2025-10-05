@@ -289,7 +289,7 @@ impl Scanner {
             let result = filter.apply(&new_chart);
 
             if result {
-                let ts = new_chart.now().unwrap().ts_nanos;
+                let ts = new_chart.now().unwrap().ts;
                 let price = new_chart.now().unwrap().h * 1.003;
                 points.push(Point::new(ts, price));
             }

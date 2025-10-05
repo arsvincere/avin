@@ -27,7 +27,7 @@ use crate::{Direction, Quantum, Tic, TimeFrame};
 /// конкретной цене.
 #[derive(Debug)]
 pub struct Cluster {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub open: f64,
     pub high: f64,
     pub low: f64,
@@ -78,7 +78,7 @@ impl Cluster {
         let disb_p = buy_p - sell_p;
 
         Self {
-            ts_nanos: Self::calc_ts(tics, tf),
+            ts: Self::calc_ts(tics, tf),
             open,
             high,
             low,
@@ -131,7 +131,7 @@ impl Cluster {
     // public
     pub fn df(&self) -> DataFrame {
         df!(
-            "ts_nanos" => [self.ts_nanos],
+            "ts_nanos" => [self.ts],
             "open" => [self.open],
             "high" => [self.high],
             "low" => [self.low],
@@ -159,10 +159,10 @@ impl Cluster {
     }
 
     pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
+        DateTime::from_timestamp_nanos(self.ts)
     }
     pub fn dt_local(&self) -> NaiveDateTime {
-        let utc = DateTime::from_timestamp_nanos(self.ts_nanos);
+        let utc = DateTime::from_timestamp_nanos(self.ts);
         let local: DateTime<Local> = DateTime::from(utc);
 
         local.naive_local()
@@ -170,7 +170,7 @@ impl Cluster {
 
     // private
     fn calc_ts(tics: &[Tic], tf: TimeFrame) -> i64 {
-        let first_tic_ts = tics.first().unwrap().ts_nanos;
+        let first_tic_ts = tics.first().unwrap().ts;
 
         tf.prev_ts(first_tic_ts)
     }

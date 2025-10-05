@@ -180,8 +180,8 @@ impl Chart {
     pub fn select(&self, from: i64, till: i64) -> &[Bar] {
         assert!(from <= till);
 
-        let f = bisect_right(&self.bars, from, |b| b.ts_nanos).unwrap();
-        let t = bisect_left(&self.bars, till, |b| b.ts_nanos).unwrap();
+        let f = bisect_right(&self.bars, from, |b| b.ts).unwrap();
+        let t = bisect_left(&self.bars, till, |b| b.ts).unwrap();
 
         &self.bars[f..=t]
     }
@@ -226,19 +226,19 @@ impl Chart {
         // если первый бар в графике есть
         // и если время меньше чем время первого бара -> None
         let bar = self.bars.first()?;
-        if ts < bar.ts_nanos {
+        if ts < bar.ts {
             return None;
         }
 
         // если текущий бар есть
         // и если время больше чем время текущего бара -> текущий бар
         let bar = self.bars.last()?;
-        if ts > bar.ts_nanos {
+        if ts > bar.ts {
             return Some(bar);
         }
 
         // Иначе время где-то в пределах имеющихся баров, делаем поиск
-        let index = bisect_left(&self.bars, ts, |b| b.ts_nanos).unwrap();
+        let index = bisect_left(&self.bars, ts, |b| b.ts).unwrap();
         self.bars.get(index)
     }
 
@@ -279,26 +279,24 @@ impl Chart {
         let last_bar = last_bar.unwrap();
 
         // если время одинаковое - только обновить текущий бар
-        if last_bar.ts_nanos == new_bar.ts_nanos {
+        if last_bar.ts == new_bar.ts {
             *last_bar = new_bar;
             return;
         }
 
         // время смены бара
-        let next_ts = self.tf.next_ts(last_bar.ts_nanos);
+        let next_ts = self.tf.next_ts(last_bar.ts);
 
         // если время пришедшего нового бара больше текущего последнего
         // и при этом меньше чем время смены бара, - джоинить этот бар
-        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos < next_ts
-        {
+        if new_bar.ts > last_bar.ts && new_bar.ts < next_ts {
             *last_bar = last_bar.join(new_bar);
             return;
         }
 
         // если время пришедшего нового бара больше текущего последнего
         // и при этом равно времени смены бара, - новый текущий
-        if new_bar.ts_nanos > last_bar.ts_nanos && new_bar.ts_nanos >= next_ts
-        {
+        if new_bar.ts > last_bar.ts && new_bar.ts >= next_ts {
             self.bars.push(new_bar);
         }
     }

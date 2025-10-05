@@ -61,13 +61,13 @@ pub enum Trade {
 impl Trade {
     #[allow(clippy::new_ret_no_self)]
     pub fn new(
-        ts_nanos: i64,
+        ts: i64,
         strategy: &str,
         kind: TradeKind,
         iid: Iid,
     ) -> NewTrade {
         NewTrade {
-            ts_nanos,
+            ts,
             strategy: strategy.to_string(),
             kind,
             iid,
@@ -118,7 +118,7 @@ impl std::fmt::Display for Trade {
 
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub struct NewTrade {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub strategy: String,
     pub kind: TradeKind,
     pub iid: Iid,
@@ -129,7 +129,7 @@ impl NewTrade {
             panic!("order shoud be filled")
         }
         OpenedTrade {
-            ts_nanos: self.ts_nanos,
+            ts: self.ts,
             strategy: self.strategy,
             kind: self.kind,
             iid: self.iid,
@@ -145,14 +145,14 @@ impl std::fmt::Display for NewTrade {
         write!(
             f,
             "NewTrade={} {} {} {}",
-            self.ts_nanos, self.strategy, self.kind, self.iid
+            self.ts, self.strategy, self.kind, self.iid
         )
     }
 }
 
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub struct OpenedTrade {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub strategy: String,
     pub kind: TradeKind,
     pub iid: Iid,
@@ -177,7 +177,7 @@ impl OpenedTrade {
     }
     pub fn close(self) -> ClosedTrade {
         let trade = ClosedTrade {
-            ts_nanos: self.ts_nanos,
+            ts: self.ts,
             strategy: self.strategy,
             kind: self.kind,
             iid: self.iid,
@@ -319,14 +319,14 @@ impl std::fmt::Display for OpenedTrade {
         write!(
             f,
             "OpenedTrade={} {} {} {}",
-            self.ts_nanos, self.strategy, self.kind, self.iid
+            self.ts, self.strategy, self.kind, self.iid
         )
     }
 }
 
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub struct ClosedTrade {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub strategy: String,
     pub kind: TradeKind,
     pub iid: Iid,
@@ -505,7 +505,7 @@ impl ClosedTrade {
     }
 
     pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
+        DateTime::from_timestamp_nanos(self.ts)
     }
     pub fn open_dt(&self) -> DateTime<Utc> {
         let o = self.orders.first().unwrap();
@@ -517,7 +517,7 @@ impl ClosedTrade {
     pub fn open_ts(&self) -> i64 {
         let o = self.orders.first().unwrap();
         match o.operation() {
-            Some(operation) => operation.ts_nanos,
+            Some(operation) => operation.ts,
             None => panic!("closed trade without operation in order"),
         }
     }
@@ -531,7 +531,7 @@ impl ClosedTrade {
     pub fn close_ts(&self) -> i64 {
         let o = self.orders.last().unwrap();
         match o.operation() {
-            Some(operation) => operation.ts_nanos,
+            Some(operation) => operation.ts,
             None => panic!("closed trade without operation in order"),
         }
     }
@@ -595,7 +595,7 @@ mod tests {
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
             Trade::new(ts, "Trend T3 Posterior v1", TradeKind::Long, iid);
-        assert_eq!(trade.ts_nanos, ts);
+        assert_eq!(trade.ts, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
         assert_eq!(trade.iid.ticker(), "SBER");
 
@@ -636,7 +636,7 @@ mod tests {
         let ts = dt.timestamp_nanos_opt().unwrap();
         let trade =
             Trade::new(ts, "Trend T3 Posterior v1", TradeKind::Long, iid);
-        assert_eq!(trade.ts_nanos, ts);
+        assert_eq!(trade.ts, ts);
         assert_eq!(trade.strategy, "Trend T3 Posterior v1");
         assert_eq!(trade.iid.ticker(), "SBER");
 

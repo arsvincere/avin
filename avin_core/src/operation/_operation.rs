@@ -23,7 +23,7 @@ use crate::Transaction;
 /// Количество указывается не в лотах, а в бумагах.
 #[derive(Debug, PartialEq, Encode, Decode, Clone)]
 pub struct Operation {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub quantity: i32,
     pub value: f64,
     pub commission: f64,
@@ -33,14 +33,9 @@ impl Operation {
     ///
     /// # ru
     /// Конструктор.
-    pub fn new(
-        ts_nanos: i64,
-        quantity: i32,
-        value: f64,
-        commission: f64,
-    ) -> Self {
+    pub fn new(ts: i64, quantity: i32, value: f64, commission: f64) -> Self {
         Self {
-            ts_nanos,
+            ts,
             quantity,
             value,
             commission,
@@ -59,7 +54,7 @@ impl Operation {
     ///
     /// В качестве времени операции используется время последней транзакции.
     pub fn build(
-        ts_nanos: i64,
+        ts: i64,
         transactions: &[Transaction],
         commission: f64,
     ) -> Self {
@@ -75,7 +70,7 @@ impl Operation {
         }
 
         Self {
-            ts_nanos,
+            ts,
             quantity,
             value,
             commission,
@@ -101,13 +96,13 @@ impl Operation {
     pub fn from_csv(csv: &str) -> Self {
         let parts: Vec<&str> = csv.split(';').collect();
 
-        let ts_nanos: i64 = parts[0].parse().unwrap();
+        let ts: i64 = parts[0].parse().unwrap();
         let quantity: i32 = parts[1].parse().unwrap();
         let value: f64 = parts[2].parse().unwrap();
         let commission: f64 = parts[3].parse().unwrap();
 
         Operation {
-            ts_nanos,
+            ts,
             quantity,
             value,
             commission,
@@ -118,14 +113,14 @@ impl Operation {
     pub fn to_csv(&self) -> String {
         format!(
             "{};{};{};{};",
-            self.ts_nanos, self.quantity, self.value, self.commission
+            self.ts, self.quantity, self.value, self.commission
         )
     }
     /// dead code, may be deleted soon
     #[deprecated]
     pub fn to_hash_map(&self) -> HashMap<&str, String> {
         let mut info = HashMap::new();
-        info.insert("ts_nanos", self.ts_nanos.to_string());
+        info.insert("ts", self.ts.to_string());
         info.insert("quantity", self.quantity.to_string());
         info.insert("value", self.value.to_string());
         info.insert("commission", self.commission.to_string());
@@ -139,7 +134,7 @@ impl Operation {
     /// Возвращает дату и время операции в UTC таймзоне
     #[inline]
     pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
+        DateTime::from_timestamp_nanos(self.ts)
     }
     /// Return average price of operation
     ///
@@ -174,7 +169,7 @@ mod tests {
         let t2 = Transaction::new(10, 330.0);
 
         let op = Operation::build(ts, &[t1, t2], 6500.0 * 0.001);
-        assert_eq!(op.ts_nanos, ts);
+        assert_eq!(op.ts, ts);
         assert_eq!(op.quantity, 20);
         assert_eq!(op.value, 6500.0);
         assert_eq!(op.commission, 6.5);

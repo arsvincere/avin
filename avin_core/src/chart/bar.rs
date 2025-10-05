@@ -5,17 +5,23 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use bitcode::{Decode, Encode};
 use chrono::prelude::*;
 use polars::prelude::DataFrame;
 
 use crate::Range;
 use avin_utils as utils;
 
+/// Bar type.
+///
+/// # ru
+/// Тип бара: бычий, доджи, медвежий.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum BarKind {
+    /// Бычий
     Bull = 1,
+    /// Доджи - открытие == закрытие
     Dodji = 0,
+    /// Медвежий
     Bear = -1,
 }
 
@@ -26,11 +32,13 @@ pub enum BarKind {
 ///
 /// Дата и время бара хранится в timestamp nanos как i64. Для
 /// преобразования в человеко-читаемую дату время используется
-/// крейт chrono, методы [`Bar::dt`] [`Bar::dt_local`]
-#[derive(Debug, Clone, Copy, PartialEq, Encode, Decode)]
+/// крейт chrono, методы [`Bar::dt`] [`Bar::dt_local`].
+///
+/// В остальном все очевидно, хранит значения OHLCV.
+#[derive(Debug, Clone, Copy, PartialEq, bitcode::Encode, bitcode::Decode)]
 pub struct Bar {
     /// Timestamp nanos
-    pub ts_nanos: i64,
+    pub ts: i64,
     /// Open price
     pub o: f64,
     /// High price
@@ -43,34 +51,27 @@ pub struct Bar {
     pub v: u64,
 }
 impl Bar {
-    /// Create new bar
+    /// Create new bar.
     ///
     /// # ru
-    /// Конструктор
+    /// Конструктор.
     ///
     /// ## Examples
     /// ```
     /// use avin_core::Bar;
     ///
     /// let b = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10);
-    /// assert_eq!(b.ts_nanos, 123456789);
+    /// assert_eq!(b.ts, 123456789);
     /// assert_eq!(b.o, 320.5);
     /// assert_eq!(b.h, 321.2);
     /// assert_eq!(b.l, 320.1);
     /// assert_eq!(b.c, 320.8);
     /// assert_eq!(b.v, 10);
     /// ```
-    pub fn new(ts_nanos: i64, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
-        Bar {
-            ts_nanos,
-            o,
-            h,
-            l,
-            c,
-            v,
-        }
+    pub fn new(ts: i64, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
+        Bar { ts, o, h, l, c, v }
     }
-    /// Create bars from DataFrame
+    /// Create bars from DataFrame.
     ///
     /// # ru
     /// Создает вектор баров из датафрейма.
@@ -79,20 +80,21 @@ impl Bar {
     /// только на пути к файлам и формат датафрейма. Не взаимодействуют с
     /// Python кодом напрямую, только через файлы.
     ///
-    /// ## Пример датафрейма
+    /// ## Пример датафрейма:
     /// ```text
-    /// ┌─────────────────────┬────────┬────────┬────────┬────────┬──────────┬───────────┐
-    /// │ ts_nanos            ┆ open   ┆ high   ┆ low    ┆ close  ┆ volume   ┆ value     │
-    /// │ ---                 ┆ ---    ┆ ---    ┆ ---    ┆ ---    ┆ ---      ┆ ---       │
-    /// │ i64                 ┆ f64    ┆ f64    ┆ f64    ┆ f64    ┆ i64      ┆ f64       │
-    /// ╞═════════════════════╪════════╪════════╪════════╪════════╪══════════╪═══════════╡
-    /// │ 1735851600000000000 ┆ 280.0  ┆ 280.41 ┆ 271.8  ┆ 272.25 ┆ 43086870 ┆ 1.1854e10 │
-    /// │ 1736110800000000000 ┆ 270.88 ┆ 274.41 ┆ 270.07 ┆ 274.37 ┆ 28454750 ┆ 7.7371e9  │
-    /// │ 1736283600000000000 ┆ 273.07 ┆ 277.87 ┆ 273.07 ┆ 277.0  ┆ 26634660 ┆ 7.3562e9  │
-    /// │ 1736370000000000000 ┆ 276.71 ┆ 278.77 ┆ 270.73 ┆ 271.8  ┆ 52952880 ┆ 1.4491e10 │
-    /// │ 1736456400000000000 ┆ 272.31 ┆ 279.53 ┆ 270.27 ┆ 278.77 ┆ 71154220 ┆ 1.9623e10 │
-    /// │ …                   ┆ …      ┆ …      ┆ …      ┆ …      ┆ …        ┆ …         │
+    /// ┌─────────────────────┬────────┬────────┬────────┬────────┬──────────┐
+    /// │ ts_nanos            ┆ open   ┆ high   ┆ low    ┆ close  ┆ volume   │
+    /// │ ---                 ┆ ---    ┆ ---    ┆ ---    ┆ ---    ┆ ---      │
+    /// │ i64                 ┆ f64    ┆ f64    ┆ f64    ┆ f64    ┆ i64      │
+    /// ╞═════════════════════╪════════╪════════╪════════╪════════╪══════════╡
+    /// │ 1735851600000000000 ┆ 280.0  ┆ 280.41 ┆ 271.8  ┆ 272.25 ┆ 43086870 │
+    /// │ 1736110800000000000 ┆ 270.88 ┆ 274.41 ┆ 270.07 ┆ 274.37 ┆ 28454750 │
+    /// │ 1736283600000000000 ┆ 273.07 ┆ 277.87 ┆ 273.07 ┆ 277.0  ┆ 26634660 │
+    /// │ 1736370000000000000 ┆ 276.71 ┆ 278.77 ┆ 270.73 ┆ 271.8  ┆ 52952880 │
+    /// │ 1736456400000000000 ┆ 272.31 ┆ 279.53 ┆ 270.27 ┆ 278.77 ┆ 71154220 │
+    /// │ …                   ┆ …      ┆ …      ┆ …      ┆ …      ┆ …        │
     /// ```
+    ///
     /// ## Examples
     /// ```
     /// use avin_core::Bar;
@@ -105,7 +107,6 @@ impl Bar {
     ///     "low" => [90.0, 91.0],
     ///     "close" => [105.0, 106.0],
     ///     "volume" => [10_i64, 20_i64],
-    ///     "value" => [Some(100.0), Some(200.0)],
     /// )
     /// .unwrap();
     ///
@@ -162,10 +163,10 @@ impl Bar {
         Ok(bars)
     }
 
-    /// Return DateTime UTC of bar
+    /// Return DateTime UTC of bar.
     ///
     /// # ru
-    /// Возвращает DateTime UTC бара
+    /// Возвращает DateTime UTC бара.
     ///
     /// ## Examples
     /// ```
@@ -179,15 +180,15 @@ impl Bar {
     /// ```
     #[inline]
     pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
+        DateTime::from_timestamp_nanos(self.ts)
     }
-    /// Return local DateTime of bar without timezone (naive)
+    /// Return local DateTime of bar without timezone (naive).
     ///
     /// # ru
-    /// Возвращает DateTime бара в локальном времени, без таймзоны
+    /// Возвращает DateTime бара в локальном времени, без таймзоны.
     #[inline]
     pub fn dt_local(&self) -> NaiveDateTime {
-        let utc = DateTime::from_timestamp_nanos(self.ts_nanos);
+        let utc = DateTime::from_timestamp_nanos(self.ts);
         let local: DateTime<Local> = DateTime::from(utc);
 
         local.naive_local()
@@ -206,14 +207,14 @@ impl Bar {
     /// Check for bar is bear.
     ///
     /// # ru
-    /// Если бар медвежий -> true, иначе -> false
+    /// Если бар медвежий -> true, иначе -> false.
     ///
     /// ## Examples
     /// ```
     /// use avin_core::Bar;
     ///
-    /// let b = Bar::new(123456789, 320.5, 321.2, 320.1, 320.8, 10);
-    /// assert_eq!(b.is_bear(), false);
+    /// let b = Bar::new(123456789, 320.5, 321.2, 320.1, 320.2, 10);
+    /// assert_eq!(b.is_bear(), true);
     /// ```
     #[inline]
     pub fn is_bear(&self) -> bool {
@@ -222,7 +223,7 @@ impl Bar {
     /// Check for bar is bull.
     ///
     /// # ru
-    /// Если бар бычий -> true, иначе -> false
+    /// Если бар бычий -> true, иначе -> false.
     ///
     /// ## Examples
     /// ```
@@ -238,7 +239,7 @@ impl Bar {
     /// Check for bar is dodji.
     ///
     /// # ru
-    /// Если открытие равно закрытию -> true, иначе -> false
+    /// Если открытие равно закрытию -> true, иначе -> false.
     ///
     /// ## Examples
     /// ```
@@ -251,10 +252,10 @@ impl Bar {
         self.o == self.c
     }
 
-    /// Full range of bar [bar.l, bar.h]
+    /// Full range of bar [bar.l, bar.h].
     ///
     /// # ru
-    /// Возвращает полный диапазон бара [bar.l, bar.h]
+    /// Возвращает полный диапазон бара [bar.l, bar.h].
     ///
     /// ## Examples
     /// ```
@@ -269,10 +270,10 @@ impl Bar {
     pub fn full(&self) -> Range {
         Range::new(self.l, self.h)
     }
-    /// Body range of bar [bar.o, bar.c]
+    /// Body range of bar [bar.o, bar.c].
     ///
     /// # ru
-    /// Возвращает диапазон тела бара [bar.o, bar.c]
+    /// Возвращает диапазон тела бара [bar.o, bar.c].
     ///
     /// ## Examples
     /// ```
@@ -287,10 +288,10 @@ impl Bar {
     pub fn body(&self) -> Range {
         Range::new(self.o, self.c)
     }
-    /// Lower shadow range of bar
+    /// Lower shadow range of bar.
     ///
     /// # ru
-    /// Возвращает диапазон нижней тени бара
+    /// Возвращает диапазон нижней тени бара.
     ///
     /// ## Examples
     /// ```
@@ -309,10 +310,10 @@ impl Bar {
             Range::new(self.l, self.c)
         }
     }
-    /// Upper shadow range of bar
+    /// Upper shadow range of bar.
     ///
     /// # ru
-    /// Возвращает диапазон верхней тени бара
+    /// Возвращает диапазон верхней тени бара.
     ///
     /// ## Examples
     /// ```
@@ -331,10 +332,10 @@ impl Bar {
             Range::new(self.o, self.h)
         }
     }
-    /// Check for price in bar
+    /// Check for price in bar.
     ///
     /// # ru
-    /// Проверка на вхождение цены в диапазон бара
+    /// Проверка на вхождение цены в диапазон бара.
     ///
     /// ## Examples
     /// ```
@@ -348,7 +349,7 @@ impl Bar {
     pub fn contains(&self, price: f64) -> bool {
         self.l <= price && price <= self.h
     }
-    /// Join self and other bar, used when converting timeframes
+    /// Join self and other bar, used when converting timeframes.
     ///
     /// # ru
     /// Объединяет бар с другим. Используется для преобразования таймфреймов.
@@ -360,7 +361,7 @@ impl Bar {
     /// let b1 = Bar::new(123000000, 320.5, 321.2, 320.1, 320.8, 10);
     /// let b2 = Bar::new(124000000, 320.8, 322.2, 321.1, 321.8, 11);
     /// let joined = b1.join(b2);
-    /// assert_eq!(joined.ts_nanos, b1.ts_nanos);
+    /// assert_eq!(joined.ts, b1.ts);
     /// assert_eq!(joined.o, b1.o);
     /// assert_eq!(joined.h, b2.h);
     /// assert_eq!(joined.l, b1.l);
@@ -370,7 +371,7 @@ impl Bar {
     #[inline]
     pub fn join(&self, other: Bar) -> Bar {
         Bar {
-            ts_nanos: self.ts_nanos,
+            ts: self.ts,
             o: self.o,
             h: utils::max(self.h, other.h),
             l: utils::min(self.l, other.l),
@@ -414,6 +415,7 @@ mod tests {
     fn bear_bull() {
         let dt = Utc::now();
         let ts = dt.timestamp_nanos_opt().unwrap();
+
         let b = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
         assert!(b.is_bull());
         assert!(!b.is_bear());
@@ -428,7 +430,7 @@ mod tests {
         let b2 = Bar::new(2, 100.5, 101.2, 99.7, 100.8, 4000);
 
         let bar = b1.join(b2);
-        assert_eq!(bar.ts_nanos, 1);
+        assert_eq!(bar.ts, 1);
         assert_eq!(bar.o, 100.0);
         assert_eq!(bar.h, 101.2);
         assert_eq!(bar.l, 99.0);

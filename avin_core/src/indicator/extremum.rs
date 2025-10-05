@@ -91,20 +91,15 @@ impl std::fmt::Display for ExtremumKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Extremum {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub term: Term,
     pub kind: ExtremumKind,
     pub price: f64,
 }
 impl Extremum {
-    pub fn new(
-        ts_nanos: i64,
-        term: Term,
-        kind: ExtremumKind,
-        price: f64,
-    ) -> Self {
+    pub fn new(ts: i64, term: Term, kind: ExtremumKind, price: f64) -> Self {
         Self {
-            ts_nanos,
+            ts,
             term,
             kind,
             price,
@@ -112,10 +107,10 @@ impl Extremum {
     }
 
     pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
+        DateTime::from_timestamp_nanos(self.ts)
     }
     pub fn dt_local(&self) -> NaiveDateTime {
-        let utc = DateTime::from_timestamp_nanos(self.ts_nanos);
+        let utc = DateTime::from_timestamp_nanos(self.ts);
         let local: DateTime<Local> = DateTime::from(utc);
 
         local.naive_local()
@@ -170,7 +165,7 @@ pub struct Trend {
 }
 impl Trend {
     pub fn new(e1: &Extremum, e2: &Extremum, bars: &[Bar]) -> Trend {
-        assert!(e1.ts_nanos < e2.ts_nanos);
+        assert!(e1.ts < e2.ts);
 
         let mut vol = 0;
         for bar in bars.iter() {
@@ -377,7 +372,7 @@ impl ExtremumData {
         // а меня интересуют только исторические бары, поэтому чекаем ts
         // последнего исторического бара в графике
         let current = bars.last().unwrap();
-        if self.last_ts == current.ts_nanos {
+        if self.last_ts == current.ts {
             return;
         }
 
@@ -417,7 +412,7 @@ impl ExtremumData {
         self.calc_trends(T5, bars);
 
         // сохраняем время последнего обработанного бара
-        self.last_ts = current.ts_nanos;
+        self.last_ts = current.ts;
     }
 
     // private
@@ -507,26 +502,26 @@ impl ExtremumData {
         let mut prev = &bars[0];
         let bars = &bars[1..];
         if prev.is_bull() {
-            t1_now = Extremum::new(prev.ts_nanos, T1, Max, prev.h);
+            t1_now = Extremum::new(prev.ts, T1, Max, prev.h);
         } else {
-            t1_now = Extremum::new(prev.ts_nanos, T1, Min, prev.l);
+            t1_now = Extremum::new(prev.ts, T1, Min, prev.l);
         }
 
         // cacl extremums Term::T1
         for cur in bars.iter() {
             if t1_now.is_max() {
                 if cur.h > prev.h {
-                    t1_now = Extremum::new(cur.ts_nanos, T1, Max, cur.h);
+                    t1_now = Extremum::new(cur.ts, T1, Max, cur.h);
                 } else {
                     t1.push(t1_now);
-                    t1_now = Extremum::new(cur.ts_nanos, T1, Min, cur.l);
+                    t1_now = Extremum::new(cur.ts, T1, Min, cur.l);
                 }
             } else if t1_now.is_min() {
                 if cur.l < prev.l {
-                    t1_now = Extremum::new(cur.ts_nanos, T1, Min, cur.l);
+                    t1_now = Extremum::new(cur.ts, T1, Min, cur.l);
                 } else {
                     t1.push(t1_now);
-                    t1_now = Extremum::new(cur.ts_nanos, T1, Max, cur.h);
+                    t1_now = Extremum::new(cur.ts, T1, Max, cur.h);
                 }
             }
             prev = cur;
@@ -534,7 +529,7 @@ impl ExtremumData {
 
         self.e_t1 = t1;
         self.e_t1_now = Some(t1_now);
-        self.last_ts = bars.last().unwrap().ts_nanos;
+        self.last_ts = bars.last().unwrap().ts;
     }
     fn calc_en(&mut self, out_term: Term) {
         let in_extr = match out_term {
@@ -668,8 +663,8 @@ impl ExtremumData {
 #[inline]
 fn build_trend(e1: &Extremum, e2: &Extremum, all_bars: &[Bar]) -> Trend {
     // select bars of trend
-    let f = bisect_right(all_bars, e1.ts_nanos, |b| b.ts_nanos).unwrap();
-    let t = bisect_left(all_bars, e2.ts_nanos, |b| b.ts_nanos).unwrap();
+    let f = bisect_right(all_bars, e1.ts, |b| b.ts).unwrap();
+    let t = bisect_left(all_bars, e2.ts, |b| b.ts).unwrap();
     let bars_of_trend = &all_bars[f..=t];
 
     Trend::new(e1, e2, bars_of_trend)

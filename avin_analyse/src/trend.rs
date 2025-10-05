@@ -355,8 +355,8 @@ fn create_trends_df(trends: &[Trend]) -> DataFrame {
 
     // collect values
     for trend in trends.iter() {
-        begin.push(trend.begin().ts_nanos);
-        end.push(trend.end().ts_nanos);
+        begin.push(trend.begin().ts);
+        end.push(trend.end().ts);
         begin_price.push(trend.begin().price);
         end_price.push(trend.end().price);
         kind.push(if trend.is_bull() { "Bull" } else { "Bear" });
@@ -549,7 +549,7 @@ fn set_metrics(chart: &Chart, trends: &[Trend], trends_df: &mut DataFrame) {
 #[cached(
     ty = "SizedCache<i64, Option<DataFrame>>",
     create = "{ SizedCache::with_size(100) }",
-    convert = r#"{ trend.begin().ts_nanos }"#
+    convert = r#"{ trend.begin().ts }"#
 )]
 fn cached_posterior_0(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
     // n - current trend
@@ -581,7 +581,7 @@ fn cached_posterior_0(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
 #[cached(
     ty = "SizedCache<i64, Option<DataFrame>>",
     create = "{ SizedCache::with_size(100) }",
-    convert = r#"{ trend.begin().ts_nanos }"#
+    convert = r#"{ trend.begin().ts }"#
 )]
 fn cached_posterior_1(chart: &Chart, trend: &Trend) -> Option<DataFrame> {
     // all - all historical trends

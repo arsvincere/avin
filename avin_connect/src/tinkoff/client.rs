@@ -1043,7 +1043,7 @@ impl From<api::marketdata::Quotation> for f64 {
 }
 impl From<api::marketdata::HistoricCandle> for Bar {
     fn from(value: api::marketdata::HistoricCandle) -> Self {
-        let ts_nanos = {
+        let ts = {
             let ts = value.time.unwrap();
             DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
                 .unwrap()
@@ -1052,7 +1052,7 @@ impl From<api::marketdata::HistoricCandle> for Bar {
         };
 
         Bar {
-            ts_nanos,
+            ts,
             o: value.open.unwrap().into(),
             h: value.high.unwrap().into(),
             l: value.low.unwrap().into(),
@@ -1768,12 +1768,12 @@ impl From<api::marketdata::Candle> for BarEvent {
         let figi = value.figi;
 
         let ts = value.time.unwrap();
-        let ts_nanos = DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
+        let ts = DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
             .unwrap()
             .timestamp_nanos_opt()
             .unwrap();
         let bar = Bar {
-            ts_nanos,
+            ts,
             o: value.open.unwrap().into(),
             h: value.high.unwrap().into(),
             l: value.low.unwrap().into(),
@@ -1793,7 +1793,7 @@ impl From<api::marketdata::Trade> for TicEvent {
         let lot = iid.lot();
 
         let ts = t.time.unwrap();
-        let ts_nanos = DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
+        let ts = DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
             .unwrap()
             .timestamp_nanos_opt()
             .unwrap();
@@ -1802,7 +1802,7 @@ impl From<api::marketdata::Trade> for TicEvent {
         let value = lots as f64 * price * lot as f64;
 
         let tic = Tic {
-            ts_nanos,
+            ts,
             direction,
             lots,
             price,

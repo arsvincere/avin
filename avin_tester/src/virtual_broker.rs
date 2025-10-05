@@ -232,7 +232,7 @@ impl VirtualBroker {
             let order = order.as_posted().unwrap();
 
             // exec in current bar
-            self.exec_market(bar.ts_nanos, bar.c, order);
+            self.exec_market(bar.ts, bar.c, order);
         }
     }
     fn check_all_orders_limit(&mut self) {
@@ -246,20 +246,20 @@ impl VirtualBroker {
 
             // если бар содержит цену лимитки -> по цене лимитки
             if self.current_bar.contains(posted.price) {
-                self.exec_limit(bar.ts_nanos, posted.price, posted);
+                self.exec_limit(bar.ts, posted.price, posted);
                 self.limit_orders.remove(i);
             }
             // бар открылся под лимиткой на покупку -> по цене открытия
             else if posted.direction == Direction::Buy {
                 if bar.o < posted.price {
-                    self.exec_limit(bar.ts_nanos, posted.price, posted);
+                    self.exec_limit(bar.ts, posted.price, posted);
                     self.limit_orders.remove(i);
                 }
             }
             // бар открылся над лимиткой на продажу -> по цене открытия
             else if posted.direction == Direction::Sell {
                 if bar.o > posted.price {
-                    self.exec_limit(bar.ts_nanos, posted.price, posted);
+                    self.exec_limit(bar.ts, posted.price, posted);
                     self.limit_orders.remove(i);
                 }
             }
@@ -271,7 +271,7 @@ impl VirtualBroker {
     }
     fn check_all_orders_stop(&mut self) {
         let bar = self.current_bar;
-        let ts = bar.ts_nanos;
+        let ts = bar.ts;
         let mut i = 0;
 
         while i < self.stop_orders.len() {
@@ -339,7 +339,7 @@ impl VirtualBroker {
     }
     fn exec_market(
         &mut self,
-        ts_nanos: i64,
+        ts: i64,
         price: f64,
         mut order: PostedMarketOrder,
     ) {
@@ -350,7 +350,7 @@ impl VirtualBroker {
         order.add_transaction(transaction);
 
         // change status
-        let order = order.fill(ts_nanos, commission);
+        let order = order.fill(ts, commission);
 
         // wrap
         let order = Order::Market(MarketOrder::Filled(order));
@@ -367,7 +367,7 @@ impl VirtualBroker {
     }
     fn exec_limit(
         &mut self,
-        ts_nanos: i64,
+        ts: i64,
         price: f64,
         mut order: PostedLimitOrder,
     ) {
@@ -378,7 +378,7 @@ impl VirtualBroker {
         order.add_transaction(transaction);
 
         // change status
-        let order = order.fill(ts_nanos, commission);
+        let order = order.fill(ts, commission);
 
         // wrap
         let order = Order::Limit(LimitOrder::Filled(order));
@@ -410,7 +410,7 @@ impl VirtualBroker {
                 self.check_all_orders_limit();
             }
             TriggeredStopOrder::Market(order) => {
-                self.exec_market(bar.ts_nanos, bar.c, order);
+                self.exec_market(bar.ts, bar.c, order);
             }
         };
     }

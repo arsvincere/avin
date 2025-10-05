@@ -136,12 +136,12 @@ impl PinBarLong {
         let b2 = b2.unwrap();
 
         // Если уже проверяли этот бар -> return
-        if b2.ts_nanos == self.last_ts {
+        if b2.ts == self.last_ts {
             return;
         }
 
         // Обновляем время последней обработки
-        self.last_ts = b2.ts_nanos;
+        self.last_ts = b2.ts;
 
         // позавчерашний бар медвежий не медвежий -> return
         if !b2.is_bear() {

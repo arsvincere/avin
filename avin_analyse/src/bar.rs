@@ -205,7 +205,7 @@ fn create_df(chart: &Chart) -> DataFrame {
     log::info!("Create volumes dataframe");
 
     // tmp vector
-    let mut ts_nanos = Vec::new();
+    let mut ts = Vec::new();
     let mut full = Vec::new();
     let mut body = Vec::new();
     let mut upper = Vec::new();
@@ -214,7 +214,7 @@ fn create_df(chart: &Chart) -> DataFrame {
 
     // collect values
     for bar in chart.bars().iter() {
-        ts_nanos.push(bar.ts_nanos);
+        ts.push(bar.ts);
         full.push(bar.full().abs_p());
         body.push(bar.body().abs_p());
         upper.push(bar.upper().abs_p());
@@ -224,7 +224,7 @@ fn create_df(chart: &Chart) -> DataFrame {
 
     // create df
     df!(
-            "ts_nanos" => ts_nanos,
+            "ts_nanos" => ts,
             Feat::Body.name() => body,
             Feat::Full.name() => full,
             Feat::Lower.name() => lower,

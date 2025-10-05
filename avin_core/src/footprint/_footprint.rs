@@ -87,10 +87,10 @@ impl Footprint {
         }
 
         // key func for search
-        let key = |x: &Tic| x.ts_nanos;
+        let key = |x: &Tic| x.ts;
 
         // split tics by part == timeframe
-        let mut ts1 = tics.first().unwrap().ts_nanos;
+        let mut ts1 = tics.first().unwrap().ts;
         let mut ts2 = tf.next_ts(ts1);
         let mut b = 0;
         let mut e;

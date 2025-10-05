@@ -24,7 +24,7 @@ use crate::Direction;
 /// приведшего к сделке.
 #[derive(Debug, PartialEq, Encode, Decode, Clone)]
 pub struct Tic {
-    pub ts_nanos: i64,
+    pub ts: i64,
     pub direction: Direction,
     pub lots: u32,
     pub price: f64,
@@ -32,14 +32,14 @@ pub struct Tic {
 }
 impl Tic {
     pub fn new(
-        ts_nanos: i64,
+        ts: i64,
         direction: Direction,
         lots: u32,
         price: f64,
         value: f64,
     ) -> Self {
         Tic {
-            ts_nanos,
+            ts,
             direction,
             lots,
             price,
@@ -94,10 +94,10 @@ impl Tic {
     }
 
     pub fn dt(&self) -> DateTime<Utc> {
-        DateTime::from_timestamp_nanos(self.ts_nanos)
+        DateTime::from_timestamp_nanos(self.ts)
     }
     pub fn dt_local(&self) -> NaiveDateTime {
-        let utc = DateTime::from_timestamp_nanos(self.ts_nanos);
+        let utc = DateTime::from_timestamp_nanos(self.ts);
         let local: DateTime<Local> = DateTime::from(utc);
 
         local.naive_local()

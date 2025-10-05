@@ -5,12 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-//! # AVIN  -  Ars Vincere
+//! # AVIN  -  Ars Vincere.
 //!
-//! Utils for general crate `avin`
+//! Utils for general crate `avin`.
 //!
 //! # ru
-//! Утилиты для основного крейта `avin`
+//! Утилиты для основного крейта `avin`.
 
 mod cmd;
 mod conf;

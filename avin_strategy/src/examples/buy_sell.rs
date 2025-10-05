@@ -59,12 +59,12 @@ impl Strategy for BuySell {
         let bar = chart.now().unwrap();
 
         // log::debug!("BuySell.process {}", bar);
-        if bar.ts_nanos == self.last_ts {
+        if bar.ts == self.last_ts {
             return;
         }
 
         // сохранить время последней обработки
-        self.last_ts = bar.ts_nanos;
+        self.last_ts = bar.ts;
 
         match self.status {
             Status::Observe => self.get_in(bar),
