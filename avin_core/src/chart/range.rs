@@ -7,7 +7,7 @@
 
 use avin_utils as utils;
 
-/// Closed interval [from, till]
+/// Closed interval [from, till].
 ///
 /// # ru
 /// Закрытый диапазон [from, till] - используется для представления
@@ -36,10 +36,10 @@ pub struct Range {
     pub till: f64,
 }
 impl Range {
-    /// Create new range
+    /// Create new range.
     ///
     /// # ru
-    /// Конструктор
+    /// Конструктор.
     ///
     /// ## Examples
     /// ```
@@ -53,7 +53,7 @@ impl Range {
         Range { from, till }
     }
 
-    /// Return min of range
+    /// Return min of range.
     ///
     /// # ru
     /// Возвращает минимум диапазона.
@@ -75,7 +75,7 @@ impl Range {
             self.till
         }
     }
-    /// Return max of range
+    /// Return max of range.
     ///
     /// # ru
     /// Возвращает максимум диапазона.
@@ -97,7 +97,7 @@ impl Range {
             self.till
         }
     }
-    /// Returns the middle of the range
+    /// Returns the middle of the range.
     ///
     /// # ru
     /// Возвращает середину диапазона.
@@ -136,10 +136,10 @@ impl Range {
         self.min() <= value && value <= self.max()
     }
 
-    /// Abs of range
+    /// Abs of range.
     ///
     /// # ru
-    /// Модуль диапазона
+    /// Модуль диапазона.
     ///
     /// ## Examples
     /// ```
@@ -154,10 +154,10 @@ impl Range {
     pub fn abs(&self) -> f64 {
         self.max() - self.min()
     }
-    /// Normalized abs of range
+    /// Normalized abs of range.
     ///
     /// # ru
-    /// Нормализованный модуль диапазона
+    /// Нормализованный модуль диапазона.
     ///
     /// ## Examples
     /// ```
@@ -172,10 +172,10 @@ impl Range {
 
         (mx - mn) / mx
     }
-    /// Abs of range in percent
+    /// Abs of range in percent.
     ///
     /// # ru
-    /// Модуль диапазона в процентах
+    /// Модуль диапазона в процентах, округляется до 2-х знаков.
     ///
     /// ## Examples
     /// ```
@@ -193,10 +193,10 @@ impl Range {
         utils::round(value, 2)
     }
 
-    /// Delta of range (signed)
+    /// Delta of range (signed).
     ///
     /// # ru
-    /// Дельта диапазона (знаковая)
+    /// Дельта диапазона (знаковая).
     ///
     /// ## Examples
     /// ```
@@ -205,13 +205,13 @@ impl Range {
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.delta(), 50.0);
     ///
-    /// let r = Range::new(1050.0, 1000.0);
-    /// assert_eq!(r.delta(), -50.0);
+    /// let r = Range::new(1000.0, 900.0);
+    /// assert_eq!(r.delta(), -100.0);
     /// ```
     pub fn delta(&self) -> f64 {
         self.till - self.from
     }
-    /// Normalized delta of range (signed)
+    /// Normalized delta of range (signed).
     ///
     /// # ru
     /// Нормализованная дельта диапазона (знаковая) - показывает коэффициент
@@ -230,11 +230,12 @@ impl Range {
     pub fn delta_n(&self) -> f64 {
         (self.till - self.from) / self.from
     }
-    /// Delta of range in percent
+    /// Delta of range in percent.
     ///
     /// # ru
     /// Дельта диапазона (знаковая) в процентах - показывает процент
-    /// изменения конечной цены относительно начальной.
+    /// изменения конечной цены относительно начальной. Округляется до
+    /// 2-х знаков.
     ///
     /// ## Examples
     /// ```
@@ -250,6 +251,42 @@ impl Range {
         let value = (self.till - self.from) / self.from * 100.0;
 
         utils::round(value, 2)
+    }
+    /// Is range increase.
+    ///
+    /// # ru
+    /// Если диапазон возврастающий - true.
+    ///
+    /// ## Examples
+    /// ```
+    /// use avin_core::Range;
+    ///
+    /// let r = Range::new(1000.0, 1050.0);
+    /// assert_eq!(r.is_increase(), true);
+    ///
+    /// let r = Range::new(1000.0, 900.0);
+    /// assert_eq!(r.is_increase(), false);
+    /// ```
+    pub fn is_increase(&self) -> bool {
+        self.delta() > 0.0
+    }
+    /// Is range decrease.
+    ///
+    /// # ru
+    /// Если диапазон убывающий - true.
+    ///
+    /// ## Examples
+    /// ```
+    /// use avin_core::Range;
+    ///
+    /// let r = Range::new(1000.0, 1050.0);
+    /// assert_eq!(r.is_decrease(), false);
+    ///
+    /// let r = Range::new(1000.0, 900.0);
+    /// assert_eq!(r.is_decrease(), true);
+    /// ```
+    pub fn is_decrease(&self) -> bool {
+        self.delta() < 0.0
     }
 }
 
