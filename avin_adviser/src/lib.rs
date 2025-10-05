@@ -4,3 +4,7 @@
  * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
+
+mod adviser;
+
+pub use adviser::Adviser;

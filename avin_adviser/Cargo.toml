@@ -1,6 +1,6 @@
 [package]
-name = "avin_connect"
-description = "Broker connectors for the 'avin' library"
+name = "avin_adviser"
+description = "Simple adviser, part of 'avin' library"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
@@ -10,13 +10,10 @@ homepage = { workspace = true }
 readme = "../README.md"
 
 [dependencies]
+avin_analyse = { workspace = true }
+avin_connect = { workspace = true }
 avin_core = { workspace = true }
+avin_data = { workspace = true }
 avin_utils = { workspace = true }
-chrono = { workspace = true }
-flume = { workspace = true }
 log = { workspace = true }
 tokio = { workspace = true }
-tonic = { workspace = true }
-uuid = { workspace = true }
-prost-types = { workspace = true }
-prost = { workspace = true }

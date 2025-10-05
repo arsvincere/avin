@@ -30,6 +30,7 @@ categories = ["Algorithmic Trading"]
 
 [workspace.dependencies]
 avin =              { version = "0.4.0", path = "avin" }
+avin_adviser =      { version = "0.4.0", path = "avin_adviser" }
 avin_analyse =      { version = "0.4.0", path = "avin_analyse" }
 avin_connect =      { version = "0.4.0", path = "avin_connect" }
 avin_core =         { version = "0.4.0", path = "avin_core" }

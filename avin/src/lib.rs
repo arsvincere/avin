@@ -88,6 +88,7 @@
 //! avin-data download --help
 //! ```
 
+pub use avin_adviser as adviser;
 pub use avin_analyse as analyse;
 pub use avin_connect as connect;
 pub use avin_core as core;

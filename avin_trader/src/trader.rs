@@ -96,7 +96,6 @@ impl Trader {
             self.works.insert(work.figi().clone(), work.get_sender());
             tokio::spawn(async move { work.start().await });
         }
-        // }
 
         log::info!("Start main loop");
         loop {

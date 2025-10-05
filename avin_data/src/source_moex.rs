@@ -29,7 +29,6 @@ impl Default for SourceMoex {
     }
 }
 impl SourceMoex {
-    // build
     pub fn new() -> Self {
         let token_path = CFG.connect.moex_token();
         let token = Cmd::read(&token_path).unwrap().trim().to_string();
@@ -39,8 +38,6 @@ impl SourceMoex {
             client: reqwest::Client::new(),
         }
     }
-
-    // public
     #[allow(dead_code)]
     pub async fn cache_instruments_info() -> Result<(), AvinError> {
         todo!()
@@ -71,14 +68,15 @@ impl SourceMoex {
     }
 
     // get bars
-    pub async fn get_bars(
+    async fn get_bars(
         &self,
         iid: &Iid,
         _md: MarketData,
         from: NaiveDateTime,
         till: NaiveDateTime,
     ) -> Result<DataFrame, AvinError> {
-        // TODO: make this function private
+        // TODO: не известно работает ли вообще эта функция, очень старый
+        // код который сюда скопировал
 
         let mut bars = DataFrame::empty_with_schema(&DataSchema::bar());
 
@@ -156,9 +154,6 @@ impl SourceMoex {
 
         Ok(url)
     }
-
-    // get tics
-    // TODO:
 
     // get trades
     async fn get_trades(

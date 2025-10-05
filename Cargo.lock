@@ -523,6 +523,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 name = "avin"
 version = "0.4.0"
 dependencies = [
+ "avin_adviser",
  "avin_analyse",
  "avin_connect",
  "avin_core",
@@ -531,6 +532,7 @@ dependencies = [
  "avin_scanner",
  "avin_simulator",
  "avin_strategy",
+ "avin_terminal",
  "avin_tester",
  "avin_trader",
  "avin_utils",
@@ -538,6 +540,19 @@ dependencies = [
  "eframe",
  "polars",
  "reqwest",
+ "tokio",
+]
+
+[[package]]
+name = "avin_adviser"
+version = "0.4.0"
+dependencies = [
+ "avin_analyse",
+ "avin_connect",
+ "avin_core",
+ "avin_data",
+ "avin_utils",
+ "log",
  "tokio",
 ]
 
@@ -560,7 +575,6 @@ name = "avin_connect"
 version = "0.4.0"
 dependencies = [
  "avin_core",
- "avin_data",
  "avin_utils",
  "chrono",
  "flume",

@@ -95,7 +95,9 @@ impl Tinkoff {
 
         for md in a.market_data_kinds {
             match md {
-                MarketData::TIC => todo!(),
+                MarketData::TIC => {
+                    self.client.subscribe_tic(&a.iid).await.unwrap()
+                }
                 MarketData::BAR_1M => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::M1)

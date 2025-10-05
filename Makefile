@@ -54,16 +54,17 @@ build: .venv ## Build the project
 publish: ## Publish PyPl & crates.io
 	source .venv/bin/activate && cd $(PY) && flit publish
 	cargo publish -p avin_utils
-	cargo publish -p avin_data
 	cargo publish -p avin_core
-	cargo publish -p avin_analyse
 	cargo publish -p avin_connect
+	cargo publish -p avin_data
+	cargo publish -p avin_analyse
 	cargo publish -p avin_scanner
 	cargo publish -p avin_simulator
 	cargo publish -p avin_strategy
 	cargo publish -p avin_tester
 	cargo publish -p avin_trader
 	cargo publish -p avin_terminal
+	cargo publish -p avin_adviser
 	cargo publish -p avin_gui
 	cargo publish -p avin
 
