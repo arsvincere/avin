@@ -14,7 +14,7 @@ use crate::MarketData;
 ///
 /// # ru
 /// Перечисление для выбора таймфрейма. Используется в
-/// [`crate::Chart`] и [`crate::Footprint`]
+/// [`crate::Chart`] и [`crate::Footprint`].
 #[derive(
     Debug,
     Clone,
@@ -37,17 +37,10 @@ pub enum TimeFrame {
     Month,
 }
 impl TimeFrame {
-    // const ALL: &'static [Self] =
-    //     &[Self::A, Self::B, Self::C, Self::D, Self::E];
-    // pub const ALL: &'static [Self] = &[
-    //     Self::M1,
-    //     Self::M10,
-    //     Self::H1,
-    //     Self::Day,
-    //     Self::Week,
-    //     Self::Month,
-    // ];
-
+    /// Return Vec with all availible timeframes.
+    ///
+    /// # ru
+    /// Возвращает вектор со всеми возможными таймфреймами.
     pub fn all() -> Vec<TimeFrame> {
         vec![
             TimeFrame::M1,
@@ -58,6 +51,16 @@ impl TimeFrame {
             TimeFrame::Month,
         ]
     }
+    /// Return next timestamp for this timeframe.
+    /// See module tests for more understand.
+    ///
+    /// # ru
+    /// Принимает таймштамп, возвращает следующий для данного таймфрейма
+    /// таймштамп. Для более подробного понимания см. модульные тесты.
+    /// Используется в преобразованиях таймфреймов.
+    ///
+    /// Например для 10М таймфрейма, если передать время YYYY-MM-DD 10:03 будет
+    /// возвращено YYYY-MM-DD 10:10
     pub fn next_ts(&self, ts: i64) -> i64 {
         let dt = DateTime::from_timestamp_nanos(ts);
         let dt = dt.with_nanosecond(0).unwrap();
@@ -106,6 +109,16 @@ impl TimeFrame {
             }
         }
     }
+    /// Return previous timestamp for this timeframe.
+    /// See module tests for more understand.
+    ///
+    /// # ru
+    /// Принимает таймштамп, возвращает предыдущий для данного таймфрейма
+    /// таймштамп. Для более подробного понимания см. модульные тесты.
+    /// Используется в преобразованиях таймфреймов.
+    ///
+    /// Например для 10М таймфрейма, если передать время YYYY-MM-DD 10:03 будет
+    /// возвращено YYYY-MM-DD 10:00
     pub fn prev_ts(&self, ts: i64) -> i64 {
         let dt = DateTime::from_timestamp_nanos(ts);
         let dt = dt.with_nanosecond(0).unwrap();
@@ -131,7 +144,12 @@ impl TimeFrame {
             other => todo!("TimeFrame::prev_ts({}, {})", ts, other),
         }
     }
-
+    /// Return TimeDelta for this timeframe.
+    ///
+    /// # ru
+    /// Возвращает TimeDelta для этого таймфрейма.
+    ///
+    /// Для месяца считается приблизительно - за 30 дней.
     pub fn timedelta(&self) -> TimeDelta {
         match self {
             Self::M1 => TimeDelta::new(60, 0).unwrap(),
@@ -140,9 +158,16 @@ impl TimeFrame {
             Self::H1 => TimeDelta::new(60 * 60, 0).unwrap(),
             Self::Day => TimeDelta::new(24 * 60 * 60, 0).unwrap(),
             Self::Week => TimeDelta::new(7 * 24 * 60 * 60, 0).unwrap(),
-            Self::Month => TimeDelta::new(31 * 24 * 60 * 60, 0).unwrap(),
+            Self::Month => TimeDelta::new(30 * 24 * 60 * 60, 0).unwrap(),
         }
     }
+    /// Return nanoseconds for this timeframe.
+    ///
+    /// # ru
+    /// Возвращает количество наносекунд во временном интервале данного
+    /// таймфрейма.
+    ///
+    /// Для месяца считается приблизительно - за 30 дней.
     pub fn nanos(&self) -> i64 {
         let nanos = match self {
             Self::M1 => TimeUnit::Minutes.get_unit_nanoseconds(),
@@ -151,11 +176,16 @@ impl TimeFrame {
             Self::H1 => TimeUnit::Hours.get_unit_nanoseconds(),
             Self::Day => TimeUnit::Days.get_unit_nanoseconds(),
             Self::Week => TimeUnit::Weeks.get_unit_nanoseconds(),
-            Self::Month => TimeUnit::Days.get_unit_nanoseconds() * 31,
+            Self::Month => TimeUnit::Days.get_unit_nanoseconds() * 30,
         };
 
         nanos as i64
     }
+    /// Return MarketData enum for this timeframe.
+    ///
+    /// # ru
+    /// Возвращает соответствующее значение MarketData для данного
+    /// таймфрейма.
     pub fn market_data(&self) -> MarketData {
         match self {
             Self::M1 => MarketData::BAR_1M,
@@ -188,7 +218,43 @@ mod tests {
     use chrono::{DateTime, TimeZone, Utc};
 
     #[test]
-    fn to_market_data() {
+    fn timedelta() {
+        assert_eq!(TimeFrame::M1.timedelta(), TimeDelta::new(60, 0).unwrap());
+        assert_eq!(
+            TimeFrame::M10.timedelta(),
+            TimeDelta::new(10 * 60, 0).unwrap()
+        );
+        assert_eq!(
+            TimeFrame::H1.timedelta(),
+            TimeDelta::new(60 * 60, 0).unwrap()
+        );
+        assert_eq!(
+            TimeFrame::Day.timedelta(),
+            TimeDelta::new(24 * 60 * 60, 0).unwrap()
+        );
+        assert_eq!(
+            TimeFrame::Week.timedelta(),
+            TimeDelta::new(7 * 24 * 60 * 60, 0).unwrap()
+        );
+        assert_eq!(
+            TimeFrame::Month.timedelta(),
+            TimeDelta::new(30 * 24 * 60 * 60, 0).unwrap()
+        );
+    }
+    #[test]
+    fn nanos() {
+        assert_eq!(TimeFrame::M1.nanos(), 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::M10.nanos(), 10 * 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::H1.nanos(), 60 * 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::Day.nanos(), 24 * 60 * 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::Week.nanos(), 7 * 24 * 60 * 60 * 1_000_000_000);
+        assert_eq!(
+            TimeFrame::Month.nanos(),
+            30 * 24 * 60 * 60 * 1_000_000_000
+        );
+    }
+    #[test]
+    fn market_data() {
         assert_eq!(TimeFrame::M1.market_data(), MarketData::BAR_1M);
         assert_eq!(TimeFrame::M10.market_data(), MarketData::BAR_10M);
         assert_eq!(TimeFrame::H1.market_data(), MarketData::BAR_1H);
