@@ -55,6 +55,7 @@ impl eframe::App for Scanner {
     }
 }
 
+#[allow(deprecated)]
 fn ui_top(_app: &mut Scanner, ctx: &egui::Context) {
     egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {

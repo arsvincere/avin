@@ -89,6 +89,7 @@ impl eframe::App for Terminal {
     }
 }
 
+#[allow(deprecated)]
 fn ui_top(app: &mut Terminal, ctx: &egui::Context) {
     egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {

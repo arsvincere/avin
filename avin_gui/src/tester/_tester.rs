@@ -64,6 +64,7 @@ impl eframe::App for Tester {
     }
 }
 
+#[allow(deprecated)]
 fn ui_top(_app: &mut Tester, ctx: &egui::Context) {
     egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {

@@ -62,6 +62,7 @@ impl eframe::App for GuiSimulator {
     }
 }
 
+#[allow(deprecated)]
 fn ui_top(app: &mut GuiSimulator, ctx: &egui::Context) {
     egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
