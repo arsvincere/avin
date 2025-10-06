@@ -162,6 +162,36 @@ impl Bar {
 
         Ok(bars)
     }
+    /// Join self and other bar, used when converting timeframes.
+    ///
+    /// # ru
+    /// Объединяет бар с другим. Используется для преобразования таймфреймов.
+    ///
+    /// ## Examples
+    /// ```
+    /// use avin_core::Bar;
+    ///
+    /// let b1 = Bar::new(123000000, 320.5, 321.2, 320.1, 320.8, 10);
+    /// let b2 = Bar::new(124000000, 320.8, 322.2, 321.1, 321.8, 11);
+    /// let joined = Bar::join(b1, b2);
+    /// assert_eq!(joined.ts, b1.ts);
+    /// assert_eq!(joined.o, b1.o);
+    /// assert_eq!(joined.h, b2.h);
+    /// assert_eq!(joined.l, b1.l);
+    /// assert_eq!(joined.c, b2.c);
+    /// assert_eq!(joined.v, b1.v + b2.v);
+    /// ```
+    #[inline]
+    pub fn join(bar_1: Bar, bar_2: Bar) -> Bar {
+        Bar {
+            ts: bar_1.ts,
+            o: bar_1.o,
+            h: utils::max(bar_1.h, bar_2.h),
+            l: utils::min(bar_1.l, bar_2.l),
+            c: bar_2.c,
+            v: utils::sum(bar_1.v, bar_2.v),
+        }
+    }
 
     /// Return DateTime UTC of bar.
     ///
@@ -349,36 +379,6 @@ impl Bar {
     pub fn contains(&self, price: f64) -> bool {
         self.l <= price && price <= self.h
     }
-    /// Join self and other bar, used when converting timeframes.
-    ///
-    /// # ru
-    /// Объединяет бар с другим. Используется для преобразования таймфреймов.
-    ///
-    /// ## Examples
-    /// ```
-    /// use avin_core::Bar;
-    ///
-    /// let b1 = Bar::new(123000000, 320.5, 321.2, 320.1, 320.8, 10);
-    /// let b2 = Bar::new(124000000, 320.8, 322.2, 321.1, 321.8, 11);
-    /// let joined = b1.join(b2);
-    /// assert_eq!(joined.ts, b1.ts);
-    /// assert_eq!(joined.o, b1.o);
-    /// assert_eq!(joined.h, b2.h);
-    /// assert_eq!(joined.l, b1.l);
-    /// assert_eq!(joined.c, b2.c);
-    /// assert_eq!(joined.v, b1.v + b2.v);
-    /// ```
-    #[inline]
-    pub fn join(&self, other: Bar) -> Bar {
-        Bar {
-            ts: self.ts,
-            o: self.o,
-            h: utils::max(self.h, other.h),
-            l: utils::min(self.l, other.l),
-            c: other.c,
-            v: utils::sum(self.v, other.v),
-        }
-    }
 }
 impl std::fmt::Display for Bar {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -429,7 +429,7 @@ mod tests {
         let b1 = Bar::new(1, 100.0, 101.0, 99.0, 100.5, 5000);
         let b2 = Bar::new(2, 100.5, 101.2, 99.7, 100.8, 4000);
 
-        let bar = b1.join(b2);
+        let bar = Bar::join(b1, b2);
         assert_eq!(bar.ts, 1);
         assert_eq!(bar.o, 100.0);
         assert_eq!(bar.h, 101.2);

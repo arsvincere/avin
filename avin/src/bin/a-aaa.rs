@@ -9,12 +9,18 @@
 #![allow(unused)]
 
 use avin::adviser::Adviser;
+use avin::core::*;
 use avin::utils;
 
 #[tokio::main]
 async fn main() {
     utils::init_logger();
 
-    let mut adviser = Adviser::new();
-    adviser.start().await;
+    let mut bars = vec![1, 2, 3, 4, 5];
+    dbg!(&bars);
+
+    let last_bar = bars.last_mut().unwrap();
+    *last_bar = 555;
+
+    dbg!(&bars);
 }

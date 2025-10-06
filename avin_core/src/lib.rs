@@ -66,7 +66,7 @@ pub use action::{
 };
 pub use asset::{Asset, AssetList, Category, Exchange, Iid, Share};
 pub use broker::Account;
-pub use chart::{Bar, Chart, Range, TimeFrame, UserData};
+pub use chart::{Bar, Chart, Range, TimeFrame};
 pub use data::{DataSchema, Manager, MarketData, Source};
 pub use event::{BarEvent, Event, OrderEvent, TicEvent};
 pub use footprint::{Cluster, Footprint, Quant, Quantum, Tic};

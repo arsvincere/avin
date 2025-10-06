@@ -5,13 +5,16 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use polars::prelude::DataFrame;
+#![allow(dead_code)]
+#![allow(unused)]
 
-use crate::Bar;
+use avin::adviser::Adviser;
+use avin::utils;
 
-pub trait UserData: Send {
-    fn id(&self) -> &str;
-    fn df(&self) -> &DataFrame;
-    fn init(&mut self, bars: &[Bar]);
-    fn update(&mut self, bars: &[Bar]);
+#[tokio::main]
+async fn main() {
+    utils::init_logger();
+
+    let mut adviser = Adviser::new();
+    adviser.start().await;
 }

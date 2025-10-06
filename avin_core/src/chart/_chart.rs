@@ -8,11 +8,10 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use polars::frame::DataFrame;
 
 use avin_utils::{AvinError, bisect_left, bisect_right};
 
-use crate::{Bar, Iid, Indicator, Manager, TimeFrame, UserData};
+use crate::{Bar, Iid, Indicator, Manager, TimeFrame};
 
 /// Aggregation of instrument id, timeframe and bars.
 ///
@@ -23,7 +22,6 @@ pub struct Chart {
     tf: TimeFrame,
     bars: Vec<Bar>,
     ind: HashMap<String, Indicator>,
-    user_data: HashMap<String, Box<dyn UserData>>,
 }
 impl Chart {
     /// Create new chart.
@@ -52,7 +50,6 @@ impl Chart {
             tf,
             bars,
             ind: HashMap::new(),
-            user_data: HashMap::new(),
         }
     }
     /// Create new chart without bars.
@@ -69,9 +66,9 @@ impl Chart {
     /// Загружает график с барами в полуоткрытом в интервале [begin, end).
     /// Данные должны быть доступны в папке указанной в конфиге пользователя.
     /// Рыночные данные можно загрузить воспользовавшись модулем avin_data
-    /// написанном на python, доступен в том же репозитарии, и на PyPl:
-    /// "pip install avin_data". Так же есть консольная утилита avin-data
-    /// см. репозитарий [проекта](https://github.com/arsvincere/avin).
+    /// написанном на python, доступен в том же репозитарии.
+    ///
+    /// Паникует если данных не найдено.
     pub fn load(
         iid: &Iid,
         tf: TimeFrame,
@@ -86,8 +83,7 @@ impl Chart {
                 Ok(chart)
             }
             Err(e) => {
-                log::warn!("{e}, using empty chart");
-                Ok(Self::empty(iid, tf))
+                panic!("{e}");
             }
         }
     }
@@ -109,7 +105,7 @@ impl Chart {
     /// Return chart timeframe.
     ///
     /// # ru
-    /// Возвращает ссылку на таймфрейм.
+    /// Возвращает таймфрейм.
     pub fn tf(&self) -> TimeFrame {
         self.tf
     }
@@ -185,7 +181,6 @@ impl Chart {
 
         &self.bars[f..=t]
     }
-
     /// Add new bar
     /// Depending on datetime of 'new_bar' this function do:
     ///  - only update real-time bar
@@ -200,7 +195,6 @@ impl Chart {
     pub fn add_bar(&mut self, new_bar: Bar) {
         self.adding_bar(new_bar);
         self.update_ind();
-        self.update_user_data();
     }
     /// Get bar with this timestamp.
     ///
@@ -242,27 +236,30 @@ impl Chart {
         self.bars.get(index)
     }
 
-    // XXX: Unstable experimental features
+    /// Add indicator.
+    ///
+    /// # ru
+    /// Добавляет индикатор на график. Индикатор автоматически обновляется
+    /// на каждом новом баре.
     pub fn add_ind(&mut self, i: Indicator) {
         let id = i.id().to_string();
         self.ind.insert(id, i);
     }
+    /// Get indicator.
+    ///
+    /// # ru
+    /// Возвращает индикатор по ID, или None если такого индикатора на
+    /// график не добавлено.
     pub fn get_ind(&self, id: &str) -> Option<&Indicator> {
         self.ind.get(id)
     }
+    /// Get mutable indicator.
+    ///
+    /// # ru
+    /// Возвращает изменяемый индикатор по ID, или None если такого
+    /// индикатора на график не добавлено.
     pub fn get_ind_mut(&mut self, id: &str) -> Option<&mut Indicator> {
         self.ind.get_mut(id)
-    }
-    pub fn add_data(&mut self, mut data: impl UserData + 'static) {
-        data.init(self.bars());
-        let id = data.id().to_string();
-        self.user_data.insert(id, Box::new(data));
-    }
-    pub fn get_data(self, _id: &str) -> Option<&DataFrame> {
-        todo!();
-    }
-    pub fn get_data_mut(&mut self, _id: &str) -> Option<&mut DataFrame> {
-        todo!();
     }
 
     // private
@@ -290,12 +287,15 @@ impl Chart {
         // если время пришедшего нового бара больше текущего последнего
         // и при этом меньше чем время смены бара, - джоинить этот бар
         if new_bar.ts > last_bar.ts && new_bar.ts < next_ts {
-            *last_bar = last_bar.join(new_bar);
+            *last_bar = Bar::join(*last_bar, new_bar);
             return;
         }
 
         // если время пришедшего нового бара больше текущего последнего
-        // и при этом равно времени смены бара, - новый текущий
+        // и при этом больше или равно времени смены бара, - новый текущий
+        // ВАЖНО: именно 'больше или равно', потому что например на
+        // минутках после смены дня идет разрыв во времени... и не будет
+        // бара 23:50 будет сразу бар 06:59.
         if new_bar.ts > last_bar.ts && new_bar.ts >= next_ts {
             self.bars.push(new_bar);
         }
@@ -304,12 +304,6 @@ impl Chart {
     fn update_ind(&mut self) {
         for (_id, ind) in self.ind.iter_mut() {
             ind.update(&self.bars);
-        }
-    }
-    #[inline]
-    fn update_user_data(&mut self) {
-        for i in self.user_data.iter_mut() {
-            i.1.update(&self.bars);
         }
     }
 }
@@ -338,9 +332,9 @@ mod tests {
         let bars = Bar::from_df(&df).unwrap();
 
         let chart = Chart::new(&iid, tf, bars);
-        assert_eq!(chart.iid, iid);
-        assert_eq!(chart.tf, tf);
-        assert_eq!(chart.bars.len(), 256);
+        assert_eq!(chart.iid(), &iid);
+        assert_eq!(chart.tf(), tf);
+        assert_eq!(chart.bars().len(), 256);
     }
     #[test]
     fn empty() {

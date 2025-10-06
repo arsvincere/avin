@@ -55,7 +55,7 @@ impl DataBar {
         // filter & check empty
         let df = utils::filter_dt(begin, end, df);
         if df.is_empty() {
-            let msg = format!("{iid} {market_data}");
+            let msg = format!("market data {market_data} for {iid}");
             return Err(AvinError::NotFound(msg));
         }
 

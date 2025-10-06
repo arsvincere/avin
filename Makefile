@@ -87,10 +87,12 @@ clean: ## Clean up caches, build artifacts, and the venv
 	ruff clean
 	cargo clean
 
-run: ## Run temp bin (gitignored)
-	cargo run --bin a-aaa --jobs 4
+run:
+	cargo run --bin a-aaa --jobs 4  ## Run temp bin
 data:
 	cargo run --bin avin-data --jobs 4 --release
+adviser:
+	cargo run --bin avin-adviser --jobs 4 --release
 analyse:
 	cargo run --bin avin-analyse --jobs 4 --release
 backscan:
@@ -150,14 +152,8 @@ help:
 	@echo ""
 	@echo -e $(B1)help$(B2)"           Display this help message"
 
-# help: ## Display this help screen
-# 	@echo -e "\033[1mUsage:\033[0m make [target]"
-# 	@echo ""
-# 	@echo -e "\033[1mAvailable targets:\033[0m"
-# 	@grep -E '^[a-z.A-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' | sort
-
-
 # Each entry of .PHONY is a target that is not a file
 .PHONY: check, fmt, test, pre-commit, build, install, publish, clean
 .PHONY: requirements, dev, run, help, test_ignored
 .PHONY: analyse, data, backscan, backtest, scanner, tester, trader, terminal
+
