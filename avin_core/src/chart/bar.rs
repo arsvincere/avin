@@ -35,7 +35,7 @@ pub enum BarKind {
 /// крейт chrono, методы [`Bar::dt`] [`Bar::dt_local`].
 ///
 /// В остальном все очевидно, хранит значения OHLCV.
-#[derive(Debug, Clone, Copy, PartialEq, bitcode::Encode, bitcode::Decode)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bar {
     /// Timestamp nanos
     pub ts: i64,
