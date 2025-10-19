@@ -94,7 +94,7 @@ impl BuySell {
         // log::debug!("BuySell.get_in {}", bar);
 
         // если четное количество минут
-        if bar.dt().minute() % 2 == 0 {
+        if bar.dt().minute().is_multiple_of(2) {
             self.buy();
         }
     }
@@ -102,7 +102,7 @@ impl BuySell {
         // log::debug!("BuySell.get_out {}", bar);
 
         // если нечетное количество минут
-        if bar.dt().minute() % 2 != 0 {
+        if !bar.dt().minute().is_multiple_of(2) {
             self.sell();
         }
     }
