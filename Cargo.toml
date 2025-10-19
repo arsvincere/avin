@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "avin",
+    "avin_adviser",
     "avin_analyse",
     "avin_connect",
     "avin_core",
@@ -26,7 +27,7 @@ authors = ["Alex Avin <mr.alexavin@gmail.com>"]
 repository = "https://github.com/arsvincere/avin"
 homepage = "https://avin.info"
 keywords = [ "algorithmic trading", "trading", "moex", "t-bank", "tinkoff" ]
-categories = ["Algorithmic Trading"]
+categories = ["Trading"]
 
 [workspace.dependencies]
 avin =              { version = "0.4.0", path = "avin" }

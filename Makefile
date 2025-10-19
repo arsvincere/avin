@@ -6,44 +6,50 @@ PY=avin_data_py
 PY_ENV=source .venv/bin/activate && cd avin_data_py
 PY_APP=~/.local/bin/avin-data
 
-.venv: ## Create python virtual environment & install requirements
+.venv:
 	python3 -m venv $(VENV)
 	$(MAKE) requirements
 
-requirements: .venv ## Install/Update Python project requirements
+requirements: .venv
 	$(VENV)/bin/python -m pip install --upgrade pip
 	$(VENV)/bin/python -m pip install --upgrade -r $(PY)/requirements.txt
 
-dev: .venv  ## Activate venv & start neovim for this project
+dev: .venv
 	source .venv/bin/activate
 	nvim -c AvinDev
 
-check: ## Run ruff, mypy clippy
+check:
 	ruff check --select I --fix
 	mypy $(PY) --no-namespace-packages
 	cargo clippy
 
-fix: ## Automatically apply lint suggestions
+fix:
 	cargo clippy --fix
 
-fmt: ## Run ruff format & cargo fmt
+fmt:
 	cargo fmt --all
 	ruff format
 
-test: ## Run pytests, lib-tests, doc-tests
-	$(PY_ENV) && pytest tests
+test:
 	cargo test --lib --jobs 4 -- --test-threads=1
+
+test-doc:
 	cargo test --doc --jobs 4 -- --test-threads=1
 
-test_ignored: ## Run slow ingnored tests
+test-py:
+	$(PY_ENV) && pytest tests
+
+test-ignored:
 	cargo test --lib --jobs 4 -- --ignored --test-threads=1
 
-pre-commit: ## Make check, fmt, test
+pre-commit:
 	$(MAKE) check
 	$(MAKE) fmt
 	$(MAKE) test
+	$(MAKE) test-doc
+	$(MAKE) test-py
 
-build: .venv ## Build the project
+build: .venv
 	$(PY_ENV) && flit build --no-use-vcs
 	$(PY_ENV) && pyinstaller avin_data/cli.py \
 		--onefile \
@@ -68,16 +74,16 @@ publish: ## Publish PyPl & crates.io
 	cargo publish -p avin_gui
 	cargo publish -p avin
 
-install: build ## Install the project
+install: build
 	$(PY_ENV) && flit install
 	rm -rf $(PY_APP)
 	install -Dm755 $(PY)/dist/avin-data $(PY_APP)
 	install -Dm644 res/config.toml ~/.config/avin/config.toml
 
-doc: build ## Create and open local documentation
+doc: build
 	cargo doc --workspace --open --no-deps --color always --jobs 4
 
-clean: ## Clean up caches, build artifacts, and the venv
+clean:
 	rm -rf .mypy_cache/
 	rm -rf .pytest_cache/
 	rm -rf .ruff_cache/
@@ -88,7 +94,7 @@ clean: ## Clean up caches, build artifacts, and the venv
 	cargo clean
 
 run:
-	cargo run --bin a-aaa --jobs 4  ## Run temp bin
+	cargo run --bin a-aaa --jobs 4  # Run temp bin
 data:
 	cargo run --bin avin-data --jobs 4 --release
 adviser:
@@ -128,7 +134,7 @@ help:
 	@echo -e $(B1)fix$(B2)"            Auto apply linting suggestions"
 	@echo -e $(B1)fmt$(B2)"            Autoformatting"
 	@echo -e $(B1)test$(B2)"           Run pytests, lib-tests, doc-tests"
-	@echo -e $(B1)test_ignored$(B2)"   Run slow ignored tests"
+	@echo -e $(B1)test-ignored$(B2)"   Run slow ignored tests"
 	@echo -e $(B1)pre-commit$(B2)"     Make all code quality"
 	@echo ""
 	@echo -e $(T1)Build project:$(T2)
@@ -145,7 +151,7 @@ help:
 	@echo -e $(B1)backtest$(B2)"       Run backtest"
 	@echo -e $(B1)data$(B2)"       	   Run data"
 	@echo -e $(B1)scanner$(B2)"        Run scanner"
-	@echo -e $(B1)simulator$(B2)"      Run scanner"
+	@echo -e $(B1)simulator$(B2)"      Run simulator"
 	@echo -e $(B1)tester$(B2)"         Run tester"
 	@echo -e $(B1)trader$(B2)"         Run trader"
 	@echo -e $(B1)terminal$(B2)"       Run terminal"
@@ -154,6 +160,6 @@ help:
 
 # Each entry of .PHONY is a target that is not a file
 .PHONY: check, fmt, test, pre-commit, build, install, publish, clean
-.PHONY: requirements, dev, run, help, test_ignored
-.PHONY: analyse, data, backscan, backtest, scanner, tester, trader, terminal
+.PHONY: requirements, dev, run, help, test-ignored, test-py, test-doc
+.PHONY: analyse, backscan, backtest, data, scanner, tester, trader, terminal
 
