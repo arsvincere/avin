@@ -14,17 +14,17 @@
 #[derive(Debug, PartialEq, Clone)]
 pub struct Account {
     name: String,
-    broker_id: String,
+    id: String,
 }
 impl Account {
     /// Create new account.
     ///
     /// # ru
     /// Конструктор.
-    pub fn new(name: &str, broker_id: &str) -> Self {
+    pub fn new(name: &str, id: &str) -> Self {
         Self {
             name: name.to_string(),
-            broker_id: broker_id.to_string(),
+            id: id.to_string(),
         }
     }
 
@@ -38,14 +38,14 @@ impl Account {
     /// Return account id.
     ///
     /// # ru
-    /// Возвращает id счета.
+    /// Возвращает id счета у брокера.
     pub fn id(&self) -> &String {
-        &self.broker_id
+        &self.id
     }
 }
 impl std::fmt::Display for Account {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Account={} (id={})", self.name, self.broker_id)
+        write!(f, "Account={} id={}", self.name, self.id)
     }
 }
 
@@ -55,8 +55,8 @@ mod tests {
 
     #[test]
     fn new() {
-        let a = Account::new("Alex", "broker_id=100500");
+        let a = Account::new("Alex", "id=100500");
         assert_eq!(a.name(), "Alex");
-        assert_eq!(a.id(), "broker_id=100500");
+        assert_eq!(a.id(), "id=100500");
     }
 }
