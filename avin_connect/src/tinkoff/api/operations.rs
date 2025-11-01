@@ -251,9 +251,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)
@@ -872,9 +870,8 @@ pub struct GetDividendsForeignIssuerResponse {
         oneof = "get_dividends_foreign_issuer_response::Payload",
         tags = "1, 2"
     )]
-    pub payload: ::core::option::Option<
-        get_dividends_foreign_issuer_response::Payload,
-    >,
+    pub payload:
+        ::core::option::Option<get_dividends_foreign_issuer_response::Payload>,
 }
 /// Nested message and enum types in `GetDividendsForeignIssuerResponse`.
 pub mod get_dividends_foreign_issuer_response {
@@ -888,9 +885,7 @@ pub mod get_dividends_foreign_issuer_response {
         ),
         /// Отчёт "Справка о доходах за пределами РФ".
         #[prost(message, tag = "2")]
-        DivForeignIssuerReport(
-            super::GetDividendsForeignIssuerReportResponse,
-        ),
+        DivForeignIssuerReport(super::GetDividendsForeignIssuerReportResponse),
     }
 }
 /// Объект запроса формирования отчёта "Справка о доходах за пределами РФ".
@@ -1499,9 +1494,7 @@ impl OperationType {
             OperationType::MarginFee => "OPERATION_TYPE_MARGIN_FEE",
             OperationType::Buy => "OPERATION_TYPE_BUY",
             OperationType::BuyCard => "OPERATION_TYPE_BUY_CARD",
-            OperationType::InputSecurities => {
-                "OPERATION_TYPE_INPUT_SECURITIES"
-            }
+            OperationType::InputSecurities => "OPERATION_TYPE_INPUT_SECURITIES",
             OperationType::SellMargin => "OPERATION_TYPE_SELL_MARGIN",
             OperationType::BrokerFee => "OPERATION_TYPE_BROKER_FEE",
             OperationType::BuyMargin => "OPERATION_TYPE_BUY_MARGIN",
@@ -1556,9 +1549,7 @@ impl OperationType {
             OperationType::OutStampDuty => "OPERATION_TYPE_OUT_STAMP_DUTY",
             OperationType::OutputSwift => "OPERATION_TYPE_OUTPUT_SWIFT",
             OperationType::InputSwift => "OPERATION_TYPE_INPUT_SWIFT",
-            OperationType::OutputAcquiring => {
-                "OPERATION_TYPE_OUTPUT_ACQUIRING"
-            }
+            OperationType::OutputAcquiring => "OPERATION_TYPE_OUTPUT_ACQUIRING",
             OperationType::InputAcquiring => "OPERATION_TYPE_INPUT_ACQUIRING",
             OperationType::OutputPenalty => "OPERATION_TYPE_OUTPUT_PENALTY",
             OperationType::AdviceFee => "OPERATION_TYPE_ADVICE_FEE",
@@ -1580,9 +1571,7 @@ impl OperationType {
             "OPERATION_TYPE_UNSPECIFIED" => Some(Self::Unspecified),
             "OPERATION_TYPE_INPUT" => Some(Self::Input),
             "OPERATION_TYPE_BOND_TAX" => Some(Self::BondTax),
-            "OPERATION_TYPE_OUTPUT_SECURITIES" => {
-                Some(Self::OutputSecurities)
-            }
+            "OPERATION_TYPE_OUTPUT_SECURITIES" => Some(Self::OutputSecurities),
             "OPERATION_TYPE_OVERNIGHT" => Some(Self::Overnight),
             "OPERATION_TYPE_TAX" => Some(Self::Tax),
             "OPERATION_TYPE_BOND_REPAYMENT_FULL" => {
@@ -1606,9 +1595,7 @@ impl OperationType {
             "OPERATION_TYPE_SELL" => Some(Self::Sell),
             "OPERATION_TYPE_COUPON" => Some(Self::Coupon),
             "OPERATION_TYPE_SUCCESS_FEE" => Some(Self::SuccessFee),
-            "OPERATION_TYPE_DIVIDEND_TRANSFER" => {
-                Some(Self::DividendTransfer)
-            }
+            "OPERATION_TYPE_DIVIDEND_TRANSFER" => Some(Self::DividendTransfer),
             "OPERATION_TYPE_ACCRUING_VARMARGIN" => {
                 Some(Self::AccruingVarmargin)
             }
@@ -1664,9 +1651,7 @@ impl OperationType {
             "OPERATION_TYPE_OVER_PLACEMENT" => Some(Self::OverPlacement),
             "OPERATION_TYPE_OVER_COM" => Some(Self::OverCom),
             "OPERATION_TYPE_OVER_INCOME" => Some(Self::OverIncome),
-            "OPERATION_TYPE_OPTION_EXPIRATION" => {
-                Some(Self::OptionExpiration)
-            }
+            "OPERATION_TYPE_OPTION_EXPIRATION" => Some(Self::OptionExpiration),
             _ => None,
         }
     }
@@ -1797,12 +1782,7 @@ impl PositionsAccountSubscriptionStatus {
 }
 /// Generated client implementations.
 pub mod operations_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -1811,15 +1791,12 @@ pub mod operations_service_client {
     }
     impl OperationsServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -1943,10 +1920,8 @@ pub mod operations_service_client {
         pub async fn get_withdraw_limits(
             &mut self,
             request: impl tonic::IntoRequest<super::WithdrawLimitsRequest>,
-        ) -> Result<
-            tonic::Response<super::WithdrawLimitsResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::WithdrawLimitsResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -2024,12 +1999,7 @@ pub mod operations_service_client {
 }
 /// Generated client implementations.
 pub mod operations_stream_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -2038,15 +2008,12 @@ pub mod operations_stream_service_client {
     }
     impl OperationsStreamServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }

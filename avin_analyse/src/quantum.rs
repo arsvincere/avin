@@ -10,7 +10,7 @@ use polars::prelude::*;
 use strum::EnumIter;
 
 use avin_core::{
-    Footprint, Iid, Manager, MarketData, Quant, Quantum, Share, Tic,
+    Footprint, Iid, Manager, MarketData, Quant, Quantum, Share, Source, Tic,
     TimeFrame,
 };
 use avin_utils::AvinError;
@@ -52,10 +52,7 @@ impl Feat {
 }
 
 impl Analyse for Quantum {
-    fn analyse(
-        iid: &Iid,
-        tf: TimeFrame,
-    ) -> Result<(), avin_utils::AvinError> {
+    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), avin_utils::AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
 
         log::info!("Analyse quantum {} {}", iid.ticker(), tf);
@@ -119,7 +116,9 @@ fn create_quantum_df(iid: &Iid, tf: TimeFrame) -> DataFrame {
             .unwrap()
             .and_time(NaiveTime::MIN)
             .and_utc();
-        let tic_df = match Manager::load(iid, md, b, e) {
+
+        let source = Source::MOEXALGO;
+        let tic_df = match Manager::load(iid, source, md, b, e) {
             Ok(data) => data,
             Err(_) => {
                 log::warn!("no tics for {} {}", iid.ticker(), day);

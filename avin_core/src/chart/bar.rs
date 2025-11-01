@@ -6,10 +6,13 @@
  ****************************************************************************/
 
 use chrono::prelude::*;
-use polars::prelude::DataFrame;
+use polars::{
+    df,
+    prelude::{DataFrame, DataType, Field, Schema},
+};
 
 use crate::Range;
-use avin_utils as utils;
+use avin_utils::{self as utils, AvinError};
 
 /// Bar type.
 ///
@@ -71,14 +74,25 @@ impl Bar {
     pub fn new(ts: i64, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
         Bar { ts, o, h, l, c, v }
     }
+    /// Polars dataframe schema for bars.
+    ///
+    /// # ru
+    /// Возвращает polars схему датафрейма для баров.
+    pub fn schema() -> Schema {
+        Schema::from_iter(vec![
+            Field::new("ts_nanos".into(), DataType::Int64),
+            Field::new("open".into(), DataType::Float64),
+            Field::new("high".into(), DataType::Float64),
+            Field::new("low".into(), DataType::Float64),
+            Field::new("close".into(), DataType::Float64),
+            Field::new("volume".into(), DataType::UInt64),
+        ])
+    }
     /// Create bars from DataFrame.
     ///
     /// # ru
     /// Создает вектор баров из датафрейма.
-    /// Датафрейм с рыночными данными создается модулем avin_data,
-    /// реализованным на Python. Остальные модули системы на Rust полагаются
-    /// только на пути к файлам и формат датафрейма. Не взаимодействуют с
-    /// Python кодом напрямую, только через файлы.
+    /// Датафрейм с рыночными данными создается модулем avin_data.
     ///
     /// ## Пример датафрейма:
     /// ```text
@@ -106,7 +120,7 @@ impl Bar {
     ///     "high" => [110.0, 111.0],
     ///     "low" => [90.0, 91.0],
     ///     "close" => [105.0, 106.0],
-    ///     "volume" => [10_i64, 20_i64],
+    ///     "volume" => [10_u64, 20_u64],
     /// )
     /// .unwrap();
     ///
@@ -143,7 +157,7 @@ impl Bar {
         let mut v = df
             .column("volume")
             .unwrap()
-            .i64()
+            .u64()
             .unwrap()
             .into_no_null_iter();
 
@@ -155,12 +169,45 @@ impl Bar {
                 h.next().unwrap(),
                 l.next().unwrap(),
                 c.next().unwrap(),
-                v.next().unwrap() as u64,
+                v.next().unwrap(),
             );
             bars.push(bar);
         }
 
         Ok(bars)
+    }
+    /// Create DataFrame from &[Bar].
+    ///
+    /// # ru
+    /// Преобразовывает вектор баров в датафрейм.
+    pub fn to_df(bars: &[Bar]) -> Result<DataFrame, AvinError> {
+        let mut ts = Vec::new();
+        let mut open = Vec::new();
+        let mut high = Vec::new();
+        let mut low = Vec::new();
+        let mut close = Vec::new();
+        let mut volume = Vec::new();
+
+        for bar in bars.iter() {
+            ts.push(bar.ts);
+            open.push(bar.o);
+            high.push(bar.h);
+            low.push(bar.l);
+            close.push(bar.c);
+            volume.push(bar.v);
+        }
+
+        let df = df!(
+            "ts_nanos" => ts,
+            "open" => open,
+            "high" => high,
+            "low" => low,
+            "close" => close,
+            "volume" => volume,
+        )
+        .unwrap();
+
+        Ok(df)
     }
     /// Join self and other bar, used when converting timeframes.
     ///

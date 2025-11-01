@@ -82,7 +82,7 @@ impl ChartDraw for Chart {
             } else if bar.is_bear() {
                 theme.bear
             } else {
-                theme.undef
+                theme.dodji
             };
 
             // eval coordinate X
@@ -111,7 +111,7 @@ impl ChartDraw for Chart {
             } else if bar.is_bear() {
                 theme.bear
             } else {
-                theme.undef
+                theme.dodji
             };
 
             // eval coordinate X

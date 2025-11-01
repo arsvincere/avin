@@ -9,7 +9,7 @@ use chrono::{TimeZone, Utc};
 use polars::prelude::*;
 use strum::{EnumIter, IntoEnumIterator};
 
-use avin_core::{Bar, Chart, Iid, Share, TimeFrame};
+use avin_core::{Bar, Chart, Iid, Share, Source, TimeFrame};
 use avin_utils::AvinError;
 
 use crate::{Analyse, Size};
@@ -197,7 +197,8 @@ fn load_chart(iid: &Iid, tf: TimeFrame) -> Result<Chart, String> {
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();
 
-    let chart = Chart::load(iid, tf, begin, end).unwrap();
+    let source = Source::MOEXALGO;
+    let chart = Chart::load(iid, source, tf, begin, end).unwrap();
 
     Ok(chart)
 }

@@ -7,7 +7,7 @@
 
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
-use polars::frame::DataFrame;
+use polars::prelude::{DataFrame, DataType, Field, Schema};
 
 use crate::Direction;
 
@@ -45,6 +45,21 @@ impl Tic {
             price,
             value,
         }
+    }
+    /// Polars dataframe schema for tics.
+    ///
+    /// # ru
+    /// Возвращает polars схему датафрейма для тиков.
+    pub fn schema() -> Schema {
+        Schema::from_iter(vec![
+            Field::new("ts_nanos".into(), DataType::Int64),
+            Field::new("direction".into(), DataType::String),
+            Field::new("lots".into(), DataType::Int64),
+            Field::new("price".into(), DataType::Float64),
+            Field::new("value".into(), DataType::Float64),
+            Field::new("session".into(), DataType::Int8),
+            Field::new("tradeno".into(), DataType::Int64),
+        ])
     }
     pub fn from_df(df: &DataFrame) -> Result<Vec<Tic>, String> {
         let ts_nanos = df

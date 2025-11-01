@@ -252,9 +252,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)
@@ -344,8 +342,7 @@ pub struct TradingDay {
     pub clearing_end_time: ::core::option::Option<::prost_types::Timestamp>,
     /// Время начала премаркета в часовом поясе UTC.
     #[prost(message, optional, tag = "14")]
-    pub premarket_start_time:
-        ::core::option::Option<::prost_types::Timestamp>,
+    pub premarket_start_time: ::core::option::Option<::prost_types::Timestamp>,
     /// Время окончания премаркета в часовом поясе UTC.
     #[prost(message, optional, tag = "15")]
     pub premarket_end_time: ::core::option::Option<::prost_types::Timestamp>,
@@ -2390,9 +2387,7 @@ impl OptionPaymentType {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            OptionPaymentType::Unspecified => {
-                "OPTION_PAYMENT_TYPE_UNSPECIFIED"
-            }
+            OptionPaymentType::Unspecified => "OPTION_PAYMENT_TYPE_UNSPECIFIED",
             OptionPaymentType::Premium => "OPTION_PAYMENT_TYPE_PREMIUM",
             OptionPaymentType::Marginal => "OPTION_PAYMENT_TYPE_MARGINAL",
         }
@@ -2543,17 +2538,13 @@ impl InstrumentIdType {
             InstrumentIdType::Figi => "INSTRUMENT_ID_TYPE_FIGI",
             InstrumentIdType::Ticker => "INSTRUMENT_ID_TYPE_TICKER",
             InstrumentIdType::Uid => "INSTRUMENT_ID_TYPE_UID",
-            InstrumentIdType::PositionUid => {
-                "INSTRUMENT_ID_TYPE_POSITION_UID"
-            }
+            InstrumentIdType::PositionUid => "INSTRUMENT_ID_TYPE_POSITION_UID",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
-            "INSTRUMENT_ID_UNSPECIFIED" => {
-                Some(Self::InstrumentIdUnspecified)
-            }
+            "INSTRUMENT_ID_UNSPECIFIED" => Some(Self::InstrumentIdUnspecified),
             "INSTRUMENT_ID_TYPE_FIGI" => Some(Self::Figi),
             "INSTRUMENT_ID_TYPE_TICKER" => Some(Self::Ticker),
             "INSTRUMENT_ID_TYPE_UID" => Some(Self::Uid),
@@ -2806,9 +2797,7 @@ impl EditFavoritesActionType {
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
-            "EDIT_FAVORITES_ACTION_TYPE_UNSPECIFIED" => {
-                Some(Self::Unspecified)
-            }
+            "EDIT_FAVORITES_ACTION_TYPE_UNSPECIFIED" => Some(Self::Unspecified),
             "EDIT_FAVORITES_ACTION_TYPE_ADD" => Some(Self::Add),
             "EDIT_FAVORITES_ACTION_TYPE_DEL" => Some(Self::Del),
             _ => None,
@@ -2907,12 +2896,7 @@ impl RiskLevel {
 }
 /// Generated client implementations.
 pub mod instruments_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -2921,15 +2905,12 @@ pub mod instruments_service_client {
     }
     impl InstrumentsServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -3054,10 +3035,8 @@ pub mod instruments_service_client {
         pub async fn get_bond_coupons(
             &mut self,
             request: impl tonic::IntoRequest<super::GetBondCouponsRequest>,
-        ) -> Result<
-            tonic::Response<super::GetBondCouponsResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::GetBondCouponsResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -3402,10 +3381,8 @@ pub mod instruments_service_client {
         pub async fn edit_favorites(
             &mut self,
             request: impl tonic::IntoRequest<super::EditFavoritesRequest>,
-        ) -> Result<
-            tonic::Response<super::EditFavoritesResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::EditFavoritesResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -3440,10 +3417,8 @@ pub mod instruments_service_client {
         pub async fn find_instrument(
             &mut self,
             request: impl tonic::IntoRequest<super::FindInstrumentRequest>,
-        ) -> Result<
-            tonic::Response<super::FindInstrumentResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::FindInstrumentResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,

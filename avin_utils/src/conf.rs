@@ -5,14 +5,14 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use serde::{Deserialize, Serialize};
 
 use super::cmd::Cmd;
 
-pub static CFG: LazyLock<Configuration> = LazyLock::new(Configuration::find);
+pub static CFG: LazyLock<Configuration> = LazyLock::new(Configuration::read);
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Configuration {
@@ -27,14 +27,21 @@ pub struct Configuration {
     pub gui: GuiSettings,
 }
 impl Configuration {
-    fn find() -> Configuration {
+    fn read() -> Configuration {
+        let path = Configuration::find();
+        let text = Cmd::read(&path).unwrap();
+        let cfg: Configuration = toml::from_str(&text).unwrap();
+
+        cfg
+    }
+    fn find() -> PathBuf {
         let file_name = "config.toml";
 
         // try find user config in current dir
         let mut path = std::env::current_dir().unwrap();
         path.push(file_name);
         if Cmd::is_exist(&path) {
-            return Configuration::read(&path);
+            return path;
         };
 
         // try find in user home ~/.config/avin/
@@ -43,7 +50,7 @@ impl Configuration {
         path.push("avin");
         path.push(file_name);
         if Cmd::is_exist(&path) {
-            return Configuration::read(&path);
+            return path;
         };
 
         // try use default config in ~/avin/res/config.toml
@@ -52,18 +59,12 @@ impl Configuration {
         path.push("res");
         path.push("config.toml");
         if Cmd::is_exist(&path) {
-            return Configuration::read(&path);
+            return path;
         };
 
         // panic
         log::error!("Config file not found: {path:?}");
         panic!()
-    }
-    fn read(path: &Path) -> Configuration {
-        let s = Cmd::read(path).unwrap();
-        let cfg: Configuration = toml::from_str(&s).unwrap();
-
-        cfg
     }
 }
 
@@ -106,6 +107,12 @@ impl DirSettings {
     pub fn test(&self) -> PathBuf {
         let mut path = self.root();
         path.push("test");
+
+        path
+    }
+    pub fn tmp(&self) -> PathBuf {
+        let mut path = self.root();
+        path.push("tmp");
 
         path
     }
@@ -155,11 +162,12 @@ pub struct LogSettings {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DataSettings {
     pub format: String,
-    pub converter: Vec<ConvertRule>,
+    pub convert: Vec<ConvertRule>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConvertRule {
     pub iid: String,
+    pub source: String,
     pub input: String,
     pub output: String,
 }
@@ -210,8 +218,8 @@ pub struct GuiColorSettings {
     pub bull: String,
     pub bull_opacity: f32,
 
-    pub nobody: String,
-    pub nobody_opacity: f32,
+    pub dodji: String,
+    pub dodji_opacity: f32,
 
     pub trend_t1: String,
     pub trend_t2: String,

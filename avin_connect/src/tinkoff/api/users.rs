@@ -252,9 +252,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)
@@ -559,12 +557,7 @@ impl AccessLevel {
 }
 /// Generated client implementations.
 pub mod users_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -573,15 +566,12 @@ pub mod users_service_client {
     }
     impl UsersServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -620,10 +610,7 @@ pub mod users_service_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            UsersServiceClient::new(InterceptedService::new(
-                inner,
-                interceptor,
-            ))
+            UsersServiceClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -688,10 +675,8 @@ pub mod users_service_client {
         pub async fn get_user_tariff(
             &mut self,
             request: impl tonic::IntoRequest<super::GetUserTariffRequest>,
-        ) -> Result<
-            tonic::Response<super::GetUserTariffResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::GetUserTariffResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,

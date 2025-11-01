@@ -252,9 +252,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)

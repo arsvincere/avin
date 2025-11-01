@@ -251,9 +251,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)
@@ -785,12 +783,7 @@ impl PriceType {
 }
 /// Generated client implementations.
 pub mod orders_stream_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -799,15 +792,12 @@ pub mod orders_stream_service_client {
     }
     impl OrdersStreamServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -900,12 +890,7 @@ pub mod orders_stream_service_client {
 }
 /// Generated client implementations.
 pub mod orders_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -914,15 +899,12 @@ pub mod orders_service_client {
     }
     impl OrdersServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -1027,8 +1009,7 @@ pub mod orders_service_client {
         pub async fn get_order_state(
             &mut self,
             request: impl tonic::IntoRequest<super::GetOrderStateRequest>,
-        ) -> Result<tonic::Response<super::OrderState>, tonic::Status>
-        {
+        ) -> Result<tonic::Response<super::OrderState>, tonic::Status> {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,

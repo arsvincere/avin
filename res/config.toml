@@ -11,6 +11,7 @@
 
     # Path to moex account
     moex_account = "trading/usr/connect/moex/account.txt"
+
     # Path to moex api key
     moex_token = "trading/usr/connect/moex/token.txt"
 
@@ -43,13 +44,62 @@
 [data]
     # Availible formats: "parquet", "csv", "postgres"
     format = "parquet"
-    # Converter rule examples:
-    # { iid = "MOEX_SHARE_SBER", input = "1M", output = "5M" },
-    # { iid = "MOEX_SHARE_*", input = "1M", output = "5M" },
-    # { iid = "MOEX_*_*", input = "1M", output = "5M" },
-    # { iid = "*_*_*", input = "1M", output = "5M" },
-    converter = [
-        { iid = "MOEX_*_*", input = "1M", output = "5M" },
+
+    # Download
+    # iid format = <exchange>_<category>_<ticker>
+    # source = [TINKOFF, MOEXALGO]
+    # data = [BAR_1M, BAR_5M, BAR_15M, BAR_1H, BAR_4H, BAR_DAY, BAR_WEEK, BAR_MONTH]
+    download = [
+        # SHARES
+        { iid = "MOEX_SHARE_AFKS", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_AFLT", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_ASTR", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_CHMF", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_GAZP", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_GMKN", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_LKOH", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_MOEX", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_MTSS", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_NLMK", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_NVTK", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_PIKK", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_PLZL", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_ROSN", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_SBER", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_SNGS", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_T",    source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_TATN", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_VTBR", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_YDEX", source = "TINKOFF", data = "BAR_1M" },
+        # FUTURES
+        { iid = "MOEX_FUTURE_CNYRUBF", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_FUTURE_GZPF",    source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_FUTURE_GLDRUBF", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_FUTURE_IMOEXF",  source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_FUTURE_SBERF",   source = "TINKOFF", data = "BAR_1M" },
+    ]
+    # Converter
+    # iid format = <exchange>_<category>_<ticker>
+    # source = [TINKOFF, MOEXALGO]
+    # input/output = [BAR_1M, BAR_5M, BAR_15M, BAR_1H, BAR_4H, BAR_DAY, BAR_WEEK, BAR_MONTH]
+    convert = [
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_5M" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_15M" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_1H" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_4H" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_DAY" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_WEEK" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_MONTH" },
+    ]
+    tics = [
+        { iid = "MOEX_SHARE_GAZP", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_SBER", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_VTBR", source = "TINKOFF" },
+    ]
+    ob = [
+        { iid = "MOEX_SHARE_GAZP", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_SBER", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_VTBR", source = "TINKOFF" },
     ]
 
 [core]
@@ -61,17 +111,17 @@
 
 [trader]
     work_list = [
-        { iid = "moex_share_afks", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_chmf", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_gazp", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_gmkn", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_lkoh", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_moex", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_nlmk", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_nvtk", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_rosn", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_sber", strategy = [ "BigTrendShort" ] },
-        { iid = "moex_share_vtbr", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_AFKS", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_CHMF", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_GAZP", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_GMKN", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_LKOH", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_MOEX", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_NLMK", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_NVTK", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_ROSN", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_SBER", strategy = [ "BigTrendShort" ] },
+        { iid = "MOEX_SHARE_VTBR", strategy = [ "BigTrendShort" ] },
     ]
 
 [terminal]
@@ -102,8 +152,8 @@
     bull_opacity = 1.0
 
     # Bars with open == close
-    nobody = "#AAAAAA"
-    nobody_opacity = 1.0
+    dodji = "#AAAAAA"
+    dodji_opacity = 1.0
 
     # trends
     trend_t1 = "#AAAAAA"
@@ -120,8 +170,6 @@
 
     # trades
     trade_open = "#AAAAAA"
-    # trade_stop = "#FF5D62"
-    # trade_take = "#98BB6C"
     trade_take = "#24C824"
     trade_stop = "#E82424"
 

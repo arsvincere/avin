@@ -252,9 +252,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)
@@ -374,8 +372,7 @@ pub struct StopOrder {
     pub create_date: ::core::option::Option<::prost_types::Timestamp>,
     /// Дата и время конвертации стоп-заявки в биржевую в часовом поясе UTC.
     #[prost(message, optional, tag = "8")]
-    pub activation_date_time:
-        ::core::option::Option<::prost_types::Timestamp>,
+    pub activation_date_time: ::core::option::Option<::prost_types::Timestamp>,
     /// Дата и время снятия заявки в часовом поясе UTC.
     #[prost(message, optional, tag = "9")]
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
@@ -476,9 +473,7 @@ impl StopOrderExpirationType {
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
-            "STOP_ORDER_EXPIRATION_TYPE_UNSPECIFIED" => {
-                Some(Self::Unspecified)
-            }
+            "STOP_ORDER_EXPIRATION_TYPE_UNSPECIFIED" => Some(Self::Unspecified),
             "STOP_ORDER_EXPIRATION_TYPE_GOOD_TILL_CANCEL" => {
                 Some(Self::GoodTillCancel)
             }
@@ -538,12 +533,7 @@ impl StopOrderType {
 }
 /// Generated client implementations.
 pub mod stop_orders_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -552,15 +542,12 @@ pub mod stop_orders_service_client {
     }
     impl StopOrdersServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -629,10 +616,8 @@ pub mod stop_orders_service_client {
         pub async fn post_stop_order(
             &mut self,
             request: impl tonic::IntoRequest<super::PostStopOrderRequest>,
-        ) -> Result<
-            tonic::Response<super::PostStopOrderResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::PostStopOrderResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -649,10 +634,8 @@ pub mod stop_orders_service_client {
         pub async fn get_stop_orders(
             &mut self,
             request: impl tonic::IntoRequest<super::GetStopOrdersRequest>,
-        ) -> Result<
-            tonic::Response<super::GetStopOrdersResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::GetStopOrdersResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,

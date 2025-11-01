@@ -27,10 +27,7 @@ impl GetAccountAction {
     ///
     /// # ru
     /// Создает новое действие с запросом аккаунта у брокера.
-    pub fn new(
-        name: &str,
-        tx: tokio::sync::oneshot::Sender<Account>,
-    ) -> Self {
+    pub fn new(name: &str, tx: tokio::sync::oneshot::Sender<Account>) -> Self {
         Self {
             name: name.to_string(),
             tx,

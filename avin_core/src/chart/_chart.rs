@@ -11,7 +11,7 @@ use chrono::{DateTime, Utc};
 
 use avin_utils::{AvinError, bisect_left, bisect_right};
 
-use crate::{Bar, Iid, Indicator, Manager, TimeFrame};
+use crate::{Bar, Iid, Indicator, Manager, Source, TimeFrame};
 
 /// Aggregation of instrument id, timeframe and bars.
 ///
@@ -71,11 +71,15 @@ impl Chart {
     /// Паникует если данных не найдено.
     pub fn load(
         iid: &Iid,
+        source: Source,
         tf: TimeFrame,
         begin: DateTime<Utc>,
         end: DateTime<Utc>,
     ) -> Result<Self, AvinError> {
-        match Manager::load(iid, tf.market_data(), begin, end) {
+        let md = tf.market_data();
+        let result = Manager::load(iid, source, md, begin, end);
+
+        match result {
             Ok(df) => {
                 let bars = Bar::from_df(&df).unwrap();
                 let chart = Self::new(iid, tf, bars);
@@ -325,10 +329,13 @@ mod tests {
     #[test]
     fn new() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::Day;
+        let md = tf.market_data();
         let begin = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
-        let df = Manager::load(&iid, tf.market_data(), begin, end).unwrap();
+
+        let df = Manager::load(&iid, source, md, begin, end).unwrap();
         let bars = Bar::from_df(&df).unwrap();
 
         let chart = Chart::new(&iid, tf, bars);
@@ -348,11 +355,12 @@ mod tests {
     #[test]
     fn load() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-09-01");
 
-        let chart = Chart::load(&iid, tf, begin, end).unwrap();
+        let chart = Chart::load(&iid, source, tf, begin, end).unwrap();
         assert_eq!(chart.tf(), tf);
         assert_eq!(chart.bars().len(), 23);
         assert!(chart.now().is_some());
@@ -370,10 +378,11 @@ mod tests {
     #[test]
     fn select_on_d() {
         let mut share = Share::new("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        let chart = share.load_chart_period(tf, begin, end).unwrap();
+        let chart = share.load_chart_period(source, tf, begin, end).unwrap();
 
         let from = utils::str_date_to_utc("2024-12-23")
             .timestamp_nanos_opt()
@@ -388,11 +397,12 @@ mod tests {
     #[test]
     fn select_on_h() {
         let mut share = Share::new("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::H1;
 
         let begin = utils::str_date_to_utc("2023-08-01");
         let end = utils::str_date_to_utc("2023-08-02");
-        let chart = share.load_chart_period(tf, begin, end).unwrap();
+        let chart = share.load_chart_period(source, tf, begin, end).unwrap();
 
         // выборка с 12:30 до 15:30
         // должно войти 3 бара 13:00 14:00 15:00

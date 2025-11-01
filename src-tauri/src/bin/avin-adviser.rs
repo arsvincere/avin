@@ -5,13 +5,15 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin::trader::*;
-use avin::utils;
+#![allow(dead_code)]
+#![allow(unused)]
+
+use avin_adviser::Adviser;
 
 #[tokio::main]
 async fn main() {
-    utils::init_logger();
+    avin_utils::init_logger();
 
-    let mut trader = Trader::new();
-    trader.start().await;
+    let mut adviser = Adviser::new();
+    adviser.start().await;
 }

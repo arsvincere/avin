@@ -5,6 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_core::Source;
 use eframe::egui;
 use eframe::egui::Key;
 use egui_plot::Corner;
@@ -70,7 +71,8 @@ impl ScanView {
             None => {
                 let b = scan_result.begin();
                 let e = scan_result.end();
-                asset.load_chart_period(tf, b, e).unwrap();
+                let source = Source::MOEXALGO;
+                asset.load_chart_period(source, tf, b, e).unwrap();
 
                 let chart = asset.chart_mut(tf).unwrap();
                 ExtremumIndicator::init(chart);
@@ -198,11 +200,7 @@ impl ScanView {
         // draw scan points
         scan_result.draw_points(plot_ui, &self.theme, self.chart_toolbar.tf())
     }
-    fn draw_bottom(
-        &self,
-        plot_ui: &mut PlotUi,
-        footprint: Option<&Footprint>,
-    ) {
+    fn draw_bottom(&self, plot_ui: &mut PlotUi, footprint: Option<&Footprint>) {
         if let Some(f) = footprint {
             f.draw_hist(plot_ui, &self.theme);
         }

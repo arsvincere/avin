@@ -31,14 +31,14 @@ static POW_VEC: &[f64] = &[
     1000000000.0,
 ];
 
-/// Return UTC datetime from user local datetime
+/// Return UTC datetime from user local datetime.
 pub fn str_dt_to_utc(dt: &str) -> DateTime<Utc> {
     let dt = NaiveDateTime::parse_from_str(dt, &CFG.usr.dt_fmt).unwrap();
     let dt = Local.from_local_datetime(&dt).unwrap();
 
     dt.to_utc()
 }
-/// Return UTC datetime from user local date
+/// Return UTC datetime from user local date.
 pub fn str_date_to_utc(d: &str) -> DateTime<Utc> {
     let dt = NaiveDate::parse_from_str(d, "%Y-%m-%d")
         .unwrap()
@@ -47,18 +47,18 @@ pub fn str_date_to_utc(d: &str) -> DateTime<Utc> {
 
     dt.to_utc()
 }
-/// Convert datetime UTC -> timestamp nanos
+/// Convert datetime UTC -> timestamp nanos.
 pub fn ts(dt: DateTime<Utc>) -> i64 {
     dt.timestamp_nanos_opt().unwrap()
 }
-/// Convert timestamp nanos -> datetime UTC
+/// Convert timestamp nanos -> datetime UTC.
 pub fn dt(ts_nanos: i64) -> DateTime<Utc> {
     DateTime::from_timestamp_nanos(ts_nanos)
 }
-/// Return datetime with first day of next month
+/// Return datetime with first day of next month.
 ///
 /// # ru
-/// Возвращает datetime первое число следующего месяца от полученного dt
+/// Возвращает datetime первое число следующего месяца от полученного dt.
 pub fn next_month(dt: DateTime<Utc>) -> DateTime<Utc> {
     if dt.month() == 12 {
         let next_year = dt.year() + 1;
@@ -92,7 +92,7 @@ pub fn next_month(dt: DateTime<Utc>) -> DateTime<Utc> {
             .unwrap()
     }
 }
-/// Replace column 'ts_nanos' to 'dt' (naive UTC datetime)
+/// Replace column 'ts_nanos' to 'dt' (naive UTC datetime).
 pub fn replace_ts(mut df: DataFrame) -> DataFrame {
     // get iter of column 'ts_nanos'
     let timestamps = df
@@ -116,7 +116,7 @@ pub fn replace_ts(mut df: DataFrame) -> DataFrame {
 
     df
 }
-/// Filter datetime in dataframe
+/// Filter datetime in dataframe.
 pub fn filter_dt(
     begin: DateTime<Utc>,
     end: DateTime<Utc>,
@@ -271,7 +271,7 @@ mod tests {
         assert_eq!(utc_dt, dt);
     }
     #[test]
-    fn g_round() {
+    fn round_up() {
         let x: f64 = 123.456789;
 
         assert_eq!(round(x, 1), 123.5);
@@ -284,7 +284,7 @@ mod tests {
         assert_eq!(round(123.9_f64, 0), 124.0);
     }
     #[test]
-    fn rounding() {
+    fn round_down() {
         let x: f64 = 123.111111111;
 
         assert_eq!(round(x, 0), 123.0);

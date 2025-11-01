@@ -1,11 +1,9 @@
-use avin::utils;
-
 fn main() -> eframe::Result {
-    utils::init_logger();
+    avin_utils::init_logger();
 
     eframe::run_native(
         "AVIN - Tester",
         eframe::NativeOptions::default(),
-        Box::new(|cc| Ok(Box::new(avin::gui::Tester::new(cc)))),
+        Box::new(|cc| Ok(Box::new(avin_gui::Tester::new(cc)))),
     )
 }

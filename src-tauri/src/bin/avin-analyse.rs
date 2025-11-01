@@ -7,12 +7,11 @@
 
 #![allow(unused)]
 
-use avin::analyse::*;
-use avin::core::*;
-use avin::utils;
+use avin_analyse::*;
+use avin_core::*;
 
 fn main() {
-    utils::init_logger();
+    avin_utils::init_logger();
 
     // Trend::analyse_all().unwrap();
     // Bar::analyse_all().unwrap();

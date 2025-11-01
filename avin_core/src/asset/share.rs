@@ -12,10 +12,15 @@ use std::path::PathBuf;
 use chrono::{Days, prelude::*};
 
 use avin_utils::{AvinError, CFG, Cmd};
+use polars::{
+    df,
+    frame::DataFrame,
+    prelude::{DataType, Field, Schema},
+};
 
 use crate::{
-    BarEvent, Chart, Footprint, Iid, Manager, MarketData, Tic, TicEvent,
-    TimeFrame,
+    BarEvent, Chart, Footprint, Iid, Manager, MarketData, Source, Tic,
+    TicEvent, TimeFrame,
 };
 
 /// Aggregation of instrument id, charts, tics, footprint charts.
@@ -35,7 +40,7 @@ use crate::{
 ///
 /// ## Examples
 /// ```
-/// use avin_core::{Share, TimeFrame};
+/// use avin_core::{Share, TimeFrame, Source};
 ///
 /// let mut sber = Share::new("moex_share_sber").unwrap();
 /// assert_eq!(sber.name(), "Сбер Банк");
@@ -43,10 +48,11 @@ use crate::{
 /// let tf = TimeFrame::Day;
 /// assert!(sber.chart(tf).is_none());
 ///
-/// sber.load_chart(tf).unwrap();
+/// let source = Source::TINKOFF;
+/// sber.load_chart(source, tf).unwrap();
 /// assert!(sber.chart(tf).is_some());
 ///
-/// sber.load_tics().unwrap();
+/// sber.load_tics(source).unwrap();
 /// assert!(sber.tics().is_some());
 ///
 /// sber.build_footprint(tf).unwrap();
@@ -136,6 +142,33 @@ impl Share {
 
         shares
     }
+    /// Polars dataframe schema for share info.
+    ///
+    /// # ru
+    /// Возвращает polars схему датафрейма для информации об акции.
+    pub fn schema() -> Schema {
+        Schema::from_iter(vec![
+            Field::new("exchange".into(), DataType::String),
+            Field::new("category".into(), DataType::String),
+            Field::new("ticker".into(), DataType::String),
+            Field::new("figi".into(), DataType::String),
+            Field::new("country".into(), DataType::String),
+            Field::new("currency".into(), DataType::String),
+            Field::new("sector".into(), DataType::String),
+            Field::new("class_code".into(), DataType::String),
+            Field::new("isin".into(), DataType::String),
+            Field::new("uid".into(), DataType::String),
+            Field::new("name".into(), DataType::String),
+            Field::new("lot".into(), DataType::String),
+            Field::new("step".into(), DataType::String),
+            Field::new("long".into(), DataType::String),
+            Field::new("short".into(), DataType::String),
+            Field::new("long_qual".into(), DataType::String),
+            Field::new("short_qual".into(), DataType::String),
+            Field::new("first_1m".into(), DataType::String),
+            Field::new("first_d".into(), DataType::String),
+        ])
+    }
 
     /// Return instrument id.
     ///
@@ -190,6 +223,35 @@ impl Share {
     pub fn info(&self) -> &HashMap<String, String> {
         self.iid.info()
     }
+    /// Return dataframe with share info.
+    ///
+    /// # ru
+    /// Возвращает датафрейм со всей имеющейся информацией об акции.
+    pub fn info_df(&self) -> DataFrame {
+        let i = self.iid.info();
+        df!(
+            "exchange" => vec![i.get("exchange").unwrap().clone()],
+            "category" => vec![i.get("category").unwrap().clone()],
+            "ticker" => vec![i.get("ticker").unwrap().clone()],
+            "figi" => vec![i.get("figi").unwrap().clone()],
+            "country" => vec![i.get("country").unwrap().clone()],
+            "currency" => vec![i.get("currency").unwrap().clone()],
+            "sector" => vec![i.get("sector").unwrap().clone()],
+            "class_code" => vec![i.get("class_code").unwrap().clone()],
+            "isin" => vec![i.get("isin").unwrap().clone()],
+            "uid" => vec![i.get("uid").unwrap().clone()],
+            "name" => vec![i.get("name").unwrap().clone()],
+            "lot" => vec![i.get("lot").unwrap().clone()],
+            "step" => vec![i.get("step").unwrap().clone()],
+            "long" => vec![i.get("long").unwrap().clone()],
+            "short" => vec![i.get("short").unwrap().clone()],
+            "long_qual" => vec![i.get("long_qual").unwrap().clone()],
+            "short_qual" => vec![i.get("short_qual").unwrap().clone()],
+            "first_1m" => vec![i.get("first_1m").unwrap().clone()],
+            "first_d" => vec![i.get("first_d").unwrap().clone()],
+        )
+        .unwrap()
+    }
     /// Return the dir path with market data of share.
     ///
     /// # ru
@@ -221,11 +283,15 @@ impl Share {
     /// Загружает график с количеством баров по умолчанию, задается в
     /// конфиге пользователя. Возвращает ссылку на загруженный график.
     /// График сохраняется внутри актива.
-    pub fn load_chart(&mut self, tf: TimeFrame) -> Result<&Chart, AvinError> {
+    pub fn load_chart(
+        &mut self,
+        source: Source,
+        tf: TimeFrame,
+    ) -> Result<&Chart, AvinError> {
         let end = Utc::now();
         let begin = end - tf.timedelta() * CFG.core.default_bars_count as i32;
 
-        self.load_chart_period(tf, begin, end)
+        self.load_chart_period(source, tf, begin, end)
     }
     /// Load chart with default bars count. Return mutable reference of
     /// loaded chart.
@@ -236,12 +302,13 @@ impl Share {
     /// мутабельную ссылку на загруженный график.
     pub fn load_chart_mut(
         &mut self,
+        source: Source,
         tf: TimeFrame,
     ) -> Result<&mut Chart, AvinError> {
         let end = Utc::now();
         let begin = end - tf.timedelta() * CFG.core.default_bars_count as i32;
 
-        self.load_chart_period(tf, begin, end).unwrap();
+        self.load_chart_period(source, tf, begin, end).unwrap();
 
         Ok(self.charts.get_mut(&tf).unwrap())
     }
@@ -253,11 +320,12 @@ impl Share {
     /// график.
     pub fn load_chart_period(
         &mut self,
+        source: Source,
         tf: TimeFrame,
         begin: DateTime<Utc>,
         end: DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
-        let chart = Chart::load(&self.iid, tf, begin, end)?;
+        let chart = Chart::load(&self.iid, source, tf, begin, end)?;
         self.charts.insert(tf, chart);
 
         Ok(self.charts[&tf].as_ref())
@@ -304,17 +372,14 @@ impl Share {
     /// Сначала нужно загрузить тиковые данные [`Share::load_tics`], затем
     /// рассчитать кластеры для таймфрейма [`Share::build_footprint`]. Если
     /// это не сделано, вернет None.
-    pub fn footprint_mut(
-        &mut self,
-        tf: &TimeFrame,
-    ) -> Option<&mut Footprint> {
+    pub fn footprint_mut(&mut self, tf: &TimeFrame) -> Option<&mut Footprint> {
         self.footprints.get_mut(tf)
     }
     /// Load tics data.
     ///
     /// # ru
     /// Загружает тиковые данные по активу.
-    pub fn load_tics(&mut self) -> Result<(), AvinError> {
+    pub fn load_tics(&mut self, source: Source) -> Result<(), AvinError> {
         let end = Utc::now();
         let begin = end
             .checked_sub_days(Days::new(7))
@@ -322,7 +387,7 @@ impl Share {
             .with_time(NaiveTime::MIN)
             .unwrap();
 
-        match Manager::load(&self.iid, MarketData::TIC, begin, end) {
+        match Manager::load(&self.iid, source, MarketData::TIC, begin, end) {
             Ok(df) => {
                 self.tics = Tic::from_df(&df).unwrap();
                 Ok(())
@@ -342,10 +407,7 @@ impl Share {
     /// # ru
     /// Рассчитывает кластерный график заданного таймфрейма из загруженных
     /// тиков. Сохраняет результат.
-    pub fn build_footprint(
-        &mut self,
-        tf: TimeFrame,
-    ) -> Result<(), AvinError> {
+    pub fn build_footprint(&mut self, tf: TimeFrame) -> Result<(), AvinError> {
         let footprint = Footprint::from_tics(self.iid(), tf, &self.tics);
         self.footprints.insert(tf, footprint);
 
@@ -491,11 +553,12 @@ mod tests {
     #[test]
     fn load_chart() {
         let mut share = Share::new("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::H1;
         let begin = Utc.with_ymd_and_hms(2025, 1, 1, 0, 0, 0).unwrap();
         let end = Utc.with_ymd_and_hms(2025, 2, 1, 0, 0, 0).unwrap();
 
-        let chart = share.load_chart_period(tf, begin, end).unwrap();
+        let chart = share.load_chart_period(source, tf, begin, end).unwrap();
 
         assert_eq!(chart.tf(), tf);
         assert_eq!(
@@ -514,9 +577,10 @@ mod tests {
     #[test]
     fn load_chart_no_args() {
         let mut share = Share::new("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::Day;
 
-        let chart = share.load_chart(tf).unwrap();
+        let chart = share.load_chart(source, tf).unwrap();
         assert_eq!(chart.tf(), tf);
 
         assert!(!chart.bars().is_empty());

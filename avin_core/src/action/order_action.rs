@@ -37,12 +37,7 @@ impl OrderAction {
     ///
     /// # ru
     /// Создает новое действие с ордером.
-    pub fn new(
-        account: Account,
-        iid: Iid,
-        owner: &str,
-        order: Order,
-    ) -> Self {
+    pub fn new(account: Account, iid: Iid, owner: &str, order: Order) -> Self {
         Self {
             account,
             iid,

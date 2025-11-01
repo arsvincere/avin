@@ -46,8 +46,7 @@ impl ScanTable {
 
             // Check if the user picked a file.
             if let Some(path) = self.file_dialog.take_picked() {
-                self.scan_results =
-                    ScannerResultList::load_dir(&path).unwrap();
+                self.scan_results = ScannerResultList::load_dir(&path).unwrap();
                 self.current_index = 0;
             };
         });

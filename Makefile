@@ -57,7 +57,7 @@ build: .venv
 		--name avin-data
 	cargo build --jobs 4
 
-publish: ## Publish PyPl & crates.io
+publish:
 	source .venv/bin/activate && cd $(PY) && flit publish
 	cargo publish -p avin_utils
 	cargo publish -p avin_core
@@ -93,6 +93,7 @@ clean:
 	ruff clean
 	cargo clean
 
+
 run:
 	cargo run --bin a-aaa --jobs 4  # Run temp bin
 data:
@@ -115,6 +116,8 @@ trader:
 	cargo run --bin avin-trader --jobs 4 --release
 terminal:
 	cargo run --bin avin-terminal --jobs 4 --release
+avin:
+	cargo tauri dev -- --bin avin
 
 T1="\033[1m"
 T2="\033[0m"
@@ -161,5 +164,6 @@ help:
 # Each entry of .PHONY is a target that is not a file
 .PHONY: check, fmt, test, pre-commit, build, install, publish, clean
 .PHONY: requirements, dev, run, help, test-ignored, test-py, test-doc
-.PHONY: analyse, backscan, backtest, data, scanner, tester, trader, terminal
+.PHONY: analyse, backscan, backtest, data, scanner, tester, trader, terminal,
+.PHONY: avin
 

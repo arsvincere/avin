@@ -12,7 +12,8 @@ use chrono::{DateTime, Utc};
 use avin_utils::AvinError;
 
 use crate::{
-    BarEvent, Chart, Footprint, Iid, Manager, Share, Tic, TicEvent, TimeFrame,
+    BarEvent, Chart, Footprint, Iid, Manager, Share, Source, Tic, TicEvent,
+    TimeFrame,
 };
 
 /// Aggregation of instrument id, charts, tics.
@@ -28,7 +29,7 @@ use crate::{
 ///
 /// ## Examples
 /// ```
-/// use avin_core::{Asset, TimeFrame};
+/// use avin_core::{Asset, TimeFrame, Source};
 ///
 /// let mut sber = Asset::new("moex_share_sber").unwrap();
 /// assert_eq!(sber.name(), "Сбер Банк");
@@ -36,10 +37,11 @@ use crate::{
 /// let tf = TimeFrame::Day;
 /// assert!(sber.chart(tf).is_none());
 ///
-/// sber.load_chart(tf).unwrap();
+/// let source = Source::TINKOFF;
+/// sber.load_chart(source, tf).unwrap();
 /// assert!(sber.chart(tf).is_some());
 ///
-/// sber.load_tics().unwrap();
+/// sber.load_tics(source).unwrap();
 /// assert!(sber.tics().is_some());
 ///
 /// sber.build_footprint(tf).unwrap();
@@ -76,10 +78,11 @@ impl Asset {
     ///
     /// # ru
     /// Создает актив из csv формата.
-    #[allow(clippy::get_first)]
     pub fn from_csv(line: &str) -> Result<Self, String> {
         // line example: 'MOEX;SHARE;SBER;'
         let parts: Vec<&str> = line.split(';').collect();
+
+        #[allow(clippy::get_first)]
         let exchange = parts.get(0).expect("invalid line");
         let category = parts.get(1).expect("invalid line");
         let ticker = parts.get(2).expect("invalid line");
@@ -212,9 +215,13 @@ impl Asset {
     /// Загружает график с количеством баров по умолчанию (задается в
     /// конфиге пользователя). Возвращает ссылку на загруженный график.
     /// График сохраняется внутри актива.
-    pub fn load_chart(&mut self, tf: TimeFrame) -> Result<&Chart, AvinError> {
+    pub fn load_chart(
+        &mut self,
+        source: Source,
+        tf: TimeFrame,
+    ) -> Result<&Chart, AvinError> {
         match self {
-            Self::SHARE(share) => share.load_chart(tf),
+            Self::SHARE(share) => share.load_chart(source, tf),
         }
     }
     /// Load chart with default bars count. Return mutable reference of
@@ -226,10 +233,11 @@ impl Asset {
     /// мутабельную ссылку на загруженный график.
     pub fn load_chart_mut(
         &mut self,
+        source: Source,
         tf: TimeFrame,
     ) -> Result<&mut Chart, AvinError> {
         match self {
-            Self::SHARE(share) => share.load_chart_mut(tf),
+            Self::SHARE(share) => share.load_chart_mut(source, tf),
         }
     }
     /// Load chart with bars of half-open interval [begin, end).
@@ -240,12 +248,15 @@ impl Asset {
     /// график.
     pub fn load_chart_period(
         &mut self,
+        source: Source,
         tf: TimeFrame,
         begin: DateTime<Utc>,
         end: DateTime<Utc>,
     ) -> Result<&Chart, AvinError> {
         match self {
-            Self::SHARE(share) => share.load_chart_period(tf, begin, end),
+            Self::SHARE(share) => {
+                share.load_chart_period(source, tf, begin, end)
+            }
         }
     }
     /// Create empty chart with given timeframe, and store in self.
@@ -289,10 +300,7 @@ impl Asset {
     /// Сначала нужно загрузить тиковые данные [`Asset::load_tics`], затем
     /// рассчитать кластеры для таймфрейма [`Asset::build_footprint`]. Если
     /// это не сделано, вернет None.
-    pub fn footprint_mut(
-        &mut self,
-        tf: &TimeFrame,
-    ) -> Option<&mut Footprint> {
+    pub fn footprint_mut(&mut self, tf: &TimeFrame) -> Option<&mut Footprint> {
         match self {
             Asset::SHARE(share) => share.footprint_mut(tf),
         }
@@ -301,9 +309,9 @@ impl Asset {
     ///
     /// # ru
     /// Загружает тиковые данные по активу.
-    pub fn load_tics(&mut self) -> Result<(), AvinError> {
+    pub fn load_tics(&mut self, source: Source) -> Result<(), AvinError> {
         match self {
-            Self::SHARE(share) => share.load_tics(),
+            Self::SHARE(share) => share.load_tics(source),
         }
     }
     /// Calculate footprint chart
@@ -311,10 +319,7 @@ impl Asset {
     /// # ru
     /// Рассчитывает кластерный график заданного таймфрейма из загруженных
     /// тиков. Сохраняет результат.
-    pub fn build_footprint(
-        &mut self,
-        tf: TimeFrame,
-    ) -> Result<(), AvinError> {
+    pub fn build_footprint(&mut self, tf: TimeFrame) -> Result<(), AvinError> {
         match self {
             Self::SHARE(share) => share.build_footprint(tf),
         }

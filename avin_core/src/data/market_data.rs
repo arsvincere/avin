@@ -5,6 +5,10 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_utils::AvinError;
+
+use crate::TimeFrame;
+
 /// List for selecting the market data type.
 ///
 /// # ru
@@ -13,8 +17,11 @@
 #[derive(Debug, PartialEq, Clone, Copy, strum::Display)]
 pub enum MarketData {
     BAR_1M,
+    BAR_5M,
     BAR_10M,
+    BAR_15M,
     BAR_1H,
+    BAR_4H,
     BAR_DAY,
     BAR_WEEK,
     BAR_MONTH,
@@ -31,8 +38,11 @@ impl MarketData {
     pub fn name(&self) -> &'static str {
         match self {
             Self::BAR_1M => "BAR_1M",
+            Self::BAR_5M => "BAR_5M",
             Self::BAR_10M => "BAR_10M",
+            Self::BAR_15M => "BAR_15M",
             Self::BAR_1H => "BAR_1H",
+            Self::BAR_4H => "BAR_4H",
             Self::BAR_DAY => "BAR_DAY",
             Self::BAR_WEEK => "BAR_WEEK",
             Self::BAR_MONTH => "BAR_MONTH",
@@ -42,13 +52,41 @@ impl MarketData {
             Self::OB_STATS => "OB_STATS",
         }
     }
+    /// Return TimeFrame enum for this market data.
+    ///
+    /// # ru
+    /// Возвращает соответствующее значение TimeFrame для данного
+    /// типа рыночных данных, если это возможно.
+    ///
+    /// Если это тики - AvinError::InvalidValue.
+    pub fn timeframe(&self) -> Result<TimeFrame, AvinError> {
+        match self {
+            MarketData::BAR_1M => Ok(TimeFrame::M1),
+            MarketData::BAR_5M => Ok(TimeFrame::M5),
+            MarketData::BAR_10M => Ok(TimeFrame::M10),
+            MarketData::BAR_15M => Ok(TimeFrame::M15),
+            MarketData::BAR_1H => Ok(TimeFrame::H1),
+            MarketData::BAR_4H => Ok(TimeFrame::H4),
+            MarketData::BAR_DAY => Ok(TimeFrame::Day),
+            MarketData::BAR_WEEK => Ok(TimeFrame::Week),
+            MarketData::BAR_MONTH => Ok(TimeFrame::Month),
+            _ => {
+                let msg = format!("Can't convert {self} -> TimeFrame");
+                let e = AvinError::InvalidValue(msg);
+                Err(e)
+            }
+        }
+    }
 }
 impl From<&str> for MarketData {
     fn from(value: &str) -> Self {
         match value.to_uppercase().as_str() {
             "BAR_1M" => MarketData::BAR_1M,
+            "BAR_5M" => MarketData::BAR_5M,
             "BAR_10M" => MarketData::BAR_10M,
+            "BAR_15M" => MarketData::BAR_15M,
             "BAR_1H" => MarketData::BAR_1H,
+            "BAR_4H" => MarketData::BAR_4H,
             "BAR_DAY" => MarketData::BAR_DAY,
             "BAR_WEEK" => MarketData::BAR_WEEK,
             "BAR_MONTH" => MarketData::BAR_MONTH,
@@ -68,8 +106,11 @@ mod tests {
     #[test]
     fn name() {
         assert_eq!(MarketData::BAR_1M.name(), "BAR_1M");
+        assert_eq!(MarketData::BAR_5M.name(), "BAR_5M");
         assert_eq!(MarketData::BAR_10M.name(), "BAR_10M");
+        assert_eq!(MarketData::BAR_15M.name(), "BAR_15M");
         assert_eq!(MarketData::BAR_1H.name(), "BAR_1H");
+        assert_eq!(MarketData::BAR_4H.name(), "BAR_4H");
         assert_eq!(MarketData::BAR_DAY.name(), "BAR_DAY");
         assert_eq!(MarketData::BAR_WEEK.name(), "BAR_WEEK");
         assert_eq!(MarketData::BAR_MONTH.name(), "BAR_MONTH");
@@ -79,10 +120,28 @@ mod tests {
         assert_eq!(MarketData::OB_STATS.name(), "OB_STATS");
     }
     #[test]
+    fn timeframe() {
+        assert_eq!(MarketData::BAR_1M.timeframe().unwrap(), TimeFrame::M1);
+        assert_eq!(MarketData::BAR_5M.timeframe().unwrap(), TimeFrame::M5);
+        assert_eq!(MarketData::BAR_10M.timeframe().unwrap(), TimeFrame::M10);
+        assert_eq!(MarketData::BAR_15M.timeframe().unwrap(), TimeFrame::M15);
+        assert_eq!(MarketData::BAR_1H.timeframe().unwrap(), TimeFrame::H1);
+        assert_eq!(MarketData::BAR_4H.timeframe().unwrap(), TimeFrame::H4);
+        assert_eq!(MarketData::BAR_DAY.timeframe().unwrap(), TimeFrame::Day);
+        assert_eq!(MarketData::BAR_WEEK.timeframe().unwrap(), TimeFrame::Week);
+        assert_eq!(
+            MarketData::BAR_MONTH.timeframe().unwrap(),
+            TimeFrame::Month
+        );
+    }
+    #[test]
     fn to_str() {
         assert_eq!(MarketData::BAR_1M.to_string(), "BAR_1M");
+        assert_eq!(MarketData::BAR_5M.to_string(), "BAR_5M");
         assert_eq!(MarketData::BAR_10M.to_string(), "BAR_10M");
+        assert_eq!(MarketData::BAR_15M.to_string(), "BAR_15M");
         assert_eq!(MarketData::BAR_1H.to_string(), "BAR_1H");
+        assert_eq!(MarketData::BAR_4H.to_string(), "BAR_4H");
         assert_eq!(MarketData::BAR_DAY.to_string(), "BAR_DAY");
         assert_eq!(MarketData::BAR_WEEK.to_string(), "BAR_WEEK");
         assert_eq!(MarketData::BAR_MONTH.to_string(), "BAR_MONTH");
@@ -94,8 +153,11 @@ mod tests {
     #[test]
     fn from_str() {
         assert_eq!(MarketData::BAR_1M, "BAR_1M".into());
+        assert_eq!(MarketData::BAR_5M, "BAR_5M".into());
         assert_eq!(MarketData::BAR_10M, "BAR_10M".into());
+        assert_eq!(MarketData::BAR_15M, "BAR_15M".into());
         assert_eq!(MarketData::BAR_1H, "BAR_1H".into());
+        assert_eq!(MarketData::BAR_4H, "BAR_4H".into());
         assert_eq!(MarketData::BAR_DAY, "BAR_DAY".into());
         assert_eq!(MarketData::BAR_WEEK, "BAR_WEEK".into());
         assert_eq!(MarketData::BAR_MONTH, "BAR_MONTH".into());

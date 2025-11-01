@@ -13,7 +13,7 @@ use egui_file_dialog::FileDialog;
 
 use avin_core::{
     Action, Asset, AssetList, Event, ExtremumIndicator, GetBarsAction,
-    MarketData, StreamAction, Term, TimeFrame,
+    MarketData, Source, StreamAction, Term, TimeFrame,
 };
 use avin_utils::{CFG, Cmd};
 
@@ -267,7 +267,8 @@ impl AssetWidget {
             match asset.chart(tf).is_some() {
                 true => (),
                 false => {
-                    asset.load_chart(tf).unwrap();
+                    let source = Source::MOEXALGO;
+                    asset.load_chart(source, tf).unwrap();
                     let chart = asset.chart_mut(tf).unwrap();
                     ExtremumIndicator::init(chart);
                     TrendAnalytic::init(chart);
@@ -325,8 +326,7 @@ impl AssetWidget {
 
             match event {
                 Event::Bar(e) => {
-                    let asset =
-                        self.asset_list.find_figi_mut(&e.figi).unwrap();
+                    let asset = self.asset_list.find_figi_mut(&e.figi).unwrap();
                     asset.bar_event(e)
                 }
                 Event::Tic(e) => todo!("{:?}", e),

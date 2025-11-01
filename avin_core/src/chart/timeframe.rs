@@ -30,8 +30,11 @@ use crate::MarketData;
 )]
 pub enum TimeFrame {
     M1,
+    M5,
     M10,
+    M15,
     H1,
+    H4,
     Day,
     Week,
     Month,
@@ -44,8 +47,11 @@ impl TimeFrame {
     pub fn all() -> Vec<TimeFrame> {
         vec![
             TimeFrame::M1,
+            TimeFrame::M5,
             TimeFrame::M10,
+            TimeFrame::M15,
             TimeFrame::H1,
+            TimeFrame::H4,
             TimeFrame::Day,
             TimeFrame::Week,
             TimeFrame::Month,
@@ -71,15 +77,22 @@ impl TimeFrame {
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + TimeUnit::Minutes.get_unit_nanoseconds() as i64
             }
-            // "5M" => {
-            //     let need_minutes = 5 - dt.minute() % 5;
-            //     let need_nano = need_minutes as i64
-            //         * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
-            //     let ts = dt.timestamp_nanos_opt().unwrap();
-            //     ts + need_nano
-            // }
+            TimeFrame::M5 => {
+                let need_minutes = 5 - dt.minute() % 5;
+                let need_nano = need_minutes as i64
+                    * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts + need_nano
+            }
             TimeFrame::M10 => {
                 let need_minutes = 10 - dt.minute() % 10;
+                let need_nano = need_minutes as i64
+                    * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts + need_nano
+            }
+            TimeFrame::M15 => {
+                let need_minutes = 15 - dt.minute() % 15;
                 let need_nano = need_minutes as i64
                     * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
                 let ts = dt.timestamp_nanos_opt().unwrap();
@@ -89,6 +102,14 @@ impl TimeFrame {
                 let dt = dt.with_minute(0).unwrap();
                 let ts = dt.timestamp_nanos_opt().unwrap();
                 ts + TimeUnit::Hours.get_unit_nanoseconds() as i64
+            }
+            TimeFrame::H4 => {
+                let need_hours = 4 - dt.hour() % 4;
+                let need_nano = need_hours as i64
+                    * TimeUnit::Hours.get_unit_nanoseconds() as i64;
+                let dt = dt.with_minute(0).unwrap();
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts + need_nano
             }
             TimeFrame::Day => {
                 let dt = dt.with_minute(0).unwrap();
@@ -100,7 +121,7 @@ impl TimeFrame {
                 let dt = dt.with_minute(0).unwrap();
                 let dt = dt.with_hour(0).unwrap();
                 let ts = dt.timestamp_nanos_opt().unwrap();
-                let need_days = 6 - dt.weekday() as i64;
+                let need_days = 7 - dt.weekday() as i64;
                 ts + need_days * TimeUnit::Days.get_unit_nanoseconds() as i64
             }
             TimeFrame::Month => {
@@ -126,8 +147,22 @@ impl TimeFrame {
 
         match self {
             TimeFrame::M1 => dt.timestamp_nanos_opt().unwrap(),
+            TimeFrame::M5 => {
+                let past_minutes = dt.minute() % 5;
+                let past_nano = past_minutes as i64
+                    * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts - past_nano
+            }
             TimeFrame::M10 => {
                 let past_minutes = dt.minute() % 10;
+                let past_nano = past_minutes as i64
+                    * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts - past_nano
+            }
+            TimeFrame::M15 => {
+                let past_minutes = dt.minute() % 15;
                 let past_nano = past_minutes as i64
                     * TimeUnit::Minutes.get_unit_nanoseconds() as i64;
                 let ts = dt.timestamp_nanos_opt().unwrap();
@@ -137,11 +172,31 @@ impl TimeFrame {
                 let dt = dt.with_minute(0).unwrap();
                 dt.timestamp_nanos_opt().unwrap()
             }
+            TimeFrame::H4 => {
+                let past_hours = dt.hour() % 4;
+                let past_nano = past_hours as i64
+                    * TimeUnit::Hours.get_unit_nanoseconds() as i64;
+                let dt = dt.with_minute(0).unwrap();
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts - past_nano
+            }
             TimeFrame::Day => {
                 let dt = dt.with_minute(0).unwrap().with_hour(0).unwrap();
                 dt.timestamp_nanos_opt().unwrap()
             }
-            other => todo!("TimeFrame::prev_ts({}, {})", ts, other),
+            TimeFrame::Week => {
+                let past_days = dt.weekday() as i64 % 7;
+                let past_nano =
+                    past_days * TimeUnit::Days.get_unit_nanoseconds() as i64;
+                let dt = dt.with_minute(0).unwrap().with_hour(0).unwrap();
+                let ts = dt.timestamp_nanos_opt().unwrap();
+                ts - past_nano
+            }
+            TimeFrame::Month => {
+                let dt = dt.with_minute(0).unwrap().with_hour(0).unwrap();
+                let dt = dt.with_day(1).unwrap();
+                dt.timestamp_nanos_opt().unwrap()
+            }
         }
     }
     /// Return TimeDelta for this timeframe.
@@ -153,9 +208,11 @@ impl TimeFrame {
     pub fn timedelta(&self) -> TimeDelta {
         match self {
             Self::M1 => TimeDelta::new(60, 0).unwrap(),
-            // "5M" => TimeDelta::new(5 * 60, 0).unwrap(),
+            Self::M5 => TimeDelta::new(5 * 60, 0).unwrap(),
             Self::M10 => TimeDelta::new(10 * 60, 0).unwrap(),
+            Self::M15 => TimeDelta::new(15 * 60, 0).unwrap(),
             Self::H1 => TimeDelta::new(60 * 60, 0).unwrap(),
+            Self::H4 => TimeDelta::new(4 * 60 * 60, 0).unwrap(),
             Self::Day => TimeDelta::new(24 * 60 * 60, 0).unwrap(),
             Self::Week => TimeDelta::new(7 * 24 * 60 * 60, 0).unwrap(),
             Self::Month => TimeDelta::new(30 * 24 * 60 * 60, 0).unwrap(),
@@ -171,9 +228,11 @@ impl TimeFrame {
     pub fn nanos(&self) -> i64 {
         let nanos = match self {
             Self::M1 => TimeUnit::Minutes.get_unit_nanoseconds(),
-            // "5M" => TimeUnit::Minutes.get_unit_nanoseconds() * 5,
+            Self::M5 => TimeUnit::Minutes.get_unit_nanoseconds() * 5,
             Self::M10 => TimeUnit::Minutes.get_unit_nanoseconds() * 10,
+            Self::M15 => TimeUnit::Minutes.get_unit_nanoseconds() * 15,
             Self::H1 => TimeUnit::Hours.get_unit_nanoseconds(),
+            Self::H4 => TimeUnit::Hours.get_unit_nanoseconds() * 4,
             Self::Day => TimeUnit::Days.get_unit_nanoseconds(),
             Self::Week => TimeUnit::Weeks.get_unit_nanoseconds(),
             Self::Month => TimeUnit::Days.get_unit_nanoseconds() * 30,
@@ -189,9 +248,11 @@ impl TimeFrame {
     pub fn market_data(&self) -> MarketData {
         match self {
             Self::M1 => MarketData::BAR_1M,
-            // "5M" => MarketData::BAR_5M,
+            Self::M5 => MarketData::BAR_5M,
             Self::M10 => MarketData::BAR_10M,
+            Self::M15 => MarketData::BAR_15M,
             Self::H1 => MarketData::BAR_1H,
+            Self::H4 => MarketData::BAR_4H,
             Self::Day => MarketData::BAR_DAY,
             Self::Week => MarketData::BAR_WEEK,
             Self::Month => MarketData::BAR_MONTH,
@@ -202,9 +263,11 @@ impl std::fmt::Display for TimeFrame {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::M1 => write!(f, "1M"),
-            // Self::M5 => write!(f, "5M"),
+            Self::M5 => write!(f, "5M"),
             Self::M10 => write!(f, "10M"),
+            Self::M15 => write!(f, "15M"),
             Self::H1 => write!(f, "1H"),
+            Self::H4 => write!(f, "4H"),
             Self::Day => write!(f, "D"),
             Self::Week => write!(f, "W"),
             Self::Month => write!(f, "M"),
@@ -218,15 +281,32 @@ mod tests {
     use chrono::{DateTime, TimeZone, Utc};
 
     #[test]
+    fn all() {
+        let all_timeframes = TimeFrame::all();
+        assert_eq!(all_timeframes.len(), 9);
+    }
+    #[test]
     fn timedelta() {
         assert_eq!(TimeFrame::M1.timedelta(), TimeDelta::new(60, 0).unwrap());
+        assert_eq!(
+            TimeFrame::M5.timedelta(),
+            TimeDelta::new(5 * 60, 0).unwrap()
+        );
         assert_eq!(
             TimeFrame::M10.timedelta(),
             TimeDelta::new(10 * 60, 0).unwrap()
         );
         assert_eq!(
+            TimeFrame::M15.timedelta(),
+            TimeDelta::new(15 * 60, 0).unwrap()
+        );
+        assert_eq!(
             TimeFrame::H1.timedelta(),
             TimeDelta::new(60 * 60, 0).unwrap()
+        );
+        assert_eq!(
+            TimeFrame::H4.timedelta(),
+            TimeDelta::new(4 * 60 * 60, 0).unwrap()
         );
         assert_eq!(
             TimeFrame::Day.timedelta(),
@@ -244,102 +324,143 @@ mod tests {
     #[test]
     fn nanos() {
         assert_eq!(TimeFrame::M1.nanos(), 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::M5.nanos(), 5 * 60 * 1_000_000_000);
         assert_eq!(TimeFrame::M10.nanos(), 10 * 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::M15.nanos(), 15 * 60 * 1_000_000_000);
         assert_eq!(TimeFrame::H1.nanos(), 60 * 60 * 1_000_000_000);
+        assert_eq!(TimeFrame::H4.nanos(), 4 * 60 * 60 * 1_000_000_000);
         assert_eq!(TimeFrame::Day.nanos(), 24 * 60 * 60 * 1_000_000_000);
         assert_eq!(TimeFrame::Week.nanos(), 7 * 24 * 60 * 60 * 1_000_000_000);
-        assert_eq!(
-            TimeFrame::Month.nanos(),
-            30 * 24 * 60 * 60 * 1_000_000_000
-        );
+        assert_eq!(TimeFrame::Month.nanos(), 30 * 24 * 60 * 60 * 1_000_000_000);
     }
     #[test]
     fn market_data() {
         assert_eq!(TimeFrame::M1.market_data(), MarketData::BAR_1M);
+        assert_eq!(TimeFrame::M5.market_data(), MarketData::BAR_5M);
         assert_eq!(TimeFrame::M10.market_data(), MarketData::BAR_10M);
+        assert_eq!(TimeFrame::M15.market_data(), MarketData::BAR_15M);
         assert_eq!(TimeFrame::H1.market_data(), MarketData::BAR_1H);
+        assert_eq!(TimeFrame::H4.market_data(), MarketData::BAR_4H);
         assert_eq!(TimeFrame::Day.market_data(), MarketData::BAR_DAY);
         assert_eq!(TimeFrame::Week.market_data(), MarketData::BAR_WEEK);
         assert_eq!(TimeFrame::Month.market_data(), MarketData::BAR_MONTH);
     }
     #[test]
     fn next_ts() {
-        let dt = Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 5).unwrap();
+        let dt = Utc.with_ymd_and_hms(2023, 8, 2, 10, 0, 5).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
 
         let next_ts = TimeFrame::M1.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 10, 1, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 1, 0).unwrap()
         );
 
-        // let next_ts = TimeFrame::M5(ts);
-        // let next_dt = DateTime::from_timestamp_nanos(next_ts);
-        // assert_eq!(
-        //     next_dt,
-        //     Utc.with_ymd_and_hms(2023, 8, 1, 10, 5, 0).unwrap()
-        // );
+        let next_ts = TimeFrame::M5.next_ts(ts);
+        let next_dt = DateTime::from_timestamp_nanos(next_ts);
+        assert_eq!(
+            next_dt,
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 5, 0).unwrap()
+        );
 
         let next_ts = TimeFrame::M10.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 10, 10, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 10, 0).unwrap()
+        );
+
+        let next_ts = TimeFrame::M15.next_ts(ts);
+        let next_dt = DateTime::from_timestamp_nanos(next_ts);
+        assert_eq!(
+            next_dt,
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 15, 0).unwrap()
         );
 
         let next_ts = TimeFrame::H1.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
         assert_eq!(
             next_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 11, 0, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 8, 2, 11, 0, 0).unwrap()
+        );
+
+        let next_ts = TimeFrame::H4.next_ts(ts);
+        let next_dt = DateTime::from_timestamp_nanos(next_ts);
+        assert_eq!(
+            next_dt,
+            Utc.with_ymd_and_hms(2023, 8, 2, 12, 0, 0).unwrap()
         );
 
         let next_ts = TimeFrame::Day.next_ts(ts);
         let next_dt = DateTime::from_timestamp_nanos(next_ts);
-        assert_eq!(
-            next_dt,
-            Utc.with_ymd_and_hms(2023, 8, 2, 0, 0, 0).unwrap()
-        );
+        assert_eq!(next_dt, Utc.with_ymd_and_hms(2023, 8, 3, 0, 0, 0).unwrap());
+
+        let next_ts = TimeFrame::Week.next_ts(ts);
+        let next_dt = DateTime::from_timestamp_nanos(next_ts);
+        assert_eq!(next_dt, Utc.with_ymd_and_hms(2023, 8, 7, 0, 0, 0).unwrap());
+
+        let next_ts = TimeFrame::Month.next_ts(ts);
+        let next_dt = DateTime::from_timestamp_nanos(next_ts);
+        assert_eq!(next_dt, Utc.with_ymd_and_hms(2023, 9, 1, 0, 0, 0).unwrap());
     }
     #[test]
     fn prev_ts() {
-        let dt = Utc.with_ymd_and_hms(2023, 8, 1, 10, 3, 5).unwrap();
+        let dt = Utc.with_ymd_and_hms(2023, 8, 2, 10, 3, 5).unwrap();
         let ts = dt.timestamp_nanos_opt().unwrap();
 
         let prev_ts = TimeFrame::M1.prev_ts(ts);
         let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
         assert_eq!(
             prev_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 10, 3, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 3, 0).unwrap()
         );
 
-        // let prev_ts = TimeFrame::M5(ts);
-        // let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
-        // assert_eq!(
-        //     prev_dt,
-        //     Utc.with_ymd_and_hms(2023, 8, 1, 10, 5, 0).unwrap()
-        // );
+        let prev_ts = TimeFrame::M5.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(
+            prev_dt,
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 0, 0).unwrap()
+        );
 
         let prev_ts = TimeFrame::M10.prev_ts(ts);
         let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
         assert_eq!(
             prev_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 0, 0).unwrap()
+        );
+
+        let prev_ts = TimeFrame::M15.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(
+            prev_dt,
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 0, 0).unwrap()
         );
 
         let prev_ts = TimeFrame::H1.prev_ts(ts);
         let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
         assert_eq!(
             prev_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 10, 0, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 8, 2, 10, 0, 0).unwrap()
         );
+
+        let prev_ts = TimeFrame::H4.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(prev_dt, Utc.with_ymd_and_hms(2023, 8, 2, 8, 0, 0).unwrap());
 
         let prev_ts = TimeFrame::Day.prev_ts(ts);
         let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(prev_dt, Utc.with_ymd_and_hms(2023, 8, 2, 0, 0, 0).unwrap());
+
+        let prev_ts = TimeFrame::Week.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
         assert_eq!(
             prev_dt,
-            Utc.with_ymd_and_hms(2023, 8, 1, 0, 0, 0).unwrap()
+            Utc.with_ymd_and_hms(2023, 7, 31, 0, 0, 0).unwrap()
         );
+
+        let prev_ts = TimeFrame::Month.prev_ts(ts);
+        let prev_dt = DateTime::from_timestamp_nanos(prev_ts);
+        assert_eq!(prev_dt, Utc.with_ymd_and_hms(2023, 8, 1, 0, 0, 0).unwrap());
     }
 }

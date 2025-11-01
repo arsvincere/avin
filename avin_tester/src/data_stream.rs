@@ -9,7 +9,9 @@ use std::collections::VecDeque;
 
 use chrono::{DateTime, Utc};
 
-use avin_core::{Bar, BarEvent, Event, Iid, Manager, MarketData, TimeFrame};
+use avin_core::{
+    Bar, BarEvent, Event, Iid, Manager, MarketData, Source, TimeFrame,
+};
 
 pub struct DataStream {
     pub iid: Iid,
@@ -42,7 +44,8 @@ impl DataStream {
 }
 
 fn load_bars(iid: &Iid, b: DateTime<Utc>, e: DateTime<Utc>) -> VecDeque<Bar> {
-    let df = Manager::load(iid, MarketData::BAR_1M, b, e).unwrap();
+    let source = Source::MOEXALGO;
+    let df = Manager::load(iid, source, MarketData::BAR_1M, b, e).unwrap();
 
     let ts = df
         .column("ts_nanos")
@@ -72,7 +75,7 @@ fn load_bars(iid: &Iid, b: DateTime<Utc>, e: DateTime<Utc>) -> VecDeque<Bar> {
     let mut v = df
         .column("volume")
         .unwrap()
-        .i64()
+        .u64()
         .unwrap()
         .into_no_null_iter();
 
@@ -84,7 +87,7 @@ fn load_bars(iid: &Iid, b: DateTime<Utc>, e: DateTime<Utc>) -> VecDeque<Bar> {
             h.next().unwrap(),
             l.next().unwrap(),
             c.next().unwrap(),
-            v.next().unwrap() as u64,
+            v.next().unwrap(),
         );
         bars_1m.push_back(bar);
     }

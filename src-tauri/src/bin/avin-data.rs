@@ -1,8 +1,6 @@
-use avin::utils;
-
 #[tokio::main]
 async fn main() {
-    utils::init_logger();
+    avin_utils::init_logger();
 
     // let source = Source::MOEX;
     // let tickers = [

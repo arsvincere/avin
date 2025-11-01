@@ -11,11 +11,11 @@ use chrono::{DateTime, Datelike, Timelike, Utc};
 use tonic::transport::{Channel, ClientTlsConfig};
 
 use avin_core::{
-    Account, Bar, BarEvent, Category, Direction, Event, FilledMarketOrder,
-    Iid, LimitOrder, MarketOrder, NewLimitOrder, NewMarketOrder,
+    Account, Bar, BarEvent, Category, Direction, Event, FilledMarketOrder, Iid,
+    LimitOrder, Manager, MarketOrder, NewLimitOrder, NewMarketOrder,
     NewStopOrder, Operation, Order, PostedLimitOrder, PostedMarketOrder,
-    PostedStopOrder, RejectedLimitOrder, RejectedMarketOrder, Share,
-    StopOrder, StopOrderKind, Tic, TicEvent, TimeFrame, Transaction,
+    PostedStopOrder, RejectedLimitOrder, RejectedMarketOrder, Share, StopOrder,
+    StopOrderKind, Tic, TicEvent, TimeFrame, Transaction,
 };
 use avin_utils::{self as utils, CFG, Cmd};
 
@@ -243,9 +243,7 @@ impl TinkoffClient {
     }
 
     // account
-    pub async fn get_accounts(
-        &mut self,
-    ) -> Result<Vec<Account>, &'static str> {
+    pub async fn get_accounts(&mut self) -> Result<Vec<Account>, &'static str> {
         // create request
         let request = tonic::Request::new(api::users::GetAccountsRequest {});
 
@@ -374,11 +372,10 @@ impl TinkoffClient {
         order: &Order,
     ) -> Result<Operation, &'static str> {
         // create request
-        let request =
-            tonic::Request::new(api::orders::GetOrderStateRequest {
-                account_id: a.id().to_string(),
-                order_id: order.broker_id().unwrap().clone(),
-            });
+        let request = tonic::Request::new(api::orders::GetOrderStateRequest {
+            account_id: a.id().to_string(),
+            order_id: order.broker_id().unwrap().clone(),
+        });
 
         // send request
         let response = self
@@ -436,14 +433,13 @@ impl TinkoffClient {
             }
             None => None,
         };
-        let request =
-            tonic::Request::new(api::operations::OperationsRequest {
-                account_id: a.id().to_string(),
-                from,
-                to,
-                state: api::operations::OperationState::Executed as i32,
-                figi: iid.figi().clone(),
-            });
+        let request = tonic::Request::new(api::operations::OperationsRequest {
+            account_id: a.id().to_string(),
+            from,
+            to,
+            state: api::operations::OperationState::Executed as i32,
+            figi: iid.figi().clone(),
+        });
 
         // send request
         let response = self
@@ -521,11 +517,10 @@ impl TinkoffClient {
         // операцию собрать, поэтому сразу запрашиваем OrderState
 
         // create request
-        let request =
-            tonic::Request::new(api::orders::GetOrderStateRequest {
-                account_id: a.id().to_string(),
-                order_id: t_post_order_response.order_id,
-            });
+        let request = tonic::Request::new(api::orders::GetOrderStateRequest {
+            account_id: a.id().to_string(),
+            order_id: t_post_order_response.order_id,
+        });
 
         // send request
         let response = self
@@ -752,14 +747,13 @@ impl TinkoffClient {
             Some(ts)
         };
         let interval: api::marketdata::CandleInterval = (tf).into();
-        let request =
-            tonic::Request::new(api::marketdata::GetCandlesRequest {
-                figi: "".to_string(),
-                from,
-                to,
-                interval: interval as i32,
-                instrument_id: iid.figi().clone(),
-            });
+        let request = tonic::Request::new(api::marketdata::GetCandlesRequest {
+            figi: "".to_string(),
+            from,
+            to,
+            interval: interval as i32,
+            instrument_id: iid.figi().clone(),
+        });
 
         // send request
         let response = self
@@ -904,8 +898,7 @@ impl TinkoffClient {
         let request = MarketDataRequest {
             payload: Some(Req::SubscribeCandlesRequest(
                 SubscribeCandlesRequest {
-                    subscription_action: SubscriptionAction::Unsubscribe
-                        as i32,
+                    subscription_action: SubscriptionAction::Unsubscribe as i32,
                     instruments: vec![candle_instrument],
                     waiting_close: false,
                 },
@@ -1741,9 +1734,11 @@ impl From<api::marketdata::SubscriptionInterval> for TimeFrame {
         use api::marketdata::SubscriptionInterval as si;
         match value {
             si::OneMinute => TimeFrame::M1,
-            si::FiveMinutes => todo!(),
+            si::FiveMinutes => TimeFrame::M5,
             si::TenMinutes => TimeFrame::M10,
+            si::FifteenMinutes => TimeFrame::M15,
             si::OneHour => TimeFrame::H1,
+            si::FourHour => TimeFrame::H4,
             si::Day => TimeFrame::Day,
             si::Week => TimeFrame::Week,
             si::Month => TimeFrame::Month,
@@ -1789,7 +1784,7 @@ impl From<api::marketdata::Trade> for TicEvent {
         let direction: Direction = t.direction().into();
 
         let figi = t.figi;
-        let iid = avin_core::Manager::find_figi(&figi).unwrap();
+        let iid = Manager::find_figi(&figi).unwrap();
         let lot = iid.lot();
 
         let ts = t.time.unwrap();
@@ -1889,9 +1884,11 @@ impl From<TimeFrame> for api::marketdata::CandleInterval {
 
         match value {
             TimeFrame::M1 => ci::CandleInterval1Min,
-            // TimeFrame::M5 => ci::CandleInterval5Min,
+            TimeFrame::M5 => ci::CandleInterval5Min,
             TimeFrame::M10 => ci::CandleInterval10Min,
+            TimeFrame::M15 => ci::CandleInterval15Min,
             TimeFrame::H1 => ci::Hour,
+            TimeFrame::H4 => ci::CandleInterval4Hour,
             TimeFrame::Day => ci::Day,
             TimeFrame::Week => ci::Week,
             TimeFrame::Month => ci::Month,
@@ -1904,9 +1901,11 @@ impl From<TimeFrame> for api::marketdata::SubscriptionInterval {
 
         match value {
             TimeFrame::M1 => si::OneMinute,
-            // TimeFrame::M5 => si::___,
+            TimeFrame::M5 => si::FiveMinutes,
             TimeFrame::M10 => si::TenMinutes,
+            TimeFrame::M15 => si::FifteenMinutes,
             TimeFrame::H1 => si::OneHour,
+            TimeFrame::H4 => si::FourHour,
             TimeFrame::Day => si::Day,
             TimeFrame::Week => si::Week,
             TimeFrame::Month => si::Month,

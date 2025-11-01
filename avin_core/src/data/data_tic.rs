@@ -10,7 +10,7 @@ use polars::prelude::*;
 
 use avin_utils::{self as utils, AvinError, Cmd};
 
-use crate::{Iid, MarketData};
+use crate::{Iid, MarketData, Source};
 
 #[derive(Debug)]
 pub struct DataTic {}
@@ -18,6 +18,7 @@ impl DataTic {
     #[allow(dead_code)]
     pub fn save(
         _iid: &Iid,
+        _source: Source,
         _md: MarketData,
         _df: DataFrame,
     ) -> Result<(), AvinError> {
@@ -25,7 +26,7 @@ impl DataTic {
     }
     pub fn load(
         iid: &Iid,
-        market_data: MarketData,
+        md: MarketData,
         begin: DateTime<Utc>,
         end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
@@ -45,7 +46,7 @@ impl DataTic {
         let mut day = begin.date_naive();
         let end_day = end.date_naive();
         while day <= end_day {
-            match Self::load_file(iid, market_data, day) {
+            match load_file(iid, md, day) {
                 Ok(file_df) => {
                     df.extend(&file_df).unwrap();
                     day = day.checked_add_days(Days::new(1)).unwrap();
@@ -63,34 +64,35 @@ impl DataTic {
         // filter & check empty
         let df = utils::filter_dt(begin, end, df);
         if df.is_empty() {
-            let msg = format!("{iid} {market_data}");
+            let msg = format!("{iid} {md}");
             return Err(AvinError::NotFound(msg));
         }
 
         Ok(df)
     }
-    pub fn load_file(
-        iid: &Iid,
-        md: MarketData,
-        day: NaiveDate,
-    ) -> Result<DataFrame, AvinError> {
-        // get path
-        let mut path = iid.path();
-        path.push(md.name());
-        path.push(day.year().to_string());
-        path.push(format!("{}.parquet", day.format("%Y-%m-%d")));
+}
 
-        if !Cmd::is_exist(&path) {
-            let msg = format!("{iid} {md}");
-            return Err(AvinError::NotFound(msg.to_string()));
-        }
+fn load_file(
+    iid: &Iid,
+    md: MarketData,
+    day: NaiveDate,
+) -> Result<DataFrame, AvinError> {
+    // get path
+    let mut path = iid.path();
+    path.push(md.name());
+    path.push(day.year().to_string());
+    path.push(format!("{}.parquet", day.format("%Y-%m-%d")));
 
-        match Cmd::read_pqt(&path) {
-            Ok(df) => Ok(df),
-            Err(why) => {
-                let msg = format!("read {} - {}", path.display(), why);
-                Err(AvinError::IOError(msg.to_string()))
-            }
+    if !Cmd::is_exist(&path) {
+        let msg = format!("{iid} {md}");
+        return Err(AvinError::NotFound(msg.to_string()));
+    }
+
+    match Cmd::read_pqt(&path) {
+        Ok(df) => Ok(df),
+        Err(why) => {
+            let msg = format!("read {} - {}", path.display(), why);
+            Err(AvinError::IOError(msg.to_string()))
         }
     }
 }

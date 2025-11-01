@@ -22,20 +22,24 @@ pub struct IidCache {
 }
 
 impl IidCache {
+    pub fn save(
+        source: Source,
+        category: Category,
+        mut iid_df: DataFrame,
+    ) -> Result<(), AvinError> {
+        let path = create_file_path(source, category);
+
+        // save parquet
+        Cmd::write_pqt(&mut iid_df, &path).unwrap();
+
+        Ok(())
+    }
+
     pub fn find_iid(s: &str) -> Result<Iid, AvinError> {
         cached_find_iid(s.to_string())
     }
     pub fn find_figi(figi: &str) -> Result<Iid, AvinError> {
         cached_find_figi(figi.to_string())
-    }
-
-    #[allow(dead_code)]
-    pub fn save(cache: IidCache) {
-        let path = create_file_path(cache.source, cache.category);
-
-        // save parquet
-        let mut df = cache.iid_df;
-        Cmd::write_pqt(&mut df, &path).unwrap();
     }
 }
 

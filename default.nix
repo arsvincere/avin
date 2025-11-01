@@ -1,38 +1,53 @@
 with import <nixpkgs> { };
 
 let
-    py_pkgs = python3Packages;
+  overrides = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml));
+  libPath = with pkgs;
+    lib.makeLibraryPath [
+      # load external libraries that you need in your rust project here
+    ];
 in
 pkgs.mkShell rec {
-    name = "avin_dev_shell";
-    venvDir = ".venv"; # python
+  RUSTC_VERSION = overrides.toolchain.channel;
 
-    libPath = with pkgs; lib.makeLibraryPath [
-      libGL
-      libxkbcommon
-      wayland
+  buildInputs = with pkgs; [
+    clang
+    # Replace llvmPackages with llvmPackages_X, where X is the latest LLVM version (at the time of writing, 16)
+    llvmPackages.bintools
+    rustup
+    openssl
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  # https://github.com/rust-lang/rust-bindgen#environment-variables
+  LIBCLANG_PATH =
+    pkgs.lib.makeLibraryPath [ pkgs.llvmPackages_latest.libclang.lib ];
+  shellHook = ''
+    export PATH=$PATH:''${CARGO_HOME:-~/.cargo}/bin
+    export PATH=$PATH:''${RUSTUP_HOME:-~/.rustup}/toolchains/$RUSTC_VERSION-x86_64-unknown-linux-gnu/bin/
+  '';
+
+  # Add precompiled library to rustc search path
+  RUSTFLAGS = (builtins.map (a: "-L ${a}/lib") [
+    # add libraries here (e.g. pkgs.libvmi)
+  ]);
+  LD_LIBRARY_PATH = libPath;
+
+  # Add glibc, clang, glib, and other headers to bindgen search path
+  BINDGEN_EXTRA_CLANG_ARGS =
+    # Includes normal include path
+    (builtins.map (a: ''-I"${a}/include"'') [
+      # add dev libraries here (e.g. pkgs.libvmi.dev)
+      pkgs.glibc.dev
+    ])
+    # Includes with special directory paths
+    ++ [
+      ''
+        -I"${pkgs.llvmPackages_latest.libclang.lib}/lib/clang/${pkgs.llvmPackages_latest.libclang.version}/include"''
+      ''-I"${pkgs.glib.dev}/include/glib-2.0"''
+      "-I${pkgs.glib.out}/lib/glib-2.0/include/"
     ];
-    LD_LIBRARY_PATH = libPath;
-
-    buildInputs = [
-        py_pkgs.venvShellHook
-        py_pkgs.python
-        py_pkgs.ruff
-        py_pkgs.numpy
-        py_pkgs.polars
-        openssl
-    ];
-
-    nativeBuildInputs = [
-        pkg-config
-    ];
-
-    postVenvCreation = ''
-        unset SOURCE_DATE_EPOCH
-        pip install -r requirements.txt
-    '';
-
-    postShellHook = ''
-        unset SOURCE_DATE_EPOCH
-    '';
 }

@@ -76,9 +76,7 @@ impl Tinkoff {
             },
             Order::Limit(limit) => match limit {
                 LimitOrder::New(new_limit) => {
-                    self.client
-                        .post_limit(&a.account, &a.iid, new_limit)
-                        .await
+                    self.client.post_limit(&a.account, &a.iid, new_limit).await
                 }
                 _ => todo!(),
             },
@@ -103,14 +101,29 @@ impl Tinkoff {
                     .subscribe_bar(&a.iid, &TimeFrame::M1)
                     .await
                     .unwrap(),
+                MarketData::BAR_5M => self
+                    .client
+                    .subscribe_bar(&a.iid, &TimeFrame::M5)
+                    .await
+                    .unwrap(),
                 MarketData::BAR_10M => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::M10)
                     .await
                     .unwrap(),
+                MarketData::BAR_15M => self
+                    .client
+                    .subscribe_bar(&a.iid, &TimeFrame::M15)
+                    .await
+                    .unwrap(),
                 MarketData::BAR_1H => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::H1)
+                    .await
+                    .unwrap(),
+                MarketData::BAR_4H => self
+                    .client
+                    .subscribe_bar(&a.iid, &TimeFrame::H4)
                     .await
                     .unwrap(),
                 MarketData::BAR_DAY => self

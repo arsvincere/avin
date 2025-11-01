@@ -24,7 +24,7 @@ pub struct Theme {
     pub cross: Color32,
     pub bear: Color32,
     pub bull: Color32,
-    pub undef: Color32,
+    pub dodji: Color32,
     pub t1: Color32,
     pub t2: Color32,
     pub t3: Color32,
@@ -58,9 +58,9 @@ impl Default for Theme {
             bull: Color32::from_hex(&c.bull)
                 .unwrap()
                 .gamma_multiply(c.bull_opacity),
-            undef: Color32::from_hex(&c.nobody)
+            dodji: Color32::from_hex(&c.dodji)
                 .unwrap()
-                .gamma_multiply(c.nobody_opacity),
+                .gamma_multiply(c.dodji_opacity),
             t1: Color32::from_hex(&c.trend_t1)
                 .unwrap()
                 .gamma_multiply(c.trend_t1_opacity),

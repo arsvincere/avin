@@ -9,7 +9,7 @@ use std::collections::VecDeque;
 
 use avin_analyse::TrendAnalytic;
 use avin_core::{
-    Asset, Bar, BarEvent, ExtremumIndicator, Iid, Manager, MarketData,
+    Asset, Bar, BarEvent, ExtremumIndicator, Iid, Manager, MarketData, Source,
     TimeFrame,
 };
 use chrono::{DateTime, Utc};
@@ -85,7 +85,8 @@ impl Simulator {
 }
 
 fn load_bars(iid: &Iid, b: DateTime<Utc>, e: DateTime<Utc>) -> VecDeque<Bar> {
-    let df = Manager::load(iid, MarketData::BAR_1M, b, e).unwrap();
+    let source = Source::MOEXALGO;
+    let df = Manager::load(iid, source, MarketData::BAR_1M, b, e).unwrap();
     let vec_bars = Bar::from_df(&df).unwrap();
 
     VecDeque::from(vec_bars)

@@ -53,7 +53,6 @@ impl Iid {
 
         let columns = [
             "exchange",
-            "exchange_specific",
             "category",
             "ticker",
             "figi",

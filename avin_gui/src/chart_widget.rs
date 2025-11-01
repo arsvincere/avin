@@ -10,7 +10,7 @@ use egui_plot::{Corner, Plot, PlotUi};
 
 use avin_analyse::TrendAnalytic;
 use avin_core::{
-    Asset, ExtremumIndicator,
+    Asset, ExtremumIndicator, Source,
     Term::{T1, T2, T3, T4, T5},
     TimeFrame,
 };
@@ -50,7 +50,8 @@ impl ChartWidget {
         match asset.chart(tf) {
             Some(_) => (),
             None => {
-                asset.load_chart(tf).unwrap();
+                let source = Source::MOEXALGO;
+                asset.load_chart(source, tf).unwrap();
                 let chart = asset.chart_mut(tf).unwrap();
                 ExtremumIndicator::init(chart);
                 TrendAnalytic::init(chart);
@@ -60,7 +61,10 @@ impl ChartWidget {
         // check tics
         match asset.tics() {
             Some(_) => (),
-            None => asset.load_tics().unwrap(),
+            None => {
+                let source = Source::MOEXALGO;
+                asset.load_tics(source).unwrap();
+            }
         };
 
         // check footprint

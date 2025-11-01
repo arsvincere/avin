@@ -3,23 +3,23 @@
 
 use chrono::prelude::*;
 
-use avin::analyse::*;
-use avin::connect::*;
-use avin::core::*;
-use avin::scanner::*;
-use avin::strategy::*;
-use avin::tester::*;
-use avin::utils;
+use avin_analyse::*;
+use avin_connect::*;
+use avin_core::*;
+use avin_scanner::*;
+use avin_strategy::*;
+use avin_tester::*;
 
 #[tokio::main]
 async fn main() {
-    utils::init_logger();
+    avin_utils::init_logger();
 
     let mut asset = Asset::new("moex_share_vtbr").unwrap();
+    let source = Source::MOEXALGO;
     let tf = TimeFrame::M10;
-    let begin = utils::str_date_to_utc("2024-01-01");
-    let end = utils::str_date_to_utc("2025-01-01");
-    asset.load_chart_period(tf, begin, end).unwrap();
+    let begin = avin_utils::str_date_to_utc("2024-01-01");
+    let end = avin_utils::str_date_to_utc("2025-01-01");
+    asset.load_chart_period(source, tf, begin, end).unwrap();
     let chart = asset.chart_mut(tf).unwrap();
 
     let filter = MyFilter::default();

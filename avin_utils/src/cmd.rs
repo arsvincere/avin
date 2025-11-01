@@ -51,7 +51,10 @@ impl Cmd {
             }
         }
 
+        // NOTE: Cmd sorting files before return
+        // don't change it behaviour
         files.sort();
+
         Ok(files)
     }
     pub fn get_dirs(dir_path: &Path) -> Result<Vec<PathBuf>, AvinError> {
@@ -65,7 +68,10 @@ impl Cmd {
             }
         }
 
+        // NOTE: Cmd sorting dirs before return
+        // don't change it behaviour
         dirs.sort();
+
         Ok(dirs)
     }
 
@@ -86,6 +92,18 @@ impl Cmd {
     pub fn read_pqt(path: &Path) -> Result<DataFrame, AvinError> {
         let mut file = File::open(path).unwrap();
         let df = ParquetReader::new(&mut file).finish().unwrap();
+
+        Ok(df)
+    }
+    pub fn read_csv(path: &Path) -> Result<DataFrame, AvinError> {
+        let file = File::open(path).unwrap();
+
+        let parse_options = CsvParseOptions::default().with_separator(b';');
+        let options = CsvReadOptions::default()
+            .with_parse_options(parse_options)
+            .with_has_header(false);
+
+        let df = CsvReader::new(file).with_options(options).finish().unwrap();
 
         Ok(df)
     }
@@ -131,10 +149,7 @@ impl Cmd {
 
         Ok(())
     }
-    pub fn write_pqt(
-        df: &mut DataFrame,
-        path: &Path,
-    ) -> Result<(), AvinError> {
+    pub fn write_pqt(df: &mut DataFrame, path: &Path) -> Result<(), AvinError> {
         // check dir, create if not exist
         let dir_path = path.parent().unwrap();
         if !Cmd::is_exist(dir_path) {

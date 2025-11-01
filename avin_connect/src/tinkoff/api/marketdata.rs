@@ -252,9 +252,7 @@ impl SecurityTradingStatus {
             "SECURITY_TRADING_STATUS_SESSION_ASSIGNED" => {
                 Some(Self::SessionAssigned)
             }
-            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => {
-                Some(Self::SessionClose)
-            }
+            "SECURITY_TRADING_STATUS_SESSION_CLOSE" => Some(Self::SessionClose),
             "SECURITY_TRADING_STATUS_SESSION_OPEN" => Some(Self::SessionOpen),
             "SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING" => {
                 Some(Self::DealerNormalTrading)
@@ -273,10 +271,7 @@ impl SecurityTradingStatus {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MarketDataRequest {
-    #[prost(
-        oneof = "market_data_request::Payload",
-        tags = "1, 2, 3, 4, 5, 6"
-    )]
+    #[prost(oneof = "market_data_request::Payload", tags = "1, 2, 3, 4, 5, 6")]
     pub payload: ::core::option::Option<market_data_request::Payload>,
 }
 /// Nested message and enum types in `MarketDataRequest`.
@@ -816,8 +811,7 @@ pub struct GetLastPricesRequest {
     pub figi: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     /// Массив идентификаторов инструмента, принимает значения figi или instrument_uid.
     #[prost(string, repeated, tag = "2")]
-    pub instrument_id:
-        ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    pub instrument_id: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 /// Список цен последних сделок.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -916,8 +910,7 @@ pub struct GetTradingStatusRequest {
 pub struct GetTradingStatusesRequest {
     /// Идентификатор инструмента, принимает значение figi или instrument_uid
     #[prost(string, repeated, tag = "1")]
-    pub instrument_id:
-        ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    pub instrument_id: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 /// Информация о торговом статусе.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -1108,7 +1101,9 @@ pub enum SubscriptionInterval {
     //     SUBSCRIPTION_INTERVAL_WEEK = 12
     //     SUBSCRIPTION_INTERVAL_MONTH = 13
     TenMinutes = 8,
+    FifteenMinutes = 3,
     OneHour = 4,
+    FourHour = 11,
     Day = 5,
     Week = 12,
     Month = 13,
@@ -1148,10 +1143,12 @@ impl SubscriptionInterval {
             //     SUBSCRIPTION_INTERVAL_4_HOUR = 11
             //     SUBSCRIPTION_INTERVAL_WEEK = 12
             //     SUBSCRIPTION_INTERVAL_MONTH = 13
-            SubscriptionInterval::TenMinutes => {
-                "SUBSCRIPTION_INTERVAL_10_MIN"
+            SubscriptionInterval::TenMinutes => "SUBSCRIPTION_INTERVAL_10_MIN",
+            SubscriptionInterval::FifteenMinutes => {
+                "SUBSCRIPTION_INTERVAL_FIFTEEN_MINUTES"
             }
-            SubscriptionInterval::OneHour => "SUBSCRIPTION_INTERVAL_ONE_HOUR",
+            SubscriptionInterval::FourHour => "SUBSCRIPTION_INTERVAL_ONE_HOUR",
+            SubscriptionInterval::OneHour => "SUBSCRIPTION_INTERVAL_4_HOUR",
             SubscriptionInterval::Day => "SUBSCRIPTION_INTERVAL_ONE_DAY",
             SubscriptionInterval::Week => "SUBSCRIPTION_INTERVAL_WEEK",
             SubscriptionInterval::Month => "SUBSCRIPTION_INTERVAL_MONTH",
@@ -1402,12 +1399,7 @@ impl CandleInterval {
 }
 /// Generated client implementations.
 pub mod market_data_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -1416,15 +1408,12 @@ pub mod market_data_service_client {
     }
     impl MarketDataServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -1511,10 +1500,8 @@ pub mod market_data_service_client {
         pub async fn get_last_prices(
             &mut self,
             request: impl tonic::IntoRequest<super::GetLastPricesRequest>,
-        ) -> Result<
-            tonic::Response<super::GetLastPricesResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::GetLastPricesResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -1589,10 +1576,8 @@ pub mod market_data_service_client {
         pub async fn get_last_trades(
             &mut self,
             request: impl tonic::IntoRequest<super::GetLastTradesRequest>,
-        ) -> Result<
-            tonic::Response<super::GetLastTradesResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::GetLastTradesResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -1609,10 +1594,8 @@ pub mod market_data_service_client {
         pub async fn get_close_prices(
             &mut self,
             request: impl tonic::IntoRequest<super::GetClosePricesRequest>,
-        ) -> Result<
-            tonic::Response<super::GetClosePricesResponse>,
-            tonic::Status,
-        > {
+        ) -> Result<tonic::Response<super::GetClosePricesResponse>, tonic::Status>
+        {
             self.inner.ready().await.map_err(|e| {
                 tonic::Status::new(
                     tonic::Code::Unknown,
@@ -1629,12 +1612,7 @@ pub mod market_data_service_client {
 }
 /// Generated client implementations.
 pub mod market_data_stream_service_client {
-    #![allow(
-        unused_variables,
-        dead_code,
-        missing_docs,
-        clippy::let_unit_value
-    )]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::http::Uri;
     use tonic::codegen::*;
     #[derive(Debug, Clone)]
@@ -1643,15 +1621,12 @@ pub mod market_data_stream_service_client {
     }
     impl MarketDataStreamServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
-        pub async fn connect<D>(
-            dst: D,
-        ) -> Result<Self, tonic::transport::Error>
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
             D: std::convert::TryInto<tonic::transport::Endpoint>,
             D::Error: Into<StdError>,
         {
-            let conn =
-                tonic::transport::Endpoint::new(dst)?.connect().await?;
+            let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
@@ -1723,9 +1698,7 @@ pub mod market_data_stream_service_client {
                 Message = super::MarketDataRequest,
             >,
         ) -> Result<
-            tonic::Response<
-                tonic::codec::Streaming<super::MarketDataResponse>,
-            >,
+            tonic::Response<tonic::codec::Streaming<super::MarketDataResponse>>,
             tonic::Status,
         > {
             self.inner.ready().await.map_err(|e| {
@@ -1749,9 +1722,7 @@ pub mod market_data_stream_service_client {
                 super::MarketDataServerSideStreamRequest,
             >,
         ) -> Result<
-            tonic::Response<
-                tonic::codec::Streaming<super::MarketDataResponse>,
-            >,
+            tonic::Response<tonic::codec::Streaming<super::MarketDataResponse>>,
             tonic::Status,
         > {
             self.inner.ready().await.map_err(|e| {

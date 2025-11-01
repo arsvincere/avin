@@ -10,7 +10,7 @@ use polars::prelude::*;
 use strum::EnumIter;
 
 use avin_core::{
-    Cluster, Footprint, Iid, Manager, MarketData, Share, Tic, TimeFrame,
+    Cluster, Footprint, Iid, Manager, MarketData, Share, Source, Tic, TimeFrame,
 };
 
 use crate::Analyse;
@@ -50,10 +50,7 @@ impl Feat {
 }
 
 impl Analyse for Cluster {
-    fn analyse(
-        iid: &Iid,
-        tf: TimeFrame,
-    ) -> Result<(), avin_utils::AvinError> {
+    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), avin_utils::AvinError> {
         log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
 
         create_clusters_df(iid, tf);
@@ -112,7 +109,8 @@ fn create_clusters_df(iid: &Iid, tf: TimeFrame) {
             .and_time(NaiveTime::MIN)
             .and_utc();
 
-        let tic_df = match Manager::load(iid, md, b, e) {
+        let source = Source::MOEXALGO;
+        let tic_df = match Manager::load(iid, source, md, b, e) {
             Ok(data) => data,
             Err(_) => {
                 log::warn!("no tics for {} {}", iid.ticker(), day);

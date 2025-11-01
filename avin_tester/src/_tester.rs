@@ -23,11 +23,7 @@ impl Tester {
         Tester { tx, rx }
     }
 
-    pub async fn run(
-        &mut self,
-        mut strategy: impl Strategy,
-        test: &mut Test,
-    ) {
+    pub async fn run(&mut self, mut strategy: impl Strategy, test: &mut Test) {
         log::info!("Tester run");
         test.clear();
 

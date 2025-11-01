@@ -11,8 +11,8 @@ use crate::Strategy;
 use avin_analyse::{Size, TrendAnalytic};
 use avin_core::{
     Account, Action, Asset, Chart, Direction, ExtremumIndicator, Iid,
-    Manager, MarketData, MarketOrder, Order, OrderAction, OrderEvent,
-    StopOrder, StopOrderKind, Term, TimeFrame, Trade, TradeKind,
+    MarketData, MarketOrder, Order, OrderAction, OrderEvent, StopOrder,
+    StopOrderKind, Term, TimeFrame, Trade, TradeKind,
 };
 use avin_scanner::Filter;
 use avin_utils as utils;

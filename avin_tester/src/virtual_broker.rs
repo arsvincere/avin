@@ -40,12 +40,9 @@ pub struct VirtualBroker {
 impl VirtualBroker {
     pub fn new(test: &Test) -> Self {
         let (tx, rx) = mpsc::unbounded_channel();
-        let data_stream = Self::create_marketdata_stream(
-            &test.iid,
-            test.begin(),
-            test.end(),
-        )
-        .unwrap();
+        let data_stream =
+            Self::create_marketdata_stream(&test.iid, test.begin(), test.end())
+                .unwrap();
 
         VirtualBroker {
             tx,
@@ -365,12 +362,7 @@ impl VirtualBroker {
         let e = Event::Order(e);
         self.queue.push_back(e);
     }
-    fn exec_limit(
-        &mut self,
-        ts: i64,
-        price: f64,
-        mut order: PostedLimitOrder,
-    ) {
+    fn exec_limit(&mut self, ts: i64, price: f64, mut order: PostedLimitOrder) {
         // create transaction
         let quantity = order.lots * self.data_stream.iid.lot();
         let transaction = Transaction::new(quantity as i32, price);

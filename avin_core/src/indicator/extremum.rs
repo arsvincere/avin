@@ -679,10 +679,11 @@ mod tests {
     #[test]
     fn extremum_t1() {
         let mut share = Share::new("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        share.load_chart_period(tf, begin, end).unwrap();
+        share.load_chart_period(source, tf, begin, end).unwrap();
 
         let chart = share.chart_mut(tf).unwrap();
         ExtremumIndicator::init(chart);
@@ -709,10 +710,11 @@ mod tests {
     #[test]
     fn trend_t1() {
         let mut share = Share::new("moex_share_sber").unwrap();
+        let source = Source::MOEXALGO;
         let tf = TimeFrame::Day;
         let begin = utils::str_date_to_utc("2024-12-20");
         let end = utils::str_date_to_utc("2025-01-01");
-        share.load_chart_period(tf, begin, end).unwrap();
+        share.load_chart_period(source, tf, begin, end).unwrap();
 
         let chart = share.chart_mut(tf).unwrap();
         ExtremumIndicator::init(chart);

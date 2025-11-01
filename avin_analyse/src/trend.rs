@@ -14,7 +14,7 @@ use polars::prelude::{
 use strum::{EnumIter, IntoEnumIterator};
 
 use avin_core::{
-    Chart, ExtremumIndicator, Iid, Share, Term, TimeFrame, Trend,
+    Chart, ExtremumIndicator, Iid, Share, Source, Term, TimeFrame, Trend,
 };
 use avin_utils::{self as utils, AvinError};
 
@@ -334,7 +334,8 @@ fn load_chart(iid: &Iid, tf: TimeFrame) -> Result<Chart, AvinError> {
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();
 
-    let chart = Chart::load(iid, tf, begin, end).unwrap();
+    let source = Source::MOEXALGO;
+    let chart = Chart::load(iid, source, tf, begin, end).unwrap();
 
     Ok(chart)
 }
@@ -651,9 +652,11 @@ fn get_obs(chart: &Chart, trend: &Trend, all: &DataFrame) -> DataFrame {
 fn get_step(tf: TimeFrame) -> f64 {
     match tf {
         TimeFrame::M1 => 0.01,
-        // TimeFrame::M5 => 0.05,
+        TimeFrame::M5 => 0.05,
         TimeFrame::M10 => 0.10,
+        TimeFrame::M15 => 0.10,
         TimeFrame::H1 => 0.20,
+        TimeFrame::H4 => 0.20,
         TimeFrame::Day => 0.25,
         TimeFrame::Week => 0.50,
         TimeFrame::Month => 1.00,

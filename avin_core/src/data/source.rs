@@ -11,7 +11,7 @@
 /// Перечисление для выбора источника загрузки рыночных данных.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, strum::Display)]
 pub enum Source {
-    MOEX,
+    MOEXALGO,
     TINKOFF,
 }
 impl Source {
@@ -21,7 +21,7 @@ impl Source {
     /// Возвращает название источника биржевых данных.
     pub fn name(&self) -> &'static str {
         match self {
-            Self::MOEX => "MOEX",
+            Self::MOEXALGO => "MOEXALGO",
             Self::TINKOFF => "TINKOFF",
         }
     }
@@ -29,7 +29,7 @@ impl Source {
 impl From<&str> for Source {
     fn from(value: &str) -> Source {
         match value.to_uppercase().as_str() {
-            "MOEX" => Source::MOEX,
+            "MOEXALGO" => Source::MOEXALGO,
             "TINKOFF" => Source::TINKOFF,
             _ => panic!("Invalid source: {value}"),
         }
@@ -42,17 +42,17 @@ mod tests {
 
     #[test]
     fn name() {
-        assert_eq!(Source::MOEX.name(), "MOEX");
+        assert_eq!(Source::MOEXALGO.name(), "MOEXALGO");
         assert_eq!(Source::TINKOFF.name(), "TINKOFF");
     }
     #[test]
     fn to_str() {
-        assert_eq!(Source::MOEX.to_string(), "MOEX");
+        assert_eq!(Source::MOEXALGO.to_string(), "MOEXALGO");
         assert_eq!(Source::TINKOFF.to_string(), "TINKOFF");
     }
     #[test]
     fn from_str() {
-        assert_eq!(Source::MOEX, "moex".into());
+        assert_eq!(Source::MOEXALGO, "MOEXALGO".into());
         assert_eq!(Source::TINKOFF, "TiNkoFf".into());
     }
 }

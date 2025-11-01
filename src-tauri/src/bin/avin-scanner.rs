@@ -1,11 +1,9 @@
-use avin::utils;
-
 fn main() -> eframe::Result {
-    utils::init_logger();
+    avin_utils::init_logger();
 
     eframe::run_native(
         "AVIN - Scanner",
         eframe::NativeOptions::default(),
-        Box::new(|cc| Ok(Box::new(avin::gui::Scanner::new(cc)))),
+        Box::new(|cc| Ok(Box::new(avin_gui::Scanner::new(cc)))),
     )
 }

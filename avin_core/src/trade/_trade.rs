@@ -60,12 +60,7 @@ pub enum Trade {
 }
 impl Trade {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new(
-        ts: i64,
-        strategy: &str,
-        kind: TradeKind,
-        iid: Iid,
-    ) -> NewTrade {
+    pub fn new(ts: i64, strategy: &str, kind: TradeKind, iid: Iid) -> NewTrade {
         NewTrade {
             ts,
             strategy: strategy.to_string(),
@@ -564,8 +559,7 @@ impl ClosedTrade {
         // в итоге получается количество процентов в день
         // используется для сравнения эффективности трейдов с учетом
         // времени которое деньги были заняты в этом трейде.
-        self.result_p()
-            / (self.timedelta().num_minutes() as f64 / 60.0 / 24.0)
+        self.result_p() / (self.timedelta().num_minutes() as f64 / 60.0 / 24.0)
     }
 }
 impl std::fmt::Display for ClosedTrade {

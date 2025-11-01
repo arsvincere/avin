@@ -29,11 +29,7 @@ pub struct Footprint {
     now: Option<Cluster>,
 }
 impl Footprint {
-    pub fn new(
-        iid: &Iid,
-        tf: &TimeFrame,
-        clusters: Vec<Cluster>,
-    ) -> Footprint {
+    pub fn new(iid: &Iid, tf: &TimeFrame, clusters: Vec<Cluster>) -> Footprint {
         Self {
             iid: iid.clone(),
             tf: *tf,

@@ -1,10 +1,11 @@
 /*****************************************************************************
- * URL:         http://arsvincere.com
- * AUTHOR:      H1ghSpeed
- * E-MAIL:
+ * URL:         http://avin.info
+ * AUTHOR:      Alex Avin
+ * E-MAIL:      mr.alexavin@gmail.com
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_core::Bar;
 use chrono::Days;
 use chrono::TimeDelta;
 use chrono::prelude::*;
@@ -60,10 +61,13 @@ impl SourceMoex {
             MarketData::BAR_DAY => self.get_bars(iid, md, from, till).await,
             MarketData::BAR_WEEK => self.get_bars(iid, md, from, till).await,
             MarketData::BAR_MONTH => self.get_bars(iid, md, from, till).await,
-            MarketData::TIC => todo!(),
             MarketData::TRADE_STATS => self.get_trades(iid, from, till).await,
             MarketData::ORDER_STATS => self.get_orders(iid, from, till).await,
             MarketData::OB_STATS => self.get_ob(iid, from, till).await,
+            MarketData::TIC => todo!(),
+            MarketData::BAR_5M => todo!("Error: data unavailable"),
+            MarketData::BAR_15M => todo!("Error: data unavailable"),
+            MarketData::BAR_4H => todo!("Error: data unavailable"),
         }
     }
 
@@ -78,7 +82,8 @@ impl SourceMoex {
         // TODO: не известно работает ли вообще эта функция, очень старый
         // код который сюда скопировал
 
-        let mut bars = DataFrame::empty_with_schema(&DataSchema::bar());
+        let schema = Bar::schema();
+        let mut bars = DataFrame::empty_with_schema(&schema);
 
         let mut dt = from;
         while dt < till {

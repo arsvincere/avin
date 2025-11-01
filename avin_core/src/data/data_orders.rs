@@ -123,18 +123,19 @@ fn load_file(
 ) -> Result<DataFrame, AvinError> {
     let path = create_file_path(iid, md, year);
 
-    // check path is exist
+    // check path is exist, else AvinError::NotFound
     if !Cmd::is_exist(&path) {
         let msg = format!("{iid} {md}");
-        return Err(AvinError::NotFound(msg.to_string()));
+        let e = AvinError::NotFound(msg);
+        return Err(e);
     }
 
-    // read file
+    // read file, else AvinError::IOError
     match Cmd::read_pqt(&path) {
         Ok(df) => Ok(df),
         Err(why) => {
             let msg = format!("read {} - {}", path.display(), why);
-            Err(AvinError::IOError(msg.to_string()))
+            Err(AvinError::IOError(msg))
         }
     }
 }

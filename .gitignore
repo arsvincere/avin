@@ -16,7 +16,7 @@ __pycache__/
 # tmp files
 *.bak
 *.tmp
-tmp.*
+.bak/
 1.*
 2.*
 3.*
@@ -25,5 +25,6 @@ tmp.*
 Session.vim*
 bak/
 log/
+tmp.*
 tmp/
 usr/
