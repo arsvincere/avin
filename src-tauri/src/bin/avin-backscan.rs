@@ -6,7 +6,7 @@ use chrono::prelude::*;
 use avin_analyse::*;
 use avin_connect::*;
 use avin_core::*;
-use avin_scanner::*;
+use avin_filter::*;
 use avin_strategy::*;
 use avin_tester::*;
 
@@ -22,7 +22,7 @@ async fn main() {
     asset.load_chart_period(source, tf, begin, end).unwrap();
     let chart = asset.chart_mut(tf).unwrap();
 
-    let filter = MyFilter::default();
+    let filter = MyCondition::default();
     let marker = Marker::new(
         MarkerShape::Circle,
         MarkerColor::Yellow,
@@ -33,8 +33,8 @@ async fn main() {
 }
 
 #[derive(Default)]
-struct MyFilter {}
-impl Filter for MyFilter {
+struct MyCondition {}
+impl Condition for MyCondition {
     fn name(&self) -> &'static str {
         "my_filter"
     }
@@ -74,25 +74,3 @@ impl Filter for MyFilter {
         // false
     }
 }
-// #[derive(Default)]
-// struct MyFilter {}
-// impl Filter for MyFilter {
-//     fn name(&self) -> &'static str {
-//         "my_filter"
-//     }
-//     fn apply(&self, chart: &Chart) -> bool {
-//         let trend = match chart.trend(Term::T3, 0) {
-//             Some(t) => t,
-//             None => return false,
-//         };
-//         if trend.is_bear() {
-//             return false;
-//         }
-//         let size = chart.trend_abs_size(trend).unwrap();
-//         if size == Size::Biggest {
-//             return true;
-//         }
-//
-//         false
-//     }
-// }

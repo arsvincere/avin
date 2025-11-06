@@ -5,10 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-// TODO: Filter можно переименовать в Condition, и модуль в целом
-// переименовать в avin_filter. Тогда освободится имя avin_scanner
-// и его займет advisor. Так более логичный нейминг получится.
-
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
@@ -18,7 +14,7 @@ use avin_analyse::TrendAnalytic;
 use avin_core::{Chart, ExtremumIndicator, TimeFrame};
 use avin_utils::{AvinError, CFG, Cmd};
 
-pub trait Filter {
+pub trait Condition {
     fn name(&self) -> &'static str;
     fn apply(&self, chart: &Chart) -> bool;
 }
@@ -134,7 +130,7 @@ pub struct ScannerResult {
 impl ScannerResult {
     pub fn new(
         chart: &Chart,
-        filter: impl Filter,
+        filter: impl Condition,
         marker: Marker,
         points: Vec<Point>,
     ) -> Self {
@@ -272,7 +268,7 @@ pub struct Scanner {}
 impl Scanner {
     pub fn scan(
         chart: &Chart,
-        filter: impl Filter,
+        filter: impl Condition,
         marker: Marker,
     ) -> Result<(), AvinError> {
         // временный вектор для найденных точек, где фильтр сработал

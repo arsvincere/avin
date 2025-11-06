@@ -6,10 +6,10 @@
  ****************************************************************************/
 
 mod example;
-mod scanner;
+mod filter;
 
-pub use example::MyFilter;
-pub use scanner::{
-    Filter, Marker, MarkerColor, MarkerShape, MarkerSize, Scanner,
+pub use example::MyCondition;
+pub use filter::{
+    Condition, Marker, MarkerColor, MarkerShape, MarkerSize, Scanner,
     ScannerResult, ScannerResultList,
 };

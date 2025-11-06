@@ -14,7 +14,7 @@ use avin_core::{
     MarketData, MarketOrder, Order, OrderAction, OrderEvent, StopOrder,
     StopOrderKind, Term, TimeFrame, Trade, TradeKind,
 };
-use avin_scanner::Filter;
+use avin_filter::Condition;
 use avin_utils as utils;
 
 const NAME: &str = "BigTrend-S-1.1";
@@ -544,7 +544,7 @@ impl BigTrendShort {
 
 #[derive(Default)]
 struct Filter10M {}
-impl Filter for Filter10M {
+impl Condition for Filter10M {
     fn name(&self) -> &'static str {
         "my_filter"
     }

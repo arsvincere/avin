@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_scanner::ScannerResult;
+use avin_filter::ScannerResult;
 use avin_tester::Test;
 use chrono::{DateTime, Local};
 use egui_plot::{Line, LineStyle, MarkerShape, PlotPoint, PlotUi, Points};
@@ -448,7 +448,7 @@ impl ScanDraw for ScannerResult {
             let y = p.price;
 
             // create shape
-            use avin_scanner::MarkerShape as ams;
+            use avin_filter::MarkerShape as ams;
             use egui_plot::MarkerShape as ems;
             let shape = match self.marker().shape {
                 ams::Circle => ems::Circle,
@@ -462,7 +462,7 @@ impl ScanDraw for ScannerResult {
                 ams::Left => ems::Left,
                 ams::Right => ems::Right,
             };
-            use avin_scanner::MarkerColor as amc;
+            use avin_filter::MarkerColor as amc;
             let color = match self.marker().color {
                 amc::Red => theme.red,
                 amc::Orange => theme.orange,

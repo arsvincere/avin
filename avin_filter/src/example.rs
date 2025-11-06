@@ -7,12 +7,12 @@
 
 use avin_core::Chart;
 
-use super::Filter;
+use super::Condition;
 
 const NAME: &str = "bull_3";
 
-pub struct MyFilter {}
-impl Filter for MyFilter {
+pub struct MyCondition {}
+impl Condition for MyCondition {
     fn name(&self) -> &'static str {
         NAME
     }

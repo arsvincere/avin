@@ -1,6 +1,6 @@
 [package]
-name = "avin_scanner"
-description = "Simple back scanner, part of 'avin' library"
+name = "avin_filter"
+description = "Simple back filter, part of 'avin' library"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }
