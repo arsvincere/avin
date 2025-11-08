@@ -14,7 +14,7 @@ use crate::TimeFrame;
 /// # ru
 /// Перечисление для выбора типа данных.
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Clone, Copy, strum::Display)]
+#[derive(Debug, PartialEq, Clone, Copy, strum::Display, strum::EnumIter)]
 pub enum MarketData {
     BAR_1M,
     BAR_5M,

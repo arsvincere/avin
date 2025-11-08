@@ -9,7 +9,7 @@
 ///
 /// # ru
 /// Перечисление для выбора биржи.
-#[derive(Debug, PartialEq, Clone, Copy, strum::Display)]
+#[derive(Debug, PartialEq, Clone, Copy, strum::Display, strum::EnumIter)]
 pub enum Exchange {
     MOEX,
 }

@@ -144,6 +144,28 @@ impl Manager {
             MarketData::OB_STATS => DataOB::load(iid, md, begin, end),
         }
     }
+    pub fn load_last(
+        iid: &Iid,
+        source: Source,
+        md: MarketData,
+    ) -> Result<DataFrame, AvinError> {
+        match md {
+            MarketData::BAR_1M => DataBar::load_last(iid, source, md),
+            MarketData::BAR_5M => DataBar::load_last(iid, source, md),
+            MarketData::BAR_10M => DataBar::load_last(iid, source, md),
+            MarketData::BAR_15M => DataBar::load_last(iid, source, md),
+            MarketData::BAR_1H => DataBar::load_last(iid, source, md),
+            MarketData::BAR_4H => DataBar::load_last(iid, source, md),
+            MarketData::BAR_DAY => DataBar::load_last(iid, source, md),
+            MarketData::BAR_WEEK => DataBar::load_last(iid, source, md),
+            MarketData::BAR_MONTH => DataBar::load_last(iid, source, md),
+            MarketData::TIC => todo!(),
+            MarketData::TRADE_STATS => todo!(),
+            MarketData::ORDER_STATS => todo!(),
+            MarketData::OB_STATS => todo!(),
+        }
+    }
+
     /// Save instruments cache.
     ///
     /// # ru
@@ -165,7 +187,6 @@ mod tests {
     use crate::*;
 
     #[test]
-    #[ignore]
     fn request_1m() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let source = Source::MOEXALGO;
@@ -185,7 +206,6 @@ mod tests {
         );
     }
     #[test]
-    #[ignore]
     fn request_10m() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let source = Source::MOEXALGO;
@@ -205,7 +225,6 @@ mod tests {
         );
     }
     #[test]
-    #[ignore]
     fn request_1h() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let source = Source::MOEXALGO;
@@ -225,7 +244,6 @@ mod tests {
         );
     }
     #[test]
-    #[ignore]
     fn request_day() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let source = Source::MOEXALGO;
@@ -245,7 +263,6 @@ mod tests {
         );
     }
     #[test]
-    #[ignore]
     fn request_week() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let source = Source::MOEXALGO;
@@ -265,7 +282,6 @@ mod tests {
         );
     }
     #[test]
-    #[ignore]
     fn request_month() {
         let iid = Manager::find_iid("moex_share_sber").unwrap();
         let source = Source::MOEXALGO;

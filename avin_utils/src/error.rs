@@ -11,6 +11,7 @@ pub enum AvinError {
     NotFound(String),
     NotLoaded(String),
     IOError(String),
+    NotImplemented(String),
 }
 
 impl std::fmt::Display for AvinError {
@@ -20,6 +21,7 @@ impl std::fmt::Display for AvinError {
             Self::NotFound(s) => write!(f, "NotFound: {s}"),
             Self::NotLoaded(s) => write!(f, "NotLoaded: {s}"),
             Self::IOError(s) => write!(f, "IOError: {s}"),
+            Self::NotImplemented(s) => write!(f, "Not implemented: {s}"),
         }
     }
 }

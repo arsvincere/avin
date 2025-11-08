@@ -5,9 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_core::{Bar, Iid, Manager, MarketData, Source};
-use avin_utils::AvinError;
 use chrono::{TimeZone, Utc};
+use polars::frame::UniqueKeepStrategy;
+use strum::IntoEnumIterator;
+
+use avin_core::{Bar, Category, Exchange, Iid, Manager, MarketData, Source};
+use avin_utils::{AvinError, CFG, Cmd};
 
 use crate::SourceTinkoff;
 
@@ -76,25 +79,118 @@ impl Data {
 
         // convert
         let bars = Bar::from_df(&input_df).unwrap();
-        let output_bars = convert(input, output, &bars);
-        let output_df = Bar::to_df(&output_bars).unwrap();
+        let mut output_bars = convert(input, output, &bars);
+
+        // NOTE: после конвертации последний бар может быть незавершенным
+        // тупо отбрасываем его
+        output_bars.pop();
 
         // save
+        let output_df = Bar::to_df(&output_bars).unwrap();
         Manager::save(iid, source, output, output_df)?;
 
         Ok(())
     }
-
+    /// Update market data.
+    ///
+    /// # ru
+    /// Обновить данные по одному инструменту.
     pub async fn update(
         iid: &Iid,
         source: Source,
         md: MarketData,
     ) -> Result<(), AvinError> {
+        // TODO:
+        // if source == Source::MOEXALGO {
+        //     let msg = format!("update data from {source} unavailable");
+        //     let e = AvinError::NotImplemented(msg);
+        //     return Err(e);
+        // }
+        if source == Source::MOEXALGO {
+            return Ok(());
+        }
+
         log::info!("Update {iid} {md} from {source}");
-        todo!()
+
+        // load last
+        let mut df = Manager::load_last(iid, source, md)?;
+
+        // get last timestamp
+        let ts = df
+            .column("ts_nanos")
+            .unwrap()
+            .i64()
+            .unwrap()
+            .last()
+            .unwrap();
+
+        // begin/end DateTime
+        let begin = avin_utils::dt(ts);
+        let end = Utc::now();
+
+        // request [last, now()], tinkoff return only historical,
+        // completed bars
+        let new_data =
+            SourceTinkoff::get_bars(iid, md, begin, end).await.unwrap();
+
+        // join df
+        df.extend(&new_data).unwrap();
+
+        // drop duplicated rows
+        let col_name = String::from("ts_nanos");
+        df.unique_stable(Some(&[col_name]), UniqueKeepStrategy::Last, None)
+            .unwrap();
+
+        Manager::save(iid, source, md, df).unwrap();
+
+        Ok(())
     }
+    /// Update all available market data.
+    ///
+    /// # ru
+    /// Обновить все скаченные данные.
     pub async fn update_all() -> Result<(), AvinError> {
-        todo!()
+        log::info!("Update all market data");
+
+        // check data dir
+        let data_dir = CFG.dir.data();
+        if !data_dir.exists() {
+            let msg = format!("data dir {}", data_dir.display());
+            let e = AvinError::NotFound(msg);
+            return Err(e);
+        }
+
+        for exchange in Exchange::iter() {
+            for category in Category::iter() {
+                let mut category_path = data_dir.clone();
+                category_path.push(exchange.name());
+                category_path.push(category.name());
+                let tickers = Cmd::get_dirs(&category_path).unwrap();
+
+                for ticker in tickers {
+                    for source in Source::iter() {
+                        for md in MarketData::iter() {
+                            let mut path = ticker.clone();
+                            path.push(source.name());
+                            path.push(md.name());
+
+                            if path.exists() {
+                                let s = format!(
+                                    "{}_{}_{}",
+                                    exchange.name(),
+                                    category.name(),
+                                    Cmd::name(&ticker).unwrap()
+                                );
+                                let iid = Manager::find_iid(&s).unwrap();
+                                Data::update(&iid, source, md).await?;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 
     // /// Load market data

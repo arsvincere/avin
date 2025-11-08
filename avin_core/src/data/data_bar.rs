@@ -117,9 +117,7 @@ impl DataBar {
     ///
     /// # ru
     /// Загружает один самый новый файл с рыночными данными.
-    #[allow(unused)]
     pub fn load_last(
-        &self,
         iid: &Iid,
         source: Source,
         md: MarketData,

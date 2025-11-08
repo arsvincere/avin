@@ -21,8 +21,9 @@ impl Cmd {
     }
     pub fn is_empty(dir_path: &Path) -> bool {
         let files = Cmd::get_files(dir_path).unwrap();
+        let dirs = Cmd::get_dirs(dir_path).unwrap();
 
-        files.len() == 0
+        files.len() == 0 && dirs.len() == 0
     }
 
     pub fn name(path: &Path) -> Result<String, AvinError> {

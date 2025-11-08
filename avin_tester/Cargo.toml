@@ -1,6 +1,6 @@
 [package]
 name = "avin_tester"
-description = "Simple back tester, part of 'avin' library"
+description = "Simple back-tester, part of 'avin' library"
 version = { workspace = true }
 edition = { workspace = true }
 license = { workspace = true }

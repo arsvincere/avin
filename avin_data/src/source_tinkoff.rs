@@ -10,11 +10,11 @@ use std::{
     process::Command,
 };
 
-use chrono::DateTime;
+use chrono::{DateTime, Utc};
 use polars::prelude::{Column, DataFrame, DataType, Field, Schema};
 
 use avin_connect::TinkoffClient;
-use avin_core::{Category, Iid, Manager, MarketData, Share, Source};
+use avin_core::{Bar, Category, Iid, Manager, MarketData, Share, Source};
 use avin_utils::{AvinError, CFG, Cmd};
 
 const SERVICE: &str = "https://invest-public-api.tinkoff.ru/history-data";
@@ -76,6 +76,23 @@ impl SourceTinkoff {
         Cmd::delete_dir(&tmp_dir).unwrap();
 
         Ok(())
+    }
+    pub async fn get_bars(
+        iid: &Iid,
+        md: MarketData,
+        begin: DateTime<Utc>,
+        end: DateTime<Utc>,
+    ) -> Result<DataFrame, AvinError> {
+        // create tinkoff client
+        let (event_tx, _event_rx) = tokio::sync::mpsc::unbounded_channel();
+        let mut tinkoff_client = TinkoffClient::new(event_tx);
+        tinkoff_client.connect().await.unwrap();
+
+        let tf = md.timeframe().unwrap();
+        let bars = tinkoff_client.get_bars(iid, tf, begin, end).await.unwrap();
+        let df = Bar::to_df(&bars).unwrap();
+
+        Ok(df)
     }
     pub async fn write_real_time() -> Result<(), AvinError> {
         todo!()

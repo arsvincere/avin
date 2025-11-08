@@ -114,8 +114,8 @@ impl TinkoffClient {
                 self.interceptor.clone().unwrap(),
             ));
 
-        self.create_marketdata_stream().await.unwrap();
-        self.create_transactions_stream().await.unwrap();
+        // self.create_marketdata_stream().await.unwrap();
+        // self.create_transactions_stream().await.unwrap();
 
         Ok(())
     }

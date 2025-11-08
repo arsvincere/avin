@@ -9,7 +9,9 @@
 ///
 /// # ru
 /// Перечисление для выбора категории инструмента.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, strum::Display)]
+#[derive(
+    Debug, PartialEq, Eq, Clone, Copy, Hash, strum::Display, strum::EnumIter,
+)]
 pub enum Category {
     CURRENCY,
     INDEX,

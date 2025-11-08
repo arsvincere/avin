@@ -105,7 +105,8 @@ pub use avin_utils as utils;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+    let iid = avin_core::Manager::find_iid("moex_share_sber").unwrap();
+    format!("Hello, {}! You've been greeted from Rust! {iid}", name)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
