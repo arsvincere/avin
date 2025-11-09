@@ -12,7 +12,7 @@ use strum::IntoEnumIterator;
 use avin_core::{Bar, Category, Exchange, Iid, Manager, MarketData, Source};
 use avin_utils::{AvinError, CFG, Cmd};
 
-use crate::SourceTinkoff;
+use super::source_tinkoff::SourceTinkoff;
 
 /// Fasade class for operations with market data.
 ///
@@ -21,6 +21,51 @@ use crate::SourceTinkoff;
 /// источников. Скачивание, преобразование, обновление.
 pub struct Data {}
 impl Data {
+    /// Return all available Iid.
+    ///
+    /// # ru
+    /// Возвращает список всех доступных инструментов (для которых
+    /// имеются скачанные данные).
+    pub fn all_iid() -> Vec<Iid> {
+        let mut all_iid = Vec::new();
+
+        for exchange in Exchange::iter() {
+            for category in Category::iter() {
+                // TODO: блять да че же делать с этими ебучими
+                // индексами, которые Т не раздает
+                if category == Category::INDEX {
+                    continue;
+                }
+                // TODO: сделать кэширование фьючей с Т
+                if category == Category::FUTURE {
+                    continue;
+                }
+
+                let mut category_path = CFG.dir.data();
+                category_path.push(exchange.name());
+                category_path.push(category.name());
+                if !category_path.exists() {
+                    continue;
+                }
+
+                let tickers = Cmd::get_dirs(&category_path).unwrap();
+
+                for ticker in tickers {
+                    let s = format!(
+                        "{}_{}_{}",
+                        exchange.name(),
+                        category.name(),
+                        Cmd::name(&ticker).unwrap()
+                    );
+                    let iid = Manager::find_iid(&s).unwrap();
+
+                    all_iid.push(iid);
+                }
+            }
+        }
+
+        all_iid
+    }
     /// Make cache of instruments info.
     ///
     /// # ru
@@ -32,6 +77,15 @@ impl Data {
             Source::MOEXALGO => todo!(),
             Source::TINKOFF => SourceTinkoff::cache().await,
         }
+    }
+    /// Find instrument ID by str (case insensitive),
+    /// format: "exchange_category_ticker"
+    ///
+    /// # ru
+    /// Поиск идентификатора инструмента по строке (не чувствительно
+    /// к регистру). Формат строки: "exchange_category_ticker"
+    pub fn find(s: &str) -> Result<Iid, AvinError> {
+        Manager::find_iid(s)
     }
     /// Download and save market data.
     ///

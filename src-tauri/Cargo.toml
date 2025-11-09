@@ -52,4 +52,5 @@ eframe = { workspace = true }
 reqwest = { workspace = true }
 log = { workspace = true }
 strum = { workspace = true }
+clap = { workspace = true }
 ##############################################################################

@@ -69,6 +69,13 @@ fn cached_find_iid(s: String) -> Result<Iid, AvinError> {
         .equal(ticker.as_str());
     let row = df.filter(&mask).unwrap();
 
+    // check exist
+    if row.is_empty() {
+        let msg = format!("ticker {ticker}");
+        let e = AvinError::NotFound(msg);
+        return Err(e);
+    }
+
     Iid::from_df(&row)
 }
 #[cached]

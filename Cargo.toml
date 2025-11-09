@@ -30,24 +30,25 @@ keywords = [ "algorithmic-trading", "trading", "moex" ]
 categories = ["finance"]
 
 [workspace.dependencies]
-avin =              { version = "0.4.0", path = "src-tauri" }
-avin_adviser =      { version = "0.4.0", path = "avin_adviser" }
-avin_analyse =      { version = "0.4.0", path = "avin_analyse" }
-avin_connect =      { version = "0.4.0", path = "avin_connect" }
-avin_core =         { version = "0.4.0", path = "avin_core" }
-avin_data =         { version = "0.4.0", path = "avin_data" }
-avin_gui =          { version = "0.4.0", path = "avin_gui" }
-avin_filter =       { version = "0.4.0", path = "avin_filter" }
-avin_simulator =    { version = "0.4.0", path = "avin_simulator" }
-avin_strategy =     { version = "0.4.0", path = "avin_strategy" }
-avin_terminal =     { version = "0.4.0", path = "avin_terminal" }
-avin_tester =       { version = "0.4.0", path = "avin_tester" }
-avin_trader =       { version = "0.4.0", path = "avin_trader" }
-avin_utils =        { version = "0.4.0", path = "avin_utils" }
+avin =              { path = "src-tauri" }
+avin_adviser =      { path = "avin_adviser" }
+avin_analyse =      { path = "avin_analyse" }
+avin_connect =      { path = "avin_connect" }
+avin_core =         { path = "avin_core" }
+avin_data =         { path = "avin_data" }
+avin_gui =          { path = "avin_gui" }
+avin_filter =       { path = "avin_filter" }
+avin_simulator =    { path = "avin_simulator" }
+avin_strategy =     { path = "avin_strategy" }
+avin_terminal =     { path = "avin_terminal" }
+avin_tester =       { path = "avin_tester" }
+avin_trader =       { path = "avin_trader" }
+avin_utils =        { path = "avin_utils" }
 
 bitcode = "0.6.7"
 cached = "0.56.0"
 chrono = "0.4.41"
+clap = { version = "4.5.51", features = ["derive"] }
 flume = "0.11.1"
 log = "0.4.27"
 polars = { version = "0.51", features = [
@@ -87,3 +88,9 @@ egui-file-dialog = "0.11.0"
 egui_extras = { version= "0.32.3", features = ["all_loaders", "image", "svg"]}
 egui_plot = "0.33.0"
 ##############################################################################
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3

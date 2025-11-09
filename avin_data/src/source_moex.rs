@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+#![allow(unused)]
+
 use avin_core::Bar;
 use chrono::Days;
 use chrono::TimeDelta;
@@ -30,6 +32,20 @@ impl Default for SourceMoex {
     }
 }
 impl SourceMoex {
+    pub fn available_market_data() -> Vec<MarketData> {
+        vec![
+            MarketData::BAR_1M,
+            MarketData::BAR_10M,
+            MarketData::BAR_1H,
+            MarketData::BAR_DAY,
+            MarketData::BAR_WEEK,
+            MarketData::BAR_MONTH,
+            MarketData::TRADE_STATS,
+            MarketData::ORDER_STATS,
+            MarketData::OB_STATS,
+        ]
+    }
+
     pub fn new() -> Self {
         let token_path = CFG.connect.moex_token();
         let token = Cmd::read(&token_path).unwrap().trim().to_string();

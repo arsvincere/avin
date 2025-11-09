@@ -10,16 +10,15 @@ use log::{Metadata, Record};
 
 pub fn init_logger() {
     log::set_logger(&LOGGER).unwrap();
-    log::set_max_level(log::LevelFilter::Debug);
-    log::info!("Welcome to AVIN Trade System!");
+    log::set_max_level(log::LevelFilter::Trace);
 }
 
 static LOGGER: ConsoleLogger = ConsoleLogger;
+
 struct ConsoleLogger;
 impl log::Log for ConsoleLogger {
-    fn enabled(&self, _metadata: &Metadata) -> bool {
-        // metadata.level() <= log::Level::Info
-        true
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= log::Level::Info
     }
 
     fn log(&self, record: &Record) {

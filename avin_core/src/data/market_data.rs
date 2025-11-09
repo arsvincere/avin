@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use strum::VariantNames;
+
 use avin_utils::AvinError;
 
 use crate::TimeFrame;
@@ -14,7 +16,15 @@ use crate::TimeFrame;
 /// # ru
 /// Перечисление для выбора типа данных.
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Clone, Copy, strum::Display, strum::EnumIter)]
+#[derive(
+    Debug,
+    PartialEq,
+    Clone,
+    Copy,
+    strum::Display,
+    strum::EnumIter,
+    strum::VariantNames,
+)]
 pub enum MarketData {
     BAR_1M,
     BAR_5M,
@@ -31,6 +41,23 @@ pub enum MarketData {
     OB_STATS,
 }
 impl MarketData {
+    pub fn all() -> Vec<MarketData> {
+        vec![
+            MarketData::BAR_1M,
+            MarketData::BAR_5M,
+            MarketData::BAR_10M,
+            MarketData::BAR_15M,
+            MarketData::BAR_1H,
+            MarketData::BAR_4H,
+            MarketData::BAR_DAY,
+            MarketData::BAR_WEEK,
+            MarketData::BAR_MONTH,
+            MarketData::TIC,
+            MarketData::TRADE_STATS,
+            MarketData::ORDER_STATS,
+            MarketData::OB_STATS,
+        ]
+    }
     /// Return market data type name.
     ///
     /// # ru
@@ -78,30 +105,64 @@ impl MarketData {
         }
     }
 }
-impl From<&str> for MarketData {
-    fn from(value: &str) -> Self {
-        match value.to_uppercase().as_str() {
-            "BAR_1M" => MarketData::BAR_1M,
-            "BAR_5M" => MarketData::BAR_5M,
-            "BAR_10M" => MarketData::BAR_10M,
-            "BAR_15M" => MarketData::BAR_15M,
-            "BAR_1H" => MarketData::BAR_1H,
-            "BAR_4H" => MarketData::BAR_4H,
-            "BAR_DAY" => MarketData::BAR_DAY,
-            "BAR_WEEK" => MarketData::BAR_WEEK,
-            "BAR_MONTH" => MarketData::BAR_MONTH,
-            "TIC" => MarketData::TIC,
-            "TRADE_STATS" => MarketData::TRADE_STATS,
-            "ORDER_STATS" => MarketData::ORDER_STATS,
-            "OB_STATS" => MarketData::OB_STATS,
-            _ => panic!("Invalid value for MarketData: {value}"),
+// impl From<&str> for MarketData {
+//     fn from(value: &str) -> Self {
+//         match value.to_uppercase().as_str() {
+//             "BAR_1M" => MarketData::BAR_1M,
+//             "BAR_5M" => MarketData::BAR_5M,
+//             "BAR_10M" => MarketData::BAR_10M,
+//             "BAR_15M" => MarketData::BAR_15M,
+//             "BAR_1H" => MarketData::BAR_1H,
+//             "BAR_4H" => MarketData::BAR_4H,
+//             "BAR_DAY" => MarketData::BAR_DAY,
+//             "BAR_WEEK" => MarketData::BAR_WEEK,
+//             "BAR_MONTH" => MarketData::BAR_MONTH,
+//             "TIC" => MarketData::TIC,
+//             "TRADE_STATS" => MarketData::TRADE_STATS,
+//             "ORDER_STATS" => MarketData::ORDER_STATS,
+//             "OB_STATS" => MarketData::OB_STATS,
+//             _ => panic!("Invalid value for MarketData: {value}"),
+//         }
+//     }
+// }
+impl std::str::FromStr for MarketData {
+    type Err = AvinError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_uppercase().as_str() {
+            "BAR_1M" => Ok(MarketData::BAR_1M),
+            "BAR_5M" => Ok(MarketData::BAR_5M),
+            "BAR_10M" => Ok(MarketData::BAR_10M),
+            "BAR_15M" => Ok(MarketData::BAR_15M),
+            "BAR_1H" => Ok(MarketData::BAR_1H),
+            "BAR_4H" => Ok(MarketData::BAR_4H),
+            "BAR_DAY" => Ok(MarketData::BAR_DAY),
+            "BAR_WEEK" => Ok(MarketData::BAR_WEEK),
+            "BAR_MONTH" => Ok(MarketData::BAR_MONTH),
+            "TIC" => Ok(MarketData::TIC),
+            "TRADE_STATS" => Ok(MarketData::TRADE_STATS),
+            "ORDER_STATS" => Ok(MarketData::ORDER_STATS),
+            "OB_STATS" => Ok(MarketData::OB_STATS),
+            _ => {
+                let msg = format!("{s}, available={:?}", MarketData::VARIANTS);
+                let e = AvinError::InvalidValue(msg);
+                Err(e)
+            }
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
+
+    #[test]
+    fn all() {
+        let all_market_data_kind = MarketData::all();
+        assert_eq!(all_market_data_kind.len(), 13);
+    }
 
     #[test]
     fn name() {
@@ -152,18 +213,42 @@ mod tests {
     }
     #[test]
     fn from_str() {
-        assert_eq!(MarketData::BAR_1M, "BAR_1M".into());
-        assert_eq!(MarketData::BAR_5M, "BAR_5M".into());
-        assert_eq!(MarketData::BAR_10M, "BAR_10M".into());
-        assert_eq!(MarketData::BAR_15M, "BAR_15M".into());
-        assert_eq!(MarketData::BAR_1H, "BAR_1H".into());
-        assert_eq!(MarketData::BAR_4H, "BAR_4H".into());
-        assert_eq!(MarketData::BAR_DAY, "BAR_DAY".into());
-        assert_eq!(MarketData::BAR_WEEK, "BAR_WEEK".into());
-        assert_eq!(MarketData::BAR_MONTH, "BAR_MONTH".into());
-        assert_eq!(MarketData::TIC, "TIC".into());
-        assert_eq!(MarketData::TRADE_STATS, "TRADE_STATS".into());
-        assert_eq!(MarketData::ORDER_STATS, "ORDER_STATS".into());
-        assert_eq!(MarketData::OB_STATS, "OB_STATS".into());
+        assert_eq!(MarketData::BAR_1M, "BAR_1M".parse().unwrap());
+        assert_eq!(MarketData::BAR_5M, MarketData::from_str("BAR_5M").unwrap());
+        assert_eq!(
+            MarketData::BAR_10M,
+            MarketData::from_str("BAR_10M").unwrap()
+        );
+        assert_eq!(
+            MarketData::BAR_15M,
+            MarketData::from_str("BAR_15M").unwrap()
+        );
+        assert_eq!(MarketData::BAR_1H, MarketData::from_str("BAR_1H").unwrap());
+        assert_eq!(MarketData::BAR_4H, MarketData::from_str("BAR_4H").unwrap());
+        assert_eq!(
+            MarketData::BAR_DAY,
+            MarketData::from_str("BAR_DAY").unwrap()
+        );
+        assert_eq!(
+            MarketData::BAR_WEEK,
+            MarketData::from_str("BAR_WEEK").unwrap()
+        );
+        assert_eq!(
+            MarketData::BAR_MONTH,
+            MarketData::from_str("BAR_MONTH").unwrap()
+        );
+        assert_eq!(MarketData::TIC, MarketData::from_str("TIC").unwrap());
+        assert_eq!(
+            MarketData::TRADE_STATS,
+            MarketData::from_str("TRADE_STATS").unwrap()
+        );
+        assert_eq!(
+            MarketData::ORDER_STATS,
+            MarketData::from_str("ORDER_STATS").unwrap()
+        );
+        assert_eq!(
+            MarketData::OB_STATS,
+            MarketData::from_str("OB_STATS").unwrap()
+        );
     }
 }

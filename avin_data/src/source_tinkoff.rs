@@ -10,7 +10,7 @@ use std::{
     process::Command,
 };
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Datelike, Utc};
 use polars::prelude::{Column, DataFrame, DataType, Field, Schema};
 
 use avin_connect::TinkoffClient;
@@ -21,6 +21,9 @@ const SERVICE: &str = "https://invest-public-api.tinkoff.ru/history-data";
 
 pub struct SourceTinkoff {}
 impl SourceTinkoff {
+    pub fn available_market_data() -> Vec<MarketData> {
+        vec![MarketData::BAR_1M]
+    }
     pub async fn cache() -> Result<(), AvinError> {
         // NOTE: пока кеширует только акции
 
@@ -50,9 +53,16 @@ impl SourceTinkoff {
         year: i32,
     ) -> Result<(), AvinError> {
         // check availability market data type
-        if md != MarketData::BAR_1M {
+        if !Self::available_market_data().contains(&md) {
             let msg = format!("{md}, Tinkoff provide only 1M bars data");
             let e = AvinError::InvalidValue(msg);
+            return Err(e);
+        }
+
+        // check year
+        if !is_available_year(year) {
+            let msg = format!("{md} for {year}");
+            let e = AvinError::NotExist(msg);
             return Err(e);
         }
 
@@ -61,15 +71,22 @@ impl SourceTinkoff {
         let archive_path = create_archive_path(&tmp_dir, iid, year);
         let extract_dir = create_extract_dir(&tmp_dir, iid, year);
 
-        // download & extract archive
+        // download
         download_archive(iid, year, &archive_path);
+
+        // extract archive
         extract_archive(&archive_path, &extract_dir);
 
-        // read tinkoff files & format data
+        // read tinkoff files
         let tinkoff_df = read_extracted_files(&extract_dir);
-        let df = format_tinkoff_bars_data(tinkoff_df);
+        if tinkoff_df.is_empty() {
+            let msg = format!("{md} for {year}");
+            let e = AvinError::NotExist(msg);
+            return Err(e);
+        }
 
-        // save bars data
+        // format & save bars data
+        let df = format_tinkoff_bars_data(tinkoff_df);
         Manager::save(iid, Source::TINKOFF, md, df).unwrap();
 
         // delete tmp dir
@@ -94,11 +111,17 @@ impl SourceTinkoff {
 
         Ok(df)
     }
-    pub async fn write_real_time() -> Result<(), AvinError> {
-        todo!()
-    }
+    // pub async fn write_real_time() -> Result<(), AvinError> {
+    //     todo!()
+    // }
 }
 
+fn is_available_year(year: i32) -> bool {
+    let max_year = Utc::now().year();
+    let min_year = 2018;
+
+    min_year <= year && year <= max_year
+}
 fn create_tmp_dir() -> PathBuf {
     let mut dir_path = CFG.dir.tmp();
     dir_path.push("tinkoff");
