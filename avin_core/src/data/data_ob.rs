@@ -21,7 +21,7 @@ impl DataOB {
     pub fn save(
         iid: &Iid,
         md: MarketData,
-        df: DataFrame,
+        df: &DataFrame,
     ) -> Result<(), AvinError> {
         // NOTE: в датафрейме может быть данные за
         // два разных года. Например при обновление в первых

@@ -141,7 +141,7 @@ impl Data {
 
         // save
         let output_df = Bar::to_df(&output_bars).unwrap();
-        Manager::save(iid, source, output, output_df)?;
+        Manager::save(iid, source, output, &output_df)?;
 
         Ok(())
     }
@@ -195,7 +195,7 @@ impl Data {
         df.unique_stable(Some(&[col_name]), UniqueKeepStrategy::Last, None)
             .unwrap();
 
-        Manager::save(iid, source, md, df).unwrap();
+        Manager::save(iid, source, md, &df).unwrap();
 
         Ok(())
     }
@@ -235,6 +235,7 @@ impl Data {
                                     category.name(),
                                     Cmd::name(&ticker).unwrap()
                                 );
+
                                 let iid = Manager::find_iid(&s).unwrap();
                                 Data::update(&iid, source, md).await?;
                             }
@@ -246,49 +247,13 @@ impl Data {
 
         Ok(())
     }
-
-    // /// Load market data
-    // ///
-    // /// # ru
-    // /// Загрузка рыночных данных, возвращает polars::DataFrame.
-    // ///
-    // /// Рыночные данные должна быть предварительно загружены.
-    // /// Воспользуйтесь консольной утилитой: "avin-data download --help".
-    // ///
-    // /// ## Examples
-    // /// ```
-    // /// use avin_core::MarketData;
-    // /// use avin_data::Manager;
-    // /// use avin_utils as utils;
-    // ///
-    // /// let iid = Manager::find_iid("MOEX_SHARE_SBER").unwrap();
-    // /// let md = MarketData::BAR_1H;
-    // /// let begin = utils::str_date_to_utc("2024-01-01");
-    // /// let end = utils::str_date_to_utc("2025-01-01");
-    // ///
-    // /// let df = Manager::load(&iid, md, begin, end).unwrap();
-    // /// println!("{}", df);
-    // /// ```
-    // pub fn load(
-    //     _source: Source,
-    //     iid: &Iid,
-    //     md: MarketData,
-    //     begin: DateTime<Utc>,
-    //     end: DateTime<Utc>,
-    // ) -> Result<DataFrame, AvinError> {
-    //     match md {
-    //         MarketData::BAR_1M => DataBar::load(iid, md, begin, end),
-    //         MarketData::BAR_10M => DataBar::load(iid, md, begin, end),
-    //         MarketData::BAR_1H => DataBar::load(iid, md, begin, end),
-    //         MarketData::BAR_DAY => DataBar::load(iid, md, begin, end),
-    //         MarketData::BAR_WEEK => DataBar::load(iid, md, begin, end),
-    //         MarketData::BAR_MONTH => DataBar::load(iid, md, begin, end),
-    //         MarketData::TIC => DataTic::load(iid, md, begin, end),
-    //         MarketData::TRADE_STATS => DataTrades::load(iid, md, begin, end),
-    //         MarketData::ORDER_STATS => DataOrders::load(iid, md, begin, end),
-    //         MarketData::OB_STATS => DataOB::load(iid, md, begin, end),
-    //     }
-    // }
+    /// Write real time tics and order book data.
+    ///
+    /// # ru
+    /// Реал-тайм запись тиков и данных по стакану.
+    pub async fn record() -> Result<(), AvinError> {
+        SourceTinkoff::record().await
+    }
 }
 
 fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {

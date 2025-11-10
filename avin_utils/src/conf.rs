@@ -160,9 +160,12 @@ pub struct LogSettings {
     pub info: bool,
 }
 #[derive(Debug, Deserialize, Serialize)]
+
 pub struct DataSettings {
     pub format: String,
     pub convert: Vec<ConvertRule>,
+    pub record_tics: Vec<RecordTic>,
+    pub record_ob: Vec<RecordOB>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ConvertRule {
@@ -172,18 +175,32 @@ pub struct ConvertRule {
     pub output: String,
 }
 #[derive(Debug, Deserialize, Serialize)]
+pub struct RecordTic {
+    pub iid: String,
+    pub source: String,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RecordOB {
+    pub iid: String,
+    pub source: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CoreSettings {
     pub default_asset_list: String,
     pub default_bars_count: usize,
 }
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TesterSettings {
     pub default_commission: f64,
 }
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TraderSettings {
     pub work_list: Vec<WorkCfg>,
 }
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct WorkCfg {
     pub iid: String,

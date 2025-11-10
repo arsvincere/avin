@@ -19,8 +19,8 @@ pub enum Direction {
 impl Direction {
     pub fn to_str(&self) -> &'static str {
         match self {
-            Direction::Buy => "b",
-            Direction::Sell => "s",
+            Direction::Buy => "B",
+            Direction::Sell => "S",
         }
     }
 }
@@ -36,10 +36,10 @@ impl std::fmt::Display for Direction {
 impl From<&str> for Direction {
     fn from(value: &str) -> Self {
         match value {
-            "b" => Direction::Buy,
-            "s" => Direction::Sell,
             "B" => Direction::Buy,
             "S" => Direction::Sell,
+            "b" => Direction::Buy,
+            "s" => Direction::Sell,
             _ => panic!("Invalid value for direction: {value}"),
         }
     }

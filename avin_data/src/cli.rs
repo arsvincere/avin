@@ -35,18 +35,89 @@ impl Cli {
         let cli = Cli::parse();
 
         let result = match cli.command {
-            Commands::Cache(args) => cache(args).await,
-            Commands::Find(args) => find(args),
-            Commands::Download(args) => download(args).await,
-            Commands::Convert(args) => convert(args),
-            Commands::Update => update(),
-            Commands::Write => write_real_time(),
+            Commands::Cache(args) => Cli::cache(args).await,
+            Commands::Find(args) => Cli::find(args),
+            Commands::Download(args) => Cli::download(args).await,
+            Commands::Convert(args) => Cli::convert(args),
+            Commands::Update => Cli::update().await,
+            Commands::Record => Cli::record().await,
         };
 
         match result {
             Ok(()) => (),
             Err(e) => log::error!("{e}"),
         }
+    }
+
+    async fn cache(args: CacheArgs) -> Result<(), AvinError> {
+        if let Some(value) = args.source {
+            let source = Source::from_str(value.as_str())?;
+            Data::cache(source).await?;
+        } else {
+            for source in Source::iter() {
+                Data::cache(source).await?;
+            }
+        };
+
+        Ok(())
+    }
+    fn find(args: FindArgs) -> Result<(), AvinError> {
+        let iid = Data::find(&args.instrument)?;
+
+        let exchange = iid.exchange();
+        let category = iid.category();
+        let ticker = iid.ticker();
+        let figi = iid.figi();
+        let name = iid.name();
+        let lot = iid.lot();
+        let step = iid.step();
+
+        let table = format!(
+            "┌───────────┬─────────────────┐
+│ Name      ┆ {name:>15} │
+╞═══════════╪═════════════════╡
+│ Exchange  ┆ {exchange:>15} │
+│ Category  ┆ {category:>15} │
+│ Ticker    ┆ {ticker:>15} │
+│ FIGI      ┆ {figi:>15} │
+│ Lot       ┆ {lot:>15} │
+│ Step      ┆ {step:>15} │
+└───────────┴─────────────────┘"
+        );
+        println!("{table}");
+
+        Ok(())
+    }
+    async fn download(args: DownloadArgs) -> Result<(), AvinError> {
+        let iid = Data::find(&args.instrument)?;
+        let source = Source::from_str(&args.source)?;
+        let md = MarketData::from_str(&args.data)?;
+
+        let mut year = Utc::now().year();
+
+        loop {
+            let result = Data::download(&iid, source, md, year).await;
+
+            if result.is_ok() {
+                year -= 1;
+            } else {
+                return result;
+            }
+        }
+    }
+    fn convert(args: ConvertArgs) -> Result<(), AvinError> {
+        let iid = Data::find(&args.instrument)?;
+        let source = Source::from_str(&args.source)?;
+        let input = MarketData::from_str(&args.input)?;
+        let output = MarketData::from_str(&args.output)?;
+
+        Data::convert(&iid, source, input, output)
+    }
+    async fn update() -> Result<(), AvinError> {
+        Data::update_all().await
+    }
+    async fn record() -> Result<(), AvinError> {
+        Data::record().await
     }
 }
 
@@ -91,7 +162,7 @@ enum Commands {
     ///
     /// # ru
     /// Реал-тайм запись тиков и данных по стакану
-    Write,
+    Record,
 }
 
 #[derive(Args, Debug)]
@@ -157,81 +228,4 @@ struct ConvertArgs {
     /// # ru
     /// Выходной данных.
     output: String,
-}
-
-async fn cache(args: CacheArgs) -> Result<(), AvinError> {
-    if let Some(value) = args.source {
-        let source = Source::from_str(value.as_str())?;
-        Data::cache(source).await?;
-    } else {
-        for source in Source::iter() {
-            Data::cache(source).await?;
-        }
-    };
-
-    Ok(())
-}
-
-fn find(args: FindArgs) -> Result<(), AvinError> {
-    let iid = Data::find(&args.instrument)?;
-
-    let exchange = iid.exchange();
-    let category = iid.category();
-    let ticker = iid.ticker();
-    let figi = iid.figi();
-    let name = iid.name();
-    let lot = iid.lot();
-    let step = iid.step();
-
-    let table = format!(
-        "┌───────────┬─────────────────┐
-│ Name      ┆ {name:>15} │
-│ Exchange  ┆ {exchange:>15} │
-│ Category  ┆ {category:>15} │
-│ Ticker    ┆ {ticker:>15} │
-│ FIGI      ┆ {figi:>15} │
-│ Lot       ┆ {lot:>15} │
-│ Step      ┆ {step:>15} │
-└───────────┴─────────────────┘"
-    );
-    println!("{table}");
-
-    Ok(())
-}
-
-async fn download(args: DownloadArgs) -> Result<(), AvinError> {
-    let iid = Data::find(&args.instrument)?;
-    let source = Source::from_str(&args.source)?;
-    let md = MarketData::from_str(&args.data)?;
-
-    let mut year = Utc::now().year();
-
-    loop {
-        let result = Data::download(&iid, source, md, year).await;
-
-        if result.is_ok() {
-            year -= 1;
-        } else {
-            return result;
-        }
-    }
-}
-
-fn convert(args: ConvertArgs) -> Result<(), AvinError> {
-    let iid = Data::find(&args.instrument)?;
-    let source = Source::from_str(&args.source)?;
-    let input = MarketData::from_str(&args.input)?;
-    let output = MarketData::from_str(&args.output)?;
-
-    Data::convert(&iid, source, input, output)
-}
-
-fn update() -> Result<(), AvinError> {
-    log::info!("Updating...");
-    Ok(())
-}
-
-fn write_real_time() -> Result<(), AvinError> {
-    log::info!("Writing...");
-    Ok(())
 }

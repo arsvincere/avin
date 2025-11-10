@@ -4,7 +4,7 @@ PYTHONPATH=
 VENV=.venv
 PY=avin_data_py
 PY_ENV=source .venv/bin/activate && cd avin_data_py
-PY_APP=~/.local/bin/avin-data
+PY_APP=~/.local/bin/avin-data-py
 
 .venv:
 	python3 -m venv $(VENV)
@@ -54,7 +54,7 @@ build: .venv
 	$(PY_ENV) && pyinstaller avin_data/cli.py \
 		--onefile \
 		--specpath build \
-		--name avin-data
+		--name avin-data-py
 	cargo build --jobs 4
 
 publish:
@@ -77,7 +77,7 @@ publish:
 install: build
 	$(PY_ENV) && flit install
 	rm -rf $(PY_APP)
-	install -Dm755 $(PY)/dist/avin-data $(PY_APP)
+	install -Dm755 $(PY)/dist/avin-data-py $(PY_APP)
 	install -Dm644 res/config.toml ~/.config/avin/config.toml
 
 doc: build

@@ -5,9 +5,13 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_utils::AvinError;
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
-use polars::prelude::{DataFrame, DataType, Field, Schema};
+use polars::{
+    df,
+    prelude::{DataFrame, DataType, Field, Schema},
+};
 
 use crate::Direction;
 
@@ -26,7 +30,7 @@ use crate::Direction;
 pub struct Tic {
     pub ts: i64,
     pub direction: Direction,
-    pub lots: u32,
+    pub lots: i64,
     pub price: f64,
     pub value: f64,
 }
@@ -34,7 +38,7 @@ impl Tic {
     pub fn new(
         ts: i64,
         direction: Direction,
-        lots: u32,
+        lots: i64,
         price: f64,
         value: f64,
     ) -> Self {
@@ -61,7 +65,7 @@ impl Tic {
             Field::new("tradeno".into(), DataType::Int64),
         ])
     }
-    pub fn from_df(df: &DataFrame) -> Result<Vec<Tic>, String> {
+    pub fn from_df(df: &DataFrame) -> Result<Vec<Tic>, AvinError> {
         let ts_nanos = df
             .column("ts_nanos")
             .unwrap()
@@ -98,7 +102,7 @@ impl Tic {
             let tic = Tic::new(
                 ts,
                 Direction::from(direction.next().unwrap()),
-                lots.next().unwrap() as u32,
+                lots.next().unwrap(),
                 price.next().unwrap(),
                 value.next().unwrap(),
             );
@@ -108,6 +112,18 @@ impl Tic {
         Ok(tics)
     }
 
+    pub fn df(&self) -> DataFrame {
+        df!(
+            "ts_nanos" => [self.ts],
+            "direction" => [self.direction.to_str()],
+            "lots" => [self.lots],
+            "price" => [self.price],
+            "value" => [self.value],
+            "session" => [None::<i8>],
+            "tradeno" => [None::<i64>],
+        )
+        .unwrap()
+    }
     pub fn dt(&self) -> DateTime<Utc> {
         DateTime::from_timestamp_nanos(self.ts)
     }
@@ -152,5 +168,24 @@ mod tests {
 
         assert!(tic.is_buy());
         assert!(!tic.is_sell());
+    }
+
+    #[test]
+    fn schema() {
+        // тест проверяет согласованность схемы датафрейма в функцииях
+        // Tic::schema() и tic.df()
+        // чтобы если изменил в одном месте не забыть изменить в другом
+
+        let ts = 100500;
+        let direction = Direction::Buy;
+        let lots = 10;
+        let price = 320.5;
+        let value = 10.0 * 320.5;
+        let tic = Tic::new(ts, direction, lots, price, value);
+        let df = tic.df();
+
+        let schema = Tic::schema();
+        let mut tic_data = DataFrame::empty_with_schema(&schema);
+        tic_data.extend(&df).unwrap();
     }
 }

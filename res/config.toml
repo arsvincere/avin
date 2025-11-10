@@ -59,7 +59,6 @@
         { iid = "MOEX_SHARE_GMKN", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_LKOH", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_MOEX", source = "TINKOFF", data = "BAR_1M" },
-        { iid = "MOEX_SHARE_MTSS", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_NLMK", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_NVTK", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_PIKK", source = "TINKOFF", data = "BAR_1M" },
@@ -91,15 +90,47 @@
         { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_WEEK" },
         { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_MONTH" },
     ]
-    tics = [
+    record_tics = [
+        { iid = "MOEX_SHARE_AFKS", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_AFLT", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_ASTR", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_CHMF", source = "TINKOFF" },
         { iid = "MOEX_SHARE_GAZP", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_GMKN", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_LKOH", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_MOEX", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_NLMK", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_NVTK", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_PIKK", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_PLZL", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_ROSN", source = "TINKOFF" },
         { iid = "MOEX_SHARE_SBER", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_SNGS", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_T", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_TATN", source = "TINKOFF" },
         { iid = "MOEX_SHARE_VTBR", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_YDEX", source = "TINKOFF" },
     ]
-    ob = [
+    record_ob = [
+        { iid = "MOEX_SHARE_AFKS", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_AFLT", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_ASTR", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_CHMF", source = "TINKOFF" },
         { iid = "MOEX_SHARE_GAZP", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_GMKN", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_LKOH", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_MOEX", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_NLMK", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_NVTK", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_PIKK", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_PLZL", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_ROSN", source = "TINKOFF" },
         { iid = "MOEX_SHARE_SBER", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_SNGS", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_T", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_TATN", source = "TINKOFF" },
         { iid = "MOEX_SHARE_VTBR", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_YDEX", source = "TINKOFF" },
     ]
 
 [core]

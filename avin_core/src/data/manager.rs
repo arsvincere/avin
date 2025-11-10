@@ -80,7 +80,7 @@ impl Manager {
         iid: &Iid,
         source: Source,
         md: MarketData,
-        df: DataFrame,
+        df: &DataFrame,
     ) -> Result<(), AvinError> {
         match md {
             MarketData::BAR_1M => DataBar::save(iid, source, md, df),
@@ -137,7 +137,7 @@ impl Manager {
             MarketData::BAR_DAY => DataBar::load(iid, source, md, begin, end),
             MarketData::BAR_WEEK => DataBar::load(iid, source, md, begin, end),
             MarketData::BAR_MONTH => DataBar::load(iid, source, md, begin, end),
-            MarketData::TIC => DataTic::load(iid, md, begin, end),
+            MarketData::TIC => DataTic::load(iid, source, md, begin, end),
             MarketData::TRADE_STATS => DataTrades::load(iid, md, begin, end),
             MarketData::ORDER_STATS => DataOrders::load(iid, md, begin, end),
             MarketData::OB_STATS => DataOB::load(iid, md, begin, end),

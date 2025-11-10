@@ -21,7 +21,7 @@ impl DataBar {
         iid: &Iid,
         source: Source,
         md: MarketData,
-        df: DataFrame,
+        df: &DataFrame,
     ) -> Result<(), AvinError> {
         // NOTE: в датафрейме могут быть данные за
         // два разных года. Например при обновление в первых

@@ -6,18 +6,25 @@
  ****************************************************************************/
 
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     process::Command,
+    time::Duration,
 };
 
-use chrono::{DateTime, Datelike, Utc};
+use chrono::{DateTime, Datelike, NaiveTime, TimeDelta, Utc};
 use polars::prelude::{Column, DataFrame, DataType, Field, Schema};
 
 use avin_connect::TinkoffClient;
-use avin_core::{Bar, Category, Iid, Manager, MarketData, Share, Source};
+use avin_core::{
+    Bar, Category, Event, Iid, Manager, MarketData, Share, Source, Tic,
+};
 use avin_utils::{AvinError, CFG, Cmd};
 
 const SERVICE: &str = "https://invest-public-api.tinkoff.ru/history-data";
+const SAVE_PERIOD: TimeDelta = TimeDelta::new(10 * 60, 0).unwrap(); // 10 min
+const ONE_SECOND: Duration = Duration::from_secs(1);
+const SHUTDOWN_TIME: NaiveTime = NaiveTime::from_hms_opt(21, 0, 0).unwrap();
 
 pub struct SourceTinkoff {}
 impl SourceTinkoff {
@@ -87,7 +94,7 @@ impl SourceTinkoff {
 
         // format & save bars data
         let df = format_tinkoff_bars_data(tinkoff_df);
-        Manager::save(iid, Source::TINKOFF, md, df).unwrap();
+        Manager::save(iid, Source::TINKOFF, md, &df).unwrap();
 
         // delete tmp dir
         Cmd::delete_dir(&tmp_dir).unwrap();
@@ -111,9 +118,54 @@ impl SourceTinkoff {
 
         Ok(df)
     }
-    // pub async fn write_real_time() -> Result<(), AvinError> {
-    //     todo!()
-    // }
+    pub async fn record() -> Result<(), AvinError> {
+        // create tinkoff client & start stream
+        let (event_tx, mut event_rx) = tokio::sync::mpsc::unbounded_channel();
+        let mut tinkoff_client = create_tinkoff_client(event_tx).await;
+
+        let mut tic_data = create_tic_storage();
+        subscribe_tic(&mut tinkoff_client).await;
+
+        // dt variables for manage the loop
+        let mut last_save = Utc::now();
+        let shutdown_time = Utc::now().with_time(SHUTDOWN_TIME).unwrap();
+
+        loop {
+            // receive events from broker
+            while let Ok(e) = event_rx.try_recv() {
+                println!("{e}");
+                match e {
+                    Event::Tic(e) => {
+                        tic_data
+                            .get_mut(&e.figi)
+                            .unwrap()
+                            .extend(&e.tic.df())
+                            .unwrap();
+                    }
+                    _ => panic!(),
+                }
+            }
+
+            // check dt -> save
+            let dt = Utc::now();
+            if dt - last_save > SAVE_PERIOD {
+                last_save = dt;
+                save_tics(&tic_data);
+            }
+
+            // check dt -> shutdown
+            if dt > shutdown_time {
+                save_tics(&tic_data);
+                break;
+            }
+
+            std::thread::sleep(ONE_SECOND);
+        }
+
+        log::info!("Record finished at {shutdown_time}");
+
+        Ok(())
+    }
 }
 
 fn is_available_year(year: i32) -> bool {
@@ -318,4 +370,87 @@ fn format_tinkoff_bars_data(tinkoff_df: DataFrame) -> DataFrame {
     df.with_column(volume).unwrap();
 
     df
+}
+
+async fn create_tinkoff_client(
+    event_tx: tokio::sync::mpsc::UnboundedSender<Event>,
+) -> TinkoffClient {
+    let mut tinkoff_client = TinkoffClient::new(event_tx);
+    tinkoff_client.connect().await.unwrap();
+    tinkoff_client.create_marketdata_stream().await.unwrap();
+
+    tinkoff_client
+}
+fn create_tic_storage() -> HashMap<String, DataFrame> {
+    let tic_schema = Tic::schema();
+    let mut tic_data = HashMap::new();
+    for record in CFG.data.record_tics.iter() {
+        let iid = Manager::find_iid(&record.iid).unwrap();
+        let df = DataFrame::empty_with_schema(&tic_schema);
+        tic_data.insert(iid.figi().clone(), df);
+    }
+
+    tic_data
+}
+async fn subscribe_tic(tinkoff_client: &mut TinkoffClient) {
+    for record in CFG.data.record_tics.iter() {
+        let iid = Manager::find_iid(&record.iid).unwrap();
+        tinkoff_client.subscribe_tic(&iid).await.unwrap();
+    }
+}
+fn save_tics(tic_data: &HashMap<String, DataFrame>) {
+    for (figi, df) in tic_data.iter() {
+        let iid = Manager::find_figi(figi).unwrap();
+        Manager::save(&iid, Source::TINKOFF, MarketData::TIC, df).unwrap();
+        log::info!("Save {iid} tics");
+    }
+}
+
+#[allow(unused)]
+struct TicStorage {
+    client: TinkoffClient,
+    event_rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
+    tic_data: HashMap<String, DataFrame>,
+}
+#[allow(unused)]
+impl TicStorage {
+    fn new() -> Self {
+        let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
+        let client = TinkoffClient::new(event_tx);
+
+        Self {
+            client,
+            event_rx,
+            tic_data: HashMap::new(),
+        }
+    }
+    async fn init(&mut self) {
+        self.client.connect().await.unwrap();
+        self.client.create_marketdata_stream().await.unwrap();
+
+        self.create_tic_storage();
+        self.subscribe_tic();
+    }
+
+    fn create_tic_storage(&mut self) {
+        let tic_schema = Tic::schema();
+        for record in CFG.data.record_tics.iter() {
+            let iid = Manager::find_iid(&record.iid).unwrap();
+            let df = DataFrame::empty_with_schema(&tic_schema);
+            self.tic_data.insert(iid.figi().clone(), df);
+        }
+    }
+    async fn subscribe_tic(&mut self) {
+        for record in CFG.data.record_tics.iter() {
+            let iid = Manager::find_iid(&record.iid).unwrap();
+            self.client.subscribe_tic(&iid).await.unwrap();
+        }
+    }
+    fn save_tics(&self) {
+        for (figi, df) in self.tic_data.iter() {
+            let iid = Manager::find_figi(figi).unwrap();
+            Manager::save(&iid, Source::TINKOFF, MarketData::TIC, df).unwrap();
+            log::info!("Save {iid} tics");
+        }
+    }
 }

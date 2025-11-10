@@ -9,7 +9,10 @@
 
 use std::{fs::File, path::Path, process::Command};
 
-use chrono::{DateTime, Datelike, TimeDelta, TimeZone, Utc};
+use chrono::{
+    DateTime, Datelike, Days, NaiveDate, NaiveTime, TimeDelta, TimeZone,
+    Timelike, Utc,
+};
 use polars::io::SerReader;
 use polars::prelude::*;
 use strum::{IntoEnumIterator, VariantNames};
@@ -19,19 +22,24 @@ use avin_core::*;
 use avin_data::*;
 use avin_utils::*;
 
+const SHUTDOWN_TIME: NaiveTime = NaiveTime::from_hms_opt(21, 0, 0).unwrap();
+
 #[tokio::main]
 async fn main() {
     avin_utils::init_logger();
 
-    // let source = Source::TINKOFF;
-    // let iid = Manager::find_iid("moex_share_sber").unwrap();
-    // let md = MarketData::BAR_1M;
+    Data::record().await.unwrap();
+}
 
-    // Data::update(&iid, source, md).await.unwrap();
+//------------------------------------------------------------------------------
 
-    // let r = Data::update_all().await;
-    // match r {
-    //     Ok(_) => (),
-    //     Err(e) => log::error!("{e}"),
-    // }
+struct Client {}
+impl Client {}
+
+struct Broker {}
+impl Broker {
+    fn new() -> Self {
+
+        Self {}
+    }
 }

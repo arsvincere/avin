@@ -1792,9 +1792,13 @@ impl From<api::marketdata::Trade> for TicEvent {
             .unwrap()
             .timestamp_nanos_opt()
             .unwrap();
-        let lots = t.quantity as u32;
+        let lots = t.quantity;
         let price: f64 = t.price.unwrap().into();
-        let value = lots as f64 * price * lot as f64;
+        let mut value = lots as f64 * price * lot as f64;
+
+        // NOTE: после умножения f64 возникает погрешность,
+        // округлим ее до шага цены
+        value = utils::round_price(value, iid.step());
 
         let tic = Tic {
             ts,
@@ -2189,7 +2193,7 @@ mod tests {
         // create_marketdata_stream
         b.create_marketdata_stream().await.unwrap();
 
-        // subscribe bar 1M
+        // subscribe
         b.subscribe_bar(sber.iid(), &tf).await.unwrap();
         b.subscribe_tic(sber.iid()).await.unwrap();
 
