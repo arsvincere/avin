@@ -15,8 +15,8 @@ use avin_utils::{self as utils, AvinError, Cmd};
 use crate::{DataSchema, Iid, MarketData};
 
 #[derive(Debug)]
-pub struct DataOrders {}
-impl DataOrders {
+pub struct DataSCOB {}
+impl DataSCOB {
     #[allow(dead_code)]
     pub fn save(
         iid: &Iid,
@@ -126,8 +126,7 @@ fn load_file(
     // check path is exist, else AvinError::NotFound
     if !Cmd::is_exist(&path) {
         let msg = format!("{iid} {md}");
-        let e = AvinError::NotFound(msg);
-        return Err(e);
+        return Err(AvinError::NotFound(msg.to_string()));
     }
 
     // read file, else AvinError::IOError
@@ -135,7 +134,7 @@ fn load_file(
         Ok(df) => Ok(df),
         Err(why) => {
             let msg = format!("read {} - {}", path.display(), why);
-            Err(AvinError::IOError(msg))
+            Err(AvinError::IOError(msg.to_string()))
         }
     }
 }

@@ -330,6 +330,7 @@ impl AssetWidget {
                     asset.bar_event(e)
                 }
                 Event::Tic(e) => todo!("{:?}", e),
+                Event::OrderBook(e) => todo!("{:?}", e),
                 Event::Order(e) => todo!("{:?}", e),
             }
         }

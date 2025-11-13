@@ -5,28 +5,28 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use chrono::{DateTime, Datelike, TimeZone, Utc};
+use chrono::{DateTime, Datelike, Days, NaiveDate, TimeZone, Utc};
 use polars::prelude::*;
 
 use avin_utils::{self as utils, AvinError, Cmd};
 
-use crate::{DataSchema, Iid, MarketData};
+use crate::{Iid, MarketData, Source, Tic};
 
 #[derive(Debug)]
 pub struct DataOB {}
 impl DataOB {
-    #[allow(dead_code)]
     pub fn save(
         iid: &Iid,
+        source: Source,
         md: MarketData,
         df: &DataFrame,
     ) -> Result<(), AvinError> {
-        // NOTE: в датафрейме может быть данные за
-        // два разных года. Например при обновление в первых
-        // числах января. Перед сохранением нужно проверить состав
-        // датафрейма и сохранить кусками по годам.
+        // NOTE: в датафрейме могут быть данные за
+        // два разных дня... Ну на всякий случай
+        // перед сохранением нужно проверить состав
+        // датафрейма и сохранить кусками по дням.
         let first = df
             .column("ts_nanos")
             .unwrap()
@@ -42,17 +42,22 @@ impl DataOB {
             .last()
             .unwrap();
 
-        let mut year = utils::dt(first).year();
-        let end_year = utils::dt(last).year();
+        // define current day and end day
+        let mut day = utils::dt(first).date_naive();
+        let end_day = utils::dt(last).date_naive();
 
-        while year <= end_year {
-            let b = Utc.with_ymd_and_hms(year, 1, 1, 0, 0, 0).unwrap();
-            let e = Utc.with_ymd_and_hms(year + 1, 1, 1, 0, 0, 0).unwrap();
+        // filter and save by days
+        while day <= end_day {
+            // begin/end timestamps
+            let b = Utc
+                .with_ymd_and_hms(day.year(), day.month(), day.day(), 0, 0, 0)
+                .unwrap();
+            let e = b.checked_add_days(Days::new(1)).unwrap();
             let begin_ts = utils::ts(b);
             let end_ts = utils::ts(e);
 
-            // filter rows of single year
-            let mut year_df = df
+            // filter rows of single day
+            let mut day_df = df
                 .clone()
                 .lazy()
                 .filter(col("ts_nanos").gt_eq(begin_ts))
@@ -61,35 +66,37 @@ impl DataOB {
                 .unwrap();
 
             // save
-            let path = create_file_path(iid, md, year);
-            Cmd::write_pqt(&mut year_df, &path).unwrap();
+            let path = create_file_path(iid, source, md, day);
+            Cmd::write_pqt(&mut day_df, &path).unwrap();
 
-            year += 1;
+            day = day.checked_add_days(Days::new(1)).unwrap();
         }
 
         Ok(())
     }
     pub fn load(
         iid: &Iid,
+        source: Source,
         md: MarketData,
         begin: DateTime<Utc>,
         end: DateTime<Utc>,
     ) -> Result<DataFrame, AvinError> {
         // create empty df
-        let schema = DataSchema::trades();
+        let schema = Tic::schema();
         let mut df = DataFrame::empty_with_schema(&schema);
 
-        // load data by years
-        let mut year = begin.year();
-        let end_year = end.year();
-        while year <= end_year {
-            match load_file(iid, md, year) {
-                Ok(data) => {
-                    df.extend(&data).unwrap();
-                    year += 1;
+        // load data by days
+        let mut day = begin.date_naive();
+        let end_day = end.date_naive();
+        while day <= end_day {
+            let path = create_file_path(iid, source, md, day);
+            match load_file(&path) {
+                Ok(file_df) => {
+                    df.extend(&file_df).unwrap();
+                    day = day.checked_add_days(Days::new(1)).unwrap();
                 }
                 Err(AvinError::NotFound(_)) => {
-                    year += 1;
+                    day = day.checked_add_days(Days::new(1)).unwrap();
                 }
                 Err(other) => {
                     log::error!("{other}");
@@ -109,32 +116,45 @@ impl DataOB {
     }
 }
 
-fn create_file_path(iid: &Iid, md: MarketData, year: i32) -> PathBuf {
+fn create_dir_path(
+    iid: &Iid,
+    source: Source,
+    md: MarketData,
+    day: NaiveDate,
+) -> PathBuf {
     let mut path = iid.path();
+    path.push(source.name());
     path.push(md.name());
-    path.push(format!("{year}.parquet"));
+    path.push(day.year().to_string());
 
     path
 }
-fn load_file(
+fn create_file_path(
     iid: &Iid,
+    source: Source,
     md: MarketData,
-    year: i32,
-) -> Result<DataFrame, AvinError> {
-    let path = create_file_path(iid, md, year);
+    day: NaiveDate,
+) -> PathBuf {
+    let mut path = create_dir_path(iid, source, md, day);
+    path.push(format!("{}.parquet", day.format("%Y-%m-%d")));
 
+    path
+}
+fn load_file(path: &Path) -> Result<DataFrame, AvinError> {
     // check path is exist, else AvinError::NotFound
-    if !Cmd::is_exist(&path) {
-        let msg = format!("{iid} {md}");
-        return Err(AvinError::NotFound(msg.to_string()));
+    if !Cmd::is_exist(path) {
+        let msg = format!("{}", path.display());
+        let e = AvinError::NotFound(msg);
+        return Err(e);
     }
 
     // read file, else AvinError::IOError
-    match Cmd::read_pqt(&path) {
+    match Cmd::read_pqt(path) {
         Ok(df) => Ok(df),
         Err(why) => {
             let msg = format!("read {} - {}", path.display(), why);
-            Err(AvinError::IOError(msg.to_string()))
+            let e = AvinError::IOError(msg);
+            Err(e)
         }
     }
 }

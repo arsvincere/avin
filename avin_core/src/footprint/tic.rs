@@ -5,13 +5,11 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_utils::AvinError;
 use bitcode::{Decode, Encode};
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
-use polars::{
-    df,
-    prelude::{DataFrame, DataType, Field, Schema},
-};
+use polars::prelude::{DataFrame, DataType, Field, Schema, df};
+
+use avin_utils::AvinError;
 
 use crate::Direction;
 

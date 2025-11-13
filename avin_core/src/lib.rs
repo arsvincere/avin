@@ -60,6 +60,7 @@ mod footprint;
 mod indicator;
 mod operation;
 mod order;
+mod order_book;
 mod trade;
 
 pub use action::{
@@ -69,9 +70,10 @@ pub use asset::{Asset, AssetList, Category, Exchange, Iid, Share};
 pub use broker::Account;
 pub use chart::{Bar, Chart, Range, TimeFrame};
 pub use data::{DataSchema, Manager, MarketData, Source};
-pub use event::{BarEvent, Event, OrderEvent, TicEvent};
+pub use event::{BarEvent, Event, OrderBookEvent, OrderEvent, TicEvent};
 pub use footprint::{Cluster, Footprint, Quant, Quantum, Tic};
 pub use operation::{Operation, Transaction};
+pub use order_book::{Ask, Bid, OrderBook};
 pub use trade::{Summary, Trade, TradeKind, TradeList};
 
 // order

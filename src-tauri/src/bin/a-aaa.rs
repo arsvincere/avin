@@ -28,7 +28,12 @@ const SHUTDOWN_TIME: NaiveTime = NaiveTime::from_hms_opt(21, 0, 0).unwrap();
 async fn main() {
     avin_utils::init_logger();
 
-    Data::record().await.unwrap();
+    let iid = Manager::find_iid("moex_share_gmkn").unwrap();
+    let source = Source::TINKOFF;
+    let md = MarketData::BAR_1M;
+    let year = 2021;
+
+    Data::download(&iid, source, md, year).await.unwrap();
 }
 
 //------------------------------------------------------------------------------
@@ -39,7 +44,6 @@ impl Client {}
 struct Broker {}
 impl Broker {
     fn new() -> Self {
-
         Self {}
     }
 }

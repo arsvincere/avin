@@ -59,6 +59,7 @@
         { iid = "MOEX_SHARE_GMKN", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_LKOH", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_MOEX", source = "TINKOFF", data = "BAR_1M" },
+        { iid = "MOEX_SHARE_MTSS", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_NLMK", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_NVTK", source = "TINKOFF", data = "BAR_1M" },
         { iid = "MOEX_SHARE_PIKK", source = "TINKOFF", data = "BAR_1M" },
@@ -83,6 +84,7 @@
     # input/output = [BAR_1M, BAR_5M, BAR_15M, BAR_1H, BAR_4H, BAR_DAY, BAR_WEEK, BAR_MONTH]
     convert = [
         { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_5M" },
+        { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_10M" },
         { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_15M" },
         { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_1H" },
         { iid = "MOEX_*_*", source = "TINKOFF", input = "BAR_1M", output = "BAR_4H" },
@@ -99,6 +101,7 @@
         { iid = "MOEX_SHARE_GMKN", source = "TINKOFF" },
         { iid = "MOEX_SHARE_LKOH", source = "TINKOFF" },
         { iid = "MOEX_SHARE_MOEX", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_MTSS", source = "TINKOFF" },
         { iid = "MOEX_SHARE_NLMK", source = "TINKOFF" },
         { iid = "MOEX_SHARE_NVTK", source = "TINKOFF" },
         { iid = "MOEX_SHARE_PIKK", source = "TINKOFF" },
@@ -120,6 +123,7 @@
         { iid = "MOEX_SHARE_GMKN", source = "TINKOFF" },
         { iid = "MOEX_SHARE_LKOH", source = "TINKOFF" },
         { iid = "MOEX_SHARE_MOEX", source = "TINKOFF" },
+        { iid = "MOEX_SHARE_MTSS", source = "TINKOFF" },
         { iid = "MOEX_SHARE_NLMK", source = "TINKOFF" },
         { iid = "MOEX_SHARE_NVTK", source = "TINKOFF" },
         { iid = "MOEX_SHARE_PIKK", source = "TINKOFF" },

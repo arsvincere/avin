@@ -50,6 +50,7 @@ impl Tester {
                     strategy.process(&asset);
                 }
                 Event::Order(e) => strategy.order_event(e),
+                Event::OrderBook(_) => todo!(),
             }
 
             // process actions from strategys

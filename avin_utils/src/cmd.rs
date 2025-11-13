@@ -36,6 +36,11 @@ impl Cmd {
 
         Ok(file_name)
     }
+    pub fn size(path: &Path) -> Result<u64, AvinError> {
+        let metadata = std::fs::metadata(path).unwrap();
+
+        Ok(metadata.len())
+    }
     pub fn make_dirs(path: &Path) -> Result<(), AvinError> {
         std::fs::create_dir_all(path).unwrap();
 

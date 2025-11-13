@@ -11,13 +11,18 @@ use chrono::{DateTime, Datelike, Timelike, Utc};
 use tonic::transport::{Channel, ClientTlsConfig};
 
 use avin_core::{
-    Account, Bar, BarEvent, Category, Direction, Event, FilledMarketOrder, Iid,
-    LimitOrder, Manager, MarketOrder, NewLimitOrder, NewMarketOrder,
-    NewStopOrder, Operation, Order, PostedLimitOrder, PostedMarketOrder,
-    PostedStopOrder, RejectedLimitOrder, RejectedMarketOrder, Share, StopOrder,
-    StopOrderKind, Tic, TicEvent, TimeFrame, Transaction,
+    Account, Ask, Bar, BarEvent, Bid, Category, Direction, Event,
+    FilledMarketOrder, Iid, LimitOrder, Manager, MarketOrder, NewLimitOrder,
+    NewMarketOrder, NewStopOrder, Operation, Order, OrderBook, OrderBookEvent,
+    PostedLimitOrder, PostedMarketOrder, PostedStopOrder, RejectedLimitOrder,
+    RejectedMarketOrder, Share, StopOrder, StopOrderKind, Tic, TicEvent,
+    TimeFrame, Transaction,
 };
 use avin_utils::{self as utils, CFG, Cmd};
+
+use crate::tinkoff::api::marketdata::{
+    OrderBookInstrument, SubscribeOrderBookRequest,
+};
 
 use super::api;
 use super::interceptor::DefaultInterceptor;
@@ -885,6 +890,30 @@ impl TinkoffClient {
 
         Ok(())
     }
+    pub async fn subscribe_ob(
+        &mut self,
+        iid: &Iid,
+    ) -> Result<(), &'static str> {
+        // create request
+        let instrument = OrderBookInstrument {
+            figi: "".to_string(),
+            depth: 50,
+            instrument_id: iid.figi().clone(),
+        };
+        let request = MarketDataRequest {
+            payload: Some(Req::SubscribeOrderBookRequest(
+                SubscribeOrderBookRequest {
+                    subscription_action: SubscriptionAction::Subscribe as i32,
+                    instruments: vec![instrument],
+                },
+            )),
+        };
+
+        // send request in existed stream
+        self.data_stream_tx.as_mut().unwrap().send(request).unwrap();
+
+        Ok(())
+    }
     pub async fn unsubscribe_bar(
         &mut self,
         iid: &Iid,
@@ -910,6 +939,12 @@ impl TinkoffClient {
         Ok(())
     }
     pub async fn unsubscribe_tic(
+        &mut self,
+        _iid: &Iid,
+    ) -> Result<(), &'static str> {
+        todo!();
+    }
+    pub async fn unsubscribe_ob(
         &mut self,
         _iid: &Iid,
     ) -> Result<(), &'static str> {
@@ -948,18 +983,18 @@ async fn start_marketdata_stream(
         match msg.payload.unwrap() {
             // market data
             Res::Candle(candle) => {
-                // log::debug!("{candle:?}");
                 let e: BarEvent = candle.into();
                 sender.send(Event::Bar(e)).unwrap();
             }
             Res::Trade(tic) => {
-                // log::debug!("{tic:?}");
                 let e: TicEvent = tic.into();
                 sender.send(Event::Tic(e)).unwrap();
             }
-            Res::Orderbook(_) => todo!(),
+            Res::Orderbook(ob) => {
+                let e: OrderBookEvent = ob.into();
+                sender.send(Event::OrderBook(e)).unwrap();
+            }
             Res::TradingStatus(_) => {
-                // log::debug!("{i:#?}");
                 log::warn!("Сделать обработку смены статуса актива!")
             }
             Res::LastPrice(_) => todo!(),
@@ -1811,6 +1846,42 @@ impl From<api::marketdata::Trade> for TicEvent {
         TicEvent { figi, tic }
     }
 }
+impl From<api::marketdata::OrderBook> for OrderBookEvent {
+    fn from(t: api::marketdata::OrderBook) -> Self {
+        let figi = t.figi;
+        let iid = Manager::find_figi(&figi).unwrap();
+        let lot = iid.lot();
+
+        let ts = t.time.unwrap();
+        let ts_nanos = ts.seconds * 1_000_000_000 + ts.nanos as i64;
+
+        let mut bids = Vec::new();
+        for i in t.bids {
+            let price: f64 = i.price.unwrap().into();
+            let lots = i.quantity;
+            let mut value = price * lots as f64 * lot as f64;
+            value = utils::round_price(value, iid.step());
+
+            let bid = Bid::new(price, lots, value);
+            bids.push(bid);
+        }
+
+        let mut asks = Vec::new();
+        for i in t.asks {
+            let price: f64 = i.price.unwrap().into();
+            let lots = i.quantity;
+            let mut value = price * lots as f64 * lot as f64;
+            value = utils::round_price(value, iid.step());
+
+            let ask = Ask::new(price, lots, value);
+            asks.push(ask);
+        }
+
+        let ob = OrderBook::new(ts_nanos, bids, asks);
+
+        OrderBookEvent::new(figi, ob)
+    }
+}
 fn std_exchange_name(exchange_name: &str) -> String {
     let exchange_name = exchange_name.to_uppercase();
 
@@ -2196,6 +2267,7 @@ mod tests {
         // subscribe
         b.subscribe_bar(sber.iid(), &tf).await.unwrap();
         b.subscribe_tic(sber.iid()).await.unwrap();
+        b.subscribe_ob(sber.iid()).await.unwrap();
 
         // // create task - broker start data stream loop
         // tokio::spawn(async move { b.start().await });
@@ -2203,6 +2275,7 @@ mod tests {
         // event receiving loop
         let mut bar = 1;
         let mut tic = 1;
+        let mut ob = 1;
         while let Some(e) = event_rx.recv().await {
             match e {
                 Event::Bar(e) => {
@@ -2213,9 +2286,13 @@ mod tests {
                     assert_eq!(e.figi, *sber.figi());
                     tic -= 1;
                 }
+                Event::OrderBook(e) => {
+                    assert_eq!(e.figi, *sber.figi());
+                    ob -= 1;
+                }
                 Event::Order(_) => {}
             }
-            if bar <= 0 && tic <= 0 {
+            if bar <= 0 && tic <= 0 && ob <= 0 {
                 break;
             }
         }

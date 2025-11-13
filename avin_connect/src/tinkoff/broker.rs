@@ -96,6 +96,9 @@ impl Tinkoff {
                 MarketData::TIC => {
                     self.client.subscribe_tic(&a.iid).await.unwrap()
                 }
+                MarketData::ORDER_BOOK => {
+                    self.client.subscribe_ob(&a.iid).await.unwrap()
+                }
                 MarketData::BAR_1M => self
                     .client
                     .subscribe_bar(&a.iid, &TimeFrame::M1)
@@ -141,9 +144,9 @@ impl Tinkoff {
                     .subscribe_bar(&a.iid, &TimeFrame::Month)
                     .await
                     .unwrap(),
-                MarketData::TRADE_STATS => unreachable!(),
-                MarketData::ORDER_STATS => unreachable!(),
-                MarketData::OB_STATS => unreachable!(),
+                MarketData::SC_TRADE => unreachable!(),
+                MarketData::SC_ORDER => unreachable!(),
+                MarketData::SC_OB => unreachable!(),
             };
         }
     }

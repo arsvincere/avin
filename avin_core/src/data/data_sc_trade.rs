@@ -15,8 +15,8 @@ use avin_utils::{self as utils, AvinError, Cmd};
 use crate::{DataSchema, Iid, MarketData};
 
 #[derive(Debug)]
-pub struct DataTrades {}
-impl DataTrades {
+pub struct DataSCTrade {}
+impl DataSCTrade {
     #[allow(dead_code)]
     pub fn save(
         iid: &Iid,

@@ -36,9 +36,10 @@ pub enum MarketData {
     BAR_WEEK,
     BAR_MONTH,
     TIC,
-    TRADE_STATS,
-    ORDER_STATS,
-    OB_STATS,
+    ORDER_BOOK,
+    SC_TRADE,
+    SC_ORDER,
+    SC_OB,
 }
 impl MarketData {
     pub fn all() -> Vec<MarketData> {
@@ -53,9 +54,10 @@ impl MarketData {
             MarketData::BAR_WEEK,
             MarketData::BAR_MONTH,
             MarketData::TIC,
-            MarketData::TRADE_STATS,
-            MarketData::ORDER_STATS,
-            MarketData::OB_STATS,
+            MarketData::ORDER_BOOK,
+            MarketData::SC_TRADE,
+            MarketData::SC_ORDER,
+            MarketData::SC_OB,
         ]
     }
     /// Return market data type name.
@@ -74,9 +76,10 @@ impl MarketData {
             Self::BAR_WEEK => "BAR_WEEK",
             Self::BAR_MONTH => "BAR_MONTH",
             Self::TIC => "TIC",
-            Self::TRADE_STATS => "TRADE_STATS",
-            Self::ORDER_STATS => "ORDER_STATS",
-            Self::OB_STATS => "OB_STATS",
+            Self::ORDER_BOOK => "ORDER_BOOK",
+            Self::SC_TRADE => "SC_TRADE",
+            Self::SC_ORDER => "SC_ORDER",
+            Self::SC_OB => "SC_OB",
         }
     }
     /// Return TimeFrame enum for this market data.
@@ -140,9 +143,10 @@ impl std::str::FromStr for MarketData {
             "BAR_WEEK" => Ok(MarketData::BAR_WEEK),
             "BAR_MONTH" => Ok(MarketData::BAR_MONTH),
             "TIC" => Ok(MarketData::TIC),
-            "TRADE_STATS" => Ok(MarketData::TRADE_STATS),
-            "ORDER_STATS" => Ok(MarketData::ORDER_STATS),
-            "OB_STATS" => Ok(MarketData::OB_STATS),
+            "ORDER_BOOK" => Ok(MarketData::ORDER_BOOK),
+            "SC_TRADE" => Ok(MarketData::SC_TRADE),
+            "SC_ORDER" => Ok(MarketData::SC_ORDER),
+            "SC_OB" => Ok(MarketData::SC_OB),
             _ => {
                 let msg = format!("{s}, available={:?}", MarketData::VARIANTS);
                 let e = AvinError::InvalidValue(msg);
@@ -161,7 +165,7 @@ mod tests {
     #[test]
     fn all() {
         let all_market_data_kind = MarketData::all();
-        assert_eq!(all_market_data_kind.len(), 13);
+        assert_eq!(all_market_data_kind.len(), 14);
     }
 
     #[test]
@@ -176,9 +180,10 @@ mod tests {
         assert_eq!(MarketData::BAR_WEEK.name(), "BAR_WEEK");
         assert_eq!(MarketData::BAR_MONTH.name(), "BAR_MONTH");
         assert_eq!(MarketData::TIC.name(), "TIC");
-        assert_eq!(MarketData::TRADE_STATS.name(), "TRADE_STATS");
-        assert_eq!(MarketData::ORDER_STATS.name(), "ORDER_STATS");
-        assert_eq!(MarketData::OB_STATS.name(), "OB_STATS");
+        assert_eq!(MarketData::ORDER_BOOK.name(), "ORDER_BOOK");
+        assert_eq!(MarketData::SC_TRADE.name(), "SC_TRADE");
+        assert_eq!(MarketData::SC_ORDER.name(), "SC_ORDER");
+        assert_eq!(MarketData::SC_OB.name(), "SC_OB");
     }
     #[test]
     fn timeframe() {
@@ -207,9 +212,10 @@ mod tests {
         assert_eq!(MarketData::BAR_WEEK.to_string(), "BAR_WEEK");
         assert_eq!(MarketData::BAR_MONTH.to_string(), "BAR_MONTH");
         assert_eq!(MarketData::TIC.to_string(), "TIC");
-        assert_eq!(MarketData::TRADE_STATS.to_string(), "TRADE_STATS");
-        assert_eq!(MarketData::ORDER_STATS.to_string(), "ORDER_STATS");
-        assert_eq!(MarketData::OB_STATS.to_string(), "OB_STATS");
+        assert_eq!(MarketData::ORDER_BOOK.to_string(), "ORDER_BOOK");
+        assert_eq!(MarketData::SC_TRADE.to_string(), "SC_TRADE");
+        assert_eq!(MarketData::SC_ORDER.to_string(), "SC_ORDER");
+        assert_eq!(MarketData::SC_OB.to_string(), "SC_OB");
     }
     #[test]
     fn from_str() {
@@ -239,16 +245,17 @@ mod tests {
         );
         assert_eq!(MarketData::TIC, MarketData::from_str("TIC").unwrap());
         assert_eq!(
-            MarketData::TRADE_STATS,
-            MarketData::from_str("TRADE_STATS").unwrap()
+            MarketData::ORDER_BOOK,
+            MarketData::from_str("ORDER_BOOK").unwrap()
         );
         assert_eq!(
-            MarketData::ORDER_STATS,
-            MarketData::from_str("ORDER_STATS").unwrap()
+            MarketData::SC_TRADE,
+            MarketData::from_str("SC_TRADE").unwrap()
         );
         assert_eq!(
-            MarketData::OB_STATS,
-            MarketData::from_str("OB_STATS").unwrap()
+            MarketData::SC_ORDER,
+            MarketData::from_str("SC_ORDER").unwrap()
         );
+        assert_eq!(MarketData::SC_OB, MarketData::from_str("SC_OB").unwrap());
     }
 }

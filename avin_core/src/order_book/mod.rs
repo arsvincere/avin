@@ -5,19 +5,6 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod data_bar;
-mod data_ob;
-mod data_sc_ob;
-mod data_sc_order;
-mod data_sc_trade;
-mod data_tic;
-mod iid_cache;
-mod manager;
-mod market_data;
-mod schema;
-mod source;
+mod ob;
 
-pub use manager::Manager;
-pub use market_data::MarketData;
-pub use schema::DataSchema;
-pub use source::Source;
+pub use ob::{Ask, Bid, OrderBook};

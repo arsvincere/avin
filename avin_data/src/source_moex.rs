@@ -40,9 +40,9 @@ impl SourceMoex {
             MarketData::BAR_DAY,
             MarketData::BAR_WEEK,
             MarketData::BAR_MONTH,
-            MarketData::TRADE_STATS,
-            MarketData::ORDER_STATS,
-            MarketData::OB_STATS,
+            MarketData::SC_TRADE,
+            MarketData::SC_ORDER,
+            MarketData::SC_OB,
         ]
     }
 
@@ -77,13 +77,14 @@ impl SourceMoex {
             MarketData::BAR_DAY => self.get_bars(iid, md, from, till).await,
             MarketData::BAR_WEEK => self.get_bars(iid, md, from, till).await,
             MarketData::BAR_MONTH => self.get_bars(iid, md, from, till).await,
-            MarketData::TRADE_STATS => self.get_trades(iid, from, till).await,
-            MarketData::ORDER_STATS => self.get_orders(iid, from, till).await,
-            MarketData::OB_STATS => self.get_ob(iid, from, till).await,
+            MarketData::SC_TRADE => self.get_trades(iid, from, till).await,
+            MarketData::SC_ORDER => self.get_orders(iid, from, till).await,
+            MarketData::SC_OB => self.get_ob(iid, from, till).await,
             MarketData::TIC => todo!(),
-            MarketData::BAR_5M => todo!("Error: data unavailable"),
-            MarketData::BAR_15M => todo!("Error: data unavailable"),
-            MarketData::BAR_4H => todo!("Error: data unavailable"),
+            MarketData::ORDER_BOOK => todo!(),
+            MarketData::BAR_5M => unreachable!("Error: data unavailable"),
+            MarketData::BAR_15M => unreachable!("Error: data unavailable"),
+            MarketData::BAR_4H => unreachable!("Error: data unavailable"),
         }
     }
 

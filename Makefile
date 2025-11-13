@@ -50,12 +50,15 @@ pre-commit:
 	$(MAKE) test-py
 
 build: .venv
+	cargo build --jobs 4
+
+release: .venv
 	$(PY_ENV) && flit build --no-use-vcs
 	$(PY_ENV) && pyinstaller avin_data/cli.py \
 		--onefile \
 		--specpath build \
 		--name avin-data-py
-	cargo build --jobs 4
+	cargo build --release --jobs 4
 
 publish:
 	source .venv/bin/activate && cd $(PY) && flit publish
@@ -74,11 +77,15 @@ publish:
 	cargo publish -p avin_gui
 	cargo publish -p avin
 
-install: build
+install: release
+	# avin-data-py
 	$(PY_ENV) && flit install
 	rm -rf $(PY_APP)
 	install -Dm755 $(PY)/dist/avin-data-py $(PY_APP)
 	install -Dm644 res/config.toml ~/.config/avin/config.toml
+	# avin-data
+	rm -rf ~/.local/bin/avin-data
+	install -Dm755 target/release/avin-data ~/.local/bin/avin-data
 
 doc: build
 	cargo doc --workspace --open --no-deps --color always --jobs 4
@@ -144,6 +151,7 @@ help:
 	@echo ""
 	@echo -e $(T1)Build project:$(T2)
 	@echo -e $(B1)build$(B2)"          Build python and rust sources"
+	@echo -e $(B1)release$(B2)"        Build release"
 	@echo -e $(B1)publish$(B2)"        Publish package pypi.org & crates.io"
 	@echo -e $(B1)install$(B2)"        Install the project"
 	@echo -e $(B1)doc$(B2)"            Create and open local documentation"

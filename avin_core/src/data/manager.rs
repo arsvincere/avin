@@ -13,9 +13,10 @@ use crate::{Category, Iid, MarketData, Source};
 
 use super::data_bar::DataBar;
 use super::data_ob::DataOB;
-use super::data_orders::DataOrders;
+use super::data_sc_ob::DataSCOB;
+use super::data_sc_order::DataSCOrder;
+use super::data_sc_trade::DataSCTrade;
 use super::data_tic::DataTic;
-use super::data_trades::DataTrades;
 use super::iid_cache::IidCache;
 
 pub struct Manager {}
@@ -93,9 +94,10 @@ impl Manager {
             MarketData::BAR_WEEK => DataBar::save(iid, source, md, df),
             MarketData::BAR_MONTH => DataBar::save(iid, source, md, df),
             MarketData::TIC => DataTic::save(iid, source, md, df),
-            MarketData::TRADE_STATS => DataTrades::save(iid, md, df),
-            MarketData::ORDER_STATS => DataOrders::save(iid, md, df),
-            MarketData::OB_STATS => DataOB::save(iid, md, df),
+            MarketData::ORDER_BOOK => DataOB::save(iid, source, md, df),
+            MarketData::SC_TRADE => DataSCTrade::save(iid, md, df),
+            MarketData::SC_ORDER => DataSCOrder::save(iid, md, df),
+            MarketData::SC_OB => DataSCOB::save(iid, md, df),
         }
     }
     /// Load market data.
@@ -138,9 +140,10 @@ impl Manager {
             MarketData::BAR_WEEK => DataBar::load(iid, source, md, begin, end),
             MarketData::BAR_MONTH => DataBar::load(iid, source, md, begin, end),
             MarketData::TIC => DataTic::load(iid, source, md, begin, end),
-            MarketData::TRADE_STATS => DataTrades::load(iid, md, begin, end),
-            MarketData::ORDER_STATS => DataOrders::load(iid, md, begin, end),
-            MarketData::OB_STATS => DataOB::load(iid, md, begin, end),
+            MarketData::ORDER_BOOK => DataOB::load(iid, source, md, begin, end),
+            MarketData::SC_TRADE => DataSCTrade::load(iid, md, begin, end),
+            MarketData::SC_ORDER => DataSCOrder::load(iid, md, begin, end),
+            MarketData::SC_OB => DataSCOB::load(iid, md, begin, end),
         }
     }
     pub fn load_last(
@@ -159,9 +162,10 @@ impl Manager {
             MarketData::BAR_WEEK => DataBar::load_last(iid, source, md),
             MarketData::BAR_MONTH => DataBar::load_last(iid, source, md),
             MarketData::TIC => todo!(),
-            MarketData::TRADE_STATS => todo!(),
-            MarketData::ORDER_STATS => todo!(),
-            MarketData::OB_STATS => todo!(),
+            MarketData::ORDER_BOOK => todo!(),
+            MarketData::SC_TRADE => todo!(),
+            MarketData::SC_ORDER => todo!(),
+            MarketData::SC_OB => todo!(),
         }
     }
 

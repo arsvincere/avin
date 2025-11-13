@@ -5,6 +5,8 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use crate::OrderBookEvent;
+
 use super::{BarEvent, OrderEvent, TicEvent};
 
 /// Market events, that is sending from broker to trader/tester/terminal.
@@ -17,6 +19,7 @@ use super::{BarEvent, OrderEvent, TicEvent};
 pub enum Event {
     Bar(BarEvent),
     Tic(TicEvent),
+    OrderBook(OrderBookEvent),
     Order(OrderEvent),
 }
 impl Event {
@@ -29,6 +32,7 @@ impl Event {
         match self {
             Self::Bar(e) => &e.figi,
             Self::Tic(e) => &e.figi,
+            Self::OrderBook(e) => &e.figi,
             Self::Order(e) => e.iid.figi(),
         }
     }
@@ -38,6 +42,7 @@ impl std::fmt::Display for Event {
         match self {
             Event::Bar(e) => write!(f, "Event={e}"),
             Event::Tic(e) => write!(f, "Event={e}"),
+            Event::OrderBook(e) => write!(f, "Event={e}"),
             Event::Order(e) => write!(f, "Event={e}"),
         }
     }

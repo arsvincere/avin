@@ -154,16 +154,6 @@ impl Data {
         source: Source,
         md: MarketData,
     ) -> Result<(), AvinError> {
-        // TODO:
-        // if source == Source::MOEXALGO {
-        //     let msg = format!("update data from {source} unavailable");
-        //     let e = AvinError::NotImplemented(msg);
-        //     return Err(e);
-        // }
-        if source == Source::MOEXALGO {
-            return Ok(());
-        }
-
         log::info!("Update {iid} {md} from {source}");
 
         // load last
@@ -182,17 +172,16 @@ impl Data {
         let begin = avin_utils::dt(ts);
         let end = Utc::now();
 
-        // request [last, now()], tinkoff return only historical,
-        // completed bars
-        let new_data =
-            SourceTinkoff::get_bars(iid, md, begin, end).await.unwrap();
+        // request new bars, tinkoff return only historical, completed bars
+        let new = SourceTinkoff::get_bars(iid, md, begin, end).await.unwrap();
 
         // join df
-        df.extend(&new_data).unwrap();
+        df.extend(&new).unwrap();
 
         // drop duplicated rows
         let col_name = String::from("ts_nanos");
-        df.unique_stable(Some(&[col_name]), UniqueKeepStrategy::Last, None)
+        df = df
+            .unique_stable(Some(&[col_name]), UniqueKeepStrategy::Last, None)
             .unwrap();
 
         Manager::save(iid, source, md, &df).unwrap();
@@ -214,32 +203,24 @@ impl Data {
             return Err(e);
         }
 
-        for exchange in Exchange::iter() {
-            for category in Category::iter() {
-                let mut category_path = data_dir.clone();
-                category_path.push(exchange.name());
-                category_path.push(category.name());
-                let tickers = Cmd::get_dirs(&category_path).unwrap();
+        let all_iid = Data::all_iid();
+        for iid in all_iid.iter() {
+            for source in Source::iter() {
+                for md in MarketData::iter() {
+                    // BUG: если MOEXALGO или тики или стаканы хз как лучше...
+                    if source == Source::MOEXALGO
+                        || md == MarketData::TIC
+                        || md == MarketData::ORDER_BOOK
+                    {
+                        continue;
+                    }
 
-                for ticker in tickers {
-                    for source in Source::iter() {
-                        for md in MarketData::iter() {
-                            let mut path = ticker.clone();
-                            path.push(source.name());
-                            path.push(md.name());
+                    let mut path = iid.path();
+                    path.push(source.name());
+                    path.push(md.name());
 
-                            if path.exists() {
-                                let s = format!(
-                                    "{}_{}_{}",
-                                    exchange.name(),
-                                    category.name(),
-                                    Cmd::name(&ticker).unwrap()
-                                );
-
-                                let iid = Manager::find_iid(&s).unwrap();
-                                Data::update(&iid, source, md).await?;
-                            }
-                        }
+                    if path.exists() {
+                        Data::update(iid, source, md).await?;
                     }
                 }
             }
@@ -269,9 +250,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_5M => match output {
             MarketData::BAR_1M => false,
@@ -284,9 +266,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_10M => match output {
             MarketData::BAR_1M => false,
@@ -299,9 +282,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_15M => match output {
             MarketData::BAR_1M => false,
@@ -314,9 +298,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_1H => match output {
             MarketData::BAR_1M => false,
@@ -329,9 +314,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_4H => match output {
             MarketData::BAR_1M => false,
@@ -344,9 +330,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_DAY => match output {
             MarketData::BAR_1M => false,
@@ -359,9 +346,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => true,
             MarketData::BAR_MONTH => true,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_WEEK => match output {
             MarketData::BAR_1M => false,
@@ -374,9 +362,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => false,
             MarketData::BAR_MONTH => false,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::BAR_MONTH => match output {
             MarketData::BAR_1M => false,
@@ -389,9 +378,10 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => false,
             MarketData::BAR_MONTH => false,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
         MarketData::TIC => match output {
             MarketData::BAR_1M => false,
@@ -404,11 +394,12 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => false,
             MarketData::BAR_MONTH => false,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
-        MarketData::TRADE_STATS => match output {
+        MarketData::ORDER_BOOK => match output {
             MarketData::BAR_1M => false,
             MarketData::BAR_5M => false,
             MarketData::BAR_10M => false,
@@ -419,11 +410,12 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => false,
             MarketData::BAR_MONTH => false,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
-        MarketData::ORDER_STATS => match output {
+        MarketData::SC_TRADE => match output {
             MarketData::BAR_1M => false,
             MarketData::BAR_5M => false,
             MarketData::BAR_10M => false,
@@ -434,11 +426,12 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => false,
             MarketData::BAR_MONTH => false,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
-        MarketData::OB_STATS => match output {
+        MarketData::SC_ORDER => match output {
             MarketData::BAR_1M => false,
             MarketData::BAR_5M => false,
             MarketData::BAR_10M => false,
@@ -449,9 +442,26 @@ fn is_convertation_possibe(input: MarketData, output: MarketData) -> bool {
             MarketData::BAR_WEEK => false,
             MarketData::BAR_MONTH => false,
             MarketData::TIC => false,
-            MarketData::TRADE_STATS => false,
-            MarketData::ORDER_STATS => false,
-            MarketData::OB_STATS => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
+        },
+        MarketData::SC_OB => match output {
+            MarketData::BAR_1M => false,
+            MarketData::BAR_5M => false,
+            MarketData::BAR_10M => false,
+            MarketData::BAR_15M => false,
+            MarketData::BAR_1H => false,
+            MarketData::BAR_4H => false,
+            MarketData::BAR_DAY => false,
+            MarketData::BAR_WEEK => false,
+            MarketData::BAR_MONTH => false,
+            MarketData::TIC => false,
+            MarketData::ORDER_BOOK => false,
+            MarketData::SC_TRADE => false,
+            MarketData::SC_ORDER => false,
+            MarketData::SC_OB => false,
         },
     }
 }

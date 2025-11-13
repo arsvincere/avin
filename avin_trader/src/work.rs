@@ -53,6 +53,9 @@ impl Work {
                 Event::Tic(e) => {
                     self.asset.tic_event(e);
                 }
+                Event::OrderBook(e) => {
+                    todo!("{e}")
+                }
                 Event::Order(e) => {
                     for strategy in self.strategys.iter_mut() {
                         if *strategy.name() == e.owner {

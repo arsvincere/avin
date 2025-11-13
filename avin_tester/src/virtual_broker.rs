@@ -117,6 +117,7 @@ impl VirtualBroker {
                     };
                 }
                 Event::Tic(_) => todo!("Обработка тиков виртуал брокером..."),
+                Event::OrderBook(_) => todo!("Стакан виртуал брокер..."),
                 Event::Order(_) => unreachable!("OrderEvent in data stream?"),
             }
 

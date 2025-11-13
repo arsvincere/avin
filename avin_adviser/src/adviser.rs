@@ -52,6 +52,7 @@ impl Adviser {
                     Event::Bar(e) => asset.bar_event(e),
                     Event::Tic(e) => asset.tic_event(e),
                     Event::Order(_e) => todo!(),
+                    Event::OrderBook(_e) => todo!(),
                 }
 
                 // TODO:
