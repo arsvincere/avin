@@ -52,27 +52,14 @@ impl Feat {
 }
 
 impl Analyse for Quantum {
-    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), avin_utils::AvinError> {
-        log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
-
-        log::info!("Analyse quantum {} {}", iid.ticker(), tf);
-
-        let quantum_df = create_quantum_df(iid, tf);
-
-        // analyse
-        analyse_quantum_feat(iid, tf, Feat::VolBuy, &quantum_df);
-        analyse_quantum_feat(iid, tf, Feat::VolSell, &quantum_df);
-
-        Ok(())
-    }
-    fn analyse_all() -> Result<(), avin_utils::AvinError> {
+    fn analyse() -> Result<(), avin_utils::AvinError> {
         let shares = Share::all();
         let timeframes =
             [TimeFrame::M1, TimeFrame::M10, TimeFrame::H1, TimeFrame::Day];
 
         for share in shares.iter() {
             for tf in timeframes.iter() {
-                Self::analyse(share.iid(), *tf).unwrap();
+                analyse(share.iid(), *tf).unwrap();
             }
         }
 
@@ -80,6 +67,19 @@ impl Analyse for Quantum {
     }
 }
 
+fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), avin_utils::AvinError> {
+    log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
+
+    log::info!("Analyse quantum {} {}", iid.ticker(), tf);
+
+    let quantum_df = create_quantum_df(iid, tf);
+
+    // analyse
+    analyse_quantum_feat(iid, tf, Feat::VolBuy, &quantum_df);
+    analyse_quantum_feat(iid, tf, Feat::VolSell, &quantum_df);
+
+    Ok(())
+}
 fn analyse_name(
     tf: TimeFrame,
     feat: Option<Feat>,

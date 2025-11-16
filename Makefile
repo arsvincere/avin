@@ -60,6 +60,16 @@ release: .venv
 		--name avin-data-py
 	cargo build --release --jobs 4
 
+install: release
+	# avin-data-py
+	$(PY_ENV) && flit install
+	rm -rf $(PY_APP)
+	install -Dm755 $(PY)/dist/avin-data-py $(PY_APP)
+	install -Dm644 res/config.toml ~/.config/avin/config.toml
+	# avin-data
+	rm -rf ~/.local/bin/avin-data
+	install -Dm755 target/release/avin-data ~/.local/bin/avin-data
+
 publish:
 	source .venv/bin/activate && cd $(PY) && flit publish
 	cargo publish -p avin_utils
@@ -76,16 +86,6 @@ publish:
 	cargo publish -p avin_adviser
 	cargo publish -p avin_gui
 	cargo publish -p avin
-
-install: release
-	# avin-data-py
-	$(PY_ENV) && flit install
-	rm -rf $(PY_APP)
-	install -Dm755 $(PY)/dist/avin-data-py $(PY_APP)
-	install -Dm644 res/config.toml ~/.config/avin/config.toml
-	# avin-data
-	rm -rf ~/.local/bin/avin-data
-	install -Dm755 target/release/avin-data ~/.local/bin/avin-data
 
 doc: build
 	cargo doc --workspace --open --no-deps --color always --jobs 4

@@ -10,8 +10,7 @@ pub enum AvinError {
     InvalidValue(String),
     NotFound(String),
     NotLoaded(String),
-    NotExist(String),
-    NotImplemented(String),
+    NotExist(String), // TODO: rename -> Unavailable
     IOError(String),
 }
 
@@ -22,7 +21,6 @@ impl std::fmt::Display for AvinError {
             Self::NotFound(s) => write!(f, "NotFound: {s}"),
             Self::NotLoaded(s) => write!(f, "NotLoaded: {s}"),
             Self::NotExist(s) => write!(f, "NotExist: {s}"),
-            Self::NotImplemented(s) => write!(f, "Not implemented: {s}"),
             Self::IOError(s) => write!(f, "IOError: {s}"),
         }
     }

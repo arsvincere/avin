@@ -48,7 +48,7 @@ impl From<&str> for Category {
             "FUTURE" => Category::FUTURE,
             "OPTION" => Category::OPTION,
             "ETF" => Category::ETF,
-            _ => todo!("Invalid value for category: {value}"),
+            _ => panic!("Invalid value for category: {value}"),
         }
     }
 }

@@ -12,14 +12,13 @@ use cached::proc_macro::cached;
 use polars::prelude::*;
 use strum::IntoEnumIterator;
 
-use avin_core::{Iid, TimeFrame};
+use avin_core::Iid;
 use avin_utils::{AvinError, Cmd};
 
 use crate::{Size, Sz};
 
 pub trait Analyse {
-    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError>;
-    fn analyse_all() -> Result<(), AvinError>;
+    fn analyse() -> Result<(), AvinError>;
     fn save(iid: &Iid, name: &str, df: &mut DataFrame) {
         let path = create_path(iid, name);
         Cmd::write_pqt(df, &path).unwrap();

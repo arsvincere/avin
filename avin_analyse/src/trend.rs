@@ -61,38 +61,7 @@ impl Feat {
 }
 
 impl Analyse for Trend {
-    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError> {
-        log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
-
-        let mut chart = load_chart(iid, tf).unwrap();
-        ExtremumIndicator::init(&mut chart);
-
-        for term in Term::iter() {
-            // get all Trend
-            let trends = chart.all_trend(term);
-            if trends.is_empty() {
-                continue;
-            }
-
-            // create trends dataframe
-            let mut trends_df = create_trends_df(trends);
-
-            // analyse features
-            for feat in Feat::iter() {
-                analyse_feat(iid, &trends_df, tf, term, feat);
-            }
-
-            // set trend metrics (cdf, size, sz)
-            set_metrics(&chart, trends, &mut trends_df);
-
-            // save
-            let name = analyse_name(tf, term, None, None);
-            Trend::save(iid, &name, &mut trends_df);
-        }
-
-        Ok(())
-    }
-    fn analyse_all() -> Result<(), AvinError> {
+    fn analyse() -> Result<(), AvinError> {
         let shares = Share::all();
         let timeframes = TimeFrame::all();
 
@@ -102,7 +71,7 @@ impl Analyse for Trend {
 
             // create new analyse for each timeframe
             for tf in timeframes.iter() {
-                Self::analyse(share.iid(), *tf).unwrap();
+                analyse(share.iid(), *tf).unwrap();
             }
         }
 
@@ -309,6 +278,37 @@ impl TrendAnalytic for Chart {
 }
 
 // analyse
+fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError> {
+    log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
+
+    let mut chart = load_chart(iid, tf).unwrap();
+    ExtremumIndicator::init(&mut chart);
+
+    for term in Term::iter() {
+        // get all Trend
+        let trends = chart.all_trend(term);
+        if trends.is_empty() {
+            continue;
+        }
+
+        // create trends dataframe
+        let mut trends_df = create_trends_df(trends);
+
+        // analyse features
+        for feat in Feat::iter() {
+            analyse_feat(iid, &trends_df, tf, term, feat);
+        }
+
+        // set trend metrics (cdf, size, sz)
+        set_metrics(&chart, trends, &mut trends_df);
+
+        // save
+        let name = analyse_name(tf, term, None, None);
+        Trend::save(iid, &name, &mut trends_df);
+    }
+
+    Ok(())
+}
 fn analyse_name(
     tf: TimeFrame,
     term: Term,

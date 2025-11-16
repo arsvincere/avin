@@ -50,21 +50,14 @@ impl Feat {
 }
 
 impl Analyse for Cluster {
-    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), avin_utils::AvinError> {
-        log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
-
-        create_clusters_df(iid, tf);
-
-        Ok(())
-    }
-    fn analyse_all() -> Result<(), avin_utils::AvinError> {
+    fn analyse() -> Result<(), avin_utils::AvinError> {
         let shares = Share::all();
         let timeframes =
             [TimeFrame::M1, TimeFrame::M10, TimeFrame::H1, TimeFrame::Day];
 
         for share in shares.iter() {
             for tf in timeframes.iter() {
-                Self::analyse(share.iid(), *tf).unwrap();
+                analyse(share.iid(), *tf).unwrap();
             }
         }
 
@@ -72,6 +65,13 @@ impl Analyse for Cluster {
     }
 }
 
+fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), avin_utils::AvinError> {
+    log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
+
+    create_clusters_df(iid, tf);
+
+    Ok(())
+}
 fn analyse_name(
     tf: TimeFrame,
     feat: Option<&Feat>,

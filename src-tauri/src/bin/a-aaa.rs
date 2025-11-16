@@ -17,6 +17,7 @@ use polars::io::SerReader;
 use polars::prelude::*;
 use strum::{IntoEnumIterator, VariantNames};
 
+use avin_analyse::*;
 use avin_connect::*;
 use avin_core::*;
 use avin_data::*;
@@ -28,12 +29,17 @@ const SHUTDOWN_TIME: NaiveTime = NaiveTime::from_hms_opt(21, 0, 0).unwrap();
 async fn main() {
     avin_utils::init_logger();
 
-    let iid = Manager::find_iid("moex_share_gmkn").unwrap();
-    let source = Source::TINKOFF;
-    let md = MarketData::BAR_1M;
-    let year = 2021;
+    let msg = "SBER Tic B".to_string();
+    let body = "90.550.000".to_string();
 
-    Data::download(&iid, source, md, year).await.unwrap();
+    let mut command = Command::new("/bin/notify-send");
+    command.arg("-u"); // silent
+    command.arg("critical");
+    command.arg(msg);
+    command.arg(body);
+
+    // execute
+    command.spawn().unwrap().wait().unwrap();
 }
 
 //------------------------------------------------------------------------------

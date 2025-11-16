@@ -55,36 +55,13 @@ impl Feat {
 }
 
 impl Analyse for Bar {
-    fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError> {
-        log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
-
-        // load chart
-        let chart = load_chart(iid, tf).unwrap();
-
-        // create volumes dataframe
-        let mut vol_df = create_df(&chart);
-
-        // analyse features
-        for feat in Feat::iter() {
-            analyse_feat(iid, &vol_df, tf, &feat);
-        }
-
-        // set trend analyse (cdf, size, sz)
-        set_metrics(&chart, &mut vol_df);
-
-        // save volumes
-        let name = analyse_name(chart.tf(), None, None);
-        Bar::save(chart.iid(), &name, &mut vol_df);
-
-        Ok(())
-    }
-    fn analyse_all() -> Result<(), AvinError> {
+    fn analyse() -> Result<(), AvinError> {
         let shares = Share::all();
         let timeframes = TimeFrame::all();
 
         for share in shares.iter() {
             for tf in timeframes.iter() {
-                Self::analyse(share.iid(), *tf).unwrap();
+                analyse(share.iid(), *tf).unwrap();
             }
         }
 
@@ -174,6 +151,29 @@ impl BarAnalytic for Chart {
 }
 
 // analyse
+fn analyse(iid: &Iid, tf: TimeFrame) -> Result<(), AvinError> {
+    log::info!(":: Analyse {} {} {}", NAME, iid.ticker(), tf);
+
+    // load chart
+    let chart = load_chart(iid, tf).unwrap();
+
+    // create dataframe
+    let mut df = create_df(&chart);
+
+    // analyse features
+    for feat in Feat::iter() {
+        analyse_feat(iid, &df, tf, &feat);
+    }
+
+    // set trend analyse (cdf, size, sz)
+    set_metrics(&chart, &mut df);
+
+    // save volumes
+    let name = analyse_name(chart.tf(), None, None);
+    Bar::save(chart.iid(), &name, &mut df);
+
+    Ok(())
+}
 fn analyse_name(
     tf: TimeFrame,
     feat: Option<&Feat>,
@@ -211,7 +211,7 @@ fn create_df(chart: &Chart) -> DataFrame {
     let mut body = Vec::new();
     let mut upper = Vec::new();
     let mut lower = Vec::new();
-    let mut volumes = Vec::new();
+    let mut volume = Vec::new();
 
     // collect values
     for bar in chart.bars().iter() {
@@ -220,7 +220,7 @@ fn create_df(chart: &Chart) -> DataFrame {
         body.push(bar.body().abs_p());
         upper.push(bar.upper().abs_p());
         lower.push(bar.lower().abs_p());
-        volumes.push(bar.v);
+        volume.push(bar.v);
     }
 
     // create df
@@ -230,7 +230,7 @@ fn create_df(chart: &Chart) -> DataFrame {
             Feat::Full.name() => full,
             Feat::Lower.name() => lower,
             Feat::Upper.name() => upper,
-            Feat::Volume.name() => volumes,
+            Feat::Volume.name() => volume,
     )
     .unwrap()
 }
@@ -255,19 +255,6 @@ fn analyse_feat(iid: &Iid, vol_df: &DataFrame, tf: TimeFrame, feat: &Feat) {
     Bar::save(iid, &name, &mut szs);
 }
 fn get_cdf_df(chart: &Chart, feat: &Feat) -> Result<DataFrame, AvinError> {
-    // df:
-    // ┌───────┬───────┬───────┐
-    // │ size  ┆ begin ┆ end   │
-    // │ ---   ┆ ---   ┆ ---   │
-    // │ str   ┆ f64   ┆ f64   │
-    // ╞═══════╪═══════╪═══════╡
-    // │ XS    ┆ 0.0   ┆ 0.39  │
-    // │ S     ┆ 0.39  ┆ 0.83  │
-    // │ M     ┆ 0.83  ┆ 2.05  │
-    // │ L     ┆ 2.05  ┆ 3.9   │
-    // │ XL    ┆ 3.9   ┆ 52.76 │
-    // └───────┴───────┴───────┘
-
     let iid = chart.iid();
     let tf = chart.tf();
     let metric = Metric::Cdf;

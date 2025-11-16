@@ -15,6 +15,7 @@ fn main() {
 
     // Trend::analyse_all().unwrap();
     // Bar::analyse_all().unwrap();
+    Tic::analyse().unwrap();
     // Cluster::analyse_all().unwrap();
     // Quantum::analyse_all().unwrap();
 }
