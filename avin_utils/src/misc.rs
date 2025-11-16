@@ -5,18 +5,12 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use chrono::TimeDelta;
 use chrono::TimeZone;
 use chrono::prelude::*;
 use polars::prelude::IntoLazy;
 use polars::prelude::{DataFrame, NamedFrom, Series, col};
 
 use super::CFG;
-
-pub const DAY_BEGIN: NaiveTime = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
-pub const DAY_END: NaiveTime = NaiveTime::from_hms_opt(23, 59, 59).unwrap();
-pub const MSK_OFFSET: TimeDelta = TimeDelta::hours(3);
-pub const MINUTES_IN_DAY: i32 = 24 * 60 * 60;
 
 static POW_VEC: &[f64] = &[
     0.0,

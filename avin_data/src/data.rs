@@ -31,8 +31,7 @@ impl Data {
 
         for exchange in Exchange::iter() {
             for category in Category::iter() {
-                // TODO: блять да че же делать с этими ебучими
-                // индексами, которые Т не раздает
+                // TODO: блять да че же делать с этими ебучими индексами
                 if category == Category::INDEX {
                     continue;
                 }
