@@ -5,10 +5,11 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod adviser;
-mod condition;
-mod notice;
+use avin_core::Asset;
 
-pub use adviser::Adviser;
-pub use condition::Condition;
-pub use notice::Notice;
+use crate::Notice;
+
+pub trait Condition {
+    fn name(&self) -> &'static str;
+    fn apply(&self, asset: &Asset) -> Option<Notice>;
+}

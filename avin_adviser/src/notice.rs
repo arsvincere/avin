@@ -5,10 +5,16 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-mod adviser;
-mod condition;
-mod notice;
-
-pub use adviser::Adviser;
-pub use condition::Condition;
-pub use notice::Notice;
+#[derive(Debug)]
+pub struct Notice {
+    pub title: String,
+    pub body: String,
+}
+impl Notice {
+    pub fn new(title: &str, body: &str) -> Self {
+        Self {
+            title: title.into(),
+            body: body.into(),
+        }
+    }
+}
