@@ -9,14 +9,14 @@ use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
-use avin_filter::{ScannerResult, ScannerResultList};
+use avin_filter::{FilterResult, FilterResultList};
 use avin_utils::CFG;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct ScanTable {
     #[serde(skip)]
-    scan_results: ScannerResultList,
+    scan_results: FilterResultList,
     current_index: usize,
     #[serde(skip)]
     file_dialog: FileDialog,
@@ -30,7 +30,7 @@ impl ScanTable {
         self.ui_toolbar(ctx, ui);
         self.ui_table(ui);
     }
-    pub fn current_result(&mut self) -> Option<&ScannerResult> {
+    pub fn current_result(&mut self) -> Option<&FilterResult> {
         self.scan_results.get(self.current_index)
     }
 
@@ -46,7 +46,7 @@ impl ScanTable {
 
             // Check if the user picked a file.
             if let Some(path) = self.file_dialog.take_picked() {
-                self.scan_results = ScannerResultList::load_dir(&path).unwrap();
+                self.scan_results = FilterResultList::load_dir(&path).unwrap();
                 self.current_index = 0;
             };
         });
@@ -98,7 +98,7 @@ impl Default for ScanTable {
         let file_dialog = FileDialog::new().initial_directory(path);
 
         Self {
-            scan_results: ScannerResultList::new(),
+            scan_results: FilterResultList::new(),
             current_index: 0,
             file_dialog,
         }

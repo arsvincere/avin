@@ -29,17 +29,30 @@ const SHUTDOWN_TIME: NaiveTime = NaiveTime::from_hms_opt(21, 0, 0).unwrap();
 async fn main() {
     avin_utils::init_logger();
 
-    let msg = "SBER Tic B".to_string();
-    let body = "90.550.000".to_string();
-
-    let mut command = Command::new("/bin/notify-send");
-    command.arg("-u"); // silent
-    command.arg("critical");
-    command.arg(msg);
-    command.arg(body);
-
-    // execute
-    command.spawn().unwrap().wait().unwrap();
+    // if let Some(e) = event_rx.recv().await {
+    //     let figi = e.figi();
+    //     let asset = self.asset_list.find_figi_mut(figi).unwrap();
+    //
+    //     log::debug!("Event {e}");
+    //
+    //     match e {
+    //         Event::Bar(e) => asset.bar_event(e),
+    //         Event::Tic(e) => asset.tic_event(e),
+    //         Event::Order(_e) => todo!(),
+    //         Event::OrderBook(_e) => todo!(),
+    //     }
+    //
+    //     // TODO:
+    //     // Тут теперь когда ассеты обновлены можно применять к
+    //     // ним фильтр и выдавать звуковой сигнал
+    //
+    //     for filter in self.filters {
+    //         let result = filter.apply(asset);
+    //         if let Some(notice) = result {
+    //             self.notify(notice);
+    //         }
+    //     }
+    // }
 }
 
 //------------------------------------------------------------------------------

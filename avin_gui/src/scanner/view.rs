@@ -15,7 +15,7 @@ use avin_core::{
     Asset, Chart, ExtremumIndicator, Footprint,
     Term::{T1, T2, T3, T4, T5},
 };
-use avin_filter::ScannerResult;
+use avin_filter::FilterResult;
 use avin_utils::CFG;
 use egui_plot::PlotUi;
 
@@ -44,7 +44,7 @@ impl ScanView {
     pub fn ui(
         &mut self,
         ui: &mut egui::Ui,
-        scan_result: Option<&ScannerResult>,
+        scan_result: Option<&FilterResult>,
     ) {
         self.chart_toolbar.ui(ui);
 
@@ -60,7 +60,7 @@ impl ScanView {
             .show_grid(false)
             .show(ui, |_plot_ui| {});
     }
-    fn show_scan(&mut self, ui: &mut egui::Ui, scan_result: &ScannerResult) {
+    fn show_scan(&mut self, ui: &mut egui::Ui, scan_result: &FilterResult) {
         // get asset
         let mut asset = Asset::new(scan_result.iid_name()).unwrap();
         let tf = self.chart_toolbar.tf();
@@ -120,7 +120,7 @@ impl ScanView {
         &self,
         ui: &mut egui::Ui,
         asset: &Asset,
-        scan_result: &ScannerResult,
+        scan_result: &FilterResult,
     ) -> egui_plot::PlotResponse<()> {
         let chart = asset.chart(self.chart_toolbar.tf()).unwrap();
 
@@ -140,7 +140,7 @@ impl ScanView {
         &self,
         ui: &mut egui::Ui,
         asset: &Asset,
-        _scan_result: &ScannerResult,
+        _scan_result: &FilterResult,
     ) -> egui_plot::PlotResponse<()> {
         let footprint = asset.footprint(self.chart_toolbar.tf());
 
@@ -158,7 +158,7 @@ impl ScanView {
         &self,
         plot_ui: &mut PlotUi,
         chart: &Chart,
-        scan_result: &ScannerResult,
+        scan_result: &FilterResult,
     ) {
         // draw bars
         if self.chart_toolbar.is_bars() {

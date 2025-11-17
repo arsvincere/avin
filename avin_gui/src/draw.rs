@@ -5,7 +5,7 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
-use avin_filter::ScannerResult;
+use avin_filter::FilterResult;
 use avin_tester::Test;
 use chrono::{DateTime, Local};
 use egui_plot::{Line, LineStyle, MarkerShape, PlotPoint, PlotUi, Points};
@@ -438,7 +438,7 @@ impl TestDraw for Test {
 pub trait ScanDraw {
     fn draw_points(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame);
 }
-impl ScanDraw for ScannerResult {
+impl ScanDraw for FilterResult {
     fn draw_points(&self, plot: &mut PlotUi, theme: &Theme, tf: TimeFrame) {
         for p in self.points().iter() {
             // eval coordinate X

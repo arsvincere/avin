@@ -21,14 +21,14 @@ async fn main() {
     asset.load_chart_period(source, tf, begin, end).unwrap();
     let chart = asset.chart_mut(tf).unwrap();
 
-    let filter = MyCondition::default();
+    let condition = MyCondition::default();
     let marker = Marker::new(
         MarkerShape::Circle,
         MarkerColor::Yellow,
         MarkerSize::Small,
     );
 
-    Scanner::scan(chart, filter, marker);
+    Filter::run(chart, condition, marker);
 }
 
 #[derive(Default)]
