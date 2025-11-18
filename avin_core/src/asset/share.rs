@@ -511,8 +511,9 @@ impl Share {
     /// Принимает [`TicEvent`], сохраняет новый тик в активе. Используется
     /// тестером и трейдером при получении нового бара из стрима данных.
     /// Не предназначена для прямого использования пользователем.
-    pub fn tic_event(&mut self, _e: TicEvent) {
-        todo!();
+    pub fn tic_event(&mut self, e: TicEvent) {
+        assert_eq!(e.figi, *self.figi());
+        self.tics.push(e.tic);
     }
 
     pub fn clear(&mut self) {

@@ -414,10 +414,12 @@ impl Asset {
     ///
     /// # ru
     /// Принимает [`TicEvent`], сохраняет новый тик в активе. Используется
-    /// тестером и трейдером при получении нового бара из стрима данных.
+    /// тестером и трейдером при получении нового тика из стрима данных.
     /// Не предназначена для прямого использования пользователем.
-    pub fn tic_event(&mut self, _e: TicEvent) {
-        todo!();
+    pub fn tic_event(&mut self, e: TicEvent) {
+        match self {
+            Self::SHARE(share) => share.tic_event(e),
+        }
     }
 
     pub fn clear(&mut self) {
@@ -442,5 +444,31 @@ impl std::fmt::Display for Asset {
 impl PartialEq for Asset {
     fn eq(&self, other: &Self) -> bool {
         self.figi() == other.figi()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tic_event() {
+        let mut asset = Asset::new("moex_share_afks").unwrap();
+
+        let ts = 100500;
+        let direction = crate::Direction::Buy;
+        let lots = 10;
+        let price = 320.5;
+        let value = 3205.0;
+        let tic = Tic::new(ts, direction, lots, price, value);
+
+        let figi = asset.figi().clone();
+        let event = TicEvent::new(figi, tic);
+
+        assert!(asset.tics().is_none());
+
+        asset.tic_event(event);
+
+        assert_eq!(asset.tics().unwrap().len(), 1);
     }
 }

@@ -1020,6 +1020,10 @@ async fn start_marketdata_stream(
     }
     log::error!("STREAM STOPED");
     panic!("И че делать?");
+    // TODO: очевидно что надо перезапустить стрим... хотя стрим может
+    // закончится потому что время 23:50 и биржа закрыта.... и из
+    // этой функции не достучаться до брокера чтобы перезапустить стрим...
+    // может сюда action_tx заводить тоже чтобы от сюда сообщение отправить?
 }
 async fn start_transaction_stream(
     request: api::orders::TradesStreamRequest,

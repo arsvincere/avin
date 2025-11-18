@@ -464,6 +464,8 @@ impl TRecoder {
 
             std::thread::sleep(Self::ONE_SECOND);
         }
+
+        log::info!("Record stoped at {}", Utc::now());
     }
 
     // private
