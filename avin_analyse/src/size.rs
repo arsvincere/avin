@@ -11,7 +11,7 @@ use strum::EnumIter;
 
 use avin_core::Range;
 
-#[derive(Debug, Clone, PartialEq, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum Size {
     GreatestSmall,
     AnomalSmall,
@@ -73,23 +73,23 @@ impl Size {
             Self::GreatestBig => Range::new(99.0, 100.0),
         }
     }
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> &'static str {
         match self {
-            Self::GreatestSmall => "-7".to_string(),
-            Self::AnomalSmall => "-6".to_string(),
-            Self::ExtraSmall => "-5".to_string(),
-            Self::VerySmall => "-4".to_string(),
-            Self::Smallest => "-3".to_string(),
-            Self::Smaller => "-2".to_string(),
-            Self::Small => "-1".to_string(),
-            Self::Mid => "=0".to_string(),
-            Self::Big => "+1".to_string(),
-            Self::Bigger => "+2".to_string(),
-            Self::Biggest => "+3".to_string(),
-            Self::VeryBig => "+4".to_string(),
-            Self::ExtraBig => "+5".to_string(),
-            Self::AnomalBig => "+6".to_string(),
-            Self::GreatestBig => "+7".to_string(),
+            Self::GreatestSmall => "-7",
+            Self::AnomalSmall => "-6",
+            Self::ExtraSmall => "-5",
+            Self::VerySmall => "-4",
+            Self::Smallest => "-3",
+            Self::Smaller => "-2",
+            Self::Small => "-1",
+            Self::Mid => "=0",
+            Self::Big => "+1",
+            Self::Bigger => "+2",
+            Self::Biggest => "+3",
+            Self::VeryBig => "+4",
+            Self::ExtraBig => "+5",
+            Self::AnomalBig => "+6",
+            Self::GreatestBig => "+7",
         }
     }
     pub fn sz(&self) -> Sz {

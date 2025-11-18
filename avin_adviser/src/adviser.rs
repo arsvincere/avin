@@ -6,10 +6,12 @@
  ****************************************************************************/
 
 use avin_connect::Tinkoff;
-use avin_core::{Action, AssetList, Event, MarketData, StreamAction};
+use avin_core::{
+    Action, AssetList, Event, MarketData, Source, StreamAction, TimeFrame,
+};
 use avin_utils::CFG;
 
-use crate::{Condition, Notice};
+use crate::{Condition, Notice, Priority};
 
 pub struct Adviser {
     asset_list: AssetList,
@@ -26,21 +28,32 @@ impl Adviser {
         }
     }
 
+    pub fn add_condition(&mut self, condition: impl Condition) {
+        self.conditions.push(Box::new(condition));
+    }
+
     pub async fn start(&mut self) {
+        log::info!("Load charts");
+        for asset in self.asset_list.assets_mut().iter_mut() {
+            for tf in TimeFrame::all() {
+                asset.load_chart(Source::TINKOFF, tf).unwrap();
+            }
+        }
+
         let (broker_tx, action_rx) = tokio::sync::mpsc::unbounded_channel();
         let (event_tx, mut event_rx) = tokio::sync::mpsc::unbounded_channel();
 
         log::info!("Load broker");
         let mut broker = Tinkoff::new(action_rx, event_tx);
         broker.connect().await.unwrap();
+        broker.create_marketdata_strea().await.unwrap();
         tokio::spawn(async move { broker.start().await });
 
         log::info!("Subscribe assets");
         for asset in self.asset_list.assets().iter() {
             let a = Action::Subscribe(StreamAction::new(
                 asset.iid().clone(),
-                vec![MarketData::BAR_1M],
-                // vec![MarketData::BAR_1M, MarketData::TIC], // TODO: ассет прием тиков не сделан
+                vec![MarketData::BAR_1M, MarketData::TIC],
             ));
             broker_tx.send(a).unwrap();
         }
@@ -59,17 +72,21 @@ impl Adviser {
             }
 
             // Тут теперь когда ассет обновлен можно применять к
-            // ним условие и выдавать уведомление
-            for condition in self.conditions.iter() {
+            // нему условие и выдавать уведомление
+            for condition in self.conditions.iter_mut() {
                 if let Some(notice) = condition.apply(asset) {
-                    dbg!(&notice);
+                    log::info!("{notice:#?}");
                     Self::notify(notice);
                 }
             }
         }
 
         // цикл какого то хрена закончился...
-        let notice = Notice::new("Цикл капут!", "Все пиздец!");
+        let notice = Notice::new(
+            "Цикл капут!",
+            "Все пиздец!",
+            crate::Priority::Critical,
+        );
         Self::notify(notice);
     }
     pub fn asset_list(&self) -> &AssetList {
@@ -79,10 +96,24 @@ impl Adviser {
     // private
     fn notify(notice: Notice) {
         let mut command = std::process::Command::new("/bin/notify-send");
-        command.arg("-u"); // silent
-        command.arg("critical");
+
+        // priority
+        command.arg("-u");
+        match notice.priority {
+            Priority::Low => command.arg("low"),
+            Priority::Normal => command.arg("normal"),
+            Priority::Critical => command.arg("critical"),
+        };
+
+        // title
         command.arg(notice.title);
-        command.arg(notice.body);
+
+        // body
+        if !notice.body.is_empty() {
+            command.arg(notice.body);
+        }
+
+        // execute
         command.spawn().unwrap().wait().unwrap();
     }
 }

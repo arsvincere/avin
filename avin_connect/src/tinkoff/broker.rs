@@ -34,6 +34,18 @@ impl Tinkoff {
 
         Ok(())
     }
+    pub async fn create_marketdata_strea(&mut self) -> Result<(), AvinError> {
+        self.client.create_marketdata_stream().await.unwrap();
+
+        Ok(())
+    }
+    pub async fn create_transactions_stream(
+        &mut self,
+    ) -> Result<(), AvinError> {
+        self.client.create_transactions_stream().await.unwrap();
+
+        Ok(())
+    }
     pub async fn start(&mut self) {
         // receive actions main loop
         while let Some(a) = self.action_rx.recv().await {
@@ -89,8 +101,6 @@ impl Tinkoff {
         self.event_tx.send(e).unwrap();
     }
     async fn subscribe_action(&mut self, a: StreamAction) {
-        log::info!("Tinkoff.subscribe_action({a})");
-
         for md in a.market_data_kinds {
             match md {
                 MarketData::TIC => {

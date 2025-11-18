@@ -128,6 +128,9 @@ impl AssetList {
     pub fn assets(&self) -> &Vec<Asset> {
         &self.assets
     }
+    pub fn assets_mut(&mut self) -> &mut Vec<Asset> {
+        &mut self.assets
+    }
     /// Return asset by index.
     ///
     /// # ru

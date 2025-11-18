@@ -9,7 +9,7 @@ use avin_core::Asset;
 
 use crate::Notice;
 
-pub trait Condition {
+pub trait Condition: 'static {
     fn name(&self) -> &'static str;
-    fn apply(&self, asset: &Asset) -> Option<Notice>;
+    fn apply(&mut self, asset: &Asset) -> Option<Notice>;
 }
