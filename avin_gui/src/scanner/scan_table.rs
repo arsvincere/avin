@@ -9,7 +9,7 @@ use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use egui_file_dialog::FileDialog;
 
-use avin_filter::{FilterResult, FilterResultList};
+use avin_search::{FilterResult, FilterResultList};
 use avin_utils::CFG;
 
 #[derive(serde::Deserialize, serde::Serialize)]

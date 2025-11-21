@@ -77,7 +77,7 @@ publish:
 	cargo publish -p avin_connect
 	cargo publish -p avin_data
 	cargo publish -p avin_analyse
-	cargo publish -p avin_filter
+	cargo publish -p avin_search
 	cargo publish -p avin_simulator
 	cargo publish -p avin_strategy
 	cargo publish -p avin_tester

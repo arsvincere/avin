@@ -14,7 +14,7 @@ use avin_core::{
     MarketData, MarketOrder, Order, OrderAction, OrderEvent, StopOrder,
     StopOrderKind, Term, TimeFrame, Trade, TradeKind,
 };
-use avin_filter::Condition;
+use avin_search::Condition;
 use avin_utils as utils;
 
 const NAME: &str = "BigTrend-S-1.1";

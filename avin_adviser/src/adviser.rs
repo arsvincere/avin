@@ -9,9 +9,9 @@ use avin_connect::Tinkoff;
 use avin_core::{
     Action, AssetList, Event, MarketData, Source, StreamAction, TimeFrame,
 };
-use avin_utils::CFG;
+use avin_utils::{CFG, Informer, Notice, NoticePriority};
 
-use crate::{Condition, Notice, Priority};
+use crate::Condition;
 
 pub struct Adviser {
     asset_list: AssetList,
@@ -76,45 +76,18 @@ impl Adviser {
             for condition in self.conditions.iter_mut() {
                 if let Some(notice) = condition.apply(asset) {
                     log::info!("{notice:#?}");
-                    Self::notify(notice);
+                    Informer::notify(notice);
                 }
             }
         }
 
         // цикл какого то хрена закончился...
-        let notice = Notice::new(
-            "Цикл капут!",
-            "Все пиздец!",
-            crate::Priority::Critical,
-        );
-        Self::notify(notice);
+        let notice =
+            Notice::new("Цикл капут!", "Все пиздец!", NoticePriority::Critical);
+        Informer::notify(notice);
     }
     pub fn asset_list(&self) -> &AssetList {
         &self.asset_list
-    }
-
-    // private
-    fn notify(notice: Notice) {
-        let mut command = std::process::Command::new("/bin/notify-send");
-
-        // priority
-        command.arg("-u");
-        match notice.priority {
-            Priority::Low => command.arg("low"),
-            Priority::Normal => command.arg("normal"),
-            Priority::Critical => command.arg("critical"),
-        };
-
-        // title
-        command.arg(notice.title);
-
-        // body
-        if !notice.body.is_empty() {
-            command.arg(notice.body);
-        }
-
-        // execute
-        command.spawn().unwrap().wait().unwrap();
     }
 }
 impl Default for Adviser {

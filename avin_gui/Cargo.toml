@@ -14,7 +14,7 @@ avin_analyse = { workspace = true }
 avin_connect = { workspace = true }
 avin_core = { workspace = true }
 avin_data = { workspace = true }
-avin_filter = { workspace = true }
+avin_search = { workspace = true }
 avin_simulator = { workspace = true }
 avin_strategy = { workspace = true }
 avin_tester = { workspace = true }

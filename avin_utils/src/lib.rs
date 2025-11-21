@@ -16,6 +16,7 @@ mod cmd;
 mod conf;
 mod constant;
 mod error;
+mod informer;
 mod logger;
 mod misc;
 mod timer;
@@ -27,6 +28,7 @@ pub use constant::{
     ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_WEEK, ONE_YEAR,
 };
 pub use error::AvinError;
+pub use informer::{Informer, Notice, NoticePriority};
 pub use logger::init_logger;
 pub use misc::{
     bisect_left, bisect_right, dt, filter_dt, max, min, next_month, replace_ts,

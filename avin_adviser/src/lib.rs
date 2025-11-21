@@ -7,8 +7,6 @@
 
 mod adviser;
 mod condition;
-mod notice;
 
 pub use adviser::Adviser;
 pub use condition::Condition;
-pub use notice::{Notice, Priority};

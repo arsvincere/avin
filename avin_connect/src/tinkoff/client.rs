@@ -979,6 +979,14 @@ async fn start_marketdata_stream(
     sender: tokio::sync::mpsc::UnboundedSender<Event>,
 ) {
     // receive market data
+    //
+    // BUG:
+    // thread 'tokio-runtime-worker' (98418) panicked at /home/alex/avin/avin_connect/src/tinkoff/client.rs:982:55:
+    // called `Result::unwrap()` on an `Err` value: Status { code: Cancelled, message: "h2 protocol error: http2 error: stream error received: stream no longer needed", source: Some(hyper::Error(Http2, Error { kind: Reset(StreamId(1), CANCEL, Remote) })) }
+    // note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+    // Тут можно попробовать Result Err поймать для начала и посмотреть что он
+    // внутри пишет. Ловим ресулт, смотрим эррор - в лог. А если ок, там
+    // уже if let Some(msg).
     while let Some(msg) = data_stream.message().await.unwrap() {
         match msg.payload.unwrap() {
             // market data
@@ -1024,6 +1032,10 @@ async fn start_marketdata_stream(
     // закончится потому что время 23:50 и биржа закрыта.... и из
     // этой функции не достучаться до брокера чтобы перезапустить стрим...
     // может сюда action_tx заводить тоже чтобы от сюда сообщение отправить?
+    // BUG:
+    // thread 'tokio-runtime-worker' (67556) panicked at /home/alex/avin/avin_connect/src/tinkoff/client.rs:1022:5:
+    // И че делать?
+    // note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 }
 async fn start_transaction_stream(
     request: api::orders::TradesStreamRequest,

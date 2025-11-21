@@ -7,7 +7,7 @@
 
 use avin_core::Asset;
 
-use crate::Notice;
+use avin_utils::Notice;
 
 pub trait Condition: 'static {
     fn name(&self) -> &'static str;

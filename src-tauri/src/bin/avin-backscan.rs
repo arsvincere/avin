@@ -5,7 +5,7 @@ use chrono::prelude::*;
 use avin_analyse::*;
 use avin_connect::*;
 use avin_core::*;
-use avin_filter::*;
+use avin_search::*;
 use avin_strategy::*;
 use avin_tester::*;
 

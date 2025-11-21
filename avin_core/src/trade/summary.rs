@@ -13,9 +13,9 @@
 // 2. посчитать среднюю скорость трейда - avg_speed допустим 1% в день.
 // ну можно еще max_speed min_speed. То есть берем результат трейда
 // допустим входим на 100 рублей, закрываем по 101рублю. Профит 1%.
-// Делим профит в процентах на количество времени в позиции = средняя
-// скорость трейда.
-// 3. Тогда можно посчитать activity * avg_speed = 0.1% -> E
+// Делим профит в процентах на количество времени в позиции = скорость трейда.
+// Далее находим среднюю скорость трейдов.
+// 3. Тогда можно посчитать activity * avg_speed = E (эффективность)
 // E = это будет общая эффективность стратегии. То есть вот запустил ее
 // на 100 дней = 10 дней она активна, и по 1% в день в это время
 // делает. Тогда ее профит итоговый равен 10%.
@@ -70,8 +70,6 @@ pub struct Summary {
 impl Summary {
     // build
     pub fn new(trade_list: &TradeList) -> Self {
-        let name = trade_list.name().to_owned();
-
         // get results of trades
         let mut results = Vec::new();
         for i in trade_list.trades() {
@@ -82,7 +80,7 @@ impl Summary {
         }
 
         Self {
-            name,
+            name: trade_list.name().clone(),
             total_trades: total_trades(&results),
             win_trades: winning_trades(&results),
             loss_trades: losing_trades(&results),

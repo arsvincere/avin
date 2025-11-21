@@ -578,8 +578,8 @@ dependencies = [
  "avin_connect",
  "avin_core",
  "avin_data",
- "avin_filter",
  "avin_gui",
+ "avin_search",
  "avin_simulator",
  "avin_strategy",
  "avin_terminal",
@@ -684,18 +684,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "avin_filter"
-version = "0.4.0"
-dependencies = [
- "avin_analyse",
- "avin_core",
- "avin_utils",
- "chrono",
- "serde",
- "toml 0.9.7",
-]
-
-[[package]]
 name = "avin_gui"
 version = "0.4.0"
 dependencies = [
@@ -703,7 +691,7 @@ dependencies = [
  "avin_connect",
  "avin_core",
  "avin_data",
- "avin_filter",
+ "avin_search",
  "avin_simulator",
  "avin_strategy",
  "avin_tester",
@@ -716,6 +704,18 @@ dependencies = [
  "log",
  "serde",
  "tokio",
+]
+
+[[package]]
+name = "avin_search"
+version = "0.4.0"
+dependencies = [
+ "avin_analyse",
+ "avin_core",
+ "avin_utils",
+ "chrono",
+ "serde",
+ "toml 0.9.7",
 ]
 
 [[package]]
@@ -736,7 +736,7 @@ dependencies = [
  "avin_analyse",
  "avin_core",
  "avin_data",
- "avin_filter",
+ "avin_search",
  "avin_utils",
  "chrono",
  "log",

@@ -7,7 +7,7 @@ members = [
     "avin_connect",
     "avin_core",
     "avin_data",
-    "avin_filter",
+    "avin_search",
     "avin_gui",
     "avin_simulator",
     "avin_strategy",
@@ -37,7 +37,7 @@ avin_connect =      { path = "avin_connect" }
 avin_core =         { path = "avin_core" }
 avin_data =         { path = "avin_data" }
 avin_gui =          { path = "avin_gui" }
-avin_filter =       { path = "avin_filter" }
+avin_search =       { path = "avin_search" }
 avin_simulator =    { path = "avin_simulator" }
 avin_strategy =     { path = "avin_strategy" }
 avin_terminal =     { path = "avin_terminal" }

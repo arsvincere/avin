@@ -17,6 +17,7 @@ use polars::io::SerReader;
 use polars::prelude::*;
 use strum::{IntoEnumIterator, VariantNames};
 
+use avin_adviser::*;
 use avin_analyse::*;
 use avin_connect::*;
 use avin_core::*;
@@ -29,30 +30,18 @@ const SHUTDOWN_TIME: NaiveTime = NaiveTime::from_hms_opt(21, 0, 0).unwrap();
 async fn main() {
     avin_utils::init_logger();
 
-    // if let Some(e) = event_rx.recv().await {
-    //     let figi = e.figi();
-    //     let asset = self.asset_list.find_figi_mut(figi).unwrap();
-    //
-    //     log::debug!("Event {e}");
-    //
-    //     match e {
-    //         Event::Bar(e) => asset.bar_event(e),
-    //         Event::Tic(e) => asset.tic_event(e),
-    //         Event::Order(_e) => todo!(),
-    //         Event::OrderBook(_e) => todo!(),
-    //     }
-    //
-    //     // TODO:
-    //     // Тут теперь когда ассеты обновлены можно применять к
-    //     // ним фильтр и выдавать звуковой сигнал
-    //
-    //     for filter in self.filters {
-    //         let result = filter.apply(asset);
-    //         if let Some(notice) = result {
-    //             self.notify(notice);
-    //         }
-    //     }
-    // }
+    let iid = Manager::find_iid("moex_share_abio").unwrap();
+    let md = MarketData::BAR_1M;
+    let year = 2025;
+
+    // download ABIO 2025 bars 1M
+    Data::download(&iid, Source::TINKOFF, md, year)
+        .await
+        .unwrap();
+
+    // delete ABIO data
+    let path = iid.path();
+    Cmd::delete_dir(&path).unwrap();
 }
 
 //------------------------------------------------------------------------------

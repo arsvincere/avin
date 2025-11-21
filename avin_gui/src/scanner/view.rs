@@ -15,7 +15,7 @@ use avin_core::{
     Asset, Chart, ExtremumIndicator, Footprint,
     Term::{T1, T2, T3, T4, T5},
 };
-use avin_filter::FilterResult;
+use avin_search::FilterResult;
 use avin_utils::CFG;
 use egui_plot::PlotUi;
 

@@ -14,6 +14,9 @@ impl Timer {
             instant: std::time::Instant::now(),
         }
     }
+    pub fn start(&mut self) {
+        self.instant = std::time::Instant::now();
+    }
     pub fn stop(&self, msg: &str) {
         let duration = self.instant.elapsed();
         println!("Timer {msg} {duration:?}");
