@@ -9,7 +9,7 @@ use avin_connect::Tinkoff;
 use avin_core::{
     Action, AssetList, Event, MarketData, Source, StreamAction, TimeFrame,
 };
-use avin_utils::{CFG, Informer, Notice, NoticePriority};
+use avin_utils::{Informer, Notice, NoticePriority};
 
 use crate::Condition;
 
@@ -18,10 +18,7 @@ pub struct Adviser {
     conditions: Vec<Box<dyn Condition>>,
 }
 impl Adviser {
-    pub fn new() -> Self {
-        let name = &CFG.core.default_asset_list;
-        let asset_list = AssetList::load_name(name).unwrap();
-
+    pub fn new(asset_list: AssetList) -> Self {
         Self {
             asset_list,
             conditions: Vec::new(),
@@ -88,10 +85,5 @@ impl Adviser {
     }
     pub fn asset_list(&self) -> &AssetList {
         &self.asset_list
-    }
-}
-impl Default for Adviser {
-    fn default() -> Self {
-        Adviser::new()
     }
 }
