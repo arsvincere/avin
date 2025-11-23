@@ -5,10 +5,11 @@
  * LICENSE:     MIT
  ****************************************************************************/
 
+use avin_analyse::TrendAnalytic;
 use avin_connect::Tinkoff;
 use avin_core::{
-    Action, AssetList, Event, GetBarsAction, MarketData, Source, StreamAction,
-    TimeFrame,
+    Action, AssetList, Event, ExtremumIndicator, GetBarsAction, MarketData,
+    Source, StreamAction, TimeFrame,
 };
 use avin_utils::{Informer, Notice, NoticePriority};
 
@@ -36,6 +37,10 @@ impl Adviser {
         for asset in self.asset_list.assets_mut().iter_mut() {
             for tf in TimeFrame::all() {
                 asset.load_chart(Source::TINKOFF, tf).unwrap();
+
+                let chart = asset.chart_mut(tf).unwrap();
+                ExtremumIndicator::init(chart);
+                TrendAnalytic::init(chart);
             }
         }
 

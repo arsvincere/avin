@@ -155,6 +155,15 @@ pub enum TrendKind {
     Bear = -1,
     Bull = 1,
 }
+impl std::fmt::Display for TrendKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Bear => write!(f, "Bear"),
+            Self::Bull => write!(f, "Bull"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Trend {
     e1: Extremum,
