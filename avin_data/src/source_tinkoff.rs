@@ -426,16 +426,20 @@ impl TRecoder {
         }
     }
     async fn subscribe_tic(&mut self) {
+        let mut instruments = Vec::new();
         for record in CFG.data.record_tics.iter() {
             let iid = Manager::find_iid(&record.iid).unwrap();
-            self.client.subscribe_tic(&iid).await.unwrap();
+            instruments.push(iid);
         }
+        self.client.subscribe_tic(&instruments).await.unwrap();
     }
     async fn subscribe_ob(&mut self) {
+        let mut instruments = Vec::new();
         for record in CFG.data.record_ob.iter() {
             let iid = Manager::find_iid(&record.iid).unwrap();
-            self.client.subscribe_ob(&iid).await.unwrap();
+            instruments.push(iid);
         }
+        self.client.subscribe_ob(&instruments).await.unwrap();
     }
     fn start(&mut self) {
         // dt variables for manage the loop

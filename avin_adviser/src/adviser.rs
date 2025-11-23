@@ -77,13 +77,16 @@ impl Adviser {
         }
 
         log::info!("Subscribe assets");
+        let mut instruments = Vec::new();
         for asset in self.asset_list.assets().iter() {
-            let a = Action::Subscribe(StreamAction::new(
-                asset.iid().clone(),
-                vec![MarketData::BAR_1M, MarketData::TIC],
-            ));
-            broker_tx.send(a).unwrap();
+            let iid = asset.iid().clone();
+            instruments.push(iid);
         }
+        let a = Action::Subscribe(StreamAction::new(
+            instruments,
+            vec![MarketData::BAR_1M, MarketData::TIC],
+        ));
+        broker_tx.send(a).unwrap();
 
         log::info!("Start main loop");
         // await events from broker -> send to asset

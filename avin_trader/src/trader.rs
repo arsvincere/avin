@@ -68,7 +68,7 @@ impl Trader {
 
             // subscribe data stream
             let a = Action::Subscribe(StreamAction::new(
-                asset.iid().clone(),
+                vec![asset.iid().clone()],
                 vec![MarketData::BAR_1M],
             ));
             trader_broker_action_tx.send(a).unwrap();

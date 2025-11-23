@@ -311,8 +311,10 @@ impl AssetWidget {
         // market_data.push(MarketData::TIC);
 
         // create action
-        let action =
-            Action::Subscribe(StreamAction::new(iid.clone(), market_data));
+        let action = Action::Subscribe(StreamAction::new(
+            vec![iid.clone()],
+            market_data,
+        ));
 
         // send action
         match self.action_tx.send(action) {

@@ -20,7 +20,7 @@ use crate::{Iid, MarketData};
 /// Содержит идентификатор инструмента и вектор из типов рыночных данных.
 #[derive(Debug)]
 pub struct StreamAction {
-    pub iid: Iid,
+    pub instruments: Vec<Iid>,
     pub market_data_kinds: Vec<MarketData>,
 }
 impl StreamAction {
@@ -28,15 +28,18 @@ impl StreamAction {
     ///
     /// # ru
     /// Создает новое действие с маркет данными.
-    pub fn new(iid: Iid, market_data_kinds: Vec<MarketData>) -> Self {
+    pub fn new(
+        instruments: Vec<Iid>,
+        market_data_kinds: Vec<MarketData>,
+    ) -> Self {
         Self {
-            iid,
+            instruments,
             market_data_kinds,
         }
     }
 }
 impl std::fmt::Display for StreamAction {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "StreamAction={} {:?}", self.iid, self.market_data_kinds)
+        write!(f, "StreamAction={:?}", self)
     }
 }

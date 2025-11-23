@@ -841,22 +841,26 @@ impl TinkoffClient {
     }
     pub async fn subscribe_bar(
         &mut self,
-        iid: &Iid,
+        instruments: &[Iid],
         tf: &TimeFrame,
     ) -> Result<(), &'static str> {
         // create request
+        let mut candle_instruments = Vec::new();
         let interval: SubscriptionInterval = (*tf).into();
-        let candle_instrument = CandleInstrument {
-            figi: "".to_string(),
-            // interval: SubscriptionInterval::OneMinute as i32,
-            interval: interval as i32,
-            instrument_id: iid.figi().clone(),
-        };
+        for iid in instruments.iter() {
+            let candle_instrument = CandleInstrument {
+                figi: "".to_string(),
+                // interval: SubscriptionInterval::OneMinute as i32,
+                interval: interval as i32,
+                instrument_id: iid.figi().clone(),
+            };
+            candle_instruments.push(candle_instrument);
+        }
         let request = MarketDataRequest {
             payload: Some(Req::SubscribeCandlesRequest(
                 SubscribeCandlesRequest {
                     subscription_action: SubscriptionAction::Subscribe as i32,
-                    instruments: vec![candle_instrument],
+                    instruments: candle_instruments,
                     waiting_close: false,
                 },
             )),
@@ -869,18 +873,22 @@ impl TinkoffClient {
     }
     pub async fn subscribe_tic(
         &mut self,
-        iid: &Iid,
+        instruments: &[Iid],
     ) -> Result<(), &'static str> {
         // create request
-        let instrument = TradeInstrument {
-            figi: "".to_string(),
-            instrument_id: iid.figi().clone(),
-        };
+        let mut trade_instruments = Vec::new();
+        for iid in instruments.iter() {
+            let trade_instrument = TradeInstrument {
+                figi: "".to_string(),
+                instrument_id: iid.figi().clone(),
+            };
+            trade_instruments.push(trade_instrument);
+        }
         let request = MarketDataRequest {
             payload: Some(Req::SubscribeTradesRequest(
                 SubscribeTradesRequest {
                     subscription_action: SubscriptionAction::Subscribe as i32,
-                    instruments: vec![instrument],
+                    instruments: trade_instruments,
                 },
             )),
         };
@@ -892,19 +900,23 @@ impl TinkoffClient {
     }
     pub async fn subscribe_ob(
         &mut self,
-        iid: &Iid,
+        instruments: &[Iid],
     ) -> Result<(), &'static str> {
         // create request
-        let instrument = OrderBookInstrument {
-            figi: "".to_string(),
-            depth: 50,
-            instrument_id: iid.figi().clone(),
-        };
+        let mut ob_instruments = Vec::new();
+        for iid in instruments.iter() {
+            let ob_instrument = OrderBookInstrument {
+                figi: "".to_string(),
+                depth: 50,
+                instrument_id: iid.figi().clone(),
+            };
+            ob_instruments.push(ob_instrument);
+        }
         let request = MarketDataRequest {
             payload: Some(Req::SubscribeOrderBookRequest(
                 SubscribeOrderBookRequest {
                     subscription_action: SubscriptionAction::Subscribe as i32,
-                    instruments: vec![instrument],
+                    instruments: ob_instruments,
                 },
             )),
         };
@@ -2281,9 +2293,9 @@ mod tests {
         b.create_marketdata_stream().await.unwrap();
 
         // subscribe
-        b.subscribe_bar(sber.iid(), &tf).await.unwrap();
-        b.subscribe_tic(sber.iid()).await.unwrap();
-        b.subscribe_ob(sber.iid()).await.unwrap();
+        b.subscribe_bar(&[sber.iid().clone()], &tf).await.unwrap();
+        b.subscribe_tic(&[sber.iid().clone()]).await.unwrap();
+        b.subscribe_ob(&[sber.iid().clone()]).await.unwrap();
 
         // // create task - broker start data stream loop
         // tokio::spawn(async move { b.start().await });

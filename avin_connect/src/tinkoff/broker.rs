@@ -104,54 +104,54 @@ impl Tinkoff {
         for md in a.market_data_kinds {
             match md {
                 MarketData::TIC => {
-                    self.client.subscribe_tic(&a.iid).await.unwrap()
+                    self.client.subscribe_tic(&a.instruments).await.unwrap()
                 }
                 MarketData::ORDER_BOOK => {
-                    self.client.subscribe_ob(&a.iid).await.unwrap()
+                    self.client.subscribe_ob(&a.instruments).await.unwrap()
                 }
                 MarketData::BAR_1M => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::M1)
+                    .subscribe_bar(&a.instruments, &TimeFrame::M1)
                     .await
                     .unwrap(),
                 MarketData::BAR_5M => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::M5)
+                    .subscribe_bar(&a.instruments, &TimeFrame::M5)
                     .await
                     .unwrap(),
                 MarketData::BAR_10M => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::M10)
+                    .subscribe_bar(&a.instruments, &TimeFrame::M10)
                     .await
                     .unwrap(),
                 MarketData::BAR_15M => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::M15)
+                    .subscribe_bar(&a.instruments, &TimeFrame::M15)
                     .await
                     .unwrap(),
                 MarketData::BAR_1H => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::H1)
+                    .subscribe_bar(&a.instruments, &TimeFrame::H1)
                     .await
                     .unwrap(),
                 MarketData::BAR_4H => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::H4)
+                    .subscribe_bar(&a.instruments, &TimeFrame::H4)
                     .await
                     .unwrap(),
                 MarketData::BAR_DAY => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::Day)
+                    .subscribe_bar(&a.instruments, &TimeFrame::Day)
                     .await
                     .unwrap(),
                 MarketData::BAR_WEEK => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::Week)
+                    .subscribe_bar(&a.instruments, &TimeFrame::Week)
                     .await
                     .unwrap(),
                 MarketData::BAR_MONTH => self
                     .client
-                    .subscribe_bar(&a.iid, &TimeFrame::Month)
+                    .subscribe_bar(&a.instruments, &TimeFrame::Month)
                     .await
                     .unwrap(),
                 MarketData::SC_TRADE => unreachable!(),
