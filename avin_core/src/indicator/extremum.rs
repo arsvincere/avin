@@ -381,7 +381,7 @@ impl ExtremumData {
         // а меня интересуют только исторические бары, поэтому чекаем ts
         // последнего исторического бара в графике
         let current = bars.last().unwrap();
-        if self.last_ts == current.ts {
+        if current.ts <= self.last_ts {
             return;
         }
 
