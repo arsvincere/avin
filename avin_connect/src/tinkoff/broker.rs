@@ -34,7 +34,7 @@ impl Tinkoff {
 
         Ok(())
     }
-    pub async fn create_marketdata_strea(&mut self) -> Result<(), AvinError> {
+    pub async fn create_marketdata_stream(&mut self) -> Result<(), AvinError> {
         self.client.create_marketdata_stream().await.unwrap();
 
         Ok(())

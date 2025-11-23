@@ -7,11 +7,13 @@
 
 use avin_connect::Tinkoff;
 use avin_core::{
-    Action, AssetList, Event, MarketData, Source, StreamAction, TimeFrame,
+    Action, AssetList, Event, GetBarsAction, MarketData, Source, StreamAction,
+    TimeFrame,
 };
 use avin_utils::{Informer, Notice, NoticePriority};
 
 use crate::Condition;
+use chrono::Utc;
 
 pub struct Adviser {
     asset_list: AssetList,
@@ -43,8 +45,31 @@ impl Adviser {
         log::info!("Load broker");
         let mut broker = Tinkoff::new(action_rx, event_tx);
         broker.connect().await.unwrap();
-        broker.create_marketdata_strea().await.unwrap();
+        broker.create_marketdata_stream().await.unwrap();
         tokio::spawn(async move { broker.start().await });
+
+        log::info!("Get new historical bars");
+        for asset in self.asset_list.assets_mut().iter_mut() {
+            let iid = asset.iid().clone();
+            let tf = TimeFrame::M1;
+            let from = asset.chart(tf).unwrap().last().unwrap().dt();
+            let till = Utc::now();
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            let action = GetBarsAction::new(iid, tf, from, till, tx);
+            let action = Action::GetBars(action);
+            broker_tx.send(action).unwrap();
+
+            let bars = match rx.await {
+                Ok(bars) => bars,
+                Err(_) => todo!(),
+            };
+            for bar in bars.iter() {
+                for tf in TimeFrame::all() {
+                    let chart = asset.chart_mut(tf).unwrap();
+                    chart.add_bar(*bar);
+                }
+            }
+        }
 
         log::info!("Subscribe assets");
         for asset in self.asset_list.assets().iter() {

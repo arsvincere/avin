@@ -610,6 +610,7 @@ dependencies = [
  "avin_core",
  "avin_data",
  "avin_utils",
+ "chrono",
  "log",
  "tokio",
 ]
