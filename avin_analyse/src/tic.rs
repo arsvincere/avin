@@ -53,6 +53,9 @@ impl Analyse for Tic {
         let shares = Share::all();
 
         for share in shares.iter() {
+            // remove old analyse
+            Tic::delete(share.iid(), NAME).unwrap();
+
             let result = analyse(share.iid());
             match result {
                 Ok(_) => (),

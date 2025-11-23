@@ -27,6 +27,15 @@ pub enum BarKind {
     /// Медвежий
     Bear = -1,
 }
+impl std::fmt::Display for BarKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            BarKind::Bear => write!(f, "Bear"),
+            BarKind::Bull => write!(f, "Bull"),
+            BarKind::Dodji => write!(f, "Dodji"),
+        }
+    }
+}
 
 /// Like cundle, but more shortly name.
 ///

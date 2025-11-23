@@ -45,31 +45,12 @@ impl Condition for MyCondition {
         if !trend.is_bear() {
             return false;
         }
-
-        let cdf = chart.trend_speed_cdf(trend).unwrap();
-        if !(0.80..=0.90).contains(&cdf) {
-            return false;
-        }
-
         if trend.len() < 5 {
             return false;
         }
 
-        true
+        let cdf = chart.trend_speed_cdf(trend).unwrap();
 
-        // let trend = match chart.trend(Term::T1, 0) {
-        //     Some(t) => t,
-        //     None => return false,
-        // };
-        // if trend.is_bear() {
-        //     return false;
-        // }
-        //
-        // let cdf = chart.trend_abs_cdf(trend).unwrap();
-        // if cdf > 0.80 && cdf < 0.90 {
-        //     return true;
-        // }
-        //
-        // false
+        cdf >= 0.80
     }
 }

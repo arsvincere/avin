@@ -60,6 +60,9 @@ impl Analyse for Bar {
         let timeframes = TimeFrame::all();
 
         for share in shares.iter() {
+            // remove old analyse
+            Bar::delete(share.iid(), NAME).unwrap();
+
             for tf in timeframes.iter() {
                 analyse(share.iid(), *tf).unwrap();
             }
@@ -197,7 +200,7 @@ fn load_chart(iid: &Iid, tf: TimeFrame) -> Result<Chart, String> {
     let begin = Utc.with_ymd_and_hms(1990, 1, 1, 0, 0, 0).unwrap();
     let end = Utc::now();
 
-    let source = Source::MOEXALGO;
+    let source = Source::TINKOFF;
     let chart = Chart::load(iid, source, tf, begin, end).unwrap();
 
     Ok(chart)
