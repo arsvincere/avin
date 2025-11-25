@@ -48,40 +48,10 @@ impl AssetList {
 
         let text = Cmd::read(path).expect("Fail to read asset list file");
         let name = Cmd::name(path).unwrap();
-
-        let result = Self::from_csv(&name, &text);
-        match result {
-            Err(why) => {
-                let msg = format!("file {}, {}", path.display(), why);
-                let e = AvinError::IOError(msg);
-                Err(e)
-            }
-            ok => ok,
-        }
-    }
-    pub fn load_name(name: &str) -> Result<Self, AvinError> {
-        let mut path = CFG.dir.asset();
-        path.push(name);
-
-        AssetList::load(&path)
-    }
-
-    /// Create asset list from csv.
-    ///
-    /// # ru
-    /// Создает список активов с заданным именем и активами.
-    ///
-    /// Пример списка активов в csv формате:
-    /// MOEX;SHARE;SBER;
-    /// MOEX;SHARE;GAZP;
-    /// MOEX;FUTURE;USDRUBF;
-    /// MOEX;INDEX;IMOEX2;
-    pub fn from_csv(name: &str, csv: &str) -> Result<Self, AvinError> {
         let mut assets = Vec::new();
 
-        for (n, line) in csv.lines().enumerate() {
-            // line example: 'MOEX;SHARE;SBER;'
-            let result = Asset::from_csv(line);
+        for (n, line) in text.lines().enumerate() {
+            let result = Asset::new(line);
             match result {
                 Ok(asset) => assets.push(asset),
                 Err(why) => {
@@ -92,12 +62,15 @@ impl AssetList {
             };
         }
 
-        let asset_list = AssetList {
-            name: name.into(),
-            assets,
-        };
+        let asset_list = AssetList { name, assets };
 
         Ok(asset_list)
+    }
+    pub fn load_name(name: &str) -> Result<Self, AvinError> {
+        let mut path = CFG.dir.asset();
+        path.push(name);
+
+        AssetList::load(&path)
     }
 
     /// Return asset list name.
@@ -179,31 +152,8 @@ mod tests {
     }
 
     #[test]
-    fn from_csv() {
-        let csv = "MOEX;SHARE;SBER;\n\
-                   MOEX;SHARE;GAZP;\n\
-                   MOEX;SHARE;AFKS;";
-
-        let name = "My asset list";
-        let asset_list = AssetList::from_csv(name, csv).unwrap();
-        assert_eq!(asset_list.name(), "My asset list");
-        assert_eq!(asset_list.assets().len(), 3);
-    }
-
-    #[test]
-    #[should_panic]
-    fn from_incorrect_csv() {
-        let csv = "MOEX;SHARE;SBER;\n\
-                   */-_(_{}#_()$#)(_);\n\
-                   MOEX;SHARE;AFKS;";
-
-        let name = "My asset list";
-        let _ = AssetList::from_csv(name, csv).unwrap();
-    }
-
-    #[test]
     fn load() {
-        let path = Path::new("/home/alex/trading/usr/asset/xxx.csv");
+        let path = Path::new("/home/alex/trading/usr/asset/xxx");
         let asset_list = AssetList::load(path).unwrap();
 
         assert_eq!(asset_list.name(), "xxx");

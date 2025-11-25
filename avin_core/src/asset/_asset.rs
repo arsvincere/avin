@@ -74,33 +74,6 @@ impl Asset {
 
         Asset::SHARE(share)
     }
-    /// Create new asset from csv.
-    ///
-    /// # ru
-    /// Создает актив из csv формата.
-    pub fn from_csv(line: &str) -> Result<Self, String> {
-        // line example: 'MOEX;SHARE;SBER;'
-        let parts: Vec<&str> = line.split(';').collect();
-
-        #[allow(clippy::get_first)]
-        let exchange = parts.get(0).expect("invalid line");
-        let category = parts.get(1).expect("invalid line");
-        let ticker = parts.get(2).expect("invalid line");
-
-        let query = format!("{exchange}_{category}_{ticker}");
-        let result = Manager::find_iid(&query);
-
-        match result {
-            Ok(iid) => {
-                let asset = Asset::from_iid(iid);
-                Ok(asset)
-            }
-            Err(why) => {
-                let msg = format!("fail create from csv {line}, {why}");
-                Err(msg)
-            }
-        }
-    }
     /// Return vector with all shares whose have market data in user dir.
     ///
     /// # ru
