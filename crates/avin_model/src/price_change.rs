@@ -1,16 +1,14 @@
-/*****************************************************************************
- * URL:         http://avin.info
- * AUTHOR:      Alex Avin
- * E-MAIL:      mr.alexavin@gmail.com
- * LICENSE:     MIT
- ****************************************************************************/
+// ───────────────────────────────────────────────────────────────────────────
+// AVIN
+// Understand the market before trading it.
+//
+// https://avin.info
+// ───────────────────────────────────────────────────────────────────────────
 
-// use avin_utils as utils;
-
-/// Closed interval [from, till].
+/// Closed interval [low, high].
 ///
-/// # ru
-/// Закрытый диапазон [from, till] - используется для представления
+/// ## ru
+/// Закрытый диапазон [low, high] - используется для представления
 /// ценового диапазона, и определяет несколько утилитарных методов:
 /// проверка на вхождение, выразить диапазон в процентах и тп.
 ///
@@ -20,7 +18,7 @@
 ///
 /// ## Examples
 /// ```
-/// use avin_core::Range;
+/// use avin_model::Range;
 ///
 /// let r = Range::new(1000.0, 1500.0);
 /// assert_eq!(r.delta(), 500.0);
@@ -29,38 +27,38 @@
 /// assert_eq!(r.delta(), -500.0);
 /// ```
 #[derive(Debug)]
-pub struct Range {
+pub struct PriceChange {
     /// Начало диапазона (включительно)
-    pub from: f64,
+    pub low: f64,
     /// Конец диапазона (включительно)
-    pub till: f64,
+    pub high: f64,
 }
 impl Range {
     /// Create new range.
     ///
-    /// # ru
+    /// ## ru
     /// Конструктор.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1500.0);
-    /// assert_eq!(r.from, 1000.0);
-    /// assert_eq!(r.till, 1500.0);
+    /// assert_eq!(r.low, 1000.0);
+    /// assert_eq!(r.high, 1500.0);
     /// ```
-    pub fn new(from: f64, till: f64) -> Self {
-        Range { from, till }
+    pub fn new(low: f64, high: f64) -> Self {
+        Range { low, high }
     }
 
     /// Return min of range.
     ///
-    /// # ru
+    /// ## ru
     /// Возвращает минимум диапазона.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(100.0, 101.5);
     /// assert_eq!(r.min(), 100.0);
@@ -69,20 +67,20 @@ impl Range {
     /// assert_eq!(r.min(), 99.1);
     /// ```
     pub fn min(&self) -> f64 {
-        if self.from < self.till {
-            self.from
+        if self.low < self.high {
+            self.low
         } else {
-            self.till
+            self.high
         }
     }
     /// Return max of range.
     ///
-    /// # ru
+    /// ## ru
     /// Возвращает максимум диапазона.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(100.0, 101.5);
     /// assert_eq!(r.max(), 101.5);
@@ -91,20 +89,20 @@ impl Range {
     /// assert_eq!(r.max(), 100.0);
     /// ```
     pub fn max(&self) -> f64 {
-        if self.from > self.till {
-            self.from
+        if self.low > self.high {
+            self.low
         } else {
-            self.till
+            self.high
         }
     }
     /// Returns the middle of the range.
     ///
-    /// # ru
+    /// ## ru
     /// Возвращает середину диапазона.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(100.0, 105.0);
     /// assert_eq!(r.mid(), 102.5);
@@ -118,12 +116,12 @@ impl Range {
     }
     /// Check for value in range.
     ///
-    /// # ru
+    /// ## ru
     /// Проверка на вхождения в диапазон.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(100.0, 105.0);
     /// assert_eq!(r.contains(103.0), true);
@@ -138,12 +136,12 @@ impl Range {
 
     /// Abs of range.
     ///
-    /// # ru
+    /// ## ru
     /// Модуль диапазона.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.abs(), 50.0);
@@ -156,12 +154,12 @@ impl Range {
     }
     /// Normalized abs of range.
     ///
-    /// # ru
+    /// ## ru
     /// Нормализованный модуль диапазона.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(900.0, 1000.0);
     /// assert_eq!(r.abs_n(), 0.10);
@@ -174,12 +172,12 @@ impl Range {
     }
     /// Abs of range in percent.
     ///
-    /// # ru
-    /// Модуль диапазона в процентах, округляется до 2-х знаков.
+    /// ## ru
+    /// Модуль диапазона в процентах
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(970.0, 1000.0);
     /// assert_eq!(r.abs_p(), 3.0);
@@ -190,18 +188,17 @@ impl Range {
 
         let value = (mx - mn) / mx * 100.0;
 
-        // utils::round(value, 2)
         value
     }
 
     /// Delta of range (signed).
     ///
-    /// # ru
+    /// ## ru
     /// Дельта диапазона (знаковая).
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.delta(), 50.0);
@@ -210,17 +207,17 @@ impl Range {
     /// assert_eq!(r.delta(), -100.0);
     /// ```
     pub fn delta(&self) -> f64 {
-        self.till - self.from
+        self.high - self.low
     }
     /// Normalized delta of range (signed).
     ///
-    /// # ru
+    /// ## ru
     /// Нормализованная дельта диапазона (знаковая) - показывает коэффициент
     /// изменения конечной цены относительно начальной.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.delta_n(), 0.05);
@@ -229,18 +226,17 @@ impl Range {
     /// assert_eq!(r.delta_n(), -0.10);
     /// ```
     pub fn delta_n(&self) -> f64 {
-        (self.till - self.from) / self.from
+        (self.high - self.low) / self.low
     }
     /// Delta of range in percent.
     ///
-    /// # ru
+    /// ## ru
     /// Дельта диапазона (знаковая) в процентах - показывает процент
-    /// изменения конечной цены относительно начальной. Округляется до
-    /// 2-х знаков.
+    /// изменения конечной цены относительно начальной.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.delta_p(), 5.0);
@@ -249,19 +245,18 @@ impl Range {
     /// assert_eq!(r.delta_p(), -10.0);
     /// ```
     pub fn delta_p(&self) -> f64 {
-        let value = (self.till - self.from) / self.from * 100.0;
+        let value = (self.high - self.low) / self.low * 100.0;
 
-        // utils::round(value, 2)
         value
     }
     /// Is range increase.
     ///
-    /// # ru
+    /// ## ru
     /// Если диапазон возврастающий - true.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.is_increase(), true);
@@ -274,12 +269,12 @@ impl Range {
     }
     /// Is range decrease.
     ///
-    /// # ru
+    /// ## ru
     /// Если диапазон убывающий - true.
     ///
     /// ## Examples
     /// ```
-    /// use avin_core::Range;
+    /// use avin_model::Range;
     ///
     /// let r = Range::new(1000.0, 1050.0);
     /// assert_eq!(r.is_decrease(), false);

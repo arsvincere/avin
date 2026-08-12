@@ -1,5 +1,5 @@
 [package]
-name = "avin_core"
+name = "avin"
 version.workspace = true
 edition.workspace = true
 

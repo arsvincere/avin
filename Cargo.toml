@@ -1,7 +1,17 @@
+# ────────────────────────────────────────────────────────────────────────────
+# AVIN
+# Understand the market before trading it.
+#
+# https://avin.info
+# ────────────────────────────────────────────────────────────────────────────
+# CREATED: 2023.07.23 15:06
+
 [workspace]
 resolver = "3"
 members = [
-    "crates/avin_core",
+    "crates/avin",
+    "crates/avin_model",
+    "crates/avin_utils",
     "py_bind",
 ]
 
@@ -10,7 +20,9 @@ edition = "2024"
 version = "0.1.0"
 
 [workspace.dependencies]
-avin_core = { path = "crates/avin_core" }
+avin = { path = "crates/avin" }
+avin_model = { path = "crates/avin_model" }
+avin_utils = { path = "crates/avin_utils" }
 py_bind = { path = "py_bind" }
 
 pyo3 = "0.29"

@@ -1,0 +1,6 @@
+[package]
+name = "avin_utils"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
