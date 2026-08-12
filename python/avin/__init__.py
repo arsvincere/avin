@@ -1,3 +1,3 @@
-from ._native import Range
+from ._native import PriceRange
 
-__all__ = ["Range"]
+__all__ = ["PriceRange"]
