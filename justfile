@@ -13,15 +13,20 @@ default:
 # Tests
 # ----------------------------------------------------------------------------
 
-# Run unit tests
+# Run rust unit tests
 [group('Tests')]
-test:
+test-rs:
 	cargo test --lib --jobs 4
 
 # Run doc tests
 [group('Tests')]
-test-doc:
+test-rs-doc:
 	cargo test --doc --jobs 4
+
+# Run python unit tests
+[group('Tests')]
+test-py:
+    uv run pytest -m "not integration and not slow"
 
 # ----------------------------------------------------------------------------
 # Project
@@ -30,8 +35,9 @@ test-doc:
 # Fix imports, format, lint, typecheck and test
 [group('Project')]
 pre-commit:
-    just test
+    just test-rs
     just test-doc
+    just test-py
 
 [group('Project')]
 build:
