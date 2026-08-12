@@ -12,9 +12,7 @@ edition = "2024"
 version = "0.1.0"
 
 [workspace.dependencies]
-avin = { path = "crates/avin" }
 avin_model = { path = "crates/avin_model" }
 avin_utils = { path = "crates/avin_utils" }
-py_bind = { path = "py_bind" }
 
 pyo3 = "0.29"
