@@ -33,6 +33,10 @@ pre-commit:
     just test
     just test-doc
 
+[group('Project')]
+build:
+    maturin develop
+
 # Create avin.zip from HEAD
 [group('Project')]
 run:
