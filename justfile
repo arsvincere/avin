@@ -37,7 +37,7 @@ pre-commit:
 build:
     maturin develop
 
-# Create avin.zip from HEAD
+# Run avin scratch
 [group('Project')]
 run:
     cargo run -p avin --bin scratch
