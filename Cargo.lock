@@ -5,6 +5,9 @@ version = 4
 [[package]]
 name = "avin"
 version = "0.1.0"
+dependencies = [
+ "avin_model",
+]
 
 [[package]]
 name = "avin_model"
