@@ -1,6 +1,5 @@
 # Virtual environments
 .venv/
-venv/
 
 # Python cache / bytecode
 __pycache__/
@@ -42,11 +41,7 @@ Session.vim*
 /bench/results/*.csv
 
 # Project-local temporary/archive folders
-/.archive/
-/bak/
-/log/
-/tmp/
-/usr/
+/tmp
 /workspace
 
 # Project-local temporary files
@@ -62,6 +57,9 @@ Session.vim*
 /3.*
 /4.*
 /5.*
+
+# Local Rust scratch binaries
+**/src/bin/scratch.rs
 
 # Project-local archive
 /avin.zip
