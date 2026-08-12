@@ -1,0 +1,6 @@
+[package]
+name = "avin_core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

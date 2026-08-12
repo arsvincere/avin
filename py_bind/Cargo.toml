@@ -1,0 +1,12 @@
+[package]
+name = "py_bind"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+avin_core = { workspace = true }
+pyo3 = { workspace = true }
