@@ -35,13 +35,13 @@ impl PriceRange {
     pub fn new(low: f64, high: f64) -> Result<Self, AvinError> {
         if !low.is_finite() || !high.is_finite() {
             return Err(AvinError::InvalidValue(format!(
-                "PriceRange: non-finite [{low}, {high}]"
+                "PriceRange non-finite [{low}, {high}]"
             )));
         }
 
         if low > high {
             return Err(AvinError::InvalidValue(format!(
-                "PriceRange: low > high [{low}, {high}]"
+                "PriceRange low > high [{low}, {high}]"
             )));
         }
 
