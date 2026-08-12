@@ -1,0 +1,67 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python cache / bytecode
+__pycache__/
+pycache/
+*.py[cod]
+*$py.class
+
+# Tool caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Distribution / packaging
+*.spec
+*.egg-info/
+build/
+dist/
+target/
+/.cache/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+config.local.toml
+*.local.toml
+
+# IDE / editor
+Session.vim*
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Benchmark results
+/bench/results/*.csv
+
+# Project-local temporary/archive folders
+/.archive/
+/bak/
+/log/
+/tmp/
+/usr/
+/workspace
+
+# Project-local temporary files
+/*.tmp
+/*.bak
+/tmp
+/tmp.*
+/prompt.md
+
+# Scratch numbered files in project root
+/1.*
+/2.*
+/3.*
+/4.*
+/5.*
+
+# Project-local archive
+/avin.zip
