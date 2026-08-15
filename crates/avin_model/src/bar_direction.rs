@@ -7,16 +7,13 @@
 
 /// Bar direction.
 ///
-/// # ru
-/// Тип бара: бычий, доджи, медвежий.
+/// ## ru
+/// Направление бара: бычье, нейтральное, медвежье.
 #[repr(i8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BarDirection {
-    /// Бычий
     Bull = 1,
-    /// Нейтральный (открытие == закрытие)
     Neutral = 0,
-    /// Медвежий
     Bear = -1,
 }
 
