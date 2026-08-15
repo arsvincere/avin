@@ -4,21 +4,21 @@ version = 4
 
 [[package]]
 name = "avin"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "avin_model",
 ]
 
 [[package]]
 name = "avin_model"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "avin_utils",
 ]
 
 [[package]]
 name = "avin_utils"
-version = "0.1.0"
+version = "0.4.0"
 
 [[package]]
 name = "heck"
@@ -55,7 +55,7 @@ dependencies = [
 
 [[package]]
 name = "py_bind"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "avin_model",
  "avin_utils",
