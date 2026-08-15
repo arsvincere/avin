@@ -21,6 +21,7 @@ pub struct PriceRange {
     low: f64,
     high: f64,
 }
+
 impl PriceRange {
     /// # en
     /// Creates a new price range with the given lower and upper bounds.
