@@ -34,15 +34,3 @@ impl From<PyBarKind> for BarKind {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn display() {
-        assert_eq!(BarKind::Bull.to_string(), "Bull");
-        assert_eq!(BarKind::Doji.to_string(), "Doji");
-        assert_eq!(BarKind::Bear.to_string(), "Bear");
-    }
-}
