@@ -35,6 +35,13 @@ mod tests {
     use super::*;
 
     #[test]
+    fn values() {
+        assert_eq!(BarKind::Bull as i8, 1);
+        assert_eq!(BarKind::Doji as i8, 0);
+        assert_eq!(BarKind::Bear as i8, -1);
+    }
+
+    #[test]
     fn display() {
         assert_eq!(BarKind::Bull.to_string(), "Bull");
         assert_eq!(BarKind::Doji.to_string(), "Doji");
