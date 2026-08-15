@@ -6,13 +6,13 @@ def test_bar_direction():
     assert BarDirection.Bull != BarDirection.Bear
 
     assert str(BarDirection.Bull) == "Bull"
-    assert str(BarDirection.Doji) == "Doji"
+    assert str(BarDirection.Neutral) == "Neutral"
     assert str(BarDirection.Bear) == "Bear"
 
     assert BarDirection.Bull.name == "Bull"
-    assert BarDirection.Doji.name == "Doji"
+    assert BarDirection.Neutral.name == "Neutral"
     assert BarDirection.Bear.name == "Bear"
 
     assert BarDirection.Bull.value == 1
-    assert BarDirection.Doji.value == 0
+    assert BarDirection.Neutral.value == 0
     assert BarDirection.Bear.value == -1

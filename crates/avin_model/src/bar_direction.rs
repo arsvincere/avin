@@ -14,8 +14,8 @@
 pub enum BarDirection {
     /// Бычий
     Bull = 1,
-    /// Доджи (открытие == закрытие)
-    Doji = 0,
+    /// Нейтральный (открытие == закрытие)
+    Neutral = 0,
     /// Медвежий
     Bear = -1,
 }
@@ -24,7 +24,7 @@ impl std::fmt::Display for BarDirection {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             BarDirection::Bull => write!(f, "Bull"),
-            BarDirection::Doji => write!(f, "Doji"),
+            BarDirection::Neutral => write!(f, "Neutral"),
             BarDirection::Bear => write!(f, "Bear"),
         }
     }
@@ -37,14 +37,14 @@ mod tests {
     #[test]
     fn values() {
         assert_eq!(BarDirection::Bull as i8, 1);
-        assert_eq!(BarDirection::Doji as i8, 0);
+        assert_eq!(BarDirection::Neutral as i8, 0);
         assert_eq!(BarDirection::Bear as i8, -1);
     }
 
     #[test]
     fn display() {
         assert_eq!(BarDirection::Bull.to_string(), "Bull");
-        assert_eq!(BarDirection::Doji.to_string(), "Doji");
+        assert_eq!(BarDirection::Neutral.to_string(), "Neutral");
         assert_eq!(BarDirection::Bear.to_string(), "Bear");
     }
 }

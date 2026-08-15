@@ -18,8 +18,8 @@ impl PyBarDirection {
 
     #[classattr]
     #[allow(non_upper_case_globals)]
-    const Doji: Self = Self {
-        inner: BarDirection::Doji,
+    const Neutral: Self = Self {
+        inner: BarDirection::Neutral,
     };
 
     #[classattr]

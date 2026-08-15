@@ -2,7 +2,7 @@ from typing import ClassVar
 
 class BarDirection:
     Bull: ClassVar[BarDirection]
-    Doji: ClassVar[BarDirection]
+    Neutral: ClassVar[BarDirection]
     Bear: ClassVar[BarDirection]
     def __eq__(self, other: object, /) -> bool: ...
     @property
