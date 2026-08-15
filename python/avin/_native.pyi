@@ -1,3 +1,12 @@
+from typing import ClassVar
+
+class BarKind:
+    BULL: ClassVar[BarKind]
+    DOJI: ClassVar[BarKind]
+    BEAR: ClassVar[BarKind]
+
+    def __eq__(self, other: object, /) -> bool: ...
+
 class PriceRange:
     def __init__(self, low: float, high: float) -> None: ...
     def __contains__(self, value: float) -> bool: ...
