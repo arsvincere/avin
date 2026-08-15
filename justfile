@@ -39,16 +39,16 @@ install-dev: venv
 # Check rust code
 [group('Code quality')]
 rs:
-    cargo clippy
     cargo fmt --all
+    cargo clippy
 
 # Check python code
 [group('Code quality')]
 py:
-    uv run ruff check --select I --fix ./python
-    uv run ruff check ./python
-    uv run ruff format ./python
-    uv run mypy ./python
+    uv run ruff check --select I --fix
+    uv run ruff format
+    uv run ruff check
+    uv run mypy
 
 # ----------------------------------------------------------------------------
 # Tests
