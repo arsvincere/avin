@@ -2,41 +2,41 @@
 .venv/
 
 # Python cache / bytecode
+*$py.class
+*.py[cod]
 __pycache__/
 pycache/
-*.py[cod]
-*$py.class
 
 # Tool caches
+.coverage
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
-.coverage
 coverage.xml
 htmlcov/
 
 # Distribution / packaging
-*.spec
 *.egg-info/
 *.so
+*.spec
+/.cache/
 build/
 dist/
 target/
-/.cache/
 
 # Local environment / secrets
+!.env.example
+*.local.toml
 .env
 .env.*
-!.env.example
 config.local.toml
-*.local.toml
 
 # IDE / editor
-Session.vim*
-*.swp
 *.swo
+*.swp
 .idea/
 .vscode/
+Session.vim*
 
 # Benchmark results
 /bench/results/*.csv
@@ -46,11 +46,12 @@ Session.vim*
 /workspace
 
 # Project-local temporary files
-/*.tmp
 /*.bak
+/*.tmp
+/justfile.local
+/prompt.md
 /tmp
 /tmp.*
-/prompt.md
 
 # Scratch numbered files in project root
 /1.*
