@@ -58,7 +58,7 @@ test-rs:
 	cargo test --lib --jobs 4
 	cargo test --doc --jobs 4
 
-# Run rust slow tests
+# Run rust ignored tests
 [group('Tests')]
 test-rs-ignored:
 	cargo test --lib --jobs 4 -- --ignored
@@ -68,7 +68,7 @@ test-rs-ignored:
 test-py:
     uv run pytest -m "not ignored"
 
-# Run python unit tests
+# Run python ignored tests
 [group('Tests')]
 test-py-ignored:
     uv run pytest -m ignored
@@ -93,6 +93,23 @@ build:
 [group('Project')]
 run:
     cargo run -p avin --bin scratch
+
+# Remove caches
+[group('Project')]
+clean:
+    rm -rf *.egg-info
+    rm -rf .cache
+    rm -rf .coverage
+    rm -rf .mypy_cache
+    rm -rf .pytest_cache
+    rm -rf .ruff_cache
+    rm -rf avin.zip
+    rm -rf coverage.xml
+    rm -rf htmlcov
+    rm -rf build
+    rm -rf dist
+    rm -rf target
+    uv run ruff clean || true
 
 # Create avin.zip from HEAD
 [group('Project')]
