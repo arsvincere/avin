@@ -7,22 +7,33 @@
 
 use avin_utils::AvinError;
 
-/// Closed interval [low, high].
+/// # en
+/// Closed price interval [low, high].
 ///
-/// ## ru
-/// Ценовой диапазон [low, high].
+/// Represents a price range including both boundary values.
+///
+/// # ru
+/// Закрытый ценовой интервал [low, high].
+///
+/// Представляет ценовой диапазон, включающий начальное и конечное значение.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PriceRange {
     low: f64,
     high: f64,
 }
 impl PriceRange {
-    /// Create new price range.
+    /// # en
+    /// Creates a new price range with the given lower and upper bounds.
     ///
-    /// ## ru
-    /// Создать новый ценовой диапазон.
+    /// Returns an error if either bound is non-finite or if `low > high`.
     ///
-    /// ## Examples
+    /// # ru
+    /// Создает новый ценовой диапазон с заданными нижней и верхней границами.
+    ///
+    /// Возвращает ошибку, если хотя бы одна граница не является конечным числом
+    /// или если `low > high`.
+    ///
+    /// # Examples
     /// ```
     /// use avin_model::PriceRange;
     ///
@@ -46,12 +57,13 @@ impl PriceRange {
         Ok(Self { low, high })
     }
 
-    /// Low bound of range.
+    /// # en
+    /// Returns the lower bound of the range.
     ///
-    /// ## ru
-    /// Нижняя граница диапазона.
+    /// # ru
+    /// Возвращает нижнюю границу диапазона.
     ///
-    /// ## Examples
+    /// # Examples
     /// ```
     /// use avin_model::PriceRange;
     ///
@@ -62,12 +74,13 @@ impl PriceRange {
         self.low
     }
 
-    /// High bound of range.
+    /// # en
+    /// Returns the upper bound of the range.
     ///
-    /// ## ru
-    /// Верхняя граница диапазона.
+    /// # ru
+    /// Возвращает верхнюю границу диапазона.
     ///
-    /// ## Examples
+    /// # Examples
     /// ```
     /// use avin_model::PriceRange;
     ///
@@ -78,12 +91,17 @@ impl PriceRange {
         self.high
     }
 
-    /// Check for value in PriceRange.
+    /// # en
+    /// Checks whether the given value is within the range.
     ///
-    /// ## ru
-    /// Проверка на вхождения в диапазон.
+    /// Both boundary values are included.
     ///
-    /// ## Examples
+    /// # ru
+    /// Проверяет, входит ли заданное значение в диапазон.
+    ///
+    /// Обе границы диапазона включены.
+    ///
+    /// # Examples
     /// ```
     /// use avin_model::PriceRange;
     ///
@@ -100,12 +118,13 @@ impl PriceRange {
         self.low <= value && value <= self.high
     }
 
-    /// Returns the middle of the PriceRange.
+    /// # en
+    /// Returns the midpoint of the range.
     ///
-    /// ## ru
+    /// # ru
     /// Возвращает середину диапазона.
     ///
-    /// ## Examples
+    /// # Examples
     /// ```
     /// use avin_model::PriceRange;
     ///
@@ -116,12 +135,13 @@ impl PriceRange {
         self.low + (self.high - self.low) / 2.0
     }
 
-    /// Width of PriceRange.
+    /// # en
+    /// Returns the width of the range.
     ///
-    /// ## ru
-    /// Ширина диапазона.
+    /// # ru
+    /// Возвращает ширину диапазона.
     ///
-    /// ## Examples
+    /// # Examples
     /// ```
     /// use avin_model::PriceRange;
     ///
