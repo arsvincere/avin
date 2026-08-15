@@ -13,9 +13,7 @@ use avin_utils::AvinError;
 /// Ценовой диапазон [low, high].
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PriceRange {
-    /// Нижняя граница диапазона (включительно)
     low: f64,
-    /// Верхняя граница диапазона (включительно)
     high: f64,
 }
 impl PriceRange {
