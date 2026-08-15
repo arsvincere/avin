@@ -21,3 +21,6 @@ def test_invalid_price_range():
 def test_price_range_eq():
     assert PriceRange(100.0, 110.0) == PriceRange(100.0, 110.0)
     assert PriceRange(100.0, 110.0) != PriceRange(100.0, 120.0)
+    assert PriceRange(100.0, 110.0) != None
+    assert PriceRange(100.0, 110.0) != "foo"
+    assert PriceRange(100.0, 110.0) != 123
