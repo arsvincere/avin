@@ -195,4 +195,11 @@ mod tests {
 
         assert_eq!(r.width(), 1000.0);
     }
+
+    #[test]
+    fn display() {
+        let r = PriceRange::new(125.5, 129.1).unwrap();
+
+        assert_eq!(r.to_string(), "[125.5, 129.1]");
+    }
 }
