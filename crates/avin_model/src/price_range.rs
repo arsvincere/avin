@@ -107,12 +107,12 @@ impl PriceRange {
     ///
     /// let r = PriceRange::new(100.0, 105.0).unwrap();
     ///
-    /// assert_eq!(r.contains(103.0), true);
-    /// assert_eq!(r.contains(100.0), true);
-    /// assert_eq!(r.contains(105.0), true);
+    /// assert!(r.contains(103.0));
+    /// assert!(r.contains(100.0));
+    /// assert!(r.contains(105.0));
     ///
-    /// assert_eq!(r.contains(105.1), false);
-    /// assert_eq!(r.contains(99.9), false);
+    /// assert!(!r.contains(105.1));
+    /// assert!(!r.contains(99.9));
     /// ```
     pub fn contains(&self, value: f64) -> bool {
         self.low <= value && value <= self.high
