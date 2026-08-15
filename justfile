@@ -82,9 +82,10 @@ test-py-ignored:
 # Fix imports, format, lint, typecheck and test
 [group('Project')]
 pre-commit:
-    just check-py
     just check-rs
     just test-rs
+    just build
+    just check-py
     just test-py
 
 [group('Project')]
