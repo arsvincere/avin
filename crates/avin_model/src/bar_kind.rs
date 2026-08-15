@@ -9,14 +9,15 @@
 ///
 /// # ru
 /// Тип бара: бычий, доджи, медвежий.
+#[repr(i8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BarKind {
     /// Бычий
-    Bull,
+    Bull = 1,
     /// Доджи (открытие == закрытие)
-    Doji,
+    Doji = 0,
     /// Медвежий
-    Bear,
+    Bear = -1,
 }
 
 impl std::fmt::Display for BarKind {
