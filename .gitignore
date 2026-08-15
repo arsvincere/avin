@@ -53,14 +53,14 @@ Session.vim*
 /tmp
 /tmp.*
 
-# Scratch numbered files in project root
-/1.*
-/2.*
-/3.*
-/4.*
-/5.*
+# Local python scratch numbered files
+/python/1.*
+/python/2.*
+/python/3.*
+/python/4.*
+/python/5.*
 
-# Local Rust scratch binaries
+# Local rust scratch files
 **/src/bin/scratch.rs
 
 # Project-local archive
