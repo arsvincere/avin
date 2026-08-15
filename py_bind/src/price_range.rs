@@ -25,11 +25,7 @@ impl PyPriceRange {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "PriceRange({}, {})",
-            self.inner.low(),
-            self.inner.high()
-        )
+        format!("PriceRange({}, {})", self.inner.low(), self.inner.high())
     }
 
     #[getter]
