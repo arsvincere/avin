@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 
 use avin::{AvinError, PriceRange};
 
-#[pyclass(name = "PriceRange")]
+#[pyclass(name = "PriceRange", module = "avin._native")]
 pub struct PyPriceRange {
     inner: PriceRange,
 }
@@ -23,12 +23,12 @@ impl PyPriceRange {
         self.inner.to_string()
     }
 
-    fn __contains__(&self, value: f64) -> bool {
-        self.inner.contains(value)
-    }
-
     fn __eq__(&self, other: &Self) -> bool {
         self.inner == other.inner
+    }
+
+    fn __contains__(&self, value: f64) -> bool {
+        self.inner.contains(value)
     }
 
     fn __repr__(&self) -> String {

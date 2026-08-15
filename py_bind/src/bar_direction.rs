@@ -2,8 +2,7 @@ use pyo3::prelude::*;
 
 use avin::BarDirection;
 
-#[pyclass(name = "BarDirection", eq, from_py_object)]
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[pyclass(name = "BarDirection", module = "avin._native")]
 pub struct PyBarDirection {
     inner: BarDirection,
 }
@@ -30,6 +29,10 @@ impl PyBarDirection {
 
     fn __str__(&self) -> String {
         self.name()
+    }
+
+    fn __eq__(&self, other: &Self) -> bool {
+        self.inner == other.inner
     }
 
     #[getter]
