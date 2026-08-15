@@ -19,6 +19,10 @@ impl PyPriceRange {
         Ok(Self { inner })
     }
 
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+
     fn __contains__(&self, value: f64) -> bool {
         self.inner.contains(value)
     }
@@ -28,7 +32,11 @@ impl PyPriceRange {
     }
 
     fn __repr__(&self) -> String {
-        format!("PriceRange({}, {})", self.inner.low(), self.inner.high())
+        format!(
+            "PriceRange({:?}, {:?})",
+            self.inner.low(),
+            self.inner.high(),
+        )
     }
 
     #[getter]
