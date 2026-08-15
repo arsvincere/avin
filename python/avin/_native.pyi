@@ -1,9 +1,9 @@
 from typing import ClassVar
 
-class BarKind:
-    Bull: ClassVar[BarKind]
-    Doji: ClassVar[BarKind]
-    Bear: ClassVar[BarKind]
+class BarDirection:
+    Bull: ClassVar[BarDirection]
+    Doji: ClassVar[BarDirection]
+    Bear: ClassVar[BarDirection]
     def __eq__(self, other: object, /) -> bool: ...
     @property
     def name(self) -> str: ...

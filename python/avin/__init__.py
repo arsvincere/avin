@@ -1,6 +1,6 @@
-from ._native import BarKind, PriceRange
+from ._native import BarDirection, PriceRange
 
 __all__ = [
-    "BarKind",
+    "BarDirection",
     "PriceRange",
 ]

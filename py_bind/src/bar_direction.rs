@@ -1,31 +1,31 @@
 use pyo3::prelude::*;
 
-use avin::BarKind;
+use avin::BarDirection;
 
-#[pyclass(name = "BarKind", eq, from_py_object)]
+#[pyclass(name = "BarDirection", eq, from_py_object)]
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct PyBarKind {
-    inner: BarKind,
+pub struct PyBarDirection {
+    inner: BarDirection,
 }
 
 #[pymethods]
-impl PyBarKind {
+impl PyBarDirection {
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Bull: Self = Self {
-        inner: BarKind::Bull,
+        inner: BarDirection::Bull,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Doji: Self = Self {
-        inner: BarKind::Doji,
+        inner: BarDirection::Doji,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Bear: Self = Self {
-        inner: BarKind::Bear,
+        inner: BarDirection::Bear,
     };
 
     fn __str__(&self) -> String {

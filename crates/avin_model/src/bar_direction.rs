@@ -5,13 +5,13 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-/// Bar kind.
+/// Bar direction.
 ///
 /// # ru
 /// Тип бара: бычий, доджи, медвежий.
 #[repr(i8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BarKind {
+pub enum BarDirection {
     /// Бычий
     Bull = 1,
     /// Доджи (открытие == закрытие)
@@ -20,12 +20,12 @@ pub enum BarKind {
     Bear = -1,
 }
 
-impl std::fmt::Display for BarKind {
+impl std::fmt::Display for BarDirection {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            BarKind::Bull => write!(f, "Bull"),
-            BarKind::Doji => write!(f, "Doji"),
-            BarKind::Bear => write!(f, "Bear"),
+            BarDirection::Bull => write!(f, "Bull"),
+            BarDirection::Doji => write!(f, "Doji"),
+            BarDirection::Bear => write!(f, "Bear"),
         }
     }
 }
@@ -36,15 +36,15 @@ mod tests {
 
     #[test]
     fn values() {
-        assert_eq!(BarKind::Bull as i8, 1);
-        assert_eq!(BarKind::Doji as i8, 0);
-        assert_eq!(BarKind::Bear as i8, -1);
+        assert_eq!(BarDirection::Bull as i8, 1);
+        assert_eq!(BarDirection::Doji as i8, 0);
+        assert_eq!(BarDirection::Bear as i8, -1);
     }
 
     #[test]
     fn display() {
-        assert_eq!(BarKind::Bull.to_string(), "Bull");
-        assert_eq!(BarKind::Doji.to_string(), "Doji");
-        assert_eq!(BarKind::Bear.to_string(), "Bear");
+        assert_eq!(BarDirection::Bull.to_string(), "Bull");
+        assert_eq!(BarDirection::Doji.to_string(), "Doji");
+        assert_eq!(BarDirection::Bear.to_string(), "Bear");
     }
 }
