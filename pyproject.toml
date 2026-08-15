@@ -21,6 +21,7 @@ Repository = "https://github.com/arsvincere/avin"
 
 [project.optional-dependencies]
 dev = [
+    "maturin",
     "mypy",
     "pytest",
     "pytest-asyncio",
