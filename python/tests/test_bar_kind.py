@@ -5,6 +5,10 @@ def test_bar_kind():
     assert BarKind.Bull == BarKind.Bull
     assert BarKind.Bull != BarKind.Bear
 
+    assert str(BarKind.Bear) == "Bull"
+    assert str(BarKind.Bear) == "Doji"
+    assert str(BarKind.Bear) == "Bear"
+
     assert BarKind.Bull.name == "Bull"
     assert BarKind.Doji.name == "Doji"
     assert BarKind.Bear.name == "Bear"

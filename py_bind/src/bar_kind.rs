@@ -28,6 +28,10 @@ impl PyBarKind {
         inner: BarKind::Bear,
     };
 
+    fn __str__(&self) -> String {
+        self.name()
+    }
+
     #[getter]
     fn name(&self) -> String {
         self.inner.to_string()
@@ -36,17 +40,5 @@ impl PyBarKind {
     #[getter]
     fn value(&self) -> i8 {
         self.inner as i8
-    }
-}
-
-impl From<BarKind> for PyBarKind {
-    fn from(inner: BarKind) -> Self {
-        Self { inner }
-    }
-}
-
-impl From<PyBarKind> for BarKind {
-    fn from(value: PyBarKind) -> Self {
-        value.inner
     }
 }
