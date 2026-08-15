@@ -36,15 +36,15 @@ install-dev: venv
 # Code quality
 # ----------------------------------------------------------------------------
 
-# Fix imports
+# Check rust code
 [group('Code quality')]
-check-rs:
+rs:
     cargo clippy
     cargo fmt --all
 
-# Format code
+# Check python code
 [group('Code quality')]
-check-py:
+py:
     uv run ruff check --select I --fix ./python
     uv run ruff check ./python
     uv run ruff format ./python
@@ -82,10 +82,10 @@ test-py-ignored:
 # Fix imports, format, lint, typecheck and test
 [group('Project')]
 pre-commit:
-    just check-rs
+    just rs
     just test-rs
     just build
-    just check-py
+    just py
     just test-py
 
 [group('Project')]
