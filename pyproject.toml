@@ -43,12 +43,15 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 78
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["python/tests"]
 
 [tool.maturin]
-manifest-path = "py_bind/Cargo.toml"
+manifest-path = "binds/Cargo.toml"
 python-source = "python"
 module-name = "avin._native"
 
