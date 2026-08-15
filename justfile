@@ -10,6 +10,45 @@ default:
         --list-prefix '  → '
 
 # ----------------------------------------------------------------------------
+# Environment
+# ----------------------------------------------------------------------------
+
+# Create python venv if missing (.venv)
+[group('Environment')]
+venv:
+    @if [ ! -d "{{venv}}" ]; then \
+        uv venv --python {{python_version}} {{venv}}; \
+    fi
+
+# Install AVIN in editable mode
+[group('Environment')]
+install: venv
+    uv pip install -e .
+
+# Install AVIN with dev dependencies
+[group('Environment')]
+install-dev: venv
+    uv pip install -e ".[dev]"
+
+# ----------------------------------------------------------------------------
+# Code quality
+# ----------------------------------------------------------------------------
+
+# Fix imports
+[group('Code quality')]
+check-rs:
+    cargo clippy
+    cargo fmt --all
+
+# Format code
+[group('Code quality')]
+check-py:
+    uv run ruff check --select I --fix ./python
+    uv run ruff check ./python
+    uv run ruff format ./python
+    uv run mypy ./python
+
+# ----------------------------------------------------------------------------
 # Tests
 # ----------------------------------------------------------------------------
 
@@ -17,16 +56,22 @@ default:
 [group('Tests')]
 test-rs:
 	cargo test --lib --jobs 4
-
-# Run doc tests
-[group('Tests')]
-test-rs-doc:
 	cargo test --doc --jobs 4
+
+# Run rust slow tests
+[group('Tests')]
+test-rs-ignored:
+	cargo test --lib --jobs 4 -- --ignored
 
 # Run python unit tests
 [group('Tests')]
 test-py:
-    uv run pytest -m "not integration and not slow"
+    uv run pytest -m "not ignored"
+
+# Run python unit tests
+[group('Tests')]
+test-py-ignored:
+    uv run pytest -m ignored
 
 # ----------------------------------------------------------------------------
 # Project
@@ -35,8 +80,9 @@ test-py:
 # Fix imports, format, lint, typecheck and test
 [group('Project')]
 pre-commit:
+    just check-py
+    just check-rs
     just test-rs
-    just test-doc
     just test-py
 
 [group('Project')]

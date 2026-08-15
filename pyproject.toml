@@ -1,7 +1,50 @@
 [project]
 name = "avin"
 version = "0.1.0"
+description = "Open source cross-platform trading system"
+authors = [{name = "Alex Avin", email = "mr.alexavin@gmail.com"}]
+license = "MIT"
+license-files = ["LICENSE"]
+readme = "README.md"
 requires-python = ">=3.13"
+dependencies = [
+    # "PyQt6==6.11.0",
+    # "click>=8.1,<9",
+    # "polars[rtcompat]",
+    # "requests",
+    # "tomli-w",
+]
+
+[project.urls]
+Homepage = "http://avin.info"
+Repository = "https://github.com/arsvincere/avin"
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov>=7.1.0",
+    "ruff",
+]
+
+[tool.mypy]
+files = ["python"]
+python_version = "3.13"
+
+[tool.ruff]
+src = ["python"]
+target-version = "py313"
+line-length = 78
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["python/tests"]
 
 [tool.maturin]
 manifest-path = "py_bind/Cargo.toml"
