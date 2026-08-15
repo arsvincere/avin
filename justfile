@@ -1,3 +1,5 @@
+import? 'local.justfile'
+
 set shell := ["bash", "-uc"]
 python_version := "3.13"
 venv := ".venv"
@@ -88,11 +90,6 @@ pre-commit:
 [group('Project')]
 build:
     maturin develop
-
-# Run avin scratch
-[group('Project')]
-run:
-    cargo run -p avin --bin scratch
 
 # Remove caches
 [group('Project')]
