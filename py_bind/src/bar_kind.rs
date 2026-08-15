@@ -2,12 +2,7 @@ use pyo3::prelude::*;
 
 use avin::BarKind;
 
-#[pyclass(
-    name = "BarKind",
-    eq,
-    from_py_object,
-    rename_all = "SCREAMING_SNAKE_CASE"
-)]
+#[pyclass(name = "BarKind", eq, from_py_object)]
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum PyBarKind {
     Bull,
