@@ -45,8 +45,8 @@ rs:
 # Check python code
 [group('Code quality')]
 py:
-    uv run ruff check --select I --fix
     uv run ruff format
+    uv run ruff check --select I --fix
     uv run ruff check
     uv run mypy
 
