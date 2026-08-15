@@ -90,7 +90,7 @@ pre-commit:
 
 [group('Project')]
 build:
-    maturin develop
+    uv run maturin develop
 
 # Remove caches
 [group('Project')]
