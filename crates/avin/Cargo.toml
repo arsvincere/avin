@@ -5,3 +5,4 @@ edition.workspace = true
 
 [dependencies]
 avin_model = { workspace = true }
+avin_utils = { workspace = true }

@@ -1,8 +1,7 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use avin_model::PriceRange;
-use avin_utils::AvinError;
+use avin::{AvinError, PriceRange};
 
 #[pyclass(name = "PriceRange")]
 pub struct PyPriceRange {
