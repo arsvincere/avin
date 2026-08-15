@@ -28,6 +28,10 @@ impl PyPriceRange {
         format!("PriceRange({}, {})", self.inner.low(), self.inner.high())
     }
 
+    fn __eq__(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
+
     #[getter]
     fn low(&self) -> f64 {
         self.inner.low()
