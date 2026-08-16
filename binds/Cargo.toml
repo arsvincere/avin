@@ -6,6 +6,7 @@ edition.workspace = true
 [lib]
 name = "_native"
 crate-type = ["cdylib"]
+doctest = false
 
 [dependencies]
 avin = { workspace = true }

@@ -55,8 +55,7 @@ py:
 # Run rust unit tests
 [group('Tests')]
 test-rs:
-	cargo test --lib --jobs 4
-	cargo test --doc --jobs 4
+    cargo test --jobs 4
 
 # Run rust ignored tests
 [group('Tests')]
