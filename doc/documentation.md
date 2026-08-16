@@ -1,13 +1,33 @@
 # Rust
 
-Ориентирована больше для разработчиков.
-
-* Type docs: назначение, семантика, invariants, основной example.
-* Method docs: контракт, ошибки, важные edge cases.
-* Method example: только если использование или поведение неочевидно.
+* english only
+* developer-oriented
+* rustdoc style
+* docs.rs
 
 # Python
 
-Ориентирована больше для трейдеров.
+* english only
+* traders-oriented
+* numpy style
+* avin.info/docs/en && avin.info/docs/ru
 
+# Что документируем
 
+* Type: назначение, смысл объекта, invariants, examples.
+* Method: контракт, ошибки, важные edge cases.
+* Method with `Result<T, E>`: документируем условия, при которых возвращается ошибка.
+
+# Examples
+
+* Type: основные happy use-cases.
+* Method: только если использование или поведение неочевидно.
+
+В rust - более ориентированы на разработчиков, показывающие архитектуру, контракты и технические детали API.
+
+В python - более ориентированы на трейдерские cases.
+
+# No docs
+
+* Rust/PyO3 internals.
+* Python/_native internals.
