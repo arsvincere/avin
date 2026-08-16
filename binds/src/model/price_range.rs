@@ -34,24 +34,10 @@ impl PyPriceRange {
         self.inner == other.inner
     }
 
-    fn __contains__(&self, value: f64) -> bool {
-        self.inner.contains(value)
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "PriceRange({:?}, {:?})",
-            self.inner.low(),
-            self.inner.high(),
-        )
-    }
-
-    #[getter]
     fn low(&self) -> f64 {
         self.inner.low()
     }
 
-    #[getter]
     fn high(&self) -> f64 {
         self.inner.high()
     }

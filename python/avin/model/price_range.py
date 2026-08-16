@@ -47,14 +47,14 @@ class PriceRange:
         """
         Return the lower bound of the range.
         """
-        return self._inner.low
+        return self._inner.low()
 
     @property
     def high(self) -> float:
         """
         Return the upper bound of the range.
         """
-        return self._inner.high
+        return self._inner.high()
 
     def contains(self, value: float) -> bool:
         """
