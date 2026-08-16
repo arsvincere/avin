@@ -1,10 +1,8 @@
-mod bar_direction;
-mod price_range;
+mod model;
 
 use pyo3::prelude::*;
 
-use bar_direction::PyBarDirection;
-use price_range::PyPriceRange;
+use model::{PyBarDirection, PyPriceRange};
 
 #[pymodule]
 #[pyo3(name = "_native")]
