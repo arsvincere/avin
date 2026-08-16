@@ -4,10 +4,6 @@ class BarDirection:
     Bull: ClassVar[BarDirection]
     Neutral: ClassVar[BarDirection]
     Bear: ClassVar[BarDirection]
-    def __eq__(self, other: object, /) -> bool: ...
-    @property
-    def name(self) -> str: ...
-    @property
     def value(self) -> int: ...
 
 class PriceRange:

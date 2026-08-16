@@ -34,20 +34,6 @@ impl PyBarDirection {
         inner: BarDirection::Bear,
     };
 
-    fn __str__(&self) -> String {
-        self.name()
-    }
-
-    fn __eq__(&self, other: &Self) -> bool {
-        self.inner == other.inner
-    }
-
-    #[getter]
-    fn name(&self) -> String {
-        self.inner.to_string()
-    }
-
-    #[getter]
     fn value(&self) -> i8 {
         self.inner as i8
     }

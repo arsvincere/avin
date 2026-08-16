@@ -10,9 +10,9 @@ class BarDirection(Enum):
     Indicates whether the bar is bullish, neutral, or bearish.
     """
 
-    Bull = _native.BarDirection.Bull.value
-    Neutral = _native.BarDirection.Neutral.value
-    Bear = _native.BarDirection.Bear.value
+    Bull = _native.BarDirection.Bull.value()
+    Neutral = _native.BarDirection.Neutral.value()
+    Bear = _native.BarDirection.Bear.value()
 
     def __str__(self) -> str:
         return self.name
