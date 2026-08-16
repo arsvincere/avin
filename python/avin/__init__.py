@@ -1,4 +1,4 @@
-from ._native import BarDirection, PriceRange
+from .model import BarDirection, PriceRange
 
 __all__ = [
     "BarDirection",
