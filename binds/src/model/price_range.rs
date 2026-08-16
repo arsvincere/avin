@@ -26,11 +26,11 @@ impl PyPriceRange {
         Ok(Self { inner })
     }
 
-    fn __str__(&self) -> String {
+    fn str(&self) -> String {
         self.inner.to_string()
     }
 
-    fn __eq__(&self, other: &Self) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.inner == other.inner
     }
 

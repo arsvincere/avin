@@ -28,13 +28,13 @@ class PriceRange:
         self._inner = _native.PriceRange(low, high)
 
     def __str__(self) -> str:
-        return str(self._inner)
+        return self._inner.str()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PriceRange):
             return NotImplemented
 
-        return self._inner == other._inner
+        return self._inner.eq(other._inner)
 
     def __contains__(self, value: float) -> bool:
         return self._inner.contains(value)
