@@ -1,5 +1,5 @@
 [package]
-name = "py_bind"
+name = "binds"
 version.workspace = true
 edition.workspace = true
 

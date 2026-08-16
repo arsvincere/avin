@@ -22,6 +22,14 @@ name = "avin_utils"
 version = "0.4.0"
 
 [[package]]
+name = "binds"
+version = "0.4.0"
+dependencies = [
+ "avin",
+ "pyo3",
+]
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -52,14 +60,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "py_bind"
-version = "0.4.0"
-dependencies = [
- "avin",
- "pyo3",
 ]
 
 [[package]]
