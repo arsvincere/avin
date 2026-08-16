@@ -5,15 +5,9 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-/// # en
 /// Bar direction.
 ///
 /// Indicates whether the bar is bullish, neutral, or bearish.
-///
-/// # ru
-/// Направление бара.
-///
-/// Указывает, является ли бар бычьим, нейтральным или медвежьим.
 #[repr(i8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BarDirection {
