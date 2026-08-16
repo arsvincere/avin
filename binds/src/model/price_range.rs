@@ -1,3 +1,10 @@
+// ───────────────────────────────────────────────────────────────────────────
+// AVIN
+// Understand the market before trading it.
+//
+// https://avin.info
+// ───────────────────────────────────────────────────────────────────────────
+
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
