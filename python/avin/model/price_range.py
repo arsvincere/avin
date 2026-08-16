@@ -5,21 +5,37 @@ from avin import _native
 
 class PriceRange:
     """
-    Closed price interval [low, high].
+    Closed price range [low, high].
 
-    Represents a price range including both boundary values.
+    Represents a price range that includes both boundary prices.
 
     Parameters
     ----------
-    low
-        Lower bound of the range.
-    high
-        Upper bound of the range.
+    low : float
+        Lower price of the range.
+    high : float
+        Upper price of the range.
 
     Raises
     ------
     ValueError
-        If either bound is non-finite or if `low > high`.
+        If either price is NaN or infinite, or if `low > high`.
+
+    Examples
+    --------
+    >>> price_range = PriceRange(100.0, 105.0)
+    >>> price_range.low
+    100.0
+    >>> price_range.high
+    105.0
+    >>> 103.0 in price_range
+    True
+    >>> 105.1 in price_range
+    False
+    >>> price_range.middle()
+    102.5
+    >>> price_range.width()
+    5.0
     """
 
     __slots__ = ("_inner",)
@@ -45,22 +61,20 @@ class PriceRange:
     @property
     def low(self) -> float:
         """
-        Return the lower bound of the range.
+        Lower price of the range.
         """
         return self._inner.low()
 
     @property
     def high(self) -> float:
         """
-        Return the upper bound of the range.
+        Upper price of the range.
         """
         return self._inner.high()
 
     def contains(self, value: float) -> bool:
         """
-        Check whether the given value is within the range.
-
-        Both boundary values are included.
+        Check whether a price is within the range.
         """
         return self._inner.contains(value)
 
