@@ -1,5 +1,3 @@
-import? 'local.justfile'
-
 set shell := ["bash", "-uc"]
 python_version := "3.13"
 venv := ".venv"
@@ -113,3 +111,6 @@ clean:
 [group('Project')]
 archive:
     git archive --format zip HEAD -o avin.zip
+
+
+import? 'local.justfile'
