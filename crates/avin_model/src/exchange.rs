@@ -102,3 +102,48 @@ impl std::fmt::Display for Exchange {
         f.write_str(self.name())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use super::*;
+
+    #[test]
+    fn all() {
+        let expected = [
+            Exchange::Binance,
+            Exchange::Bybit,
+            Exchange::MOEX,
+            Exchange::SPB,
+        ];
+
+        assert_eq!(Exchange::all(), expected);
+    }
+
+    #[test]
+    fn name() {
+        assert_eq!(Exchange::Binance.name(), "Binance");
+        assert_eq!(Exchange::Bybit.name(), "Bybit");
+        assert_eq!(Exchange::MOEX.name(), "MOEX");
+        assert_eq!(Exchange::SPB.name(), "SPB");
+    }
+
+    #[test]
+    fn from_str() {
+        assert_eq!(Exchange::from_str("BInaNce").unwrap(), Exchange::Binance);
+        assert_eq!(Exchange::from_str("Bybit").unwrap(), Exchange::Bybit);
+        assert_eq!(Exchange::from_str("MoEx").unwrap(), Exchange::MOEX);
+        assert_eq!(Exchange::from_str("SPB").unwrap(), Exchange::SPB);
+
+        assert!(Exchange::from_str("foo").is_err());
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!(Exchange::Binance.to_string(), "Binance");
+        assert_eq!(Exchange::Bybit.to_string(), "Bybit");
+        assert_eq!(Exchange::MOEX.to_string(), "MOEX");
+        assert_eq!(Exchange::SPB.to_string(), "SPB");
+    }
+}
