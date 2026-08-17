@@ -15,7 +15,6 @@
 //!
 //! ```
 
-pub use avin_model::BarDirection;
-pub use avin_model::PriceRange;
+pub use avin_model::{BarDirection, Exchange, PriceRange};
 
 pub use avin_utils::AvinError;
