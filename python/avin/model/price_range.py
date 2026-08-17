@@ -1,3 +1,10 @@
+# ────────────────────────────────────────────────────────────────────────────
+#  AVIN
+#  Understand the market before trading it.
+#
+#  https://avin.info
+# ────────────────────────────────────────────────────────────────────────────
+
 from __future__ import annotations
 
 from avin import _native

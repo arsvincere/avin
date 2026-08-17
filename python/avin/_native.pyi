@@ -1,3 +1,10 @@
+# ────────────────────────────────────────────────────────────────────────────
+#  AVIN
+#  Understand the market before trading it.
+#
+#  https://avin.info
+# ────────────────────────────────────────────────────────────────────────────
+
 from typing import ClassVar
 
 class BarDirection:
