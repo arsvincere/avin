@@ -5,10 +5,17 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
-from .model import BarDirection, Exchange, PriceRange
+import pytest
 
-__all__ = [
-    "BarDirection",
-    "Exchange",
-    "PriceRange",
-]
+from avin import Exchange
+
+
+def test_exchange():
+    assert str(Exchange.MOEX) == "MOEX"
+    assert str(Exchange.Bybit) == "Bybit"
+
+    assert Exchange.from_str("BiNaNcE") is Exchange.Binance
+    assert Exchange.from_str("SPB") is Exchange.SPB
+
+    with pytest.raises(ValueError):
+        Exchange.from_str("foo")
