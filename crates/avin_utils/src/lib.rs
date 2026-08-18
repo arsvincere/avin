@@ -13,5 +13,5 @@ pub use constant::{
     DAY_BEGIN, DAY_END, ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND,
     ONE_WEEK, ONE_YEAR,
 };
-pub use dt::{dt, ts};
+pub use dt::{dt, next_month_start, prev_month_start, ts};
 pub use error::AvinError;

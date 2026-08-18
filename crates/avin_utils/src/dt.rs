@@ -5,16 +5,71 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Datelike, Months, Timelike, Utc};
 
-/// Convert datetime UTC -> timestamp nanos.
+/// Converts a UTC datetime to a Unix timestamp in nanoseconds.
+///
+/// # Panics
+///
+/// Panics if the datetime cannot be represented as an `i64` nanosecond
+/// timestamp.
 #[inline]
 pub fn ts(dt: DateTime<Utc>) -> i64 {
     dt.timestamp_nanos_opt().unwrap()
 }
 
-/// Convert timestamp nanos -> datetime UTC.
+/// Converts a Unix timestamp in nanoseconds to a UTC datetime.
 #[inline]
 pub fn dt(ts: i64) -> DateTime<Utc> {
     DateTime::from_timestamp_nanos(ts)
+}
+
+/// Returns the start of the next calendar month in UTC.
+///
+/// The returned datetime is always the first day of the next month at
+/// `00:00:00`.
+///
+/// # Panics
+///
+/// Panics if the resulting datetime is outside the range supported by
+/// `chrono`.
+#[inline]
+pub fn next_month_start(dt: DateTime<Utc>) -> DateTime<Utc> {
+    dt.with_day(1)
+        .unwrap()
+        .with_hour(0)
+        .unwrap()
+        .with_minute(0)
+        .unwrap()
+        .with_second(0)
+        .unwrap()
+        .with_nanosecond(0)
+        .unwrap()
+        .checked_add_months(Months::new(1))
+        .unwrap()
+}
+
+/// Returns the start of the previous calendar month in UTC.
+///
+/// The returned datetime is always the first day of the previous month at
+/// `00:00:00`.
+///
+/// # Panics
+///
+/// Panics if the resulting datetime is outside the range supported by
+/// `chrono`.
+#[inline]
+pub fn prev_month_start(dt: DateTime<Utc>) -> DateTime<Utc> {
+    dt.with_day(1)
+        .unwrap()
+        .with_hour(0)
+        .unwrap()
+        .with_minute(0)
+        .unwrap()
+        .with_second(0)
+        .unwrap()
+        .with_nanosecond(0)
+        .unwrap()
+        .checked_sub_months(Months::new(1))
+        .unwrap()
 }
