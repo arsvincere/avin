@@ -11,6 +11,9 @@ from avin import Exchange
 
 
 def test_exchange():
+    assert Exchange.SPB.name == "SPB"
+    assert Exchange.Binance.name == "Binance"
+
     assert str(Exchange.MOEX) == "MOEX"
     assert str(Exchange.Bybit) == "Bybit"
 
@@ -19,3 +22,12 @@ def test_exchange():
 
     with pytest.raises(ValueError):
         Exchange.from_str("foo")
+
+
+def test_exchange_all():
+    assert list(Exchange) == [
+        Exchange.Binance,
+        Exchange.Bybit,
+        Exchange.MOEX,
+        Exchange.SPB,
+    ]
