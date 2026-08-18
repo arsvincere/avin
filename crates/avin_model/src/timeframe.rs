@@ -9,6 +9,32 @@ use chrono::{Datelike, Days, TimeDelta, Timelike};
 
 use avin_utils::AvinError;
 
+/// Timeframe.
+///
+/// Represents a timeframe supported by AVIN.
+///
+/// Used by charts and footprints.
+///
+/// `Month` does not have a fixed duration, so [`TimeFrame::timedelta`],
+/// [`TimeFrame::seconds`], and [`TimeFrame::nanos`] return `None` for it.
+///
+/// # Examples
+///
+/// ```
+/// use std::str::FromStr;
+///
+/// use avin_model::TimeFrame;
+///
+/// let timeframe = TimeFrame::M1;
+/// assert_eq!(timeframe.to_string(), "1M");
+///
+/// let timeframe = TimeFrame::from_str("5m").unwrap();
+/// assert_eq!(timeframe, TimeFrame::M5);
+/// assert_eq!(timeframe.to_string(), "5M");
+/// assert_eq!(timeframe.seconds(), Some(300));
+///
+/// assert_eq!(TimeFrame::Month.seconds(), None);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TimeFrame {
     S1,
@@ -30,6 +56,7 @@ pub enum TimeFrame {
 }
 
 impl TimeFrame {
+    /// Returns all supported timeframes.
     pub const fn all() -> &'static [Self] {
         &[
             Self::S1,
@@ -48,18 +75,28 @@ impl TimeFrame {
         ]
     }
 
+    /// Returns the fixed duration in nanoseconds.
+    ///
+    /// Returns `None` if the timeframe has no fixed duration.
     pub fn nanos(&self) -> Option<u64> {
         let seconds = self.seconds()?;
 
         Some(seconds as u64 * 1_000_000_000)
     }
 
+    /// Returns the fixed duration in seconds.
+    ///
+    /// Returns `None` if the timeframe has no fixed duration.
     pub fn seconds(&self) -> Option<u32> {
         let timedelta = self.timedelta()?;
 
         Some(timedelta.num_seconds() as u32)
     }
 
+    /// Returns the fixed duration as a [`TimeDelta`].
+    ///
+    /// Returns `None` for [`TimeFrame::Month`] because calendar months do not
+    /// have a fixed duration.
     pub fn timedelta(&self) -> Option<TimeDelta> {
         match self {
             Self::S1 => Some(TimeDelta::new(1, 0).unwrap()),
@@ -81,6 +118,34 @@ impl TimeFrame {
         }
     }
 
+    /// Returns the inclusive beginning of the frame containing `ts`.
+    ///
+    /// `ts` and the returned value are Unix timestamps in nanoseconds.
+    ///
+    /// Frame boundaries are aligned in UTC. Weeks begin on Monday and months
+    /// begin on the first day of the month.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use chrono::{TimeZone, Utc};
+    ///
+    /// use avin_model::TimeFrame;
+    ///
+    /// let ts = Utc
+    ///     .with_ymd_and_hms(2026, 8, 18, 10, 13, 42)
+    ///     .unwrap()
+    ///     .timestamp_nanos_opt()
+    ///     .unwrap();
+    ///
+    /// let expected = Utc
+    ///     .with_ymd_and_hms(2026, 8, 18, 10, 10, 0)
+    ///     .unwrap()
+    ///     .timestamp_nanos_opt()
+    ///     .unwrap();
+    ///
+    /// assert_eq!(TimeFrame::M10.begin_frame_ts(ts), expected);
+    /// ```
     pub fn begin_frame_ts(&self, ts: i64) -> i64 {
         let floor = |value: u32, step: u32| value - value % step;
 
@@ -159,6 +224,12 @@ impl TimeFrame {
         avin_utils::ts(floor_dt)
     }
 
+    /// Returns the exclusive end of the frame containing `ts`.
+    ///
+    /// `ts` and the returned value are Unix timestamps in nanoseconds.
+    ///
+    /// Together with [`TimeFrame::begin_frame_ts`], this defines the frame as
+    /// a half-open interval `[begin, end)`.
     pub fn end_frame_ts(&self, ts: i64) -> i64 {
         match self {
             Self::Month => {
@@ -179,6 +250,31 @@ impl TimeFrame {
 impl std::str::FromStr for TimeFrame {
     type Err = AvinError;
 
+    /// Parses a timeframe from its canonical textual representation.
+    ///
+    /// Parsing is case-insensitive. Accepted values correspond to the
+    /// representation produced by [`std::fmt::Display`], such as `"1S"`,
+    /// `"15M"`, `"4H"`, `"D"`, `"W"`, and `"M"`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the timeframe is unknown.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::str::FromStr;
+    ///
+    /// use avin_model::TimeFrame;
+    ///
+    /// assert_eq!(TimeFrame::from_str("1m").unwrap(), TimeFrame::M1);
+    /// assert_eq!(TimeFrame::from_str("1M").unwrap(), TimeFrame::M1);
+    /// assert_eq!(TimeFrame::from_str("4H").unwrap(), TimeFrame::H4);
+    /// assert_eq!(TimeFrame::from_str("D").unwrap(), TimeFrame::Day);
+    ///
+    /// assert!(TimeFrame::from_str("M1").is_err());
+    /// assert!(TimeFrame::from_str("foo").is_err());
+    /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::all()
             .iter()
