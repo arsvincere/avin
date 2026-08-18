@@ -15,5 +15,3 @@ pub const ONE_MINUTE: TimeDelta = TimeDelta::minutes(1);
 pub const ONE_HOUR: TimeDelta = TimeDelta::hours(1);
 pub const ONE_DAY: TimeDelta = TimeDelta::days(1);
 pub const ONE_WEEK: TimeDelta = TimeDelta::weeks(1);
-pub const ONE_MONTH: TimeDelta = TimeDelta::days(30);
-pub const ONE_YEAR: TimeDelta = TimeDelta::days(365);
