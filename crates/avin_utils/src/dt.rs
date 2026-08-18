@@ -15,6 +15,6 @@ pub fn ts(dt: DateTime<Utc>) -> i64 {
 
 /// Convert timestamp nanos -> datetime UTC.
 #[inline]
-pub fn dt(ts_nanos: i64) -> DateTime<Utc> {
-    DateTime::from_timestamp_nanos(ts_nanos)
+pub fn dt(ts: i64) -> DateTime<Utc> {
+    DateTime::from_timestamp_nanos(ts)
 }
