@@ -9,7 +9,7 @@ use pyo3::prelude::*;
 
 use avin::BarDirection;
 
-#[pyclass(name = "BarDirection", module = "avin._native")]
+#[pyclass(module = "avin._native")]
 pub struct PyBarDirection {
     inner: BarDirection,
 }

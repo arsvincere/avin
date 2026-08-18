@@ -12,7 +12,7 @@ use pyo3::prelude::*;
 
 use avin::{AvinError, Exchange};
 
-#[pyclass(name = "Exchange", module = "avin._native")]
+#[pyclass(module = "avin._native")]
 pub struct PyExchange {
     inner: Exchange,
 }

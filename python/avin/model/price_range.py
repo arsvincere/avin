@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from avin import _native
+from avin._native import PyPriceRange
 
 
 class PriceRange:
@@ -48,7 +48,7 @@ class PriceRange:
     __slots__ = ("_inner",)
 
     def __init__(self, low: float, high: float) -> None:
-        self._inner = _native.PriceRange(low, high)
+        self._inner = PyPriceRange(low, high)
 
     def __str__(self) -> str:
         return self._inner.str()

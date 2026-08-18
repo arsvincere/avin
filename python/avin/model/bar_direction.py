@@ -7,7 +7,7 @@
 
 from enum import Enum
 
-from avin import _native
+from avin._native import PyBarDirection
 
 
 class BarDirection(Enum):
@@ -36,10 +36,10 @@ class BarDirection(Enum):
     'Bull'
     """
 
-    # TODO: сделать ли значения _native.BarDirection.Variant как в Exchange?
-    Bull = _native.BarDirection.Bull.value()
-    Neutral = _native.BarDirection.Neutral.value()
-    Bear = _native.BarDirection.Bear.value()
+    # TODO: сделать ли значения PyBarDirection.Variant как в Exchange?
+    Bull = PyBarDirection.Bull.value()
+    Neutral = PyBarDirection.Neutral.value()
+    Bear = PyBarDirection.Bear.value()
 
     def __str__(self) -> str:
         return self.name

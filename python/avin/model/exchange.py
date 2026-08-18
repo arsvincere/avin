@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from avin import _native
+from avin._native import PyExchange
 
 
 class Exchange(Enum):
@@ -37,10 +37,10 @@ class Exchange(Enum):
     SPB
     """
 
-    Binance = _native.Exchange.Binance
-    Bybit = _native.Exchange.Bybit
-    MOEX = _native.Exchange.MOEX
-    SPB = _native.Exchange.SPB
+    Binance = PyExchange.Binance
+    Bybit = PyExchange.Bybit
+    MOEX = PyExchange.MOEX
+    SPB = PyExchange.SPB
 
     def __str__(self) -> str:
         return self.value.name()
@@ -62,5 +62,5 @@ class Exchange(Enum):
         ValueError
             If the exchange name is unknown.
         """
-        native = _native.Exchange.from_str(s)
+        native = PyExchange.from_str(s)
         return cls[native.name()]

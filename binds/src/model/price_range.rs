@@ -10,7 +10,7 @@ use pyo3::prelude::*;
 
 use avin::{AvinError, PriceRange};
 
-#[pyclass(name = "PriceRange", module = "avin._native")]
+#[pyclass(module = "avin._native")]
 pub struct PyPriceRange {
     inner: PriceRange,
 }
