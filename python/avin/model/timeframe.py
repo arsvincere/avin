@@ -142,15 +142,12 @@ class TimeFrame(Enum):
         that frame.
 
         >>> from datetime import datetime, UTC
-
         >>> dt = datetime(2026, 8, 18, 10, 13, 42, tzinfo=UTC)
         >>> print(dt)
         2026-08-18 10:13:42+00:00
-
         >>> ts = int(dt.timestamp()) * 1_000_000_000
         >>> begin_ts = TimeFrame.M5.begin_frame_ts(ts)
         >>> begin_dt = datetime.fromtimestamp(begin_ts / 1_000_000_000, UTC)
-
         >>> print(begin_dt)
         2026-08-18 10:10:00+00:00
         """
