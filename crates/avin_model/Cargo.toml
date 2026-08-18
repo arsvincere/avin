@@ -5,3 +5,5 @@ edition.workspace = true
 
 [dependencies]
 avin_utils = { workspace = true }
+
+chrono = { workspace = true }
