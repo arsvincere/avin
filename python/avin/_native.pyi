@@ -5,12 +5,14 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
+from datetime import timedelta as TimeDelta
 from typing import ClassVar
 
 class PyBarDirection:
     Bull: ClassVar[PyBarDirection]
     Neutral: ClassVar[PyBarDirection]
     Bear: ClassVar[PyBarDirection]
+
     def value(self) -> int: ...
 
 class PyPriceRange:
@@ -28,8 +30,36 @@ class PyExchange:
     Bybit: ClassVar[PyExchange]
     MOEX: ClassVar[PyExchange]
     SPB: ClassVar[PyExchange]
-    def name(self) -> str: ...
+
     @staticmethod
     def all() -> list[PyExchange]: ...
     @staticmethod
     def from_str(s: str) -> PyExchange: ...
+    def name(self) -> str: ...
+
+class PyTimeFrame:
+    S1: ClassVar[PyTimeFrame]
+    S5: ClassVar[PyTimeFrame]
+    S10: ClassVar[PyTimeFrame]
+    S15: ClassVar[PyTimeFrame]
+    M1: ClassVar[PyTimeFrame]
+    M5: ClassVar[PyTimeFrame]
+    M10: ClassVar[PyTimeFrame]
+    M15: ClassVar[PyTimeFrame]
+    H1: ClassVar[PyTimeFrame]
+    H4: ClassVar[PyTimeFrame]
+    Day: ClassVar[PyTimeFrame]
+    Week: ClassVar[PyTimeFrame]
+    Month: ClassVar[PyTimeFrame]
+
+    @staticmethod
+    def all() -> list[PyTimeFrame]: ...
+    @staticmethod
+    def from_str(s: str) -> PyTimeFrame: ...
+    def str(self) -> str: ...
+    def eq(self, other: PyTimeFrame) -> bool: ...
+    def nanos(self) -> int | None: ...
+    def seconds(self) -> int | None: ...
+    def timedelta(self) -> TimeDelta | None: ...
+    def begin_frame_ts(self, ts: int) -> int: ...
+    def end_frame_ts(self, ts: int) -> int: ...
