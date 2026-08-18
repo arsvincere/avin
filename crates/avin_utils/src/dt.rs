@@ -24,6 +24,12 @@ pub fn dt(ts: i64) -> DateTime<Utc> {
     DateTime::from_timestamp_nanos(ts)
 }
 
+/// Returns the current UTC datetime.
+#[inline]
+pub fn utc_now() -> DateTime<Utc> {
+    Utc::now()
+}
+
 /// Returns the start of the next calendar month in UTC.
 ///
 /// The returned datetime is always the first day of the next month at
@@ -72,4 +78,63 @@ pub fn prev_month_start(dt: DateTime<Utc>) -> DateTime<Utc> {
         .unwrap()
         .checked_sub_months(Months::new(1))
         .unwrap()
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::TimeZone;
+
+    use super::*;
+
+    #[test]
+    fn dt_ts_conversion() {
+        let x = Utc
+            .with_ymd_and_hms(2023, 8, 2, 10, 7, 15)
+            .unwrap()
+            .with_nanosecond(123_456_789)
+            .unwrap();
+
+        let ts = ts(x);
+        let dt = dt(ts);
+
+        assert_eq!(dt, x);
+    }
+
+    #[test]
+    fn test_next_month_start() {
+        let dt = Utc
+            .with_ymd_and_hms(2023, 8, 2, 10, 7, 15)
+            .unwrap()
+            .with_nanosecond(123_456_789)
+            .unwrap();
+        let next = next_month_start(dt);
+        assert_eq!(next, Utc.with_ymd_and_hms(2023, 9, 1, 0, 0, 0).unwrap());
+
+        let dt = Utc.with_ymd_and_hms(2023, 12, 31, 23, 59, 59).unwrap();
+        let next = next_month_start(dt);
+        assert_eq!(next, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+
+        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let next = next_month_start(dt);
+        assert_eq!(next, Utc.with_ymd_and_hms(2023, 2, 1, 0, 0, 0).unwrap());
+    }
+
+    #[test]
+    fn test_prev_month_start() {
+        let dt = Utc
+            .with_ymd_and_hms(2023, 8, 2, 10, 7, 15)
+            .unwrap()
+            .with_nanosecond(123_456_789)
+            .unwrap();
+        let prev = prev_month_start(dt);
+        assert_eq!(prev, Utc.with_ymd_and_hms(2023, 7, 1, 0, 0, 0).unwrap());
+
+        let dt = Utc.with_ymd_and_hms(2023, 12, 31, 23, 59, 59).unwrap();
+        let prev = prev_month_start(dt);
+        assert_eq!(prev, Utc.with_ymd_and_hms(2023, 11, 1, 0, 0, 0).unwrap());
+
+        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let prev = prev_month_start(dt);
+        assert_eq!(prev, Utc.with_ymd_and_hms(2022, 12, 1, 0, 0, 0).unwrap());
+    }
 }
