@@ -5,13 +5,16 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod constant;
-mod dt;
-mod error;
+use chrono::{DateTime, Utc};
 
-pub use constant::{
-    DAY_BEGIN, DAY_END, ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND,
-    ONE_WEEK, ONE_YEAR,
-};
-pub use dt::{dt, ts};
-pub use error::AvinError;
+/// Convert datetime UTC -> timestamp nanos.
+#[inline]
+pub fn ts(dt: DateTime<Utc>) -> i64 {
+    dt.timestamp_nanos_opt().unwrap()
+}
+
+/// Convert timestamp nanos -> datetime UTC.
+#[inline]
+pub fn dt(ts_nanos: i64) -> DateTime<Utc> {
+    DateTime::from_timestamp_nanos(ts_nanos)
+}
