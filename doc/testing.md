@@ -16,3 +16,16 @@ python / pytest проверяют:
 - Rust error -> Python exception
 - python str(obj) -> native display obj
 - public from_str -> правильный public member
+
+
+Rust domain tests
+    exhaustive correctness
+
+Rust bind tests
+    Rust domain → PyO3 wrapper без искажений
+
+Python binding tests
+    PyO3 wrapper → public Python без искажений
+
+Python doctests
+    несколько реальных public API happy paths, end-to-end smoke tests
