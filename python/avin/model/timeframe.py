@@ -54,7 +54,7 @@ class TimeFrame(Enum):
     MONTH = PyTimeFrame.Month
 
     def __str__(self) -> str:
-        return self.value.str()
+        return self.value.display()
 
     @classmethod
     def from_str(cls, s: str) -> TimeFrame:

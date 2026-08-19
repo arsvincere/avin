@@ -97,7 +97,7 @@ impl PyTimeFrame {
         Ok(Self { inner })
     }
 
-    fn str(&self) -> String {
+    fn display(&self) -> String {
         self.inner.to_string()
     }
 
