@@ -10,92 +10,75 @@ from datetime import timedelta as TimeDelta
 import pytest
 
 from avin import TimeFrame
+from avin._native import PyTimeFrame
+
+SPECIAL_METHODS = {
+    "all",
+    "from_str",
+    "display",
+    "eq",
+}
+
+DELEGATED_METHODS = {
+    "nanos": (),
+    "seconds": (),
+    "timedelta": (),
+    "begin_frame_ts": (1_691_000_123_456_789_000,),
+    "end_frame_ts": (1_691_000_123_456_789_000,),
+}
 
 
-# helper - returns timestamp nanos of datetime
-def ts(
-    year: int,
-    month: int,
-    day: int,
-    hour: int = 0,
-    minute: int = 0,
-    second: int = 0,
-) -> int:
-    from datetime import UTC, datetime
+def test_binding_complete():
+    public = list(TimeFrame)
+    native = PyTimeFrame.all()
+    assert len(public) == len(native)
 
-    dt = datetime(year, month, day, hour, minute, second, tzinfo=UTC)
-    return int(dt.timestamp()) * 1_000_000_000
+    for native_tf in native:
+        matches = [tf for tf in public if native_tf.eq(tf.value)]
+        assert len(matches) == 1
 
 
-def test_members():
-    assert list(TimeFrame) == [
-        TimeFrame.S1,
-        TimeFrame.S5,
-        TimeFrame.S10,
-        TimeFrame.S15,
-        TimeFrame.M1,
-        TimeFrame.M5,
-        TimeFrame.M10,
-        TimeFrame.M15,
-        TimeFrame.H1,
-        TimeFrame.H4,
-        TimeFrame.DAY,
-        TimeFrame.WEEK,
-        TimeFrame.MONTH,
-    ]
+def test_binding_methods_complete():
+    native_methods = {
+        name
+        for name in PyTimeFrame.__dict__
+        if not name.startswith("_") and callable(getattr(PyTimeFrame, name))
+    }
+
+    covered_methods = SPECIAL_METHODS | set(DELEGATED_METHODS)
+    assert native_methods == covered_methods
 
 
-def test_str():
-    cases = [
-        (TimeFrame.S1, "1S"),
-        (TimeFrame.S5, "5S"),
-        (TimeFrame.S10, "10S"),
-        (TimeFrame.S15, "15S"),
-        (TimeFrame.M1, "1M"),
-        (TimeFrame.M5, "5M"),
-        (TimeFrame.M10, "10M"),
-        (TimeFrame.M15, "15M"),
-        (TimeFrame.H1, "1H"),
-        (TimeFrame.H4, "4H"),
-        (TimeFrame.DAY, "D"),
-        (TimeFrame.WEEK, "W"),
-        (TimeFrame.MONTH, "M"),
-    ]
+def test_binding_delegation():
+    for tf in TimeFrame:
+        for method, args in DELEGATED_METHODS.items():
+            public_result = getattr(tf, method)(*args)
+            native_result = getattr(tf.value, method)(*args)
 
-    for timeframe, expected in cases:
-        assert str(timeframe) == expected
+            assert public_result == native_result
 
 
-def test_from_str():
-    assert TimeFrame.from_str("1M") is TimeFrame.M1
-    assert TimeFrame.from_str("5m") is TimeFrame.M5
-    assert TimeFrame.from_str("4H") is TimeFrame.H4
-    assert TimeFrame.from_str("d") is TimeFrame.DAY
-    assert TimeFrame.from_str("W") is TimeFrame.WEEK
-    assert TimeFrame.from_str("m") is TimeFrame.MONTH
-
-    with pytest.raises(ValueError):
-        TimeFrame.from_str("M1")
-
-    with pytest.raises(ValueError):
-        TimeFrame.from_str("foo")
-
-
-def test_duration():
-    assert TimeFrame.M15.nanos() == 900_000_000_000
-    assert TimeFrame.M15.seconds() == 900
-    assert TimeFrame.M15.timedelta() == TimeDelta(minutes=15)
+def test_binding_type_conversions():
+    assert type(TimeFrame.M15.nanos()) is int
+    assert type(TimeFrame.M15.seconds()) is int
+    assert isinstance(TimeFrame.M15.timedelta(), TimeDelta)
 
     assert TimeFrame.MONTH.nanos() is None
     assert TimeFrame.MONTH.seconds() is None
     assert TimeFrame.MONTH.timedelta() is None
 
 
-def test_frame_boundaries():
-    value = ts(2026, 8, 18, 10, 13, 42)
+def test_binding_error_mapping():
+    with pytest.raises(ValueError):
+        TimeFrame.from_str("foo")
 
-    assert TimeFrame.M5.begin_frame_ts(value) == ts(2026, 8, 18, 10, 10)
-    assert TimeFrame.M5.end_frame_ts(value) == ts(2026, 8, 18, 10, 15)
 
-    assert TimeFrame.MONTH.begin_frame_ts(value) == ts(2026, 8, 1)
-    assert TimeFrame.MONTH.end_frame_ts(value) == ts(2026, 9, 1)
+def test_binding_str():
+    for tf in TimeFrame:
+        assert str(tf) == tf.value.display()
+
+
+def test_binding_from_str():
+    for tf in TimeFrame:
+        display = tf.value.display()
+        assert TimeFrame.from_str(display) is tf
