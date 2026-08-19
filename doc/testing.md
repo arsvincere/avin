@@ -29,3 +29,8 @@ Python binding tests
 
 Python doctests
     несколько реальных public API happy paths, end-to-end smoke tests
+
+Rust domain tests own domain correctness.
+Rust binding tests verify delegation from the public Rust API to PyO3.
+Python tests verify the native-to-public Python boundary, type/error conversions, and Python-specific behavior.
+Domain semantics already tested in Rust are not duplicated in Python.
