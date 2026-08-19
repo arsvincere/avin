@@ -66,6 +66,7 @@ test-rs-ignored:
 [group('Tests')]
 test-py:
     uv run pytest -m "not ignored"
+    uv run pytest python/avin --doctest-modules
 
 # Run python ignored tests
 [group('Tests')]
