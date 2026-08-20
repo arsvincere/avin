@@ -15,7 +15,7 @@ use avin::{AvinError, TimeFrame};
 
 #[pyclass(module = "avin._native")]
 pub struct PyTimeFrame {
-    inner: TimeFrame,
+    pub(crate) inner: TimeFrame,
 }
 
 #[pymethods]

@@ -11,7 +11,7 @@ use avin::BarDirection;
 
 #[pyclass(module = "avin._native")]
 pub struct PyBarDirection {
-    inner: BarDirection,
+    pub(crate) inner: BarDirection,
 }
 
 #[pymethods]

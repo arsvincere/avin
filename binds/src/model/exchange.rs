@@ -14,7 +14,7 @@ use avin::{AvinError, Exchange};
 
 #[pyclass(module = "avin._native")]
 pub struct PyExchange {
-    inner: Exchange,
+    pub(crate) inner: Exchange,
 }
 
 #[pymethods]

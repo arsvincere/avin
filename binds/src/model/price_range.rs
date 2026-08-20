@@ -12,7 +12,7 @@ use avin::{AvinError, PriceRange};
 
 #[pyclass(module = "avin._native")]
 pub struct PyPriceRange {
-    inner: PriceRange,
+    pub(crate) inner: PriceRange,
 }
 
 #[pymethods]
