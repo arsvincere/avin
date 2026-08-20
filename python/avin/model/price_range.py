@@ -96,3 +96,10 @@ class PriceRange:
         Return the width of the range.
         """
         return self._inner.width()
+
+    @classmethod
+    def _from_native(cls, native: PyPriceRange) -> PriceRange:
+        obj = cls.__new__(cls)
+        obj._inner = native
+
+        return obj

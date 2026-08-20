@@ -5,6 +5,8 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
+from __future__ import annotations
+
 from enum import Enum
 
 from avin._native import PyBarDirection
@@ -43,3 +45,7 @@ class BarDirection(Enum):
 
     def __str__(self) -> str:
         return self.name
+
+    @classmethod
+    def _from_native(cls, inner: PyBarDirection) -> BarDirection:
+        return cls(inner.value())
