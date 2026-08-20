@@ -5,9 +5,10 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
-from .model import BarDirection, Exchange, PriceRange, TimeFrame
+from .model import Bar, BarDirection, Exchange, PriceRange, TimeFrame
 
 __all__ = [
+    "Bar",
     "BarDirection",
     "Exchange",
     "PriceRange",
