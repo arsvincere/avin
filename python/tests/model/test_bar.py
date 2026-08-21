@@ -5,135 +5,106 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
+from datetime import UTC
 from datetime import datetime as DateTime
 
 from avin import Bar, BarDirection, PriceRange
-from avin._native import PyBar
-
-SPECIAL_NATIVE_METHODS = {
-    "eq",
-}
-
-DELEGATED_PROPERTIES = {
-    "ts": "ts",
-    "o": "o",
-    "h": "h",
-    "l": "l",
-    "c": "c",
-    "v": "v",
-}
-
-DELEGATED_METHODS = {
-    "__str__": ("display", ()),
-    "__contains__": ("contains", (10.3,)),
-    "dt": ("dt", ()),
-    "is_bear": ("is_bear", ()),
-    "is_bull": ("is_bull", ()),
-    "is_neutral": ("is_neutral", ()),
-    "contains": ("contains", (10.3,)),
-}
-
-WRAPPED_DELEGATED_METHODS = {
-    "direction": "direction",
-    "range": "range",
-    "body": "body",
-    "lower": "lower",
-    "upper": "upper",
-}
 
 
-def make_bar() -> Bar:
-    return Bar(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000)
+def test_ohlcv_ts_dt():
+    dt = DateTime(2026, 8, 20, 14, 20, 5, tzinfo=UTC)
+    ts = int(dt.timestamp()) * 1_000_000_000
+    bar = Bar(ts, 10.0, 11.1, 9.9, 10.5, 5000)
+
+    assert bar.ts == ts
+    assert bar.o == 10.0
+    assert bar.h == 11.1
+    assert bar.l == 9.9
+    assert bar.c == 10.5
+    assert bar.v == 5000
+    assert bar.dt() == dt
 
 
-def test_new_delegation():
-    public = Bar(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000)
-    native = PyBar(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000)
+def test_direction():
+    ts = 123_456_789
+    vol = 5000
 
-    assert public._inner.eq(native)
+    bull_bar = Bar(ts, 10.0, 11.1, 9.9, 10.5, vol)
+    assert bull_bar.is_bull()
+    assert not bull_bar.is_bear()
+    assert not bull_bar.is_neutral()
+    assert bull_bar.direction() is BarDirection.BULL
+
+    bear_bar = Bar(ts, 10.0, 11.1, 9.9, 9.5, vol)
+    assert not bear_bar.is_bull()
+    assert bear_bar.is_bear()
+    assert not bear_bar.is_neutral()
+    assert bear_bar.direction() is BarDirection.BEAR
+
+    neutral_bar = Bar(ts, 10.0, 11.1, 9.9, 10.0, vol)
+    assert not neutral_bar.is_bull()
+    assert not neutral_bar.is_bear()
+    assert neutral_bar.is_neutral()
+    assert neutral_bar.direction() is BarDirection.NEUTRAL
 
 
-def test_native_methods_complete():
-    native_methods = {
-        name
-        for name in PyBar.__dict__
-        if not name.startswith("_") and callable(getattr(PyBar, name))
-    }
+def test_ranges():
+    ts = 123_456_789
+    vol = 5000
 
-    covered_methods = (
-        set(DELEGATED_PROPERTIES.values())
-        | {native_method for native_method, _ in DELEGATED_METHODS.values()}
-        | set(WRAPPED_DELEGATED_METHODS.values())
-        | SPECIAL_NATIVE_METHODS
+    bull = Bar(ts, 10.0, 11.1, 9.9, 10.5, vol)
+    assert bull.range() == PriceRange(9.9, 11.1)
+    assert bull.body() == PriceRange(10.0, 10.5)
+    assert bull.lower() == PriceRange(9.9, 10.0)
+    assert bull.upper() == PriceRange(10.5, 11.1)
+
+    bear = Bar(ts, 10.0, 11.1, 9.4, 9.5, vol)
+    assert bear.range() == PriceRange(9.4, 11.1)
+    assert bear.body() == PriceRange(9.5, 10.0)
+    assert bear.lower() == PriceRange(9.4, 9.5)
+    assert bear.upper() == PriceRange(10.0, 11.1)
+
+    neutral = Bar(ts, 10.0, 11.1, 9.9, 10.0, vol)
+    assert neutral.range() == PriceRange(9.9, 11.1)
+    assert neutral.body() == PriceRange(10.0, 10.0)
+    assert neutral.lower() == PriceRange(9.9, 10.0)
+    assert neutral.upper() == PriceRange(10.0, 11.1)
+
+
+def test_contains():
+    bar = Bar(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000)
+
+    assert bar.contains(10.3)
+    assert bar.contains(9.9)
+    assert bar.contains(11.1)
+
+    assert not bar.contains(11.11)
+    assert not bar.contains(9.89)
+
+
+def test_display():
+    dt = DateTime(2026, 8, 20, 14, 20, 5, tzinfo=UTC)
+    ts = int(dt.timestamp()) * 1_000_000_000
+    bar = Bar(ts, 10.0, 11.1, 9.9, 10.5, 5000)
+
+    assert (
+        str(bar) == "2026-08-20 14:20:05 UTC O=10 H=11.1 L=9.9 C=10.5 V=5000"
     )
 
-    assert native_methods == covered_methods
 
+def test_python_protocols():
+    bar = Bar(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000)
 
-def test_properties_delegation():
-    bar = make_bar()
+    assert 10.3 in bar
+    assert 9.9 in bar
+    assert 11.1 in bar
 
-    for public_property, native_method in DELEGATED_PROPERTIES.items():
-        public_result = getattr(bar, public_property)
-        native_result = getattr(bar._inner, native_method)()
+    assert 11.11 not in bar
+    assert 9.89 not in bar
 
-        assert public_result == native_result
+    assert bar == Bar(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000)
 
-
-def test_delegation():
-    bar = make_bar()
-
-    for public_method, (native_method, args) in DELEGATED_METHODS.items():
-        public_result = getattr(bar, public_method)(*args)
-        native_result = getattr(bar._inner, native_method)(*args)
-
-        assert public_result == native_result
-
-
-def test_wrapped_delegation():
-    bar = make_bar()
-
-    direction = bar.direction()
-    native_direction = bar._inner.direction()
-    assert direction.value == native_direction.value()
-
-    for public_method, native_method in WRAPPED_DELEGATED_METHODS.items():
-        # TODO: переделать сначала BarDirection по общей схеме тогда тут
-        # будет нормальный тест а не исключение...
-        if public_method == "direction":
-            continue
-
-        public_result = getattr(bar, public_method)()
-        native_result = getattr(bar._inner, native_method)()
-
-        assert native_result.eq(public_result._inner)
-
-
-def test_direction_wrapped_delegation():
-    bar = make_bar()
-
-    public = bar.direction()
-    native = bar._inner.direction()
-
-    assert public.value == native.value()
-
-
-def test_eq_delegation():
-    a = make_bar()
-    b = make_bar()
-    c = Bar(987_654_321, 10.0, 11.1, 9.9, 10.5, 50)
-
-    assert (a == b) == a._inner.eq(b._inner)
-    assert (a == c) == a._inner.eq(c._inner)
-
-
-def test_type_conversions():
-    bar = make_bar()
-
-    assert isinstance(bar.dt(), DateTime)
-    assert isinstance(bar.direction(), BarDirection)
-
-    assert isinstance(bar.range(), PriceRange)
-    assert isinstance(bar.body(), PriceRange)
-    assert isinstance(bar.lower(), PriceRange)
-    assert isinstance(bar.upper(), PriceRange)
+    assert bar != Bar(123_456_789, 10.0, 11.1, 9.9, 10.6, 5000)
+    assert bar != None
+    assert bar != "foo"
+    assert bar != 123
