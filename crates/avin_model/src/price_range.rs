@@ -91,7 +91,7 @@ impl PriceRange {
 
     /// Returns the midpoint of the range.
     pub fn middle(&self) -> f64 {
-        self.low + (self.high - self.low) / 2.0
+        self.low.midpoint(self.high)
     }
 
     /// Returns the width of the range.
@@ -144,6 +144,8 @@ mod tests {
         let r = PriceRange::new(100.0, 110.0).unwrap();
 
         assert!(r.contains(105.0));
+        assert!(r.contains(100.0));
+        assert!(r.contains(110.0));
 
         assert!(!r.contains(111.1));
         assert!(!r.contains(5.0));
