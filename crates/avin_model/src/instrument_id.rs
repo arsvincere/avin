@@ -12,13 +12,17 @@ use avin_utils::AvinError;
 
 use crate::{Exchange, InstrumentKind, Symbol};
 
-/// Trading instrument identifier.
+/// Canonical instrument identifier used by AVIN.
 ///
-/// An instrument ID consists of an exchange, instrument kind, and symbol.
+/// An `InstrumentId` combines an exchange, instrument kind, and symbol into
+/// a compact, human-readable form such as `MOEX.STOCK.SBER`.
+///
+/// Unlike external identifiers such as FIGI, ISIN, or provider-specific UIDs,
+/// it can be interpreted directly by a person.
+///
 /// Its canonical text representation is `EXCHANGE.KIND.SYMBOL`.
-///
 /// The symbol may contain dots because only the first two dots separate
-/// the instrument ID components.
+/// the identifier components.
 ///
 /// # Examples
 ///
@@ -123,5 +127,58 @@ impl FromStr for InstrumentId {
         let symbol = Symbol::from_str(parts[2])?;
 
         Ok(Self::new(exchange, kind, symbol))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn instrument_id() {
+        let iid = InstrumentId::new(
+            Exchange::MOEX,
+            InstrumentKind::Stock,
+            Symbol::new("SBER").unwrap(),
+        );
+
+        assert_eq!(iid.exchange(), Exchange::MOEX);
+        assert_eq!(iid.kind(), InstrumentKind::Stock);
+        assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
+    }
+
+    #[test]
+    fn display() {
+        let iid = InstrumentId::new(
+            Exchange::MOEX,
+            InstrumentKind::Stock,
+            Symbol::new("SBER").unwrap(),
+        );
+
+        assert_eq!(iid.to_string(), "MOEX.Stock.SBER");
+    }
+
+    #[test]
+    fn from_str() {
+        let iid = InstrumentId::from_str("moex.stock.SBER").unwrap();
+
+        assert_eq!(iid.exchange(), Exchange::MOEX);
+        assert_eq!(iid.kind(), InstrumentKind::Stock);
+        assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
+    }
+
+    #[test]
+    fn symbol_with_dots() {
+        let iid = InstrumentId::from_str("moex.stock.BRK.B").unwrap();
+
+        assert_eq!(iid.symbol(), &Symbol::new("BRK.B").unwrap());
+    }
+
+    #[test]
+    fn invalid_id() {
+        assert!(InstrumentId::from_str("MOEX.Stock").is_err());
+        assert!(InstrumentId::from_str("foo.Stock.SBER").is_err());
+        assert!(InstrumentId::from_str("MOEX.foo.SBER").is_err());
+        assert!(InstrumentId::from_str("MOEX.Stock.").is_err());
     }
 }
