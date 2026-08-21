@@ -48,6 +48,7 @@ class BarDirection(Enum):
         obj = object.__new__(cls)
         obj._value_ = inner.value()
         obj._inner = inner
+
         return obj
 
     def __str__(self) -> str:
