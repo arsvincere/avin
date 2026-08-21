@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::fmt::Display;
+
 use chrono::{DateTime, Utc};
 
 use crate::{BarDirection, PriceRange};
@@ -109,7 +111,7 @@ impl Bar {
     }
 }
 
-impl std::fmt::Display for Bar {
+impl Display for Bar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

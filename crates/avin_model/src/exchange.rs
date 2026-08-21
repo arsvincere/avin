@@ -5,6 +5,9 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::fmt::Display;
+use std::str::FromStr;
+
 use avin_utils::AvinError;
 
 /// Exchange.
@@ -18,14 +21,13 @@ use avin_utils::AvinError;
 ///
 /// use avin_model::Exchange;
 ///
+/// for exchange in Exchange::all() {
+///     println!("{exchange}");
+/// }
+///
 /// // Parsing is case-insensitive.
 /// let exchange = Exchange::from_str("moex").unwrap();
 /// assert_eq!(exchange, Exchange::MOEX);
-/// assert_eq!(exchange.name(), "MOEX");
-///
-/// for e in Exchange::all() {
-///     println!("{e}");
-/// }
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Exchange {
@@ -41,6 +43,7 @@ impl Exchange {
         &[Self::Binance, Self::Bybit, Self::MOEX, Self::SPB]
     }
 
+    // TODO: а этот метод вообще нужен? Кому нужен?
     /// Returns the canonical exchange name.
     pub const fn name(&self) -> &'static str {
         match self {
@@ -52,13 +55,13 @@ impl Exchange {
     }
 }
 
-impl std::fmt::Display for Exchange {
+impl Display for Exchange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.name())
     }
 }
 
-impl std::str::FromStr for Exchange {
+impl FromStr for Exchange {
     type Err = AvinError;
 
     /// Parses an exchange name.
@@ -105,8 +108,6 @@ impl std::str::FromStr for Exchange {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use super::*;
 
     #[test]
@@ -130,6 +131,14 @@ mod tests {
     }
 
     #[test]
+    fn display() {
+        assert_eq!(Exchange::Binance.to_string(), "Binance");
+        assert_eq!(Exchange::Bybit.to_string(), "Bybit");
+        assert_eq!(Exchange::MOEX.to_string(), "MOEX");
+        assert_eq!(Exchange::SPB.to_string(), "SPB");
+    }
+
+    #[test]
     fn from_str() {
         assert_eq!(Exchange::from_str("BInaNce").unwrap(), Exchange::Binance);
         assert_eq!(Exchange::from_str("Bybit").unwrap(), Exchange::Bybit);
@@ -137,13 +146,5 @@ mod tests {
         assert_eq!(Exchange::from_str("SPB").unwrap(), Exchange::SPB);
 
         assert!(Exchange::from_str("foo").is_err());
-    }
-
-    #[test]
-    fn display() {
-        assert_eq!(Exchange::Binance.to_string(), "Binance");
-        assert_eq!(Exchange::Bybit.to_string(), "Bybit");
-        assert_eq!(Exchange::MOEX.to_string(), "MOEX");
-        assert_eq!(Exchange::SPB.to_string(), "SPB");
     }
 }

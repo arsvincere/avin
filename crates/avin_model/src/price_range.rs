@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::fmt::Display;
+
 use avin_utils::AvinError;
 
 /// Closed price interval `[low, high]`.
@@ -100,7 +102,7 @@ impl PriceRange {
     }
 }
 
-impl std::fmt::Display for PriceRange {
+impl Display for PriceRange {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "[{}, {}]", self.low, self.high)
     }

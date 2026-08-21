@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::fmt::Display;
+
 /// Bar direction.
 ///
 /// Indicates whether the bar is bullish, neutral, or bearish.
@@ -16,7 +18,7 @@ pub enum BarDirection {
     Bear = -1,
 }
 
-impl std::fmt::Display for BarDirection {
+impl Display for BarDirection {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             BarDirection::Bull => write!(f, "Bull"),
