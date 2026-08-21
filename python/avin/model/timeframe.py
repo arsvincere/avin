@@ -53,8 +53,17 @@ class TimeFrame(Enum):
     WEEK = PyTimeFrame.Week
     MONTH = PyTimeFrame.Month
 
+    _inner: PyTimeFrame
+
+    def __new__(cls, inner: PyTimeFrame):
+        obj = object.__new__(cls)
+        obj._value_ = inner.display()
+        obj._inner = inner
+
+        return obj
+
     def __str__(self) -> str:
-        return self.value.display()
+        return self._inner.display()
 
     @classmethod
     def from_str(cls, s: str) -> TimeFrame:
@@ -84,15 +93,7 @@ class TimeFrame(Enum):
         >>> TimeFrame.from_str("D") is TimeFrame.DAY
         True
         """
-        native = PyTimeFrame.from_str(s)
-
-        for tf in cls:
-            if native.eq(tf.value):
-                return tf
-
-        # Reached only if the native and public Python timeframe definitions
-        # are out of sync, e.g. a new native variant is missing from this Enum.
-        raise RuntimeError("native timeframe is missing from TimeFrame")
+        return TimeFrame._from_native(PyTimeFrame.from_str(s))
 
     def nanos(self) -> int | None:
         """
@@ -101,7 +102,7 @@ class TimeFrame(Enum):
         Returns ``None`` for ``MONTH`` because calendar months do not have a
         fixed duration.
         """
-        return self.value.nanos()
+        return self._inner.nanos()
 
     def seconds(self) -> int | None:
         """
@@ -110,7 +111,7 @@ class TimeFrame(Enum):
         Returns ``None`` for ``MONTH`` because calendar months do not have a
         fixed duration.
         """
-        return self.value.seconds()
+        return self._inner.seconds()
 
     def timedelta(self) -> TimeDelta | None:
         """
@@ -119,7 +120,7 @@ class TimeFrame(Enum):
         Returns ``None`` for ``MONTH`` because calendar months do not have a
         fixed duration.
         """
-        return self.value.timedelta()
+        return self._inner.timedelta()
 
     def begin_frame_ts(self, ts: int) -> int:
         """
@@ -151,7 +152,7 @@ class TimeFrame(Enum):
         >>> print(begin_dt)
         2026-08-18 10:10:00+00:00
         """
-        return self.value.begin_frame_ts(ts)
+        return self._inner.begin_frame_ts(ts)
 
     def end_frame_ts(self, ts: int) -> int:
         """
@@ -168,4 +169,12 @@ class TimeFrame(Enum):
         :meth:`begin_frame_ts`, a frame is represented as the half-open
         interval ``[begin, end)``.
         """
-        return self.value.end_frame_ts(ts)
+        return self._inner.end_frame_ts(ts)
+
+    @classmethod
+    def _from_native(cls, inner: PyTimeFrame) -> TimeFrame:
+        for timeframe in cls:
+            if timeframe._inner.eq(inner):
+                return timeframe
+
+        raise RuntimeError("native timeframe is missing from TimeFrame")
