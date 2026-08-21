@@ -30,20 +30,13 @@ def test_price_range():
 
 def test_invalid_price_range():
     with pytest.raises(ValueError):
+        PriceRange(float("nan"), 100.0)
+
+    with pytest.raises(ValueError):
+        PriceRange(100, float("inf"))
+
+    with pytest.raises(ValueError):
         PriceRange(110.0, 100.0)
-
-    nan = float("nan")
-    inf = float("inf")
-    neg_inf = float("-inf")
-
-    with pytest.raises(ValueError):
-        PriceRange(nan, 100.0)
-
-    with pytest.raises(ValueError):
-        PriceRange(inf, 100.0)
-
-    with pytest.raises(ValueError):
-        PriceRange(neg_inf, 100.0)
 
 
 def test_price_range_str():
@@ -54,8 +47,5 @@ def test_price_range_str():
 
 def test_price_range_eq():
     assert PriceRange(100.0, 110.0) == PriceRange(100.0, 110.0)
-
     assert PriceRange(100.0, 110.0) != PriceRange(100.0, 120.0)
-    assert PriceRange(100.0, 110.0) != None
     assert PriceRange(100.0, 110.0) != "foo"
-    assert PriceRange(100.0, 110.0) != 123

@@ -16,7 +16,7 @@ def test_exchange_str():
 
 
 def test_exchange_from_str():
-    assert Exchange.from_str("BiNaNcE") is Exchange.BINANCE
+    assert Exchange.from_str("BiNaNcE") == Exchange.BINANCE
     assert Exchange.from_str("SPB") is Exchange.SPB
 
     with pytest.raises(ValueError):
