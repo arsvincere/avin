@@ -30,7 +30,7 @@ class InstrumentKind(Enum):
     >>> kind = InstrumentKind.FUTURE
     >>> str(kind)
     'Future'
-    >>> InstrumentKind.from_str("bond") == InstrumentKind.STOCK
+    >>> InstrumentKind.from_str("bond") == InstrumentKind.BOND
     True
     >>> InstrumentKind.from_str("stock") is InstrumentKind.STOCK
     True
