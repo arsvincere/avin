@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum InstrumentKind {
     Currency,
     Index,

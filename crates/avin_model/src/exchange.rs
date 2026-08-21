@@ -29,7 +29,7 @@ use avin_utils::AvinError;
 /// let exchange = Exchange::from_str("moex").unwrap();
 /// assert_eq!(exchange, Exchange::MOEX);
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Exchange {
     Binance,
     Bybit,

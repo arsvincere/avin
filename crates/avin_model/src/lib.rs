@@ -8,6 +8,7 @@
 mod bar;
 mod bar_direction;
 mod exchange;
+mod instrument_id;
 mod instrument_kind;
 mod price_range;
 mod symbol;
@@ -16,6 +17,7 @@ mod timeframe;
 pub use bar::Bar;
 pub use bar_direction::BarDirection;
 pub use exchange::Exchange;
+pub use instrument_id::InstrumentId;
 pub use instrument_kind::InstrumentKind;
 pub use price_range::PriceRange;
 pub use symbol::Symbol;
