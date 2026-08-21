@@ -43,10 +43,6 @@ impl PyExchange {
         inner: Exchange::SPB,
     };
 
-    fn name(&self) -> &'static str {
-        self.inner.name()
-    }
-
     #[staticmethod]
     fn all() -> Vec<Self> {
         Exchange::all()
@@ -63,5 +59,17 @@ impl PyExchange {
         })?;
 
         Ok(Self { inner })
+    }
+
+    fn display(&self) -> String {
+        self.inner.to_string()
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
+
+    fn name(&self) -> &'static str {
+        self.inner.name()
     }
 }

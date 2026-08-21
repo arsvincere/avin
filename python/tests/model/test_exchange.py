@@ -10,14 +10,13 @@ import pytest
 from avin import Exchange
 
 
-def test_exchange():
-    assert Exchange.SPB.name == "SPB"
-    assert Exchange.Binance.name == "Binance"
-
+def test_exchange_str():
     assert str(Exchange.MOEX) == "MOEX"
-    assert str(Exchange.Bybit) == "Bybit"
+    assert str(Exchange.BYBIT) == "Bybit"
 
-    assert Exchange.from_str("BiNaNcE") is Exchange.Binance
+
+def test_exchange_from_str():
+    assert Exchange.from_str("BiNaNcE") is Exchange.BINANCE
     assert Exchange.from_str("SPB") is Exchange.SPB
 
     with pytest.raises(ValueError):
@@ -26,8 +25,8 @@ def test_exchange():
 
 def test_exchange_all():
     assert list(Exchange) == [
-        Exchange.Binance,
-        Exchange.Bybit,
+        Exchange.BINANCE,
+        Exchange.BYBIT,
         Exchange.MOEX,
         Exchange.SPB,
     ]

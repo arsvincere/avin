@@ -52,6 +52,12 @@ impl Exchange {
     }
 }
 
+impl std::fmt::Display for Exchange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
 impl std::str::FromStr for Exchange {
     type Err = AvinError;
 
@@ -94,12 +100,6 @@ impl std::str::FromStr for Exchange {
                 Err(AvinError::InvalidValue(msg))
             }
         }
-    }
-}
-
-impl std::fmt::Display for Exchange {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.name())
     }
 }
 

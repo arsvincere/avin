@@ -19,16 +19,12 @@ class Exchange(Enum):
     Examples
     --------
     >>> exchange = Exchange.MOEX
-    >>> exchange.name
-    'MOEX'
     >>> str(exchange)
     'MOEX'
-
-    >>> Exchange.from_str("MOEX") is Exchange.MOEX
+    >>> Exchange.from_str("MOEX") == Exchange.MOEX
     True
-    >>> Exchange.from_str("BiNaNcE") is Exchange.Binance
+    >>> Exchange.from_str("BiNaNcE") is Exchange.BINANCE
     True
-
     >>> for exchange in Exchange:
     ...     print(exchange)
     Binance
@@ -37,13 +33,22 @@ class Exchange(Enum):
     SPB
     """
 
-    Binance = PyExchange.Binance
-    Bybit = PyExchange.Bybit
+    BINANCE = PyExchange.Binance
+    BYBIT = PyExchange.Bybit
     MOEX = PyExchange.MOEX
     SPB = PyExchange.SPB
 
+    _inner: PyExchange
+
+    def __new__(cls, inner: PyExchange):
+        obj = object.__new__(cls)
+        obj._value_ = inner.display()
+        obj._inner = inner
+
+        return obj
+
     def __str__(self) -> str:
-        return self.value.name()
+        return self._inner.display()
 
     @classmethod
     def from_str(cls, s: str) -> Exchange:
@@ -62,5 +67,12 @@ class Exchange(Enum):
         ValueError
             If the exchange name is unknown.
         """
-        native = PyExchange.from_str(s)
-        return cls[native.name()]
+        return Exchange._from_native(PyExchange.from_str(s))
+
+    @classmethod
+    def _from_native(cls, inner: PyExchange) -> Exchange:
+        for exchange in cls:
+            if exchange._inner.eq(inner):
+                return exchange
+
+        raise RuntimeError("native exchange is missing from Exchange")

@@ -9,6 +9,20 @@ from datetime import datetime as DateTime
 from datetime import timedelta as TimeDelta
 from typing import ClassVar
 
+class PyExchange:
+    Binance: ClassVar[PyExchange]
+    Bybit: ClassVar[PyExchange]
+    MOEX: ClassVar[PyExchange]
+    SPB: ClassVar[PyExchange]
+
+    @staticmethod
+    def all() -> list[PyExchange]: ...
+    @staticmethod
+    def from_str(s: str) -> PyExchange: ...
+    def display(self) -> str: ...
+    def eq(self, other: PyExchange) -> bool: ...
+    def name(self) -> str: ...
+
 class PyBarDirection:
     Bull: ClassVar[PyBarDirection]
     Neutral: ClassVar[PyBarDirection]
@@ -27,18 +41,6 @@ class PyPriceRange:
     def contains(self, value: float) -> bool: ...
     def middle(self) -> float: ...
     def width(self) -> float: ...
-
-class PyExchange:
-    Binance: ClassVar[PyExchange]
-    Bybit: ClassVar[PyExchange]
-    MOEX: ClassVar[PyExchange]
-    SPB: ClassVar[PyExchange]
-
-    @staticmethod
-    def all() -> list[PyExchange]: ...
-    @staticmethod
-    def from_str(s: str) -> PyExchange: ...
-    def name(self) -> str: ...
 
 class PyTimeFrame:
     S1: ClassVar[PyTimeFrame]
