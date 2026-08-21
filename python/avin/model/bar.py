@@ -5,6 +5,8 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
+from __future__ import annotations
+
 from datetime import datetime as DateTime
 
 from avin._native import PyBar
@@ -196,3 +198,10 @@ class Bar:
         Check whether a price is within the closed bar range `[L, H]`.
         """
         return self._inner.contains(price)
+
+    @classmethod
+    def _from_native(cls, native: PyBar) -> Bar:
+        obj = cls.__new__(cls)
+        obj._inner = native
+
+        return obj
