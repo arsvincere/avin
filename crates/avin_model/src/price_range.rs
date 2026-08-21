@@ -159,6 +159,13 @@ mod tests {
     }
 
     #[test]
+    fn middle_large_opposite_bounds() {
+        let r = PriceRange::new(-1e308, 1e308).unwrap();
+
+        assert_eq!(r.middle(), 0.0);
+    }
+
+    #[test]
     fn width() {
         let r = PriceRange::new(4000.0, 5000.0).unwrap();
 
