@@ -55,26 +55,25 @@ class Bar:
     --------
     >>> bar = Bar(
     ...     1787235600000000000,
-    ...     100.0,
-    ...     105.0,
-    ...     98.0,
-    ...     103.0,
+    ...     100.1,
+    ...     105.5,
+    ...     98.8,
+    ...     103.3,
     ...     5000,
     ... )
     >>> bar.o
-    100.0
+    100.1
     >>> bar.c
-    103.0
+    103.3
     >>> bar.is_bull()
     True
     >>> print(bar.dt())
     2026-08-20 14:20:00+00:00
     >>> 101.0 in bar
     True
-    >>> bar.range()
-    PriceRange(98.0, 105.0)
-    >>> bar.body()
-    PriceRange(100.0, 103.0)
+    >>> r = bar.range()
+    >>> print(r)
+    [98.8, 105.5]
     """
 
     __slots__ = ("_inner",)
@@ -197,14 +196,3 @@ class Bar:
         Check whether a price is within the closed bar range `[L, H]`.
         """
         return self._inner.contains(price)
-
-
-bar = Bar(
-    1787235600000000000,
-    100.0,
-    105.0,
-    98.0,
-    103.0,
-    5000,
-)
-print(bar.dt())

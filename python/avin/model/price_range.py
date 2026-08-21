@@ -51,7 +51,7 @@ class PriceRange:
         self._inner = PyPriceRange(low, high)
 
     def __str__(self) -> str:
-        return self._inner.str()
+        return self._inner.display()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PriceRange):
@@ -61,9 +61,6 @@ class PriceRange:
 
     def __contains__(self, value: float) -> bool:
         return self._inner.contains(value)
-
-    def __repr__(self) -> str:
-        return f"PriceRange({self.low!r}, {self.high!r})"
 
     @property
     def low(self) -> float:
