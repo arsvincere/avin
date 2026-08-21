@@ -16,7 +16,8 @@
 //! ```
 
 pub use avin_model::{
-    Bar, BarDirection, Exchange, InstrumentKind, PriceRange, TimeFrame,
+    Bar, BarDirection, Exchange, InstrumentKind, PriceRange, Symbol,
+    TimeFrame,
 };
 
 pub use avin_utils::AvinError;
