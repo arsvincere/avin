@@ -18,6 +18,12 @@ class Exchange(Enum):
 
     Examples
     --------
+    >>> for exchange in Exchange:
+    ...     print(exchange)
+    Binance
+    Bybit
+    MOEX
+    SPB
     >>> exchange = Exchange.MOEX
     >>> str(exchange)
     'MOEX'
@@ -25,12 +31,6 @@ class Exchange(Enum):
     True
     >>> Exchange.from_str("BiNaNcE") is Exchange.BINANCE
     True
-    >>> for exchange in Exchange:
-    ...     print(exchange)
-    Binance
-    Bybit
-    MOEX
-    SPB
     """
 
     BINANCE = PyExchange.Binance
