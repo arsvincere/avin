@@ -23,6 +23,22 @@ class PyExchange:
     def eq(self, other: PyExchange) -> bool: ...
     def name(self) -> str: ...
 
+class PyInstrumentKind:
+    Currency: ClassVar[PyInstrumentKind]
+    Index: ClassVar[PyInstrumentKind]
+    Stock: ClassVar[PyInstrumentKind]
+    Future: ClassVar[PyInstrumentKind]
+    Bond: ClassVar[PyInstrumentKind]
+    Option: ClassVar[PyInstrumentKind]
+    ETF: ClassVar[PyInstrumentKind]
+
+    @staticmethod
+    def all() -> list[PyInstrumentKind]: ...
+    @staticmethod
+    def from_str(s: str) -> PyInstrumentKind: ...
+    def display(self) -> str: ...
+    def eq(self, other: PyInstrumentKind) -> bool: ...
+
 class PyBarDirection:
     Bull: ClassVar[PyBarDirection]
     Neutral: ClassVar[PyBarDirection]
