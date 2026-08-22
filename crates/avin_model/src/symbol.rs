@@ -47,13 +47,13 @@ impl FromStr for Symbol {
 
 fn validate_symbol(s: &str) -> Result<(), AvinError> {
     if s.is_empty() {
-        return Err(AvinError::InvalidValue(
+        return Err(AvinError::Value(
             "instrument symbol can't be empty".to_string(),
         ));
     }
 
     if s.chars().any(|c| c.is_whitespace()) {
-        return Err(AvinError::InvalidValue(
+        return Err(AvinError::Value(
             "instrument symbol can't contain whitespace".to_string(),
         ));
     }

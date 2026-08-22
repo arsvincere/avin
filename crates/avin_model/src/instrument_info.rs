@@ -75,7 +75,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
 
     let exchange = info.get("exchange").unwrap();
     Exchange::from_str(exchange).map_err(|err| {
-        AvinError::InvalidInstrumentInfo {
+        AvinError::InstrumentInfo {
             message: "failed parsing 'exchange'".to_string(),
             source: Some(Box::new(err)),
         }
@@ -83,30 +83,28 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
 
     let kind = info.get("instrument_kind").unwrap();
     InstrumentKind::from_str(kind).map_err(|err| {
-        AvinError::InvalidInstrumentInfo {
+        AvinError::InstrumentInfo {
             message: "failed parsing 'instrument_kind'".to_string(),
             source: Some(Box::new(err)),
         }
     })?;
 
     let symbol = info.get("symbol").unwrap();
-    Symbol::from_str(symbol).map_err(|err| {
-        AvinError::InvalidInstrumentInfo {
-            message: "failed parsing 'symbol'".to_string(),
-            source: Some(Box::new(err)),
-        }
+    Symbol::from_str(symbol).map_err(|err| AvinError::InstrumentInfo {
+        message: "failed parsing 'symbol'".to_string(),
+        source: Some(Box::new(err)),
     })?;
 
     let lot = info.get("lot").unwrap();
     u32::from_str(lot).map_err(|err| {
-        AvinError::ParseError(format!(
+        AvinError::Parse(format!(
             "failed parsing 'lot' as u32, got '{lot}': {err}"
         ))
     })?;
 
     let step = info.get("step").unwrap();
     f64::from_str(step).map_err(|err| {
-        AvinError::ParseError(format!(
+        AvinError::Parse(format!(
             "failed parsing 'step' as f64, got '{step}': {err}"
         ))
     })?;
@@ -129,14 +127,14 @@ fn validate_info_keys_complete(
 
     for key in expected_keys {
         if !info.contains_key(key) {
-            return Err(AvinError::InvalidInstrumentInfo {
+            return Err(AvinError::InstrumentInfo {
                 message: format!("missing key '{key}'"),
                 source: None,
             });
         }
 
         if info.get(key).unwrap().is_empty() {
-            return Err(AvinError::InvalidInstrumentInfo {
+            return Err(AvinError::InstrumentInfo {
                 message: format!("empty key '{key}'"),
                 source: None,
             });

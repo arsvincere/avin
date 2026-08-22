@@ -100,7 +100,7 @@ impl FromStr for Exchange {
                     s, available
                 );
 
-                Err(AvinError::InvalidValue(msg))
+                Err(AvinError::Value(msg))
             }
         }
     }

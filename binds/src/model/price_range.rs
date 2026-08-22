@@ -20,9 +20,7 @@ impl PyPriceRange {
     #[new]
     fn new(low: f64, high: f64) -> PyResult<Self> {
         let inner = PriceRange::new(low, high).map_err(|err| match err {
-            AvinError::InvalidValue(message) => {
-                PyValueError::new_err(message)
-            }
+            AvinError::Value(message) => PyValueError::new_err(message),
         })?;
 
         Ok(Self { inner })

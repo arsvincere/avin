@@ -119,7 +119,7 @@ impl FromStr for InstrumentId {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
         if parts.len() != 3 {
             let msg = format!("invalid instrument id '{s}'");
-            return Err(AvinError::InvalidValue(msg));
+            return Err(AvinError::Value(msg));
         }
 
         let exchange = Exchange::from_str(parts[0])?;

@@ -39,7 +39,7 @@ impl PyInstrumentId {
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
         let inner = InstrumentId::from_str(s).map_err(|err| match err {
-            AvinError::InvalidValue(msg) => PyValueError::new_err(msg),
+            AvinError::Value(msg) => PyValueError::new_err(msg),
         })?;
 
         Ok(Self { inner })

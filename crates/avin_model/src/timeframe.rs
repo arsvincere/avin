@@ -316,7 +316,7 @@ impl std::str::FromStr for TimeFrame {
             .join(", ");
         let msg = format!("unknown timeframe '{}', available=[{}]", s, all);
 
-        Err(AvinError::InvalidValue(msg))
+        Err(AvinError::Value(msg))
     }
 }
 
