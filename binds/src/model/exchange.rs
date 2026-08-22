@@ -7,10 +7,11 @@
 
 use std::str::FromStr;
 
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use avin::Exchange;
+
+use crate::error::avin_error_to_py;
 
 #[pyclass(module = "avin._native")]
 pub struct PyExchange {
@@ -54,8 +55,7 @@ impl PyExchange {
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = Exchange::from_str(s)
-            .map_err(|err| PyValueError::new_err(err.to_string()))?;
+        let inner = Exchange::from_str(s).map_err(avin_error_to_py)?;
 
         Ok(Self { inner })
     }

@@ -5,10 +5,11 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use avin::PriceRange;
+
+use crate::error::avin_error_to_py;
 
 #[pyclass(module = "avin._native")]
 pub struct PyPriceRange {
@@ -19,8 +20,7 @@ pub struct PyPriceRange {
 impl PyPriceRange {
     #[new]
     fn new(low: f64, high: f64) -> PyResult<Self> {
-        let inner = PriceRange::new(low, high)
-            .map_err(|err| PyValueError::new_err(err.to_string()))?;
+        let inner = PriceRange::new(low, high).map_err(avin_error_to_py)?;
 
         Ok(Self { inner })
     }
