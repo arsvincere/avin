@@ -145,3 +145,37 @@ fn validate_info_keys_complete(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_info() {
+        let mut raw = HashMap::new();
+        raw.insert("exchange".to_string(), "MOEX".to_string());
+        raw.insert("instrument_kind".to_string(), "Stock".to_string());
+        raw.insert("symbol".to_string(), "SBER".to_string());
+        raw.insert("figi".to_string(), "BBG004730N88".to_string());
+        raw.insert("name".to_string(), "Сбер Банк".to_string());
+        raw.insert("lot".to_string(), "1".to_string());
+        raw.insert("step".to_string(), "0.01".to_string());
+        raw.insert(
+            "uid".to_string(),
+            "e6123145-9665-43e0-8413-cd61b8aa9b13".to_string(),
+        );
+
+        let info = InstrumentInfo::new(raw).unwrap();
+
+        assert_eq!(info.exchange(), Exchange::MOEX);
+        assert_eq!(info.kind(), InstrumentKind::Stock);
+        assert_eq!(info.symbol(), Symbol::new("SBER").unwrap());
+        assert_eq!(info.figi(), "BBG004730N88");
+        assert_eq!(info.name(), "Сбер Банк");
+        assert_eq!(info.lot(), 1);
+        assert_eq!(info.step(), 0.01);
+
+        let uid = info.raw_info().get("uid").unwrap();
+        assert_eq!(uid, "e6123145-9665-43e0-8413-cd61b8aa9b13");
+    }
+}
