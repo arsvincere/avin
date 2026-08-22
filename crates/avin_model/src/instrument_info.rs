@@ -98,16 +98,16 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
     })?;
 
     let lot = info.get("lot").unwrap();
-    u32::from_str(lot).map_err(|_| {
+    u32::from_str(lot).map_err(|err| {
         AvinError::ParseError(format!(
-            "failed parsing 'lot' as u32, got '{lot}'"
+            "failed parsing 'lot' as u32, got '{lot}': {err}"
         ))
     })?;
 
     let step = info.get("step").unwrap();
-    f64::from_str(step).map_err(|_| {
+    f64::from_str(step).map_err(|err| {
         AvinError::ParseError(format!(
-            "failed parsing 'step' as f64, got '{step}'"
+            "failed parsing 'step' as f64, got '{step}': {err}"
         ))
     })?;
 
