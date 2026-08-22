@@ -10,7 +10,10 @@ use std::fmt::Display;
 #[derive(Debug, Clone)]
 pub enum AvinError {
     InvalidValue(String),
-    InvalidInstrumentInfo { source: Box<AvinError> },
+    InvalidInstrumentInfo {
+        message: String,
+        source: Option<Box<AvinError>>,
+    },
 }
 
 impl AvinError {
@@ -30,22 +33,25 @@ impl AvinError {
 impl Display for AvinError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidValue(msg) => {
-                write!(f, "InvalidValue\n    message: {msg}")
+            Self::InvalidValue(message) => {
+                write!(f, "InvalidValue\n    message: {message}")
             }
 
-            Self::InvalidInstrumentInfo { .. } => {
-                write!(f, "InvalidInstrumentInfo")
+            Self::InvalidInstrumentInfo { message, .. } => {
+                write!(f, "InvalidInstrumentInfo\n    message: {message}")
             }
         }
     }
 }
 
-impl Error for AvinError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
+impl std::error::Error for AvinError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::InvalidValue(_) => None,
-            Self::InvalidInstrumentInfo { source } => Some(source.as_ref()),
+
+            Self::InvalidInstrumentInfo { source, .. } => source
+                .as_deref()
+                .map(|err| err as &(dyn std::error::Error + 'static)),
         }
     }
 }
