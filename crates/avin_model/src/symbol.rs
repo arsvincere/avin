@@ -25,7 +25,7 @@ impl Symbol {
     pub fn new(value: impl Into<String>) -> Result<Self, AvinError> {
         let s: String = value.into();
 
-        check_valid_string(&s)?;
+        validate_symbol(&s)?;
 
         Ok(Self(s))
     }
@@ -45,7 +45,7 @@ impl FromStr for Symbol {
     }
 }
 
-fn check_valid_string(s: &str) -> Result<(), AvinError> {
+fn validate_symbol(s: &str) -> Result<(), AvinError> {
     if s.is_empty() {
         return Err(AvinError::InvalidValue(
             "instrument symbol can't be empty".to_string(),
