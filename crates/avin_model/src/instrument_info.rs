@@ -80,22 +80,19 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
         "lot",
         "step",
     ];
-
     for key in expected_keys {
         if !info.contains_key(key) {
-            let err = AvinError::InvalidInstrumentInfo {
+            return Err(AvinError::InvalidInstrumentInfo {
                 message: format!("missing key '{key}'"),
                 source: None,
-            };
-            return Err(err);
+            });
         }
 
         if info.get(key).unwrap().is_empty() {
-            let err = AvinError::InvalidInstrumentInfo {
+            return Err(AvinError::InvalidInstrumentInfo {
                 message: format!("empty key '{key}'"),
                 source: None,
-            };
-            return Err(err);
+            });
         }
     }
 
