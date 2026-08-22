@@ -22,8 +22,8 @@ pub enum AvinError {
 impl AvinError {
     pub fn report(&self) -> String {
         let mut report = self.to_string();
-        let mut source = self.source();
 
+        let mut source = self.source();
         while let Some(err) = source {
             report.push_str(&format!("\ncaused by: {err}"));
             source = err.source();
@@ -36,16 +36,11 @@ impl AvinError {
 impl Display for AvinError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidValue(msg) => {
-                write!(f, "InvalidValue\n    {msg}")
-            }
-
-            Self::ParseError(msg) => {
-                write!(f, "ParseError\n    {msg}")
-            }
+            Self::InvalidValue(message) => write!(f, "{message}"),
+            Self::ParseError(message) => write!(f, "{message}"),
 
             Self::InvalidInstrumentInfo { message, .. } => {
-                write!(f, "InvalidInstrumentInfo\n    {message}")
+                write!(f, "{message}")
             }
         }
     }
