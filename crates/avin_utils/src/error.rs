@@ -40,7 +40,7 @@ impl Display for AvinError {
             }
 
             Self::ParseError(msg) => {
-                write!(f, "InvalidValue\n    {msg}")
+                write!(f, "ParseError\n    {msg}")
             }
 
             Self::InvalidInstrumentInfo { message, .. } => {
