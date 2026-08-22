@@ -10,10 +10,11 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone)]
 pub enum AvinError {
-    InvalidValue(String),
-    ParseError(String),
+    Value(String),
+    Parse(String),
+    Missing(String),
 
-    InvalidInstrumentInfo {
+    InstrumentInfo {
         message: String,
         source: Option<Box<AvinError>>,
     },
@@ -22,8 +23,8 @@ pub enum AvinError {
 impl AvinError {
     pub fn report(&self) -> String {
         let mut report = self.to_string();
-
         let mut source = self.source();
+
         while let Some(err) = source {
             report.push_str(&format!("\ncaused by: {err}"));
             source = err.source();
@@ -36,10 +37,11 @@ impl AvinError {
 impl Display for AvinError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidValue(message) => write!(f, "{message}"),
-            Self::ParseError(message) => write!(f, "{message}"),
+            Self::Value(msg) => write!(f, "{msg}"),
+            Self::Parse(msg) => write!(f, "{msg}"),
+            Self::Missing(msg) => write!(f, "{msg}"),
 
-            Self::InvalidInstrumentInfo { message, .. } => {
+            Self::InstrumentInfo { message, .. } => {
                 write!(f, "{message}")
             }
         }
@@ -49,10 +51,11 @@ impl Display for AvinError {
 impl Error for AvinError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::InvalidValue(_) => None,
-            Self::ParseError(_) => None,
+            Self::Value(_) => None,
+            Self::Parse(_) => None,
+            Self::Missing(_) => None,
 
-            Self::InvalidInstrumentInfo { source, .. } => match source {
+            Self::InstrumentInfo { source, .. } => match source {
                 Some(error) => Some(error.as_ref()),
                 None => None,
             },
