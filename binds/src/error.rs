@@ -6,6 +6,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use pyo3::PyErr;
+use pyo3::exceptions::PyKeyError;
 use pyo3::exceptions::PyValueError;
 
 use avin::AvinError;
@@ -16,6 +17,7 @@ pub(crate) fn avin_error_to_py(err: AvinError) -> PyErr {
     match err {
         AvinError::Value(_) => PyValueError::new_err(message),
         AvinError::Parse(_) => PyValueError::new_err(message),
+        AvinError::Key(_) => PyKeyError::new_err(message),
         AvinError::Missing(_) => PyValueError::new_err(message),
 
         AvinError::InstrumentInfo { .. } => PyValueError::new_err(message),

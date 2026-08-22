@@ -127,17 +127,13 @@ fn validate_info_keys_complete(
 
     for key in expected_keys {
         if !info.contains_key(key) {
-            return Err(AvinError::InstrumentInfo {
-                message: format!("missing key '{key}'"),
-                source: None,
-            });
+            return Err(AvinError::Key(format!("missing key '{key}'")));
         }
 
         if info.get(key).unwrap().is_empty() {
-            return Err(AvinError::InstrumentInfo {
-                message: format!("empty key '{key}'"),
-                source: None,
-            });
+            return Err(AvinError::Missing(format!(
+                "missing value for '{key}'"
+            )));
         }
     }
 

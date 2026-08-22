@@ -10,9 +10,10 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone)]
 pub enum AvinError {
-    Value(String),
-    Parse(String),
-    Missing(String),
+    Value(String),   // invalid value
+    Parse(String),   // parse error
+    Key(String),     // key missing
+    Missing(String), // missing value
 
     InstrumentInfo {
         message: String,
@@ -39,6 +40,7 @@ impl Display for AvinError {
         match self {
             Self::Value(msg) => write!(f, "{msg}"),
             Self::Parse(msg) => write!(f, "{msg}"),
+            Self::Key(msg) => write!(f, "{msg}"),
             Self::Missing(msg) => write!(f, "{msg}"),
 
             Self::InstrumentInfo { message, .. } => {
@@ -53,6 +55,7 @@ impl Error for AvinError {
         match self {
             Self::Value(_) => None,
             Self::Parse(_) => None,
+            Self::Key(_) => None,
             Self::Missing(_) => None,
 
             Self::InstrumentInfo { source, .. } => match source {
