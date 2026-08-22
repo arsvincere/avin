@@ -36,15 +36,15 @@ impl Display for AvinError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidValue(msg) => {
-                write!(f, "InvalidValue\n    message: {msg}")
+                write!(f, "InvalidValue\n    {msg}")
             }
 
             Self::ParseError(msg) => {
-                write!(f, "InvalidValue\n    message: {msg}")
+                write!(f, "InvalidValue\n    {msg}")
             }
 
             Self::InvalidInstrumentInfo { message, .. } => {
-                write!(f, "InvalidInstrumentInfo\n    message: {message}")
+                write!(f, "InvalidInstrumentInfo\n    {message}")
             }
         }
     }
