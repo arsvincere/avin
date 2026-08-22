@@ -11,6 +11,16 @@ use avin_utils::AvinError;
 
 use crate::{Exchange, InstrumentId, InstrumentKind, Symbol};
 
+const REQUIRED_KEYS: [&str; 7] = [
+    "exchange",
+    "instrument_kind",
+    "symbol",
+    "figi",
+    "name",
+    "lot",
+    "step",
+];
+
 #[derive(Debug, Clone)]
 pub struct InstrumentInfo {
     info: HashMap<String, String>,
@@ -96,18 +106,28 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
     })?;
 
     let lot = info.get("lot").unwrap();
-    u32::from_str(lot).map_err(|err| {
+    let lot = u32::from_str(lot).map_err(|err| {
         AvinError::Parse(format!(
             "failed parsing 'lot' as u32, got '{lot}': {err}"
         ))
     })?;
+    if lot == 0 {
+        return Err(AvinError::Value(
+            "'lot' must be greater than zero".to_string(),
+        ));
+    }
 
     let step = info.get("step").unwrap();
-    f64::from_str(step).map_err(|err| {
+    let step = f64::from_str(step).map_err(|err| {
         AvinError::Parse(format!(
             "failed parsing 'step' as f64, got '{step}': {err}"
         ))
     })?;
+    if !step.is_finite() || step <= 0.0 {
+        return Err(AvinError::Value(
+            "'step' must be finite and greater than zero".to_string(),
+        ));
+    }
 
     Ok(())
 }
@@ -115,17 +135,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
 fn validate_info_keys_complete(
     info: &HashMap<String, String>,
 ) -> Result<(), AvinError> {
-    let expected_keys = [
-        "exchange",
-        "instrument_kind",
-        "symbol",
-        "figi",
-        "name",
-        "lot",
-        "step",
-    ];
-
-    for key in expected_keys {
+    for key in REQUIRED_KEYS {
         if !info.contains_key(key) {
             return Err(AvinError::Key(format!("missing key '{key}'")));
         }
@@ -144,22 +154,42 @@ fn validate_info_keys_complete(
 mod tests {
     use super::*;
 
+    fn valid_raw_info() -> HashMap<String, String> {
+        [
+            ("exchange", "MOEX"),
+            ("instrument_kind", "Stock"),
+            ("symbol", "SBER"),
+            ("figi", "BBG004730N88"),
+            ("name", "Сбер Банк"),
+            ("lot", "1"),
+            ("step", "0.01"),
+            ("uid", "e6123145-9665-43e0-8413-cd61b8aa9b13"),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v.to_string()))
+        .collect()
+    }
+
+    #[test]
+    fn required_keys() {
+        assert_eq!(
+            REQUIRED_KEYS,
+            [
+                "exchange",
+                "instrument_kind",
+                "symbol",
+                "figi",
+                "name",
+                "lot",
+                "step",
+            ]
+        );
+    }
+
     #[test]
     fn valid_info() {
-        let mut raw = HashMap::new();
-        raw.insert("exchange".to_string(), "MOEX".to_string());
-        raw.insert("instrument_kind".to_string(), "Stock".to_string());
-        raw.insert("symbol".to_string(), "SBER".to_string());
-        raw.insert("figi".to_string(), "BBG004730N88".to_string());
-        raw.insert("name".to_string(), "Сбер Банк".to_string());
-        raw.insert("lot".to_string(), "1".to_string());
-        raw.insert("step".to_string(), "0.01".to_string());
-        raw.insert(
-            "uid".to_string(),
-            "e6123145-9665-43e0-8413-cd61b8aa9b13".to_string(),
-        );
-
-        let info = InstrumentInfo::new(raw).unwrap();
+        let raw_info = valid_raw_info();
+        let info = InstrumentInfo::new(raw_info).unwrap();
 
         assert_eq!(info.exchange(), Exchange::MOEX);
         assert_eq!(info.kind(), InstrumentKind::Stock);
@@ -171,5 +201,90 @@ mod tests {
 
         let uid = info.raw_info().get("uid").unwrap();
         assert_eq!(uid, "e6123145-9665-43e0-8413-cd61b8aa9b13");
+
+        assert_eq!(
+            info.iid(),
+            InstrumentId::new(
+                Exchange::MOEX,
+                InstrumentKind::Stock,
+                Symbol::new("SBER").unwrap(),
+            )
+        );
+    }
+
+    #[test]
+    fn missing_required_key() {
+        for key in REQUIRED_KEYS {
+            let mut raw_info = valid_raw_info();
+            raw_info.remove(key);
+
+            let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+            assert!(matches!(err, AvinError::Key(_)));
+        }
+    }
+
+    #[test]
+    fn missing_required_value() {
+        for key in REQUIRED_KEYS {
+            let mut raw_info = valid_raw_info();
+            raw_info.insert(key.to_string(), String::new());
+
+            let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+            assert!(matches!(err, AvinError::Missing(_)));
+        }
+    }
+
+    #[test]
+    fn invalid_exchange() {
+        let mut raw_info = valid_raw_info();
+        raw_info.insert("exchange".to_string(), "*/=-:;".to_string());
+
+        let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+        assert!(matches!(err, AvinError::InstrumentInfo { .. }));
+    }
+
+    #[test]
+    fn invalid_lot() {
+        let mut raw_info = valid_raw_info();
+        raw_info.insert("lot".to_string(), "abc".to_string());
+
+        let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+        assert!(matches!(err, AvinError::Parse(_)));
+    }
+
+    #[test]
+    fn zero_lot() {
+        let mut raw_info = valid_raw_info();
+        raw_info.insert("lot".to_string(), "0".to_string());
+
+        let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+        assert!(matches!(err, AvinError::Value(_)));
+    }
+
+    #[test]
+    fn invalid_step() {
+        let mut raw_info = valid_raw_info();
+        raw_info.insert("step".to_string(), "abc".to_string());
+
+        let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+        assert!(matches!(err, AvinError::Parse(_)));
+    }
+
+    #[test]
+    fn invalid_step_value() {
+        for step in ["0", "-0.05", "NaN", "inf", "-inf"] {
+            let mut raw_info = valid_raw_info();
+            raw_info.insert("step".to_string(), step.to_string());
+
+            let err = InstrumentInfo::new(raw_info).unwrap_err();
+
+            assert!(matches!(err, AvinError::Value(_)));
+        }
     }
 }

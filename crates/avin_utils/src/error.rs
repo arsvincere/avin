@@ -15,6 +15,8 @@ pub enum AvinError {
     Key(String),     // key missing
     Missing(String), // missing value
 
+    // TODO: Decide whether InstrumentInfo always requires a source error.
+    // If yes, replace Option<Box<AvinError>> with Box<AvinError>.
     InstrumentInfo {
         message: String,
         source: Option<Box<AvinError>>,
