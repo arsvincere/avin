@@ -84,7 +84,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
     for key in expected_keys {
         if !info.contains_key(key) {
             let err = AvinError::InvalidInstrumentInfo {
-                message: format!("missing field '{key}', got {info:?}"),
+                message: format!("missing key '{key}'"),
                 source: None,
             };
             return Err(err);
@@ -92,7 +92,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
 
         if info.get(key).unwrap().is_empty() {
             let err = AvinError::InvalidInstrumentInfo {
-                message: format!("empty field '{key}', got {info:?}"),
+                message: format!("empty key '{key}'"),
                 source: None,
             };
             return Err(err);
@@ -104,7 +104,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
     if let Err(source) = result {
         let source = Box::new(source);
         let err = AvinError::InvalidInstrumentInfo {
-            message: "failed parsing exchange".to_string(),
+            message: "failed parsing 'exchange'".to_string(),
             source: Some(source),
         };
         return Err(err);
