@@ -4,6 +4,7 @@
 //
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
+
 use std::error::Error;
 use std::fmt::Display;
 
@@ -50,15 +51,16 @@ impl Display for AvinError {
     }
 }
 
-impl std::error::Error for AvinError {
+impl Error for AvinError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::InvalidValue(_) => None,
             Self::ParseError(_) => None,
 
-            Self::InvalidInstrumentInfo { source, .. } => source
-                .as_deref()
-                .map(|err| err as &(dyn std::error::Error + 'static)),
+            Self::InvalidInstrumentInfo { source, .. } => match source {
+                Some(error) => Some(error.as_ref()),
+                None => None,
+            },
         }
     }
 }
