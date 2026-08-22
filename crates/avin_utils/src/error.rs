@@ -4,20 +4,34 @@
 //
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
+use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Debug, Clone)]
 pub enum AvinError {
     InvalidValue(String),
-    InvalidInstrumentInfo(String),
+    InvalidInstrumentInfo { source: Box<AvinError> },
 }
 
-impl std::fmt::Display for AvinError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl Display for AvinError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidValue(s) => write!(f, "{s}"),
-            Self::InvalidInstrumentInfo(s) => write!(f, "{s}"),
+            Self::InvalidValue(msg) => {
+                write!(f, "InvalidValue\n    message: {msg}")
+            }
+
+            Self::InvalidInstrumentInfo { source } => {
+                write!(f, "InvalidInstrumentInfo\ncaused by: {source}")
+            }
         }
     }
 }
 
-impl std::error::Error for AvinError {}
+impl Error for AvinError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::InvalidValue(_) => None,
+            Self::InvalidInstrumentInfo { source } => Some(source.as_ref()),
+        }
+    }
+}

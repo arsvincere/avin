@@ -71,26 +71,34 @@ impl InstrumentInfo {
 }
 
 fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
-    let expected_keys = [
-        "exchange",
-        "instrument_kind",
-        "symbol",
-        "figi",
-        "name",
-        "lot",
-        "step",
-    ];
+    // let expected_keys = [
+    //     "exchange",
+    //     "instrument_kind",
+    //     "symbol",
+    //     "figi",
+    //     "name",
+    //     "lot",
+    //     "step",
+    // ];
+    //
+    // for key in expected_keys {
+    //     if !info.contains_key(key) {
+    //         let msg = format!("missing field '{key}', got {info:?}");
+    //         return Err(AvinError::InvalidInstrumentInfo(msg));
+    //     }
+    //
+    //     if info.get(key).unwrap().is_empty() {
+    //         let msg = format!("empty field '{key}', got {info:?}");
+    //         return Err(AvinError::InvalidInstrumentInfo(msg));
+    //     }
+    // }
 
-    for key in expected_keys {
-        if !info.contains_key(key) {
-            let msg = format!("missing field '{key}', got {info:?}");
-            return Err(AvinError::InvalidInstrumentInfo(msg));
-        }
-
-        if info.get(key).unwrap().is_empty() {
-            let msg = format!("empty field '{key}', got {info:?}");
-            return Err(AvinError::InvalidInstrumentInfo(msg));
-        }
+    let exchange = info.get("exchange").unwrap();
+    let result = Exchange::from_str(exchange);
+    if let Err(source) = result {
+        let source = Box::new(source);
+        let err = AvinError::InvalidInstrumentInfo { source };
+        return Err(err);
     }
 
     Ok(())

@@ -19,7 +19,7 @@ pub use bar::Bar;
 pub use bar_direction::BarDirection;
 pub use exchange::Exchange;
 pub use instrument_id::InstrumentId;
-pub use instrument_info::InstrumtnInfo;
+pub use instrument_info::InstrumentInfo;
 pub use instrument_kind::InstrumentKind;
 pub use price_range::PriceRange;
 pub use symbol::Symbol;
