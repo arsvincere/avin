@@ -10,7 +10,7 @@ use std::str::FromStr;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use avin::{AvinError, InstrumentId};
+use avin::InstrumentId;
 
 use crate::model::{PyExchange, PyInstrumentKind, PySymbol};
 
@@ -38,9 +38,8 @@ impl PyInstrumentId {
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = InstrumentId::from_str(s).map_err(|err| match err {
-            AvinError::Value(msg) => PyValueError::new_err(msg),
-        })?;
+        let inner = InstrumentId::from_str(s)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
 
         Ok(Self { inner })
     }

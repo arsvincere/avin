@@ -10,7 +10,7 @@ use std::str::FromStr;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use avin::{AvinError, Symbol};
+use avin::Symbol;
 
 #[pyclass(module = "avin._native")]
 pub struct PySymbol {
@@ -21,18 +21,16 @@ pub struct PySymbol {
 impl PySymbol {
     #[new]
     fn new(value: &str) -> PyResult<Self> {
-        let inner = Symbol::new(value).map_err(|err| match err {
-            AvinError::Value(msg) => PyValueError::new_err(msg),
-        })?;
+        let inner = Symbol::new(value)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
 
         Ok(Self { inner })
     }
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = Symbol::from_str(s).map_err(|err| match err {
-            AvinError::InvalidValue(msg) => PyValueError::new_err(msg),
-        })?;
+        let inner = Symbol::from_str(s)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
 
         Ok(Self { inner })
     }

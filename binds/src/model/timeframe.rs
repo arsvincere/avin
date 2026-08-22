@@ -11,7 +11,7 @@ use chrono::TimeDelta;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use avin::{AvinError, TimeFrame};
+use avin::TimeFrame;
 
 #[pyclass(module = "avin._native")]
 pub struct PyTimeFrame {
@@ -90,9 +90,8 @@ impl PyTimeFrame {
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = TimeFrame::from_str(s).map_err(|err| match err {
-            AvinError::Value(msg) => PyValueError::new_err(msg),
-        })?;
+        let inner = TimeFrame::from_str(s)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
 
         Ok(Self { inner })
     }

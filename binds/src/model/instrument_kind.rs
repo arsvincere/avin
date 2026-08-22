@@ -10,7 +10,7 @@ use std::str::FromStr;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use avin::{AvinError, InstrumentKind};
+use avin::InstrumentKind;
 
 #[pyclass(module = "avin._native")]
 pub struct PyInstrumentKind {
@@ -71,9 +71,8 @@ impl PyInstrumentKind {
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = InstrumentKind::from_str(s).map_err(|err| match err {
-            AvinError::Value(msg) => PyValueError::new_err(msg),
-        })?;
+        let inner = InstrumentKind::from_str(s)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
 
         Ok(Self { inner })
     }
