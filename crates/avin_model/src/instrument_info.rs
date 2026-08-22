@@ -23,10 +23,6 @@ impl InstrumentInfo {
         Ok(Self { info })
     }
 
-    pub fn raw_info(&self) -> &HashMap<String, String> {
-        &self.info
-    }
-
     pub fn iid(&self) -> InstrumentId {
         let exchange = self.exchange();
         let kind = self.kind();
@@ -68,9 +64,55 @@ impl InstrumentInfo {
     pub fn step(&self) -> f64 {
         self.info.get("step").unwrap().parse().unwrap()
     }
+
+    pub fn raw_info(&self) -> &HashMap<String, String> {
+        &self.info
+    }
 }
 
 fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
+    validate_info_keys_complete(info)?;
+
+    let exchange = info.get("exchange").unwrap();
+    Exchange::from_str(exchange).map_err(|err| {
+        AvinError::InvalidInstrumentInfo {
+            message: "failed parsing 'exchange'".to_string(),
+            source: Some(Box::new(err)),
+        }
+    })?;
+
+    let kind = info.get("instrument_kind").unwrap();
+    InstrumentKind::from_str(kind).map_err(|err| {
+        AvinError::InvalidInstrumentInfo {
+            message: "failed parsing 'instrument_kind'".to_string(),
+            source: Some(Box::new(err)),
+        }
+    })?;
+
+    let symbol = info.get("symbol").unwrap();
+    Symbol::from_str(symbol).map_err(|err| {
+        AvinError::InvalidInstrumentInfo {
+            message: "failed parsing 'symbol'".to_string(),
+            source: Some(Box::new(err)),
+        }
+    })?;
+
+    let lot = info.get("lot").unwrap();
+    u32::from_str(lot).map_err(|_| {
+        AvinError::ParseError(format!("failed parsing 'lot', got '{lot}'"))
+    })?;
+
+    let step = info.get("step").unwrap();
+    f64::from_str(step).map_err(|_| {
+        AvinError::ParseError(format!("failed parsing 'step', got '{step}'"))
+    })?;
+
+    Ok(())
+}
+
+fn validate_info_keys_complete(
+    info: &HashMap<String, String>,
+) -> Result<(), AvinError> {
     let expected_keys = [
         "exchange",
         "instrument_kind",
@@ -80,6 +122,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
         "lot",
         "step",
     ];
+
     for key in expected_keys {
         if !info.contains_key(key) {
             return Err(AvinError::InvalidInstrumentInfo {
@@ -94,17 +137,6 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
                 source: None,
             });
         }
-    }
-
-    let exchange = info.get("exchange").unwrap();
-    let result = Exchange::from_str(exchange);
-    if let Err(source) = result {
-        let source = Box::new(source);
-        let err = AvinError::InvalidInstrumentInfo {
-            message: "failed parsing 'exchange'".to_string(),
-            source: Some(source),
-        };
-        return Err(err);
     }
 
     Ok(())

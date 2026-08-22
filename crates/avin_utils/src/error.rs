@@ -10,6 +10,8 @@ use std::fmt::Display;
 #[derive(Debug, Clone)]
 pub enum AvinError {
     InvalidValue(String),
+    ParseError(String),
+
     InvalidInstrumentInfo {
         message: String,
         source: Option<Box<AvinError>>,
@@ -33,8 +35,12 @@ impl AvinError {
 impl Display for AvinError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidValue(message) => {
-                write!(f, "InvalidValue\n    message: {message}")
+            Self::InvalidValue(msg) => {
+                write!(f, "InvalidValue\n    message: {msg}")
+            }
+
+            Self::ParseError(msg) => {
+                write!(f, "InvalidValue\n    message: {msg}")
             }
 
             Self::InvalidInstrumentInfo { message, .. } => {
@@ -48,6 +54,7 @@ impl std::error::Error for AvinError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::InvalidValue(_) => None,
+            Self::ParseError(_) => None,
 
             Self::InvalidInstrumentInfo { source, .. } => source
                 .as_deref()
