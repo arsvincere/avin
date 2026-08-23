@@ -117,6 +117,12 @@ clean:
     rm -rf target
     uv run ruff clean || true
 
+# Remove caches and .venv
+[group('Project')]
+clean-all:
+    just clean
+    rm -rf {{venv}}/
+
 # Create avin.zip from HEAD
 [group('Project')]
 archive:
