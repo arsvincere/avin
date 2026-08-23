@@ -10,8 +10,8 @@ from __future__ import annotations
 from datetime import datetime as DateTime
 
 from avin._native import PyBar
-from avin.model.bar_direction import BarDirection
-from avin.model.price_range import PriceRange
+from avin.domain.bar_direction import BarDirection
+from avin.domain.price_range import PriceRange
 
 
 class Bar:

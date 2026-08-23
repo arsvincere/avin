@@ -16,7 +16,7 @@ use avin_utils::AvinError;
 /// # Examples
 ///
 /// ```
-/// use avin_model::PriceRange;
+/// use avin_domain::PriceRange;
 ///
 /// let range = PriceRange::new(100.0, 105.0).unwrap();
 /// assert_eq!(range.low(), 100.0);
@@ -50,7 +50,7 @@ impl PriceRange {
     /// # Examples
     ///
     /// ```
-    /// use avin_model::PriceRange;
+    /// use avin_domain::PriceRange;
     ///
     /// assert!(PriceRange::new(100.0, 110.0).is_ok());
     ///

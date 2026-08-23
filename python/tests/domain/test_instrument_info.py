@@ -8,7 +8,7 @@
 import pytest
 
 import avin
-from avin.model.instrument_info import InstrumentInfo
+from avin.domain.instrument_info import InstrumentInfo
 
 
 def test_not_public():

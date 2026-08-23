@@ -1,5 +1,5 @@
 [package]
-name = "avin_model"
+name = "avin_domain"
 description.workspace = true
 version.workspace = true
 edition.workspace = true

@@ -25,7 +25,7 @@ use avin_utils::AvinError;
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_model::TimeFrame;
+/// use avin_domain::TimeFrame;
 ///
 /// let timeframe = TimeFrame::M1;
 /// assert_eq!(timeframe.to_string(), "1M");
@@ -132,7 +132,7 @@ impl TimeFrame {
     /// ```
     /// use chrono::{TimeZone, Utc};
     ///
-    /// use avin_model::TimeFrame;
+    /// use avin_domain::TimeFrame;
     ///
     /// let ts = Utc
     ///     .with_ymd_and_hms(2026, 8, 18, 10, 13, 42)
@@ -290,7 +290,7 @@ impl std::str::FromStr for TimeFrame {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_model::TimeFrame;
+    /// use avin_domain::TimeFrame;
     ///
     /// assert_eq!(TimeFrame::from_str("1m").unwrap(), TimeFrame::M1);
     /// assert_eq!(TimeFrame::from_str("1M").unwrap(), TimeFrame::M1);

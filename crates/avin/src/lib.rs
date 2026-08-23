@@ -15,7 +15,7 @@
 //!
 //! ```
 
-pub use avin_model::{
+pub use avin_domain::{
     Bar, BarDirection, Exchange, InstrumentId, InstrumentKind, PriceRange,
     Symbol, TimeFrame,
 };

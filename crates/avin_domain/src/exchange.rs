@@ -19,7 +19,7 @@ use avin_utils::AvinError;
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_model::Exchange;
+/// use avin_domain::Exchange;
 ///
 /// for exchange in Exchange::all() {
 ///     println!("{exchange}");
@@ -77,7 +77,7 @@ impl FromStr for Exchange {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_model::Exchange;
+    /// use avin_domain::Exchange;
     ///
     /// assert_eq!(Exchange::from_str("BiNaNcE").unwrap(), Exchange::Binance);
     /// assert!(Exchange::from_str("foo").is_err());

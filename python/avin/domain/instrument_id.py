@@ -8,9 +8,9 @@
 from __future__ import annotations
 
 from avin._native import PyInstrumentId
-from avin.model.exchange import Exchange
-from avin.model.instrument_kind import InstrumentKind
-from avin.model.symbol import Symbol
+from avin.domain.exchange import Exchange
+from avin.domain.instrument_kind import InstrumentKind
+from avin.domain.symbol import Symbol
 
 
 class InstrumentId:

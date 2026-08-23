@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use pyo3::prelude::*;
 
-use avin_model::InstrumentInfo;
+use avin_domain::InstrumentInfo;
 
 use crate::model::{PyExchange, PyInstrumentId, PyInstrumentKind, PySymbol};
 

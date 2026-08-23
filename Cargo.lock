@@ -21,12 +21,12 @@ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 name = "avin"
 version = "0.4.0"
 dependencies = [
- "avin_model",
+ "avin_domain",
  "avin_utils",
 ]
 
 [[package]]
-name = "avin_model"
+name = "avin_domain"
 version = "0.4.0"
 dependencies = [
  "avin_utils",
@@ -45,7 +45,7 @@ name = "binds"
 version = "0.4.0"
 dependencies = [
  "avin",
- "avin_model",
+ "avin_domain",
  "chrono",
  "pyo3",
 ]

@@ -25,7 +25,7 @@ keywords = [
 
 [workspace.dependencies]
 avin = { path = "crates/avin" }
-avin_model = { path = "crates/avin_model" }
+avin_domain = { path = "crates/avin_domain" }
 avin_utils = { path = "crates/avin_utils" }
 
 chrono = "0.4"

@@ -29,7 +29,7 @@ use crate::{Exchange, InstrumentKind, Symbol};
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_model::{Exchange, InstrumentId, InstrumentKind, Symbol};
+/// use avin_domain::{Exchange, InstrumentId, InstrumentKind, Symbol};
 ///
 /// let iid = InstrumentId::new(
 ///     Exchange::MOEX,
@@ -104,7 +104,7 @@ impl FromStr for InstrumentId {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_model::{Exchange, InstrumentId, InstrumentKind};
+    /// use avin_domain::{Exchange, InstrumentId, InstrumentKind};
     ///
     /// let iid = InstrumentId::from_str("moex.stock.SBER").unwrap();
     ///

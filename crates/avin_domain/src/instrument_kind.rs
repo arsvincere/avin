@@ -30,7 +30,7 @@ pub enum InstrumentKind {
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_model::InstrumentKind;
+/// use avin_domain::InstrumentKind;
 ///
 /// for kind in InstrumentKind::all() {
 ///     println!("{kind}");
@@ -85,7 +85,7 @@ impl FromStr for InstrumentKind {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_model::InstrumentKind;
+    /// use avin_domain::InstrumentKind;
     ///
     /// assert_eq!(
     ///     InstrumentKind::from_str("FuTuRe").unwrap(),
