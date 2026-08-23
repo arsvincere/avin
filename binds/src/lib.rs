@@ -11,7 +11,7 @@ mod model;
 use pyo3::prelude::*;
 
 use model::{
-    PyBar, PyBarDirection, PyCategory, PyExchange, PyInstrumentId,
+    PyBar, PyBarDirection, PyCategory, PyChart, PyExchange, PyInstrumentId,
     PyInstrumentInfo, PyPriceRange, PyTicker, PyTimeFrame,
 };
 
@@ -28,6 +28,7 @@ fn avin_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyBarDirection>()?;
     m.add_class::<PyBar>()?;
     m.add_class::<PyTimeFrame>()?;
+    m.add_class::<PyChart>()?;
 
     Ok(())
 }
