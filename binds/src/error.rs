@@ -9,7 +9,7 @@ use pyo3::PyErr;
 use pyo3::exceptions::PyKeyError;
 use pyo3::exceptions::PyValueError;
 
-use avin::AvinError;
+use avin_utils::AvinError;
 
 pub(crate) fn avin_error_to_py(err: AvinError) -> PyErr {
     let message = err.report();

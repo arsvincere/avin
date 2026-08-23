@@ -7,7 +7,7 @@
 
 use pyo3::prelude::*;
 
-use avin::BarDirection;
+use avin_domain::BarDirection;
 
 #[pyclass(module = "avin._native")]
 pub struct PyBarDirection {

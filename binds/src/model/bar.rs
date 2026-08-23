@@ -8,7 +8,7 @@
 use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 
-use avin::Bar;
+use avin_domain::Bar;
 
 use crate::model::{PyBarDirection, PyPriceRange};
 

@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 use pyo3::prelude::*;
 
-use avin::Exchange;
+use avin_domain::Exchange;
 
 use crate::error::avin_error_to_py;
 

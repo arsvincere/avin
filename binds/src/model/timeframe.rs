@@ -10,7 +10,7 @@ use std::str::FromStr;
 use chrono::TimeDelta;
 use pyo3::prelude::*;
 
-use avin::TimeFrame;
+use avin_domain::TimeFrame;
 
 use crate::error::avin_error_to_py;
 

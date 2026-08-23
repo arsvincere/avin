@@ -7,7 +7,7 @@
 
 use pyo3::prelude::*;
 
-use avin::PriceRange;
+use avin_domain::PriceRange;
 
 use crate::error::avin_error_to_py;
 

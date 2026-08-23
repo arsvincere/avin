@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 use pyo3::prelude::*;
 
-use avin::Ticker;
+use avin_domain::Ticker;
 
 use crate::error::avin_error_to_py;
 
