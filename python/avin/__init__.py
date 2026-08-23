@@ -8,6 +8,7 @@
 from avin.domain.bar import Bar
 from avin.domain.bar_direction import BarDirection
 from avin.domain.category import Category
+from avin.domain.chart import Chart
 from avin.domain.exchange import Exchange
 from avin.domain.instrument_id import InstrumentId
 from avin.domain.price_range import PriceRange
@@ -18,6 +19,7 @@ __all__ = [
     "Bar",
     "BarDirection",
     "Category",
+    "Chart",
     "Exchange",
     "InstrumentId",
     "PriceRange",
