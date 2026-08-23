@@ -9,16 +9,10 @@ use std::{collections::HashMap, str::FromStr};
 
 use avin_utils::AvinError;
 
-use crate::{Exchange, InstrumentId, InstrumentKind, Symbol};
+use crate::{Category, Exchange, InstrumentId, Symbol};
 
 const REQUIRED_KEYS: [&str; 7] = [
-    "exchange",
-    "instrument_kind",
-    "symbol",
-    "figi",
-    "name",
-    "lot",
-    "step",
+    "exchange", "category", "symbol", "figi", "name", "lot", "step",
 ];
 
 /// Instrument reference data.
@@ -46,7 +40,7 @@ pub struct InstrumentInfo {
 impl InstrumentInfo {
     /// Creates an `InstrumentInfo` from raw key-value fields.
     ///
-    /// Required fields are `exchange`, `instrument_kind`, `symbol`, `figi`,
+    /// Required fields are `exchange`, `category`, `symbol`, `figi`,
     /// `name`, `lot`, and `step`. Additional fields are allowed and preserved.
     ///
     /// # Errors
@@ -54,7 +48,7 @@ impl InstrumentInfo {
     /// Returns an error if:
     ///
     /// - a required key or value is missing;
-    /// - `exchange`, `instrument_kind`, or `symbol` is invalid;
+    /// - `exchange`, `category`, or `symbol` is invalid;
     /// - `lot` cannot be parsed as `u32` or is zero;
     /// - `step` cannot be parsed as `f64`, is non-finite, or is not positive.
     pub fn new(info: HashMap<String, String>) -> Result<Self, AvinError> {
@@ -66,10 +60,10 @@ impl InstrumentInfo {
     /// Returns the canonical instrument ID.
     pub fn iid(&self) -> InstrumentId {
         let exchange = self.exchange();
-        let kind = self.kind();
+        let category = self.category();
         let symbol = self.symbol();
 
-        InstrumentId::new(exchange, kind, symbol)
+        InstrumentId::new(exchange, category, symbol)
     }
 
     /// Returns the instrument exchange.
@@ -79,11 +73,11 @@ impl InstrumentInfo {
         Exchange::from_str(exchange).unwrap()
     }
 
-    /// Returns the instrument kind.
-    pub fn kind(&self) -> InstrumentKind {
-        let kind = self.info.get("instrument_kind").unwrap();
+    /// Returns the category.
+    pub fn category(&self) -> Category {
+        let category = self.info.get("category").unwrap();
 
-        InstrumentKind::from_str(kind).unwrap()
+        Category::from_str(category).unwrap()
     }
 
     /// Returns the instrument symbol.
@@ -133,10 +127,10 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
         }
     })?;
 
-    let kind = info.get("instrument_kind").unwrap();
-    InstrumentKind::from_str(kind).map_err(|err| {
+    let category = info.get("category").unwrap();
+    Category::from_str(category).map_err(|err| {
         AvinError::InstrumentInfo {
-            message: "failed parsing 'instrument_kind'".to_string(),
+            message: "failed parsing 'category'".to_string(),
             source: Some(Box::new(err)),
         }
     })?;
@@ -199,7 +193,7 @@ mod tests {
     fn valid_raw_info() -> HashMap<String, String> {
         [
             ("exchange", "MOEX"),
-            ("instrument_kind", "Stock"),
+            ("category", "Stock"),
             ("symbol", "SBER"),
             ("figi", "BBG004730N88"),
             ("name", "Сбер Банк"),
@@ -217,12 +211,7 @@ mod tests {
         assert_eq!(
             REQUIRED_KEYS,
             [
-                "exchange",
-                "instrument_kind",
-                "symbol",
-                "figi",
-                "name",
-                "lot",
+                "exchange", "category", "symbol", "figi", "name", "lot",
                 "step",
             ]
         );
@@ -234,7 +223,7 @@ mod tests {
         let info = InstrumentInfo::new(raw_info).unwrap();
 
         assert_eq!(info.exchange(), Exchange::MOEX);
-        assert_eq!(info.kind(), InstrumentKind::Stock);
+        assert_eq!(info.category(), Category::Stock);
         assert_eq!(info.symbol(), Symbol::new("SBER").unwrap());
         assert_eq!(info.figi(), "BBG004730N88");
         assert_eq!(info.name(), "Сбер Банк");
@@ -248,7 +237,7 @@ mod tests {
             info.iid(),
             InstrumentId::new(
                 Exchange::MOEX,
-                InstrumentKind::Stock,
+                Category::Stock,
                 Symbol::new("SBER").unwrap(),
             )
         );

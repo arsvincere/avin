@@ -11,7 +11,7 @@ use std::str::FromStr;
 use avin_utils::AvinError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum InstrumentKind {
+pub enum Category {
     Currency,
     Index,
     Stock,
@@ -21,27 +21,27 @@ pub enum InstrumentKind {
     ETF,
 }
 
-/// Instrument kind.
+/// Category.
 ///
-/// Represents the kind of a financial instrument.
+/// Represents a financial instrument category.
 ///
 /// # Examples
 ///
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_domain::InstrumentKind;
+/// use avin_domain::Category;
 ///
-/// for kind in InstrumentKind::all() {
-///     println!("{kind}");
+/// for category in Category::all() {
+///     println!("{category}");
 /// }
 ///
 /// // Parsing is case-insensitive.
-/// let kind = InstrumentKind::from_str("future").unwrap();
-/// assert_eq!(kind, InstrumentKind::Future);
+/// let category = Category::from_str("future").unwrap();
+/// assert_eq!(category, Category::Future);
 /// ```
-impl InstrumentKind {
-    /// Returns all supported instrument kinds.
+impl Category {
+    /// Returns all supported categories.
     pub const fn all() -> &'static [Self] {
         &[
             Self::Currency,
@@ -55,7 +55,7 @@ impl InstrumentKind {
     }
 }
 
-impl Display for InstrumentKind {
+impl Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Currency => f.write_str("Currency"),
@@ -69,34 +69,34 @@ impl Display for InstrumentKind {
     }
 }
 
-impl FromStr for InstrumentKind {
+impl FromStr for Category {
     type Err = AvinError;
 
-    /// Parses an instrument kind.
+    /// Parses a category.
     ///
     /// Parsing is case-insensitive.
     ///
     /// # Errors
     ///
-    /// Returns an error if the instrument kind is unknown.
+    /// Returns an error if the category is unknown.
     ///
     /// # Examples
     ///
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_domain::InstrumentKind;
+    /// use avin_domain::Category;
     ///
     /// assert_eq!(
-    ///     InstrumentKind::from_str("FuTuRe").unwrap(),
-    ///     InstrumentKind::Future
+    ///     Category::from_str("FuTuRe").unwrap(),
+    ///     Category::Future
     /// );
     /// assert_eq!(
-    ///     InstrumentKind::from_str("ETF").unwrap(),
-    ///     InstrumentKind::ETF
+    ///     Category::from_str("ETF").unwrap(),
+    ///     Category::ETF
     /// );
     ///
-    /// assert!(InstrumentKind::from_str("foo").is_err());
+    /// assert!(Category::from_str("foo").is_err());
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
@@ -115,7 +115,7 @@ impl FromStr for InstrumentKind {
                     .join(", ");
 
                 let msg = format!(
-                    "unknown instrument kind '{}', available=[{}]",
+                    "unknown category '{}', available=[{}]",
                     s, available
                 );
 
@@ -132,60 +132,42 @@ mod tests {
     #[test]
     fn all() {
         let expected = [
-            InstrumentKind::Currency,
-            InstrumentKind::Index,
-            InstrumentKind::Stock,
-            InstrumentKind::Future,
-            InstrumentKind::Bond,
-            InstrumentKind::Option,
-            InstrumentKind::ETF,
+            Category::Currency,
+            Category::Index,
+            Category::Stock,
+            Category::Future,
+            Category::Bond,
+            Category::Option,
+            Category::ETF,
         ];
 
-        assert_eq!(InstrumentKind::all(), expected);
+        assert_eq!(Category::all(), expected);
     }
 
     #[test]
     fn display() {
-        assert_eq!(InstrumentKind::Currency.to_string(), "Currency");
-        assert_eq!(InstrumentKind::Index.to_string(), "Index");
-        assert_eq!(InstrumentKind::Stock.to_string(), "Stock");
-        assert_eq!(InstrumentKind::Future.to_string(), "Future");
-        assert_eq!(InstrumentKind::Bond.to_string(), "Bond");
-        assert_eq!(InstrumentKind::Option.to_string(), "Option");
-        assert_eq!(InstrumentKind::ETF.to_string(), "ETF");
+        assert_eq!(Category::Currency.to_string(), "Currency");
+        assert_eq!(Category::Index.to_string(), "Index");
+        assert_eq!(Category::Stock.to_string(), "Stock");
+        assert_eq!(Category::Future.to_string(), "Future");
+        assert_eq!(Category::Bond.to_string(), "Bond");
+        assert_eq!(Category::Option.to_string(), "Option");
+        assert_eq!(Category::ETF.to_string(), "ETF");
     }
 
     #[test]
     fn from_str() {
         assert_eq!(
-            InstrumentKind::from_str("Currency").unwrap(),
-            InstrumentKind::Currency
+            Category::from_str("Currency").unwrap(),
+            Category::Currency
         );
-        assert_eq!(
-            InstrumentKind::from_str("Index").unwrap(),
-            InstrumentKind::Index
-        );
-        assert_eq!(
-            InstrumentKind::from_str("Stock").unwrap(),
-            InstrumentKind::Stock
-        );
-        assert_eq!(
-            InstrumentKind::from_str("Future").unwrap(),
-            InstrumentKind::Future
-        );
-        assert_eq!(
-            InstrumentKind::from_str("BoNd").unwrap(),
-            InstrumentKind::Bond
-        );
-        assert_eq!(
-            InstrumentKind::from_str("OPTION").unwrap(),
-            InstrumentKind::Option
-        );
-        assert_eq!(
-            InstrumentKind::from_str("etf").unwrap(),
-            InstrumentKind::ETF
-        );
+        assert_eq!(Category::from_str("Index").unwrap(), Category::Index);
+        assert_eq!(Category::from_str("Stock").unwrap(), Category::Stock);
+        assert_eq!(Category::from_str("Future").unwrap(), Category::Future);
+        assert_eq!(Category::from_str("BoNd").unwrap(), Category::Bond);
+        assert_eq!(Category::from_str("OPTION").unwrap(), Category::Option);
+        assert_eq!(Category::from_str("etf").unwrap(), Category::ETF);
 
-        assert!(InstrumentKind::from_str("foo").is_err());
+        assert!(Category::from_str("foo").is_err());
     }
 }

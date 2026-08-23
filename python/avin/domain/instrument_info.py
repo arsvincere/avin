@@ -8,9 +8,9 @@
 from __future__ import annotations
 
 from avin._native import PyInstrumentInfo
+from avin.domain.category import Category
 from avin.domain.exchange import Exchange
 from avin.domain.instrument_id import InstrumentId
-from avin.domain.instrument_kind import InstrumentKind
 from avin.domain.symbol import Symbol
 
 
@@ -50,11 +50,11 @@ class InstrumentInfo:
         return Exchange._from_native(self._inner.exchange())
 
     @property
-    def kind(self) -> InstrumentKind:
+    def category(self) -> Category:
         """
-        Instrument kind.
+        Category.
         """
-        return InstrumentKind._from_native(self._inner.kind())
+        return Category._from_native(self._inner.category())
 
     @property
     def symbol(self) -> Symbol:

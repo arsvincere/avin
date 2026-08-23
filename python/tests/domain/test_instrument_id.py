@@ -7,18 +7,18 @@
 
 import pytest
 
-from avin import Exchange, InstrumentId, InstrumentKind, Symbol
+from avin import Category, Exchange, InstrumentId, Symbol
 
 
 def test_instrument_id():
     iid = InstrumentId(
         Exchange.MOEX,
-        InstrumentKind.STOCK,
+        Category.STOCK,
         Symbol("SBER"),
     )
 
     assert iid.exchange is Exchange.MOEX
-    assert iid.kind is InstrumentKind.STOCK
+    assert iid.category is Category.STOCK
     assert iid.symbol == Symbol("SBER")
 
     assert str(iid) == "MOEX.Stock.SBER"
@@ -28,7 +28,7 @@ def test_instrument_id_from_str():
     iid = InstrumentId.from_str("moex.stock.SBER")
 
     assert iid.exchange is Exchange.MOEX
-    assert iid.kind is InstrumentKind.STOCK
+    assert iid.category is Category.STOCK
     assert iid.symbol == Symbol("SBER")
 
     iid = InstrumentId.from_str("moex.stock.BRK.B")

@@ -11,15 +11,15 @@ mod model;
 use pyo3::prelude::*;
 
 use model::{
-    PyBar, PyBarDirection, PyExchange, PyInstrumentId, PyInstrumentInfo,
-    PyInstrumentKind, PyPriceRange, PySymbol, PyTimeFrame,
+    PyBar, PyBarDirection, PyCategory, PyExchange, PyInstrumentId,
+    PyInstrumentInfo, PyPriceRange, PySymbol, PyTimeFrame,
 };
 
 #[pymodule]
 #[pyo3(name = "_native")]
 fn avin_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyExchange>()?;
-    m.add_class::<PyInstrumentKind>()?;
+    m.add_class::<PyCategory>()?;
     m.add_class::<PySymbol>()?;
     m.add_class::<PyInstrumentId>()?;
     m.add_class::<PyInstrumentInfo>()?;

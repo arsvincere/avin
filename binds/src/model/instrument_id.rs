@@ -12,7 +12,7 @@ use pyo3::prelude::*;
 use avin::InstrumentId;
 
 use crate::error::avin_error_to_py;
-use crate::model::{PyExchange, PyInstrumentKind, PySymbol};
+use crate::model::{PyCategory, PyExchange, PySymbol};
 
 #[pyclass(module = "avin._native")]
 pub struct PyInstrumentId {
@@ -24,12 +24,12 @@ impl PyInstrumentId {
     #[new]
     fn new(
         exchange: PyRef<'_, PyExchange>,
-        kind: PyRef<'_, PyInstrumentKind>,
+        category: PyRef<'_, PyCategory>,
         symbol: PyRef<'_, PySymbol>,
     ) -> Self {
         let inner = InstrumentId::new(
             exchange.inner,
-            kind.inner,
+            category.inner,
             symbol.inner.clone(),
         );
 
@@ -57,9 +57,9 @@ impl PyInstrumentId {
         }
     }
 
-    fn kind(&self) -> PyInstrumentKind {
-        PyInstrumentKind {
-            inner: self.inner.kind(),
+    fn category(&self) -> PyCategory {
+        PyCategory {
+            inner: self.inner.category(),
         }
     }
 

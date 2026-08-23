@@ -11,7 +11,7 @@ use pyo3::prelude::*;
 
 use avin_domain::InstrumentInfo;
 
-use crate::model::{PyExchange, PyInstrumentId, PyInstrumentKind, PySymbol};
+use crate::model::{PyCategory, PyExchange, PyInstrumentId, PySymbol};
 
 #[pyclass(module = "avin._native")]
 pub struct PyInstrumentInfo {
@@ -32,9 +32,9 @@ impl PyInstrumentInfo {
         }
     }
 
-    fn kind(&self) -> PyInstrumentKind {
-        PyInstrumentKind {
-            inner: self.inner.kind(),
+    fn category(&self) -> PyCategory {
+        PyCategory {
+            inner: self.inner.category(),
         }
     }
 

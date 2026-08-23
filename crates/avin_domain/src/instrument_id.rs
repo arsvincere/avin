@@ -10,17 +10,17 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-use crate::{Exchange, InstrumentKind, Symbol};
+use crate::{Category, Exchange, Symbol};
 
 /// Canonical instrument identifier used by AVIN.
 ///
-/// An `InstrumentId` combines an exchange, instrument kind, and symbol into
+/// An `InstrumentId` combines an exchange, category, and symbol into
 /// a compact, human-readable form such as `MOEX.STOCK.SBER`.
 ///
 /// Unlike external identifiers such as FIGI, ISIN, or provider-specific UIDs,
 /// it can be interpreted directly by a person.
 ///
-/// Its canonical text representation is `EXCHANGE.KIND.SYMBOL`.
+/// Its canonical text representation is `EXCHANGE.CATEGORY.SYMBOL`.
 /// The symbol may contain dots because only the first two dots separate
 /// the identifier components.
 ///
@@ -29,11 +29,11 @@ use crate::{Exchange, InstrumentKind, Symbol};
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_domain::{Exchange, InstrumentId, InstrumentKind, Symbol};
+/// use avin_domain::{Exchange, InstrumentId, Category, Symbol};
 ///
 /// let iid = InstrumentId::new(
 ///     Exchange::MOEX,
-///     InstrumentKind::Stock,
+///     Category::Stock,
 ///     Symbol::new("SBER").unwrap(),
 /// );
 ///
@@ -41,13 +41,13 @@ use crate::{Exchange, InstrumentKind, Symbol};
 ///
 /// let iid = InstrumentId::from_str("MOEX.Stock.SBER").unwrap();
 /// assert_eq!(iid.exchange(), Exchange::MOEX);
-/// assert_eq!(iid.kind(), InstrumentKind::Stock);
+/// assert_eq!(iid.category(), Category::Stock);
 /// assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InstrumentId {
     exchange: Exchange,
-    kind: InstrumentKind,
+    category: Category,
     symbol: Symbol,
 }
 
@@ -55,12 +55,12 @@ impl InstrumentId {
     /// Creates an instrument ID from its components.
     pub fn new(
         exchange: Exchange,
-        kind: InstrumentKind,
+        category: Category,
         symbol: Symbol,
     ) -> Self {
         Self {
             exchange,
-            kind,
+            category,
             symbol,
         }
     }
@@ -70,9 +70,9 @@ impl InstrumentId {
         self.exchange
     }
 
-    /// Returns the instrument kind.
-    pub fn kind(&self) -> InstrumentKind {
-        self.kind
+    /// Returns the category.
+    pub fn category(&self) -> Category {
+        self.category
     }
 
     /// Returns the instrument symbol.
@@ -83,16 +83,16 @@ impl InstrumentId {
 
 impl Display for InstrumentId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.exchange, self.kind, self.symbol)
+        write!(f, "{}.{}.{}", self.exchange, self.category, self.symbol)
     }
 }
 
 impl FromStr for InstrumentId {
     type Err = AvinError;
 
-    /// Parses an instrument ID from `EXCHANGE.KIND.SYMBOL`.
+    /// Parses an instrument ID from `EXCHANGE.CATEGORY.SYMBOL`.
     ///
-    /// Exchange and instrument kind parsing is case-insensitive.
+    /// Exchange and category parsing is case-insensitive.
     ///
     /// # Errors
     ///
@@ -104,12 +104,12 @@ impl FromStr for InstrumentId {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_domain::{Exchange, InstrumentId, InstrumentKind};
+    /// use avin_domain::{Exchange, InstrumentId, Category};
     ///
     /// let iid = InstrumentId::from_str("moex.stock.SBER").unwrap();
     ///
     /// assert_eq!(iid.exchange(), Exchange::MOEX);
-    /// assert_eq!(iid.kind(), InstrumentKind::Stock);
+    /// assert_eq!(iid.category(), Category::Stock);
     /// assert_eq!(iid.symbol().to_string(), "SBER");
     ///
     /// assert!(InstrumentId::from_str("MOEX.Stock").is_err());
@@ -123,10 +123,10 @@ impl FromStr for InstrumentId {
         }
 
         let exchange = Exchange::from_str(parts[0])?;
-        let kind = InstrumentKind::from_str(parts[1])?;
+        let category = Category::from_str(parts[1])?;
         let symbol = Symbol::from_str(parts[2])?;
 
-        Ok(Self::new(exchange, kind, symbol))
+        Ok(Self::new(exchange, category, symbol))
     }
 }
 
@@ -138,12 +138,12 @@ mod tests {
     fn instrument_id() {
         let iid = InstrumentId::new(
             Exchange::MOEX,
-            InstrumentKind::Stock,
+            Category::Stock,
             Symbol::new("SBER").unwrap(),
         );
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
-        assert_eq!(iid.kind(), InstrumentKind::Stock);
+        assert_eq!(iid.category(), Category::Stock);
         assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
     }
 
@@ -151,7 +151,7 @@ mod tests {
     fn display() {
         let iid = InstrumentId::new(
             Exchange::MOEX,
-            InstrumentKind::Stock,
+            Category::Stock,
             Symbol::new("SBER").unwrap(),
         );
 
@@ -163,7 +163,7 @@ mod tests {
         let iid = InstrumentId::from_str("moex.stock.SBER").unwrap();
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
-        assert_eq!(iid.kind(), InstrumentKind::Stock);
+        assert_eq!(iid.category(), Category::Stock);
         assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
     }
 

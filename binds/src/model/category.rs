@@ -9,61 +9,61 @@ use std::str::FromStr;
 
 use pyo3::prelude::*;
 
-use avin::InstrumentKind;
+use avin::Category;
 
 use crate::error::avin_error_to_py;
 
 #[pyclass(module = "avin._native")]
-pub struct PyInstrumentKind {
-    pub(crate) inner: InstrumentKind,
+pub struct PyCategory {
+    pub(crate) inner: Category,
 }
 
 #[pymethods]
-impl PyInstrumentKind {
+impl PyCategory {
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Currency: Self = Self {
-        inner: InstrumentKind::Currency,
+        inner: Category::Currency,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Index: Self = Self {
-        inner: InstrumentKind::Index,
+        inner: Category::Index,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Stock: Self = Self {
-        inner: InstrumentKind::Stock,
+        inner: Category::Stock,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Future: Self = Self {
-        inner: InstrumentKind::Future,
+        inner: Category::Future,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Bond: Self = Self {
-        inner: InstrumentKind::Bond,
+        inner: Category::Bond,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const Option: Self = Self {
-        inner: InstrumentKind::Option,
+        inner: Category::Option,
     };
 
     #[classattr]
     const ETF: Self = Self {
-        inner: InstrumentKind::ETF,
+        inner: Category::ETF,
     };
 
     #[staticmethod]
     fn all() -> Vec<Self> {
-        InstrumentKind::all()
+        Category::all()
             .iter()
             .copied()
             .map(|inner| Self { inner })
@@ -72,7 +72,7 @@ impl PyInstrumentKind {
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = InstrumentKind::from_str(s).map_err(avin_error_to_py)?;
+        let inner = Category::from_str(s).map_err(avin_error_to_py)?;
 
         Ok(Self { inner })
     }
