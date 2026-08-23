@@ -26,6 +26,10 @@ const REQUIRED_KEYS: [&str; 7] = [
 /// Represents a locally stored instrument description used for instrument
 /// lookup, asset creation, and offline market research.
 ///
+/// `InstrumentInfo` is not intended to be instantiated directly. Instances are
+/// created by AVIN as part of concrete instrument objects such as futures,
+/// stocks, bonds, and options.
+///
 /// The underlying metadata is intentionally stored as raw string values to
 /// provide a stable, provider-independent representation. Typed accessors
 /// parse individual values on demand.
