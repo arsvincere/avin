@@ -14,7 +14,7 @@ use avin_utils::AvinError;
 pub enum Category {
     Currency,
     Index,
-    Stock,
+    Share,
     Future,
     Bond,
     Option,
@@ -46,7 +46,7 @@ impl Category {
         &[
             Self::Currency,
             Self::Index,
-            Self::Stock,
+            Self::Share,
             Self::Future,
             Self::Bond,
             Self::Option,
@@ -60,7 +60,7 @@ impl Display for Category {
         match self {
             Self::Currency => f.write_str("Currency"),
             Self::Index => f.write_str("Index"),
-            Self::Stock => f.write_str("Stock"),
+            Self::Share => f.write_str("Share"),
             Self::Future => f.write_str("Future"),
             Self::Bond => f.write_str("Bond"),
             Self::Option => f.write_str("Option"),
@@ -102,7 +102,7 @@ impl FromStr for Category {
         match s.to_ascii_lowercase().as_str() {
             "currency" => Ok(Self::Currency),
             "index" => Ok(Self::Index),
-            "stock" => Ok(Self::Stock),
+            "share" => Ok(Self::Share),
             "future" => Ok(Self::Future),
             "bond" => Ok(Self::Bond),
             "option" => Ok(Self::Option),
@@ -134,7 +134,7 @@ mod tests {
         let expected = [
             Category::Currency,
             Category::Index,
-            Category::Stock,
+            Category::Share,
             Category::Future,
             Category::Bond,
             Category::Option,
@@ -148,7 +148,7 @@ mod tests {
     fn display() {
         assert_eq!(Category::Currency.to_string(), "Currency");
         assert_eq!(Category::Index.to_string(), "Index");
-        assert_eq!(Category::Stock.to_string(), "Stock");
+        assert_eq!(Category::Share.to_string(), "Share");
         assert_eq!(Category::Future.to_string(), "Future");
         assert_eq!(Category::Bond.to_string(), "Bond");
         assert_eq!(Category::Option.to_string(), "Option");
@@ -162,7 +162,7 @@ mod tests {
             Category::Currency
         );
         assert_eq!(Category::from_str("Index").unwrap(), Category::Index);
-        assert_eq!(Category::from_str("Stock").unwrap(), Category::Stock);
+        assert_eq!(Category::from_str("Share").unwrap(), Category::Share);
         assert_eq!(Category::from_str("Future").unwrap(), Category::Future);
         assert_eq!(Category::from_str("BoNd").unwrap(), Category::Bond);
         assert_eq!(Category::from_str("OPTION").unwrap(), Category::Option);

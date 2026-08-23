@@ -18,7 +18,7 @@ class InstrumentId:
     Canonical instrument identifier used by AVIN.
 
     An instrument ID combines an exchange, category, and symbol into
-    a compact, human-readable form such as ``MOEX.Stock.SBER``.
+    a compact, human-readable form such as ``MOEX.Share.SBER``.
 
     Parameters
     ----------
@@ -33,16 +33,16 @@ class InstrumentId:
     --------
     >>> iid = InstrumentId(
     ...     Exchange.MOEX,
-    ...     Category.STOCK,
+    ...     Category.SHARE,
     ...     Symbol("SBER"),
     ... )
     >>> str(iid)
-    'MOEX.Stock.SBER'
+    'MOEX.Share.SBER'
 
-    >>> iid = InstrumentId.from_str("moex.stock.SBER")
+    >>> iid = InstrumentId.from_str("moex.share.SBER")
     >>> iid.exchange is Exchange.MOEX
     True
-    >>> iid.category is Category.STOCK
+    >>> iid.category is Category.SHARE
     True
     >>> str(iid.symbol)
     'SBER'
@@ -109,10 +109,10 @@ class InstrumentId:
 
         Examples
         --------
-        >>> iid = InstrumentId.from_str("MOEX.Stock.SBER")
+        >>> iid = InstrumentId.from_str("MOEX.Share.SBER")
         >>> iid.exchange is Exchange.MOEX
         True
-        >>> iid.category is Category.STOCK
+        >>> iid.category is Category.SHARE
         True
         >>> str(iid.symbol)
         'SBER'

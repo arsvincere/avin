@@ -22,7 +22,7 @@ class Category(Enum):
     ...     print(category)
     Currency
     Index
-    Stock
+    Share
     Future
     Bond
     Option
@@ -32,13 +32,13 @@ class Category(Enum):
     'Future'
     >>> Category.from_str("bond") == Category.BOND
     True
-    >>> Category.from_str("stock") is Category.STOCK
+    >>> Category.from_str("share") is Category.SHARE
     True
     """
 
     CURRENCY = PyCategory.Currency
     INDEX = PyCategory.Index
-    STOCK = PyCategory.Stock
+    SHARE = PyCategory.Share
     FUTURE = PyCategory.Future
     BOND = PyCategory.Bond
     OPTION = PyCategory.Option

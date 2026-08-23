@@ -23,7 +23,7 @@ class InstrumentInfo:
 
     `InstrumentInfo` is not intended to be instantiated directly. Instances are
     created by AVIN as part of concrete instrument objects such as futures,
-    stocks, bonds, and options.
+    shares, bonds, and options.
 
     Reference data may be slightly outdated and must not be treated as
     authoritative for live trading validation.

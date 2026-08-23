@@ -22,7 +22,7 @@ const REQUIRED_KEYS: [&str; 7] = [
 ///
 /// `InstrumentInfo` is not intended to be instantiated directly. Instances are
 /// created by AVIN as part of concrete instrument objects such as futures,
-/// stocks, bonds, and options.
+/// shares, bonds, and options.
 ///
 /// The underlying metadata is intentionally stored as raw string values to
 /// provide a stable, provider-independent representation. Typed accessors
@@ -193,7 +193,7 @@ mod tests {
     fn valid_raw_info() -> HashMap<String, String> {
         [
             ("exchange", "MOEX"),
-            ("category", "Stock"),
+            ("category", "Share"),
             ("symbol", "SBER"),
             ("figi", "BBG004730N88"),
             ("name", "Сбер Банк"),
@@ -223,7 +223,7 @@ mod tests {
         let info = InstrumentInfo::new(raw_info).unwrap();
 
         assert_eq!(info.exchange(), Exchange::MOEX);
-        assert_eq!(info.category(), Category::Stock);
+        assert_eq!(info.category(), Category::Share);
         assert_eq!(info.symbol(), Symbol::new("SBER").unwrap());
         assert_eq!(info.figi(), "BBG004730N88");
         assert_eq!(info.name(), "Сбер Банк");
@@ -237,7 +237,7 @@ mod tests {
             info.iid(),
             InstrumentId::new(
                 Exchange::MOEX,
-                Category::Stock,
+                Category::Share,
                 Symbol::new("SBER").unwrap(),
             )
         );

@@ -34,8 +34,8 @@ impl PyCategory {
 
     #[classattr]
     #[allow(non_upper_case_globals)]
-    const Stock: Self = Self {
-        inner: Category::Stock,
+    const Share: Self = Self {
+        inner: Category::Share,
     };
 
     #[classattr]

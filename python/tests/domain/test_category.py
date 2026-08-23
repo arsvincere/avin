@@ -19,7 +19,7 @@ def test_category_text():
 
 
 def test_category_from_str():
-    assert Category.from_str("StOcK") is Category.STOCK
+    assert Category.from_str("ShArE") is Category.SHARE
     assert Category.from_str("future") is Category.FUTURE
     assert Category.from_str("ETF") is Category.ETF
 
@@ -31,7 +31,7 @@ def test_category_all():
     assert list(Category) == [
         Category.CURRENCY,
         Category.INDEX,
-        Category.STOCK,
+        Category.SHARE,
         Category.FUTURE,
         Category.BOND,
         Category.OPTION,

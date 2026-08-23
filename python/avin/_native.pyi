@@ -26,7 +26,7 @@ class PyExchange:
 class PyCategory:
     Currency: ClassVar[PyCategory]
     Index: ClassVar[PyCategory]
-    Stock: ClassVar[PyCategory]
+    Share: ClassVar[PyCategory]
     Future: ClassVar[PyCategory]
     Bond: ClassVar[PyCategory]
     Option: ClassVar[PyCategory]

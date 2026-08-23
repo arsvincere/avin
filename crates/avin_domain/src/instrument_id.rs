@@ -15,7 +15,7 @@ use crate::{Category, Exchange, Symbol};
 /// Canonical instrument identifier used by AVIN.
 ///
 /// An `InstrumentId` combines an exchange, category, and symbol into
-/// a compact, human-readable form such as `MOEX.STOCK.SBER`.
+/// a compact, human-readable form such as `MOEX.SHARE.SBER`.
 ///
 /// Unlike external identifiers such as FIGI, ISIN, or provider-specific UIDs,
 /// it can be interpreted directly by a person.
@@ -33,15 +33,15 @@ use crate::{Category, Exchange, Symbol};
 ///
 /// let iid = InstrumentId::new(
 ///     Exchange::MOEX,
-///     Category::Stock,
+///     Category::Share,
 ///     Symbol::new("SBER").unwrap(),
 /// );
 ///
-/// assert_eq!(iid.to_string(), "MOEX.Stock.SBER");
+/// assert_eq!(iid.to_string(), "MOEX.Share.SBER");
 ///
-/// let iid = InstrumentId::from_str("MOEX.Stock.SBER").unwrap();
+/// let iid = InstrumentId::from_str("MOEX.Share.SBER").unwrap();
 /// assert_eq!(iid.exchange(), Exchange::MOEX);
-/// assert_eq!(iid.category(), Category::Stock);
+/// assert_eq!(iid.category(), Category::Share);
 /// assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -106,14 +106,14 @@ impl FromStr for InstrumentId {
     ///
     /// use avin_domain::{Exchange, InstrumentId, Category};
     ///
-    /// let iid = InstrumentId::from_str("moex.stock.SBER").unwrap();
+    /// let iid = InstrumentId::from_str("moex.share.SBER").unwrap();
     ///
     /// assert_eq!(iid.exchange(), Exchange::MOEX);
-    /// assert_eq!(iid.category(), Category::Stock);
+    /// assert_eq!(iid.category(), Category::Share);
     /// assert_eq!(iid.symbol().to_string(), "SBER");
     ///
-    /// assert!(InstrumentId::from_str("MOEX.Stock").is_err());
-    /// assert!(InstrumentId::from_str("foo.Stock.SBER").is_err());
+    /// assert!(InstrumentId::from_str("MOEX.Share").is_err());
+    /// assert!(InstrumentId::from_str("foo.Share.SBER").is_err());
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
@@ -138,12 +138,12 @@ mod tests {
     fn instrument_id() {
         let iid = InstrumentId::new(
             Exchange::MOEX,
-            Category::Stock,
+            Category::Share,
             Symbol::new("SBER").unwrap(),
         );
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
-        assert_eq!(iid.category(), Category::Stock);
+        assert_eq!(iid.category(), Category::Share);
         assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
     }
 
@@ -151,34 +151,34 @@ mod tests {
     fn display() {
         let iid = InstrumentId::new(
             Exchange::MOEX,
-            Category::Stock,
+            Category::Share,
             Symbol::new("SBER").unwrap(),
         );
 
-        assert_eq!(iid.to_string(), "MOEX.Stock.SBER");
+        assert_eq!(iid.to_string(), "MOEX.Share.SBER");
     }
 
     #[test]
     fn from_str() {
-        let iid = InstrumentId::from_str("moex.stock.SBER").unwrap();
+        let iid = InstrumentId::from_str("moex.share.SBER").unwrap();
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
-        assert_eq!(iid.category(), Category::Stock);
+        assert_eq!(iid.category(), Category::Share);
         assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
     }
 
     #[test]
     fn symbol_with_dots() {
-        let iid = InstrumentId::from_str("moex.stock.BRK.B").unwrap();
+        let iid = InstrumentId::from_str("moex.share.BRK.B").unwrap();
 
         assert_eq!(iid.symbol(), &Symbol::new("BRK.B").unwrap());
     }
 
     #[test]
     fn invalid_id() {
-        assert!(InstrumentId::from_str("MOEX.Stock").is_err());
-        assert!(InstrumentId::from_str("foo.Stock.SBER").is_err());
+        assert!(InstrumentId::from_str("MOEX.Share").is_err());
+        assert!(InstrumentId::from_str("foo.Share.SBER").is_err());
         assert!(InstrumentId::from_str("MOEX.foo.SBER").is_err());
-        assert!(InstrumentId::from_str("MOEX.Stock.").is_err());
+        assert!(InstrumentId::from_str("MOEX.Share.").is_err());
     }
 }
