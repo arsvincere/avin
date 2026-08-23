@@ -10,6 +10,7 @@ doctest = false
 
 [dependencies]
 avin = { workspace = true }
+avin_model = { workspace = true }
 
 chrono = { workspace = true }
 pyo3 = { workspace = true }

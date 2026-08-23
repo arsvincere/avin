@@ -45,6 +45,7 @@ name = "binds"
 version = "0.4.0"
 dependencies = [
  "avin",
+ "avin_model",
  "chrono",
  "pyo3",
 ]
