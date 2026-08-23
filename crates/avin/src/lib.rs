@@ -16,7 +16,7 @@
 //! ```
 
 pub use avin_domain::{
-    Bar, BarDirection, Category, Exchange, InstrumentId, PriceRange, Symbol,
+    Bar, BarDirection, Category, Exchange, InstrumentId, PriceRange, Ticker,
     TimeFrame,
 };
 

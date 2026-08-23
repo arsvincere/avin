@@ -12,7 +12,7 @@ mod exchange;
 mod instrument_id;
 mod instrument_info;
 mod price_range;
-mod symbol;
+mod ticker;
 mod timeframe;
 
 pub(crate) use bar::PyBar;
@@ -22,5 +22,5 @@ pub(crate) use exchange::PyExchange;
 pub(crate) use instrument_id::PyInstrumentId;
 pub(crate) use instrument_info::PyInstrumentInfo;
 pub(crate) use price_range::PyPriceRange;
-pub(crate) use symbol::PySymbol;
+pub(crate) use ticker::PyTicker;
 pub(crate) use timeframe::PyTimeFrame;

@@ -10,18 +10,18 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-use crate::{Category, Exchange, Symbol};
+use crate::{Category, Exchange, Ticker};
 
 /// Canonical instrument identifier used by AVIN.
 ///
-/// An `InstrumentId` combines an exchange, category, and symbol into
+/// An `InstrumentId` combines an exchange, category, and ticker into
 /// a compact, human-readable form such as `MOEX.SHARE.SBER`.
 ///
 /// Unlike external identifiers such as FIGI, ISIN, or provider-specific UIDs,
 /// it can be interpreted directly by a person.
 ///
-/// Its canonical text representation is `EXCHANGE.CATEGORY.SYMBOL`.
-/// The symbol may contain dots because only the first two dots separate
+/// Its canonical text representation is `EXCHANGE.CATEGORY.TICKER`.
+/// The ticker may contain dots because only the first two dots separate
 /// the identifier components.
 ///
 /// # Examples
@@ -29,12 +29,12 @@ use crate::{Category, Exchange, Symbol};
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_domain::{Exchange, InstrumentId, Category, Symbol};
+/// use avin_domain::{Exchange, InstrumentId, Category, Ticker};
 ///
 /// let iid = InstrumentId::new(
 ///     Exchange::MOEX,
 ///     Category::Share,
-///     Symbol::new("SBER").unwrap(),
+///     Ticker::new("SBER").unwrap(),
 /// );
 ///
 /// assert_eq!(iid.to_string(), "MOEX.SHARE.SBER");
@@ -42,13 +42,13 @@ use crate::{Category, Exchange, Symbol};
 /// let iid = InstrumentId::from_str("MOEX.SHARE.SBER").unwrap();
 /// assert_eq!(iid.exchange(), Exchange::MOEX);
 /// assert_eq!(iid.category(), Category::Share);
-/// assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
+/// assert_eq!(iid.ticker(), &Ticker::new("SBER").unwrap());
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InstrumentId {
     exchange: Exchange,
     category: Category,
-    symbol: Symbol,
+    ticker: Ticker,
 }
 
 impl InstrumentId {
@@ -56,12 +56,12 @@ impl InstrumentId {
     pub fn new(
         exchange: Exchange,
         category: Category,
-        symbol: Symbol,
+        ticker: Ticker,
     ) -> Self {
         Self {
             exchange,
             category,
-            symbol,
+            ticker,
         }
     }
 
@@ -75,22 +75,22 @@ impl InstrumentId {
         self.category
     }
 
-    /// Returns the instrument symbol.
-    pub fn symbol(&self) -> &Symbol {
-        &self.symbol
+    /// Returns the instrument ticker.
+    pub fn ticker(&self) -> &Ticker {
+        &self.ticker
     }
 }
 
 impl Display for InstrumentId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.exchange, self.category, self.symbol)
+        write!(f, "{}.{}.{}", self.exchange, self.category, self.ticker)
     }
 }
 
 impl FromStr for InstrumentId {
     type Err = AvinError;
 
-    /// Parses an instrument ID from `EXCHANGE.CATEGORY.SYMBOL`.
+    /// Parses an instrument ID from `EXCHANGE.CATEGORY.TICKER`.
     ///
     /// Exchange and category parsing is case-insensitive.
     ///
@@ -110,7 +110,7 @@ impl FromStr for InstrumentId {
     ///
     /// assert_eq!(iid.exchange(), Exchange::MOEX);
     /// assert_eq!(iid.category(), Category::Share);
-    /// assert_eq!(iid.symbol().to_string(), "SBER");
+    /// assert_eq!(iid.ticker().to_string(), "SBER");
     ///
     /// assert!(InstrumentId::from_str("MOEX.SHARE").is_err());
     /// assert!(InstrumentId::from_str("foo.SHARE.SBER").is_err());
@@ -124,9 +124,9 @@ impl FromStr for InstrumentId {
 
         let exchange = Exchange::from_str(parts[0])?;
         let category = Category::from_str(parts[1])?;
-        let symbol = Symbol::from_str(parts[2])?;
+        let ticker = Ticker::from_str(parts[2])?;
 
-        Ok(Self::new(exchange, category, symbol))
+        Ok(Self::new(exchange, category, ticker))
     }
 }
 
@@ -139,12 +139,12 @@ mod tests {
         let iid = InstrumentId::new(
             Exchange::MOEX,
             Category::Share,
-            Symbol::new("SBER").unwrap(),
+            Ticker::new("SBER").unwrap(),
         );
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
         assert_eq!(iid.category(), Category::Share);
-        assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
+        assert_eq!(iid.ticker(), &Ticker::new("SBER").unwrap());
     }
 
     #[test]
@@ -152,7 +152,7 @@ mod tests {
         let iid = InstrumentId::new(
             Exchange::MOEX,
             Category::Share,
-            Symbol::new("SBER").unwrap(),
+            Ticker::new("SBER").unwrap(),
         );
 
         assert_eq!(iid.to_string(), "MOEX.SHARE.SBER");
@@ -164,14 +164,14 @@ mod tests {
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
         assert_eq!(iid.category(), Category::Share);
-        assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
+        assert_eq!(iid.ticker(), &Ticker::new("SBER").unwrap());
     }
 
     #[test]
-    fn symbol_with_dots() {
+    fn ticker_with_dots() {
         let iid = InstrumentId::from_str("moex.SHARE.BRK.B").unwrap();
 
-        assert_eq!(iid.symbol(), &Symbol::new("BRK.B").unwrap());
+        assert_eq!(iid.ticker(), &Ticker::new("BRK.B").unwrap());
     }
 
     #[test]

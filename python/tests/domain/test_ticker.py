@@ -7,24 +7,24 @@
 
 import pytest
 
-from avin import Symbol
+from avin import Ticker
 
 
-def test_symbol():
-    symbol = Symbol("SBER")
+def test_ticker():
+    ticker = Ticker("SBER")
 
-    assert str(symbol) == "SBER"
+    assert str(ticker) == "SBER"
 
 
-def test_invalid_symbol():
+def test_invalid_ticker():
     with pytest.raises(ValueError):
-        Symbol("")
+        Ticker("")
 
     with pytest.raises(ValueError):
-        Symbol("SB ER")
+        Ticker("SB ER")
 
 
-def test_symbol_eq():
-    assert Symbol("SBER") == Symbol("SBER")
-    assert Symbol("SBER") != Symbol("LKOH")
-    assert Symbol("SBER") != "SBER"
+def test_ticker_eq():
+    assert Ticker("SBER") == Ticker("SBER")
+    assert Ticker("SBER") != Ticker("LKOH")
+    assert Ticker("SBER") != "SBER"

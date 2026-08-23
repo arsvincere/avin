@@ -9,27 +9,27 @@ use std::str::FromStr;
 
 use pyo3::prelude::*;
 
-use avin::Symbol;
+use avin::Ticker;
 
 use crate::error::avin_error_to_py;
 
 #[pyclass(module = "avin._native")]
-pub struct PySymbol {
-    pub(crate) inner: Symbol,
+pub struct PyTicker {
+    pub(crate) inner: Ticker,
 }
 
 #[pymethods]
-impl PySymbol {
+impl PyTicker {
     #[new]
     fn new(value: &str) -> PyResult<Self> {
-        let inner = Symbol::new(value).map_err(avin_error_to_py)?;
+        let inner = Ticker::new(value).map_err(avin_error_to_py)?;
 
         Ok(Self { inner })
     }
 
     #[staticmethod]
     fn from_str(s: &str) -> PyResult<Self> {
-        let inner = Symbol::from_str(s).map_err(avin_error_to_py)?;
+        let inner = Ticker::from_str(s).map_err(avin_error_to_py)?;
 
         Ok(Self { inner })
     }

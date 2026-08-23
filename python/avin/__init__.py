@@ -11,7 +11,7 @@ from avin.domain.category import Category
 from avin.domain.exchange import Exchange
 from avin.domain.instrument_id import InstrumentId
 from avin.domain.price_range import PriceRange
-from avin.domain.symbol import Symbol
+from avin.domain.ticker import Ticker
 from avin.domain.timeframe import TimeFrame
 
 __all__ = [
@@ -21,6 +21,6 @@ __all__ = [
     "Exchange",
     "InstrumentId",
     "PriceRange",
-    "Symbol",
+    "Ticker",
     "TimeFrame",
 ]

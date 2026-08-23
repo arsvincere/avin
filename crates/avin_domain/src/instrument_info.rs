@@ -9,10 +9,10 @@ use std::{collections::HashMap, str::FromStr};
 
 use avin_utils::AvinError;
 
-use crate::{Category, Exchange, InstrumentId, Symbol};
+use crate::{Category, Exchange, InstrumentId, Ticker};
 
 const REQUIRED_KEYS: [&str; 7] = [
-    "exchange", "category", "symbol", "figi", "name", "lot", "step",
+    "exchange", "category", "ticker", "figi", "name", "lot", "step",
 ];
 
 /// Instrument reference data.
@@ -40,7 +40,7 @@ pub struct InstrumentInfo {
 impl InstrumentInfo {
     /// Creates an `InstrumentInfo` from raw key-value fields.
     ///
-    /// Required fields are `exchange`, `category`, `symbol`, `figi`,
+    /// Required fields are `exchange`, `category`, `ticker`, `figi`,
     /// `name`, `lot`, and `step`. Additional fields are allowed and preserved.
     ///
     /// # Errors
@@ -48,7 +48,7 @@ impl InstrumentInfo {
     /// Returns an error if:
     ///
     /// - a required key or value is missing;
-    /// - `exchange`, `category`, or `symbol` is invalid;
+    /// - `exchange`, `category`, or `ticker` is invalid;
     /// - `lot` cannot be parsed as `u32` or is zero;
     /// - `step` cannot be parsed as `f64`, is non-finite, or is not positive.
     pub fn new(info: HashMap<String, String>) -> Result<Self, AvinError> {
@@ -61,9 +61,9 @@ impl InstrumentInfo {
     pub fn iid(&self) -> InstrumentId {
         let exchange = self.exchange();
         let category = self.category();
-        let symbol = self.symbol();
+        let ticker = self.ticker();
 
-        InstrumentId::new(exchange, category, symbol)
+        InstrumentId::new(exchange, category, ticker)
     }
 
     /// Returns the instrument exchange.
@@ -80,11 +80,11 @@ impl InstrumentInfo {
         Category::from_str(category).unwrap()
     }
 
-    /// Returns the instrument symbol.
-    pub fn symbol(&self) -> Symbol {
-        let symbol = self.info.get("symbol").unwrap();
+    /// Returns the instrument ticker.
+    pub fn ticker(&self) -> Ticker {
+        let ticker = self.info.get("ticker").unwrap();
 
-        Symbol::from_str(symbol).unwrap()
+        Ticker::from_str(ticker).unwrap()
     }
 
     /// Returns FIGI - Financial Instrument Global Identifier.
@@ -135,9 +135,9 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
         }
     })?;
 
-    let symbol = info.get("symbol").unwrap();
-    Symbol::from_str(symbol).map_err(|err| AvinError::InstrumentInfo {
-        message: "failed parsing 'symbol'".to_string(),
+    let ticker = info.get("ticker").unwrap();
+    Ticker::from_str(ticker).map_err(|err| AvinError::InstrumentInfo {
+        message: "failed parsing 'ticker'".to_string(),
         source: Some(Box::new(err)),
     })?;
 
@@ -194,7 +194,7 @@ mod tests {
         [
             ("exchange", "MOEX"),
             ("category", "SHARE"),
-            ("symbol", "SBER"),
+            ("ticker", "SBER"),
             ("figi", "BBG004730N88"),
             ("name", "Сбер Банк"),
             ("lot", "1"),
@@ -211,7 +211,7 @@ mod tests {
         assert_eq!(
             REQUIRED_KEYS,
             [
-                "exchange", "category", "symbol", "figi", "name", "lot",
+                "exchange", "category", "ticker", "figi", "name", "lot",
                 "step",
             ]
         );
@@ -224,7 +224,7 @@ mod tests {
 
         assert_eq!(info.exchange(), Exchange::MOEX);
         assert_eq!(info.category(), Category::Share);
-        assert_eq!(info.symbol(), Symbol::new("SBER").unwrap());
+        assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
         assert_eq!(info.figi(), "BBG004730N88");
         assert_eq!(info.name(), "Сбер Банк");
         assert_eq!(info.lot(), 1);
@@ -238,7 +238,7 @@ mod tests {
             InstrumentId::new(
                 Exchange::MOEX,
                 Category::Share,
-                Symbol::new("SBER").unwrap(),
+                Ticker::new("SBER").unwrap(),
             )
         );
     }

@@ -10,14 +10,14 @@ from __future__ import annotations
 from avin._native import PyInstrumentId
 from avin.domain.category import Category
 from avin.domain.exchange import Exchange
-from avin.domain.symbol import Symbol
+from avin.domain.ticker import Ticker
 
 
 class InstrumentId:
     """
     Canonical instrument identifier used by AVIN.
 
-    An instrument ID combines an exchange, category, and symbol into
+    An instrument ID combines an exchange, category, and ticker into
     a compact, human-readable form such as ``MOEX.SHARE.SBER``.
 
     Parameters
@@ -26,15 +26,15 @@ class InstrumentId:
         Instrument exchange.
     category : Category
         Category.
-    symbol : Symbol
-        Instrument symbol.
+    ticker : Ticker
+        Instrument ticker.
 
     Examples
     --------
     >>> iid = InstrumentId(
     ...     Exchange.MOEX,
     ...     Category.SHARE,
-    ...     Symbol("SBER"),
+    ...     Ticker("SBER"),
     ... )
     >>> str(iid)
     'MOEX.SHARE.SBER'
@@ -44,7 +44,7 @@ class InstrumentId:
     True
     >>> iid.category is Category.SHARE
     True
-    >>> str(iid.symbol)
+    >>> str(iid.ticker)
     'SBER'
     """
 
@@ -54,12 +54,12 @@ class InstrumentId:
         self,
         exchange: Exchange,
         category: Category,
-        symbol: Symbol,
+        ticker: Ticker,
     ) -> None:
         self._inner = PyInstrumentId(
             exchange._inner,
             category._inner,
-            symbol._inner,
+            ticker._inner,
         )
 
     def __str__(self) -> str:
@@ -86,11 +86,11 @@ class InstrumentId:
         return Category._from_native(self._inner.category())
 
     @property
-    def symbol(self) -> Symbol:
+    def ticker(self) -> Ticker:
         """
-        Instrument symbol.
+        Instrument ticker.
         """
-        return Symbol._from_native(self._inner.symbol())
+        return Ticker._from_native(self._inner.ticker())
 
     @classmethod
     def from_str(cls, s: str) -> InstrumentId:
@@ -100,7 +100,7 @@ class InstrumentId:
         Parameters
         ----------
         s : str
-            Instrument ID in ``EXCHANGE.CATEGORY.SYMBOL`` format.
+            Instrument ID in ``EXCHANGE.CATEGORY.TICKER`` format.
 
         Raises
         ------
@@ -114,7 +114,7 @@ class InstrumentId:
         True
         >>> iid.category is Category.SHARE
         True
-        >>> str(iid.symbol)
+        >>> str(iid.ticker)
         'SBER'
         """
         return cls._from_native(PyInstrumentId.from_str(s))

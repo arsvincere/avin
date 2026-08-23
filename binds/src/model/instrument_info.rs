@@ -11,7 +11,7 @@ use pyo3::prelude::*;
 
 use avin_domain::InstrumentInfo;
 
-use crate::model::{PyCategory, PyExchange, PyInstrumentId, PySymbol};
+use crate::model::{PyCategory, PyExchange, PyInstrumentId, PyTicker};
 
 #[pyclass(module = "avin._native")]
 pub struct PyInstrumentInfo {
@@ -38,9 +38,9 @@ impl PyInstrumentInfo {
         }
     }
 
-    fn symbol(&self) -> PySymbol {
-        PySymbol {
-            inner: self.inner.symbol(),
+    fn ticker(&self) -> PyTicker {
+        PyTicker {
+            inner: self.inner.ticker(),
         }
     }
 

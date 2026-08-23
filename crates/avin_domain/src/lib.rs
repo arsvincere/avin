@@ -12,7 +12,7 @@ mod exchange;
 mod instrument_id;
 mod instrument_info;
 mod price_range;
-mod symbol;
+mod ticker;
 mod timeframe;
 
 pub use bar::Bar;
@@ -22,5 +22,5 @@ pub use exchange::Exchange;
 pub use instrument_id::InstrumentId;
 pub use instrument_info::InstrumentInfo;
 pub use price_range::PriceRange;
-pub use symbol::Symbol;
+pub use ticker::Ticker;
 pub use timeframe::TimeFrame;

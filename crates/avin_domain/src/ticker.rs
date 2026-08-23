@@ -10,34 +10,34 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-/// Trading instrument symbol.
+/// Trading instrument ticker.
 ///
 /// For example: `"SBER"`, `"SiU6"`, `"BTCUSDT"`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Symbol(String);
+pub struct Ticker(String);
 
-impl Symbol {
-    /// Creates a trading instrument symbol.
+impl Ticker {
+    /// Creates a trading instrument ticker.
     ///
     /// # Errors
     ///
-    /// Returns an error if the symbol is empty or contains whitespace.
+    /// Returns an error if the ticker is empty or contains whitespace.
     pub fn new(value: impl Into<String>) -> Result<Self, AvinError> {
         let s: String = value.into();
 
-        validate_symbol(&s)?;
+        validate_ticker(&s)?;
 
         Ok(Self(s))
     }
 }
 
-impl Display for Symbol {
+impl Display for Ticker {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
     }
 }
 
-impl FromStr for Symbol {
+impl FromStr for Ticker {
     type Err = AvinError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -45,16 +45,16 @@ impl FromStr for Symbol {
     }
 }
 
-fn validate_symbol(s: &str) -> Result<(), AvinError> {
+fn validate_ticker(s: &str) -> Result<(), AvinError> {
     if s.is_empty() {
         return Err(AvinError::Value(
-            "instrument symbol can't be empty".to_string(),
+            "instrument ticker can't be empty".to_string(),
         ));
     }
 
     if s.chars().any(|c| c.is_whitespace()) {
         return Err(AvinError::Value(
-            "instrument symbol can't contain whitespace".to_string(),
+            "instrument ticker can't contain whitespace".to_string(),
         ));
     }
 
@@ -66,36 +66,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn valid_symbol() {
-        assert!(Symbol::new("SBER").is_ok());
-        assert!(Symbol::new("SiU6").is_ok());
-        assert!(Symbol::new("BTCUSDT").is_ok());
+    fn valid_ticker() {
+        assert!(Ticker::new("SBER").is_ok());
+        assert!(Ticker::new("SiU6").is_ok());
+        assert!(Ticker::new("BTCUSDT").is_ok());
     }
 
     #[test]
-    fn empty_symbol() {
-        assert!(Symbol::new("").is_err());
+    fn empty_ticker() {
+        assert!(Ticker::new("").is_err());
     }
 
     #[test]
     fn has_whitespace() {
-        assert!(Symbol::new(" ").is_err());
-        assert!(Symbol::new("SBER ").is_err());
-        assert!(Symbol::new(" SBER").is_err());
-        assert!(Symbol::new("SB ER").is_err());
+        assert!(Ticker::new(" ").is_err());
+        assert!(Ticker::new("SBER ").is_err());
+        assert!(Ticker::new(" SBER").is_err());
+        assert!(Ticker::new("SB ER").is_err());
     }
 
     #[test]
     fn display() {
-        let symbol = Symbol::new("SBER").unwrap();
-        assert_eq!(symbol.to_string(), "SBER");
+        let ticker = Ticker::new("SBER").unwrap();
+        assert_eq!(ticker.to_string(), "SBER");
     }
 
     #[test]
     fn from_str() {
         assert_eq!(
-            Symbol::from_str("LKOH").unwrap(),
-            Symbol::new("LKOH").unwrap()
+            Ticker::from_str("LKOH").unwrap(),
+            Ticker::new("LKOH").unwrap()
         );
     }
 }

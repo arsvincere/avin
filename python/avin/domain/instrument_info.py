@@ -11,7 +11,7 @@ from avin._native import PyInstrumentInfo
 from avin.domain.category import Category
 from avin.domain.exchange import Exchange
 from avin.domain.instrument_id import InstrumentId
-from avin.domain.symbol import Symbol
+from avin.domain.ticker import Ticker
 
 
 class InstrumentInfo:
@@ -57,11 +57,11 @@ class InstrumentInfo:
         return Category._from_native(self._inner.category())
 
     @property
-    def symbol(self) -> Symbol:
+    def ticker(self) -> Ticker:
         """
-        Instrument symbol.
+        Instrument ticker.
         """
-        return Symbol._from_native(self._inner.symbol())
+        return Ticker._from_native(self._inner.ticker())
 
     @property
     def figi(self) -> str:

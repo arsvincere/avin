@@ -7,19 +7,19 @@
 
 import pytest
 
-from avin import Category, Exchange, InstrumentId, Symbol
+from avin import Category, Exchange, InstrumentId, Ticker
 
 
 def test_instrument_id():
     iid = InstrumentId(
         Exchange.MOEX,
         Category.SHARE,
-        Symbol("SBER"),
+        Ticker("SBER"),
     )
 
     assert iid.exchange is Exchange.MOEX
     assert iid.category is Category.SHARE
-    assert iid.symbol == Symbol("SBER")
+    assert iid.ticker == Ticker("SBER")
 
     assert str(iid) == "MOEX.SHARE.SBER"
 
@@ -29,10 +29,10 @@ def test_instrument_id_from_str():
 
     assert iid.exchange is Exchange.MOEX
     assert iid.category is Category.SHARE
-    assert iid.symbol == Symbol("SBER")
+    assert iid.ticker == Ticker("SBER")
 
     iid = InstrumentId.from_str("moex.SHARE.BRK.B")
-    assert iid.symbol == Symbol("BRK.B")
+    assert iid.ticker == Ticker("BRK.B")
 
 
 def test_invalid_instrument_id():
