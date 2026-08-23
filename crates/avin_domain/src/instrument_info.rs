@@ -193,7 +193,7 @@ mod tests {
     fn valid_raw_info() -> HashMap<String, String> {
         [
             ("exchange", "MOEX"),
-            ("category", "Share"),
+            ("category", "SHARE"),
             ("symbol", "SBER"),
             ("figi", "BBG004730N88"),
             ("name", "Сбер Банк"),

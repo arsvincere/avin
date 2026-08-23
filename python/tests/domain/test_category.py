@@ -11,8 +11,8 @@ from avin import Category
 
 
 def test_category_text():
-    assert Category.FUTURE.value == "Future"
-    assert str(Category.FUTURE) == "Future"
+    assert Category.FUTURE.value == "FUTURE"
+    assert str(Category.FUTURE) == "FUTURE"
 
     assert Category.ETF.value == "ETF"
     assert str(Category.ETF) == "ETF"

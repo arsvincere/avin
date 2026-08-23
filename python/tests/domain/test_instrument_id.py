@@ -21,37 +21,37 @@ def test_instrument_id():
     assert iid.category is Category.SHARE
     assert iid.symbol == Symbol("SBER")
 
-    assert str(iid) == "MOEX.Share.SBER"
+    assert str(iid) == "MOEX.SHARE.SBER"
 
 
 def test_instrument_id_from_str():
-    iid = InstrumentId.from_str("moex.share.SBER")
+    iid = InstrumentId.from_str("moex.SHARE.SBER")
 
     assert iid.exchange is Exchange.MOEX
     assert iid.category is Category.SHARE
     assert iid.symbol == Symbol("SBER")
 
-    iid = InstrumentId.from_str("moex.share.BRK.B")
+    iid = InstrumentId.from_str("moex.SHARE.BRK.B")
     assert iid.symbol == Symbol("BRK.B")
 
 
 def test_invalid_instrument_id():
     with pytest.raises(ValueError):
-        InstrumentId.from_str("MOEX.Share")
+        InstrumentId.from_str("MOEX.SHARE")
 
     with pytest.raises(ValueError):
-        InstrumentId.from_str("foo.Share.SBER")
+        InstrumentId.from_str("foo.SHARE.SBER")
 
     with pytest.raises(ValueError):
         InstrumentId.from_str("MOEX.foo.SBER")
 
     with pytest.raises(ValueError):
-        InstrumentId.from_str("MOEX.Share.")
+        InstrumentId.from_str("MOEX.SHARE.")
 
 
 def test_instrument_id_eq():
-    iid = InstrumentId.from_str("MOEX.Share.SBER")
+    iid = InstrumentId.from_str("MOEX.SHARE.SBER")
 
-    assert iid == InstrumentId.from_str("MOEX.Share.SBER")
-    assert iid != InstrumentId.from_str("MOEX.Share.LKOH")
-    assert iid != "MOEX.Share.SBER"
+    assert iid == InstrumentId.from_str("MOEX.SHARE.SBER")
+    assert iid != InstrumentId.from_str("MOEX.SHARE.LKOH")
+    assert iid != "MOEX.SHARE.SBER"

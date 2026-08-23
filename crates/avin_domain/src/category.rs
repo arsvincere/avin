@@ -58,12 +58,12 @@ impl Category {
 impl Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Currency => f.write_str("Currency"),
-            Self::Index => f.write_str("Index"),
-            Self::Share => f.write_str("Share"),
-            Self::Future => f.write_str("Future"),
-            Self::Bond => f.write_str("Bond"),
-            Self::Option => f.write_str("Option"),
+            Self::Currency => f.write_str("CURRENCY"),
+            Self::Index => f.write_str("INDEX"),
+            Self::Share => f.write_str("SHARE"),
+            Self::Future => f.write_str("FUTURE"),
+            Self::Bond => f.write_str("BOND"),
+            Self::Option => f.write_str("OPTION"),
             Self::ETF => f.write_str("ETF"),
         }
     }
@@ -146,24 +146,24 @@ mod tests {
 
     #[test]
     fn display() {
-        assert_eq!(Category::Currency.to_string(), "Currency");
-        assert_eq!(Category::Index.to_string(), "Index");
-        assert_eq!(Category::Share.to_string(), "Share");
-        assert_eq!(Category::Future.to_string(), "Future");
-        assert_eq!(Category::Bond.to_string(), "Bond");
-        assert_eq!(Category::Option.to_string(), "Option");
+        assert_eq!(Category::Currency.to_string(), "CURRENCY");
+        assert_eq!(Category::Index.to_string(), "INDEX");
+        assert_eq!(Category::Share.to_string(), "SHARE");
+        assert_eq!(Category::Future.to_string(), "FUTURE");
+        assert_eq!(Category::Bond.to_string(), "BOND");
+        assert_eq!(Category::Option.to_string(), "OPTION");
         assert_eq!(Category::ETF.to_string(), "ETF");
     }
 
     #[test]
     fn from_str() {
         assert_eq!(
-            Category::from_str("Currency").unwrap(),
+            Category::from_str("CURRENCY").unwrap(),
             Category::Currency
         );
-        assert_eq!(Category::from_str("Index").unwrap(), Category::Index);
-        assert_eq!(Category::from_str("Share").unwrap(), Category::Share);
-        assert_eq!(Category::from_str("Future").unwrap(), Category::Future);
+        assert_eq!(Category::from_str("INDEX").unwrap(), Category::Index);
+        assert_eq!(Category::from_str("SHARE").unwrap(), Category::Share);
+        assert_eq!(Category::from_str("FUTURE").unwrap(), Category::Future);
         assert_eq!(Category::from_str("BoNd").unwrap(), Category::Bond);
         assert_eq!(Category::from_str("OPTION").unwrap(), Category::Option);
         assert_eq!(Category::from_str("etf").unwrap(), Category::ETF);

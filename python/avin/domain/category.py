@@ -20,16 +20,16 @@ class Category(Enum):
     --------
     >>> for category in Category:
     ...     print(category)
-    Currency
-    Index
-    Share
-    Future
-    Bond
-    Option
+    CURRENCY
+    INDEX
+    SHARE
+    FUTURE
+    BOND
+    OPTION
     ETF
     >>> category = Category.FUTURE
     >>> str(category)
-    'Future'
+    'FUTURE'
     >>> Category.from_str("bond") == Category.BOND
     True
     >>> Category.from_str("share") is Category.SHARE

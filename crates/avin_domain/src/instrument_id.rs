@@ -37,9 +37,9 @@ use crate::{Category, Exchange, Symbol};
 ///     Symbol::new("SBER").unwrap(),
 /// );
 ///
-/// assert_eq!(iid.to_string(), "MOEX.Share.SBER");
+/// assert_eq!(iid.to_string(), "MOEX.SHARE.SBER");
 ///
-/// let iid = InstrumentId::from_str("MOEX.Share.SBER").unwrap();
+/// let iid = InstrumentId::from_str("MOEX.SHARE.SBER").unwrap();
 /// assert_eq!(iid.exchange(), Exchange::MOEX);
 /// assert_eq!(iid.category(), Category::Share);
 /// assert_eq!(iid.symbol(), &Symbol::new("SBER").unwrap());
@@ -106,14 +106,14 @@ impl FromStr for InstrumentId {
     ///
     /// use avin_domain::{Exchange, InstrumentId, Category};
     ///
-    /// let iid = InstrumentId::from_str("moex.share.SBER").unwrap();
+    /// let iid = InstrumentId::from_str("moex.SHARE.SBER").unwrap();
     ///
     /// assert_eq!(iid.exchange(), Exchange::MOEX);
     /// assert_eq!(iid.category(), Category::Share);
     /// assert_eq!(iid.symbol().to_string(), "SBER");
     ///
-    /// assert!(InstrumentId::from_str("MOEX.Share").is_err());
-    /// assert!(InstrumentId::from_str("foo.Share.SBER").is_err());
+    /// assert!(InstrumentId::from_str("MOEX.SHARE").is_err());
+    /// assert!(InstrumentId::from_str("foo.SHARE.SBER").is_err());
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
@@ -155,12 +155,12 @@ mod tests {
             Symbol::new("SBER").unwrap(),
         );
 
-        assert_eq!(iid.to_string(), "MOEX.Share.SBER");
+        assert_eq!(iid.to_string(), "MOEX.SHARE.SBER");
     }
 
     #[test]
     fn from_str() {
-        let iid = InstrumentId::from_str("moex.share.SBER").unwrap();
+        let iid = InstrumentId::from_str("moex.SHARE.SBER").unwrap();
 
         assert_eq!(iid.exchange(), Exchange::MOEX);
         assert_eq!(iid.category(), Category::Share);
@@ -169,16 +169,16 @@ mod tests {
 
     #[test]
     fn symbol_with_dots() {
-        let iid = InstrumentId::from_str("moex.share.BRK.B").unwrap();
+        let iid = InstrumentId::from_str("moex.SHARE.BRK.B").unwrap();
 
         assert_eq!(iid.symbol(), &Symbol::new("BRK.B").unwrap());
     }
 
     #[test]
     fn invalid_id() {
-        assert!(InstrumentId::from_str("MOEX.Share").is_err());
-        assert!(InstrumentId::from_str("foo.Share.SBER").is_err());
+        assert!(InstrumentId::from_str("MOEX.SHARE").is_err());
+        assert!(InstrumentId::from_str("foo.SHARE.SBER").is_err());
         assert!(InstrumentId::from_str("MOEX.foo.SBER").is_err());
-        assert!(InstrumentId::from_str("MOEX.Share.").is_err());
+        assert!(InstrumentId::from_str("MOEX.SHARE.").is_err());
     }
 }
