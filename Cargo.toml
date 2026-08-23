@@ -1,9 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
-    "crates/avin",
-    "crates/avin_model",
-    "crates/avin_utils",
+    "crates/*",
     "binds",
 ]
 
