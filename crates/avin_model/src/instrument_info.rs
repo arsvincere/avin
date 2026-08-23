@@ -21,18 +21,43 @@ const REQUIRED_KEYS: [&str; 7] = [
     "step",
 ];
 
+/// Instrument reference data.
+///
+/// Represents a locally stored instrument description used for instrument
+/// lookup, asset creation, and offline market research.
+///
+/// The underlying metadata is intentionally stored as raw string values to
+/// provide a stable, provider-independent representation. Typed accessors
+/// parse individual values on demand.
+///
+/// Reference data may be slightly outdated and must not be treated as
+/// authoritative for live trading validation.
 #[derive(Debug, Clone)]
 pub struct InstrumentInfo {
     info: HashMap<String, String>,
 }
 
 impl InstrumentInfo {
+    /// Creates an `InstrumentInfo` from raw key-value fields.
+    ///
+    /// Required fields are `exchange`, `instrument_kind`, `symbol`, `figi`,
+    /// `name`, `lot`, and `step`. Additional fields are allowed and preserved.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    ///
+    /// - a required key or value is missing;
+    /// - `exchange`, `instrument_kind`, or `symbol` is invalid;
+    /// - `lot` cannot be parsed as `u32` or is zero;
+    /// - `step` cannot be parsed as `f64`, is non-finite, or is not positive.
     pub fn new(info: HashMap<String, String>) -> Result<Self, AvinError> {
         validate_info(&info)?;
 
         Ok(Self { info })
     }
 
+    /// Returns the canonical instrument ID.
     pub fn iid(&self) -> InstrumentId {
         let exchange = self.exchange();
         let kind = self.kind();
@@ -41,40 +66,51 @@ impl InstrumentInfo {
         InstrumentId::new(exchange, kind, symbol)
     }
 
+    /// Returns the instrument exchange.
     pub fn exchange(&self) -> Exchange {
         let exchange = self.info.get("exchange").unwrap();
 
         Exchange::from_str(exchange).unwrap()
     }
 
+    /// Returns the instrument kind.
     pub fn kind(&self) -> InstrumentKind {
         let kind = self.info.get("instrument_kind").unwrap();
 
         InstrumentKind::from_str(kind).unwrap()
     }
 
+    /// Returns the instrument symbol.
     pub fn symbol(&self) -> Symbol {
         let symbol = self.info.get("symbol").unwrap();
 
         Symbol::from_str(symbol).unwrap()
     }
 
+    /// Returns FIGI - Financial Instrument Global Identifier.
     pub fn figi(&self) -> &str {
         self.info.get("figi").unwrap()
     }
 
+    /// Returns the instrument name.
     pub fn name(&self) -> &str {
         self.info.get("name").unwrap()
     }
 
+    /// Returns the lot size.
     pub fn lot(&self) -> u32 {
         self.info.get("lot").unwrap().parse().unwrap()
     }
 
+    /// Returns the minimum price step.
     pub fn step(&self) -> f64 {
         self.info.get("step").unwrap().parse().unwrap()
     }
 
+    /// Returns the original instrument metadata.
+    ///
+    /// This includes both required AVIN fields and any additional
+    /// provider-specific fields.
     pub fn raw_info(&self) -> &HashMap<String, String> {
         &self.info
     }
