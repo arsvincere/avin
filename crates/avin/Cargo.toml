@@ -1,7 +1,13 @@
 [package]
 name = "avin"
+description.workspace = true
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+readme = "README.md"
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [dependencies]
 avin_model = { workspace = true }

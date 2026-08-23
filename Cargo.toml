@@ -16,8 +16,14 @@ readme = "README.md"
 authors = ["Alex Avin <mr.alexavin@gmail.com>"]
 repository = "https://github.com/arsvincere/avin"
 homepage = "https://avin.info"
-keywords = [ "algorithmic-trading", "trading" ]
 categories = ["finance"]
+keywords = [
+    "trading",
+    "algorithmic-trading",
+    "trading-platform",
+    "backtesting",
+    "market-data",
+]
 
 [workspace.dependencies]
 avin = { path = "crates/avin" }
