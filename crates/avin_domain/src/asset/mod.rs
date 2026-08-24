@@ -6,25 +6,11 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 mod asset;
-mod bar;
-mod bar_direction;
-mod category;
-mod chart;
-mod exchange;
-mod instrument_id;
-mod instrument_info;
-mod price_range;
-mod ticker;
-mod timeframe;
+mod future;
+mod share;
+mod traits;
 
-pub use asset::{Asset, Future, HasCharts, InstrumentInfoView, Share};
-pub use bar::Bar;
-pub use bar_direction::BarDirection;
-pub use category::Category;
-pub use chart::Chart;
-pub use exchange::Exchange;
-pub use instrument_id::InstrumentId;
-pub use instrument_info::InstrumentInfo;
-pub use price_range::PriceRange;
-pub use ticker::Ticker;
-pub use timeframe::TimeFrame;
+pub use asset::Asset;
+pub use future::Future;
+pub use share::Share;
+pub use traits::{HasCharts, InstrumentInfoView};
