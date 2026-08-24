@@ -12,6 +12,9 @@ use crate::{
     Share, TimeFrame,
 };
 
+// TODO: Test access to loaded charts when market-data loading/attachment
+// is implemented in the service layer.
+
 /// Tradable runtime asset.
 ///
 /// Represents a tradable financial instrument and optionally associated

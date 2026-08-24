@@ -13,6 +13,9 @@ use crate::{
     Category, Chart, HasCharts, InstrumentInfo, InstrumentInfoView, TimeFrame,
 };
 
+// TODO: Test access to loaded charts when market-data loading/attachment
+// is implemented in the service layer.
+
 pub struct Share {
     info: InstrumentInfo,
     charts: HashMap<TimeFrame, Chart>,
