@@ -68,6 +68,11 @@ test-py:
     uv run pytest -m "not ignored"
     uv run pytest python/avin --doctest-modules
 
+# Run one python test file with stdout
+[group('Tests')]
+test-py-file file:
+    uv run pytest "{{file}}" -s
+
 # Run python ignored tests
 [group('Tests')]
 test-py-ignored:
@@ -89,16 +94,17 @@ py:
     just check-py
     just test-py
 
+# Maturin build
+[group('Project')]
+build:
+    uv run maturin develop
+
 # Fix imports, format, lint, typecheck and test
 [group('Project')]
 pre-commit:
     just rs
     just build
     just py
-
-[group('Project')]
-build:
-    uv run maturin develop
 
 # Remove caches
 [group('Project')]
