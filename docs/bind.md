@@ -1,7 +1,7 @@
 # Principle
 
 avin             — idiomatic Rust API
-binds/_native    — тупой и минимальный transport/FFI API
+binds/_native    — dumb minimalistic transport/FFI API
 python/avin      — idiomatic Python API
 
 avin
