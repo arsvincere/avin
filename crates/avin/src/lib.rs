@@ -15,9 +15,7 @@
 //!
 //! ```
 
-pub use avin_domain::{
-    Bar, BarDirection, Category, Exchange, InstrumentId, PriceRange, Ticker,
-    TimeFrame,
-};
+pub mod prelude;
 
-pub use avin_utils::AvinError;
+pub use avin_domain as domain;
+pub use avin_utils as utils;

@@ -35,8 +35,6 @@ pub struct InstrumentInfo {
     info: HashMap<String, String>,
 }
 
-// TODO: сделать конструктор pub(crate) когда у него появятся потребители
-// сейчас если сделать то clippy ругается.
 impl InstrumentInfo {
     /// Creates an `InstrumentInfo` from raw key-value fields.
     ///
