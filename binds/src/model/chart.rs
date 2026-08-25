@@ -68,7 +68,7 @@ impl PyChart {
         self.inner.is_empty()
     }
 
-    // TODO: Сейчас каждый вызов копирует весь Rust Vec<Bar> в новый
+    // PERF: Сейчас каждый вызов копирует весь Rust Vec<Bar> в новый
     // Python list<PyBar>.
     // На больших графиках это дорого и может быть медленнее чистого Python API.
     // Возможные решения:

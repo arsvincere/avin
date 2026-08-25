@@ -96,7 +96,7 @@ class Chart:
         """
         return TimeFrame._from_native(self._inner.tf())
 
-    # TODO: `bars` currently materializes all Rust bars as Python objects.
+    # PERF: `bars` currently materializes all Rust bars as Python objects.
     # This also makes slicing and iteration expensive for large charts.
     # Consider replacing `list[Bar]` with a lazy/native view or adding
     # efficient native slicing when performance becomes relevant.
