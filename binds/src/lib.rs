@@ -12,7 +12,7 @@ use pyo3::prelude::*;
 
 use model::{
     PyBar, PyBarDirection, PyCategory, PyChart, PyExchange, PyInstrumentId,
-    PyInstrumentInfo, PyPriceRange, PyTicker, PyTimeFrame,
+    PyInstrumentInfo, PyInstrumentList, PyPriceRange, PyTicker, PyTimeFrame,
 };
 
 #[pymodule]
@@ -23,6 +23,7 @@ fn avin_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyTicker>()?;
     m.add_class::<PyInstrumentId>()?;
     m.add_class::<PyInstrumentInfo>()?;
+    m.add_class::<PyInstrumentList>()?;
 
     m.add_class::<PyPriceRange>()?;
     m.add_class::<PyBarDirection>()?;
