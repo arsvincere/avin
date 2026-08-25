@@ -7,15 +7,13 @@
 
 import pytest
 
-from avin import (
-    Bar,
-    Category,
-    Chart,
-    Exchange,
-    InstrumentId,
-    Ticker,
-    TimeFrame,
-)
+from avin import TimeFrame
+from avin.domain.bar import Bar
+from avin.domain.category import Category
+from avin.domain.chart import Chart
+from avin.domain.exchange import Exchange
+from avin.domain.instrument_id import InstrumentId
+from avin.domain.ticker import Ticker
 
 SECOND = 1_000_000_000
 

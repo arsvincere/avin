@@ -5,7 +5,7 @@
 #  https://avin.info
 # ────────────────────────────────────────────────────────────────────────────
 
-from avin import BarDirection
+from avin.domain.bar_direction import BarDirection
 
 
 def test_bar_direction():

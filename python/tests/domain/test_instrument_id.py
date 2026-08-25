@@ -7,7 +7,16 @@
 
 import pytest
 
-from avin import Category, Exchange, InstrumentId, Ticker
+import avin
+from avin.domain.category import Category
+from avin.domain.exchange import Exchange
+from avin.domain.instrument_id import InstrumentId
+from avin.domain.ticker import Ticker
+
+
+def test_not_public():
+    assert "InstrumentId" not in avin.__all__
+    assert not hasattr(avin, "InstrumentId")
 
 
 def test_instrument_id():

@@ -7,7 +7,7 @@
 
 import pytest
 
-from avin import Ticker
+from avin.domain.ticker import Ticker
 
 
 def test_ticker():

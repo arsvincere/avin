@@ -7,7 +7,7 @@
 
 import pytest
 
-from avin import PriceRange
+from avin.domain.price_range import PriceRange
 
 
 def test_price_range():

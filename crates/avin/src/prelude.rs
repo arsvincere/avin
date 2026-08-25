@@ -5,4 +5,4 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-pub use crate::domain::{HasCharts, InstrumentInfoView};
+pub use crate::domain::{HasCharts, InstrumentInfoView, TimeFrame};

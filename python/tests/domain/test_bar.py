@@ -8,7 +8,9 @@
 from datetime import UTC
 from datetime import datetime as DateTime
 
-from avin import Bar, BarDirection, PriceRange
+from avin.domain.bar import Bar
+from avin.domain.bar_direction import BarDirection
+from avin.domain.price_range import PriceRange
 
 
 def test_bar():

@@ -7,7 +7,7 @@
 
 import pytest
 
-from avin import Category
+from avin.domain.category import Category
 
 
 def test_category_text():

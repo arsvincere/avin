@@ -7,7 +7,7 @@
 
 import pytest
 
-from avin import Exchange
+from avin.domain.exchange import Exchange
 
 
 def test_exchange_str():
