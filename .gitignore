@@ -19,17 +19,10 @@ htmlcov/
 *.egg-info/
 *.so
 *.spec
-/.cache/
+.cache/
 build/
 dist/
 target/
-
-# Local environment / secrets
-!.env.example
-*.local.toml
-.env
-.env.*
-config.local.toml
 
 # IDE / editor
 *.swo
@@ -48,12 +41,12 @@ Session.vim*
 # Project-local temporary files
 /*.bak
 /*.tmp
-/justfile.local
+/local.justfile
 /prompt.md
 /tmp
 /tmp.*
 
-# Local python scratch numbered files
+# Local python scratch files
 /python/1.*
 /python/2.*
 /python/3.*
