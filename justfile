@@ -57,6 +57,11 @@ check-py:
 test-rs:
     cargo test --jobs 4
 
+# Run tests for one Rust module
+[group('Tests')]
+test-rs-mod crate mod:
+    cargo test -p {{crate}} {{mod}}
+
 # Run rust ignored tests
 [group('Tests')]
 test-rs-ignored:
