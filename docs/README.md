@@ -1,6 +1,6 @@
 # Navigation
 
-Долговременная project-level information.
+`notes/` — временные заметки, идеи, обсужденные решения. (не читать без прямой ссылки).
 
 `architecture.md` — architecture и module boundaries.
 `bind.md` — binding principle.
@@ -9,4 +9,5 @@
 `docstring.md` — documentation rules.
 `naming.md` — project-specific naming rules.
 `testing.md` — testing rules.
-`todo.md` — todo list.
+`todo.md` — пока отложено, но необходимо сделать.
+
