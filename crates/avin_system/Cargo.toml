@@ -1,13 +1,15 @@
 [package]
-name = "avin"
+name = "avin_system"
 description.workspace = true
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-readme = "README.md"
 authors.workspace = true
 repository.workspace = true
 homepage.workspace = true
+readme = "README.md"
 
 [dependencies]
-avin_domain = { workspace = true }
+avin_utils = { workspace = true }
+
+serde = { workspace = true }
