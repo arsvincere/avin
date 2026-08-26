@@ -58,3 +58,6 @@ Session.vim*
 
 # Project-local archive
 /avin.zip
+
+# book
+/docs/avin_book/

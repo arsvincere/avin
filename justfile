@@ -111,6 +111,11 @@ pre-commit:
     just build
     just py
 
+# Build AVIN Book and open in browser
+[group('Project')]
+book:
+    mdbook build docs/avin_book --open
+
 # Remove caches
 [group('Project')]
 clean:
