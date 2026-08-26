@@ -8,12 +8,16 @@
 use std::error::Error;
 use std::fmt::Display;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum AvinError {
     Value(String),   // invalid value
     Parse(String),   // parse error
     Key(String),     // key missing
     Missing(String), // missing value
+    Io {
+        message: String,
+        source: std::io::Error,
+    },
 
     // TODO: Decide whether InstrumentInfo always requires a source error.
     // If yes, replace Option<Box<AvinError>> with Box<AvinError>.
@@ -45,6 +49,7 @@ impl Display for AvinError {
             Self::Key(msg) => write!(f, "{msg}"),
             Self::Missing(msg) => write!(f, "{msg}"),
 
+            Self::Io { message, .. } => write!(f, "{message}"),
             Self::InstrumentInfo { message, .. } => {
                 write!(f, "{message}")
             }
@@ -60,6 +65,7 @@ impl Error for AvinError {
             Self::Key(_) => None,
             Self::Missing(_) => None,
 
+            Self::Io { source, .. } => Some(source),
             Self::InstrumentInfo { source, .. } => match source {
                 Some(error) => Some(error.as_ref()),
                 None => None,
