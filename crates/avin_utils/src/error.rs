@@ -8,15 +8,26 @@
 use std::error::Error;
 use std::fmt::Display;
 
+use polars::error::PolarsError;
+
 #[derive(Debug)]
 pub enum AvinError {
     Value(String),   // invalid value
     Parse(String),   // parse error
     Key(String),     // key missing
     Missing(String), // missing value
+    Process(String),
     Io {
         message: String,
         source: std::io::Error,
+    },
+    Zip {
+        message: String,
+        source: zip::result::ZipError,
+    },
+    Polars {
+        message: String,
+        source: PolarsError,
     },
 
     // TODO: Decide whether InstrumentInfo always requires a source error.
@@ -48,8 +59,11 @@ impl Display for AvinError {
             Self::Parse(msg) => write!(f, "{msg}"),
             Self::Key(msg) => write!(f, "{msg}"),
             Self::Missing(msg) => write!(f, "{msg}"),
+            Self::Process(msg) => write!(f, "{msg}"),
 
             Self::Io { message, .. } => write!(f, "{message}"),
+            Self::Zip { message, .. } => write!(f, "{message}"),
+            Self::Polars { message, .. } => write!(f, "{message}"),
             Self::InstrumentInfo { message, .. } => {
                 write!(f, "{message}")
             }
@@ -64,8 +78,11 @@ impl Error for AvinError {
             Self::Parse(_) => None,
             Self::Key(_) => None,
             Self::Missing(_) => None,
+            Self::Process(_) => None,
 
             Self::Io { source, .. } => Some(source),
+            Self::Zip { source, .. } => Some(source),
+            Self::Polars { source, .. } => Some(source),
             Self::InstrumentInfo { source, .. } => match source {
                 Some(error) => Some(error.as_ref()),
                 None => None,
