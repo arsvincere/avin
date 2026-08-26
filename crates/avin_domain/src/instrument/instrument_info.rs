@@ -121,7 +121,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
     Exchange::from_str(exchange).map_err(|err| {
         AvinError::InstrumentInfo {
             message: "failed parsing 'exchange'".to_string(),
-            source: Some(Box::new(err)),
+            source: Box::new(err),
         }
     })?;
 
@@ -129,14 +129,14 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
     Category::from_str(category).map_err(|err| {
         AvinError::InstrumentInfo {
             message: "failed parsing 'category'".to_string(),
-            source: Some(Box::new(err)),
+            source: Box::new(err),
         }
     })?;
 
     let ticker = info.get("ticker").unwrap();
     Ticker::from_str(ticker).map_err(|err| AvinError::InstrumentInfo {
         message: "failed parsing 'ticker'".to_string(),
-        source: Some(Box::new(err)),
+        source: Box::new(err),
     })?;
 
     let lot = info.get("lot").unwrap();

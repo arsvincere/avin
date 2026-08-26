@@ -30,11 +30,9 @@ pub enum AvinError {
         source: PolarsError,
     },
 
-    // TODO: Decide whether InstrumentInfo always requires a source error.
-    // If yes, replace Option<Box<AvinError>> with Box<AvinError>.
     InstrumentInfo {
         message: String,
-        source: Option<Box<AvinError>>,
+        source: Box<AvinError>,
     },
 }
 
@@ -79,14 +77,10 @@ impl Error for AvinError {
             Self::Key(_) => None,
             Self::Missing(_) => None,
             Self::Process(_) => None,
-
             Self::Io { source, .. } => Some(source),
             Self::Zip { source, .. } => Some(source),
             Self::Polars { source, .. } => Some(source),
-            Self::InstrumentInfo { source, .. } => match source {
-                Some(error) => Some(error.as_ref()),
-                None => None,
-            },
+            Self::InstrumentInfo { source, .. } => Some(source),
         }
     }
 }
