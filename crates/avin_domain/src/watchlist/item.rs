@@ -7,7 +7,7 @@
 
 use crate::{InstrumentId, WatchlistGroup};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum WatchlistItem {
     Instrument(InstrumentId),
     Group(WatchlistGroup),

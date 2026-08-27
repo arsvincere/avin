@@ -7,7 +7,7 @@
 
 use crate::InstrumentId;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WatchlistGroup {
     name: String,
     instruments: Vec<InstrumentId>,
