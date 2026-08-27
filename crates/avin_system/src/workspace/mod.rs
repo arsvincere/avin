@@ -54,6 +54,30 @@ impl Workspace {
         Ok(Self { avin, cfg })
     }
 
+    pub fn log(&self) -> &Path {
+        self.avin.log()
+    }
+
+    pub fn market_data(&self) -> &Path {
+        self.avin.market_data()
+    }
+
+    pub fn instruments(&self) -> &Path {
+        self.avin.instruments()
+    }
+
+    pub fn search(&self) -> &Path {
+        self.avin.search()
+    }
+
+    pub fn test(&self) -> &Path {
+        self.avin.test()
+    }
+
+    pub fn watchlist(&self) -> &Path {
+        self.avin.watchlist()
+    }
+
     fn locate_workspace_file() -> Result<PathBuf, AvinError> {
         let cur_dir = env::current_dir().map_err(|err| AvinError::Io {
             message: "failed to get current directory".to_string(),
@@ -83,33 +107,6 @@ impl Workspace {
         )))
     }
 
-    pub fn log(&self) -> &Path {
-        self.avin.log()
-    }
-
-    pub fn configuration(&self) -> &Path {
-        self.avin.configuration()
-    }
-
-    pub fn market_data(&self) -> &Path {
-        self.avin.market_data()
-    }
-
-    pub fn instruments(&self) -> &Path {
-        self.avin.instruments()
-    }
-
-    pub fn search(&self) -> &Path {
-        self.avin.search()
-    }
-
-    pub fn test(&self) -> &Path {
-        self.avin.test()
-    }
-
-    pub fn watchlist(&self) -> &Path {
-        self.avin.watchlist()
-    }
 }
 
 fn workspace_file_in(dir: &Path) -> Option<PathBuf> {

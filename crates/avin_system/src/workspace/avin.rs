@@ -28,12 +28,12 @@ impl AvinToml {
         Ok(avin)
     }
 
-    pub fn log(&self) -> &Path {
-        &self.dirs.log
+    pub(super) fn configuration(&self) -> &Path {
+        &self.dirs.configuration
     }
 
-    pub fn configuration(&self) -> &Path {
-        &self.dirs.configuration
+    pub fn log(&self) -> &Path {
+        &self.dirs.log
     }
 
     pub fn market_data(&self) -> &Path {
