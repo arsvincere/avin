@@ -13,3 +13,4 @@ readme = "README.md"
 avin_utils = { workspace = true }
 
 serde = { workspace = true }
+toml = { workspace = true }

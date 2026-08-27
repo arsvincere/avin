@@ -6,5 +6,5 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 pub use crate::domain::{
-    HasCharts, InstrumentInfoView, TimeFrame, Watchlist,
+    Asset, Future, HasCharts, InstrumentInfoView, Share, TimeFrame, Watchlist,
 };
