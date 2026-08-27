@@ -16,6 +16,9 @@ mod instrument_list;
 mod price_range;
 mod ticker;
 mod timeframe;
+mod watchlist;
+mod watchlist_group;
+mod watchlist_item;
 
 pub(crate) use bar::PyBar;
 pub(crate) use bar_direction::PyBarDirection;
@@ -28,3 +31,6 @@ pub(crate) use instrument_list::PyInstrumentList;
 pub(crate) use price_range::PyPriceRange;
 pub(crate) use ticker::PyTicker;
 pub(crate) use timeframe::PyTimeFrame;
+pub(crate) use watchlist::PyWatchlist;
+pub(crate) use watchlist_group::PyWatchlistGroup;
+pub(crate) use watchlist_item::PyWatchlistItem;
