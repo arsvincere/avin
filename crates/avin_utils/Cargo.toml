@@ -13,3 +13,6 @@ readme = "README.md"
 chrono = { workspace = true }
 polars = { workspace = true }
 zip = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

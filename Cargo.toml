@@ -30,7 +30,8 @@ avin_utils = { path = "crates/avin_utils" }
 
 chrono = "0.4"
 pyo3 = { version = "0.29", features = ["chrono"] }
-serde = { version = "1.0", features = ["derive"] }
-zip = "8.6"
+serde = { version = "1", features = ["derive"] }
+tempfile = "3"
+zip = "8"
 
 polars = { version = "0.55", features = ["parquet"] }

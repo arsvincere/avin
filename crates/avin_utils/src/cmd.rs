@@ -1241,3 +1241,392 @@ impl Cmd {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn path_utils() {
+        let path = PathBuf::from("root").join("data").join("foo.txt");
+
+        assert_eq!(Cmd::name(&path).unwrap(), "foo.txt");
+        assert_eq!(Cmd::stem(&path).unwrap(), "foo");
+        assert_eq!(Cmd::dir_name(&path).unwrap(), "data");
+        assert_eq!(
+            Cmd::dir_path(&path).unwrap(),
+            PathBuf::from("root").join("data")
+        );
+    }
+
+    #[test]
+    fn file_and_dir_types() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.txt");
+        let dir = tmp.path().join("data");
+        let missing = tmp.path().join("missing");
+
+        std::fs::write(&file, "foo").unwrap();
+        std::fs::create_dir(&dir).unwrap();
+
+        assert!(Cmd::is_file(&file).unwrap());
+        assert!(!Cmd::is_dir(&file).unwrap());
+
+        assert!(Cmd::is_dir(&dir).unwrap());
+        assert!(!Cmd::is_file(&dir).unwrap());
+
+        assert!(matches!(Cmd::is_file(&missing), Err(AvinError::Io { .. })));
+        assert!(matches!(Cmd::is_dir(&missing), Err(AvinError::Io { .. })));
+    }
+
+    #[test]
+    fn empty_dir() {
+        let tmp = tempdir().unwrap();
+
+        assert!(Cmd::is_empty(tmp.path()).unwrap());
+
+        std::fs::write(tmp.path().join("foo.txt"), "foo").unwrap();
+
+        assert!(!Cmd::is_empty(tmp.path()).unwrap());
+    }
+
+    #[test]
+    fn directory_content() {
+        let tmp = tempdir().unwrap();
+
+        let file_a = tmp.path().join("a.txt");
+        let file_b = tmp.path().join("b.txt");
+        let dir_a = tmp.path().join("dir_a");
+
+        std::fs::write(&file_a, "a").unwrap();
+        std::fs::write(&file_b, "b").unwrap();
+        std::fs::create_dir(&dir_a).unwrap();
+
+        let files = Cmd::get_files(tmp.path()).unwrap();
+        let dirs = Cmd::get_dirs(tmp.path()).unwrap();
+        let content = Cmd::content(tmp.path()).unwrap();
+
+        assert_eq!(files.len(), 2);
+        assert!(files.contains(&file_a));
+        assert!(files.contains(&file_b));
+
+        assert_eq!(dirs.len(), 1);
+        assert!(dirs.contains(&dir_a));
+
+        assert_eq!(content.len(), 3);
+        assert!(content.contains(&file_a));
+        assert!(content.contains(&file_b));
+        assert!(content.contains(&dir_a));
+    }
+
+    #[test]
+    fn get_files_and_dirs_are_not_recursive() {
+        let tmp = tempdir().unwrap();
+
+        let nested_dir = tmp.path().join("a").join("b");
+        let nested_file = nested_dir.join("nested.txt");
+
+        std::fs::create_dir_all(&nested_dir).unwrap();
+        std::fs::write(&nested_file, "foo").unwrap();
+
+        let files = Cmd::get_files(tmp.path()).unwrap();
+        let dirs = Cmd::get_dirs(tmp.path()).unwrap();
+
+        assert!(files.is_empty());
+        assert_eq!(dirs, vec![tmp.path().join("a")]);
+    }
+
+    #[test]
+    fn find_files_recursive() {
+        let tmp = tempdir().unwrap();
+
+        let file_a = tmp.path().join("foo.txt");
+        let file_b = tmp.path().join("a").join("foo.txt");
+        let other = tmp.path().join("a").join("bar.txt");
+
+        Cmd::write("a", &file_a).unwrap();
+        Cmd::write("b", &file_b).unwrap();
+        Cmd::write("other", &other).unwrap();
+
+        let found = Cmd::find_files("foo.txt", tmp.path()).unwrap();
+
+        assert_eq!(found.len(), 2);
+        assert!(found.contains(&file_a));
+        assert!(found.contains(&file_b));
+        assert!(!found.contains(&other));
+    }
+
+    #[test]
+    fn find_dirs_recursive() {
+        let tmp = tempdir().unwrap();
+
+        let dir_a = tmp.path().join("target");
+        let dir_b = tmp.path().join("a").join("target");
+        let other = tmp.path().join("a").join("other");
+
+        std::fs::create_dir_all(&dir_a).unwrap();
+        std::fs::create_dir_all(&dir_b).unwrap();
+        std::fs::create_dir_all(&other).unwrap();
+
+        let found = Cmd::find_dirs("target", tmp.path()).unwrap();
+
+        assert_eq!(found.len(), 2);
+        assert!(found.contains(&dir_a));
+        assert!(found.contains(&dir_b));
+        assert!(!found.contains(&other));
+    }
+
+    #[test]
+    fn make_dirs() {
+        let tmp = tempdir().unwrap();
+
+        let dir = tmp.path().join("a").join("b").join("c");
+
+        Cmd::make_dirs(&dir).unwrap();
+
+        assert!(dir.is_dir());
+    }
+
+    #[test]
+    fn make_dirs_for_file() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("a").join("b").join("foo.txt");
+
+        Cmd::make_dirs_for_file(&file).unwrap();
+
+        assert!(file.parent().unwrap().is_dir());
+        assert!(!file.exists());
+    }
+
+    #[test]
+    fn file_size() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.bin");
+        std::fs::write(&file, b"12345").unwrap();
+
+        assert_eq!(Cmd::size(&file).unwrap(), 5);
+
+        assert!(matches!(Cmd::size(tmp.path()), Err(AvinError::Value(_))));
+    }
+
+    #[test]
+    fn text_read_write() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("a").join("b").join("foo.txt");
+
+        Cmd::write("hello", &file).unwrap();
+
+        assert_eq!(Cmd::read(&file).unwrap(), "hello");
+
+        Cmd::write("world", &file).unwrap();
+
+        assert_eq!(Cmd::read(&file).unwrap(), "world");
+    }
+
+    #[test]
+    fn binary_read_write() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("data").join("foo.bin");
+        let bytes = [0, 1, 2, 3, 255];
+
+        Cmd::write_bin(&bytes, &file).unwrap();
+
+        assert_eq!(Cmd::read_bin(&file).unwrap(), bytes);
+    }
+
+    #[test]
+    fn lines_read_write() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.txt");
+
+        let lines =
+            vec!["one\n".to_owned(), "two\n".to_owned(), "three".to_owned()];
+
+        Cmd::write_lines(&lines, &file).unwrap();
+
+        assert_eq!(Cmd::read(&file).unwrap(), "one\ntwo\nthree");
+
+        let read_lines = Cmd::read_lines(&file)
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+
+        assert_eq!(read_lines, vec!["one", "two", "three"]);
+    }
+
+    #[test]
+    fn append() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.txt");
+
+        Cmd::write("one", &file).unwrap();
+        Cmd::append("two", &file).unwrap();
+
+        assert_eq!(Cmd::read(&file).unwrap(), "onetwo");
+    }
+
+    #[test]
+    fn append_requires_existing_file() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("missing.txt");
+
+        assert!(!file.exists());
+
+        assert!(matches!(
+            Cmd::append("text", &file),
+            Err(AvinError::Io { .. })
+        ));
+    }
+
+    #[test]
+    fn append_lines() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.txt");
+
+        Cmd::write("zero\n", &file).unwrap();
+
+        Cmd::append_lines(&["one\n".to_owned(), "two\n".to_owned()], &file)
+            .unwrap();
+
+        assert_eq!(Cmd::read(&file).unwrap(), "zero\none\ntwo\n");
+    }
+
+    #[test]
+    fn get_tail() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.txt");
+
+        Cmd::write("one\ntwo\nthree\nfour\nfive\n", &file).unwrap();
+
+        assert_eq!(
+            Cmd::get_tail(&file, 3).unwrap(),
+            vec![
+                "three\n".to_owned(),
+                "four\n".to_owned(),
+                "five\n".to_owned(),
+            ]
+        );
+
+        assert!(Cmd::get_tail(&file, 0).unwrap().is_empty());
+    }
+
+    #[test]
+    fn copy_file() {
+        let tmp = tempdir().unwrap();
+
+        let src = tmp.path().join("src.txt");
+        let dest = tmp.path().join("a").join("b").join("dest.txt");
+
+        Cmd::write("hello", &src).unwrap();
+        Cmd::copy_file(&src, &dest).unwrap();
+
+        assert_eq!(Cmd::read(&src).unwrap(), "hello");
+        assert_eq!(Cmd::read(&dest).unwrap(), "hello");
+    }
+
+    #[test]
+    fn copy_dir_recursive() {
+        let tmp = tempdir().unwrap();
+
+        let src = tmp.path().join("src");
+        let dest = tmp.path().join("dest");
+
+        Cmd::write("one", &src.join("a").join("one.txt")).unwrap();
+
+        Cmd::write("two", &src.join("b").join("two.txt")).unwrap();
+
+        Cmd::copy_dir(&src, &dest).unwrap();
+
+        assert_eq!(
+            Cmd::read(&dest.join("a").join("one.txt")).unwrap(),
+            "one"
+        );
+        assert_eq!(
+            Cmd::read(&dest.join("b").join("two.txt")).unwrap(),
+            "two"
+        );
+    }
+
+    #[test]
+    fn copy_dir_requires_missing_destination() {
+        let tmp = tempdir().unwrap();
+
+        let src = tmp.path().join("src");
+        let dest = tmp.path().join("dest");
+
+        std::fs::create_dir(&src).unwrap();
+        std::fs::create_dir(&dest).unwrap();
+
+        assert!(matches!(
+            Cmd::copy_dir(&src, &dest),
+            Err(AvinError::Value(_))
+        ));
+    }
+
+    #[test]
+    fn replace() {
+        let tmp = tempdir().unwrap();
+
+        let from = tmp.path().join("from.txt");
+        let to = tmp.path().join("to.txt");
+
+        Cmd::write("hello", &from).unwrap();
+        Cmd::replace(&from, &to).unwrap();
+
+        assert!(!from.exists());
+        assert_eq!(Cmd::read(&to).unwrap(), "hello");
+    }
+
+    #[test]
+    fn delete_file() {
+        let tmp = tempdir().unwrap();
+
+        let file = tmp.path().join("foo.txt");
+
+        Cmd::write("foo", &file).unwrap();
+        Cmd::delete(&file).unwrap();
+
+        assert!(!file.exists());
+    }
+
+    #[test]
+    fn delete_dir_recursive() {
+        let tmp = tempdir().unwrap();
+
+        let dir = tmp.path().join("a");
+
+        Cmd::write("foo", &dir.join("b").join("foo.txt")).unwrap();
+
+        Cmd::delete_dir(&dir).unwrap();
+
+        assert!(!dir.exists());
+    }
+
+    #[test]
+    fn missing_paths_return_io_errors() {
+        let tmp = tempdir().unwrap();
+
+        let missing = tmp.path().join("missing");
+
+        assert!(matches!(Cmd::read(&missing), Err(AvinError::Io { .. })));
+
+        assert!(matches!(
+            Cmd::get_files(&missing),
+            Err(AvinError::Io { .. })
+        ));
+
+        assert!(matches!(Cmd::delete(&missing), Err(AvinError::Io { .. })));
+    }
+}
