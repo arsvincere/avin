@@ -66,3 +66,72 @@ impl Watchlist {
         self.items.get(n)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use crate::{InstrumentId, WatchlistGroup};
+
+    use super::*;
+
+    #[test]
+    fn new_watchlist_is_empty() {
+        let watchlist = Watchlist::new("test_name");
+
+        assert_eq!(watchlist.name(), "test_name");
+        assert!(watchlist.is_empty());
+        assert_eq!(watchlist.len(), 0);
+        assert!(watchlist.items().is_empty());
+        assert!(watchlist.get(0).is_none());
+    }
+
+    #[test]
+    fn items_preserve_order_and_duplicates() {
+        let sber = InstrumentId::from_str("MOEX.SHARE.SBER").unwrap();
+        let gazp = InstrumentId::from_str("MOEX.SHARE.GAZP").unwrap();
+
+        let watchlist = Watchlist {
+            name: "test_name".to_string(),
+            items: vec![
+                WatchlistItem::Instrument(sber.clone()),
+                WatchlistItem::Group(WatchlistGroup::new("futures")),
+                WatchlistItem::Instrument(gazp.clone()),
+                WatchlistItem::Instrument(sber.clone()),
+            ],
+        };
+
+        assert!(!watchlist.is_empty());
+        assert_eq!(watchlist.len(), 4);
+
+        match watchlist.get(0) {
+            Some(WatchlistItem::Instrument(iid)) => {
+                assert_eq!(iid, &sber);
+            }
+            _ => panic!("expected instrument"),
+        }
+
+        match watchlist.get(1) {
+            Some(WatchlistItem::Group(group)) => {
+                assert_eq!(group.name(), "futures");
+            }
+            _ => panic!("expected group"),
+        }
+
+        match watchlist.get(2) {
+            Some(WatchlistItem::Instrument(iid)) => {
+                assert_eq!(iid, &gazp);
+            }
+            _ => panic!("expected instrument"),
+        }
+
+        match watchlist.get(3) {
+            Some(WatchlistItem::Instrument(iid)) => {
+                assert_eq!(iid, &sber);
+            }
+            _ => panic!("expected instrument"),
+        }
+
+        assert!(watchlist.get(4).is_none());
+    }
+}

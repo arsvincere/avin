@@ -94,7 +94,6 @@ mod tests {
 
         assert!(!group.is_empty());
         assert_eq!(group.len(), 3);
-
         assert_eq!(
             group.instruments(),
             &[sber.clone(), gazp.clone(), sber.clone()]
