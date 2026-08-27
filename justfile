@@ -20,14 +20,14 @@ venv:
         uv venv --python {{python_version}} {{venv}}; \
     fi
 
-# Install AVIN in editable mode
+# Install Python AVIN in editable mode
 [group('Environment')]
-install: venv
+install-py: venv
     uv pip install -e .
 
-# Install AVIN with dev dependencies
+# Install Python AVIN with dev dependencies
 [group('Environment')]
-install-dev: venv
+install-py-dev: venv
     uv pip install -e ".[dev]"
 
 # ────────────────────────────────────────────────────────────────────────────
