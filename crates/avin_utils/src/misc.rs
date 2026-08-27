@@ -5,6 +5,16 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod workspace;
+use std::path::Path;
 
-pub use workspace::{WORKSPACE, Workspace};
+use serde::de::DeserializeOwned;
+
+use crate::{AvinError, Cmd};
+
+pub fn read_toml<T: DeserializeOwned>(path: &Path) -> Result<T, AvinError> {
+    let toml_text = Cmd::read(path)?;
+
+    toml::from_str(&toml_text).map_err(|err| {
+        AvinError::Parse(format!("failed to parse {}: {err}", path.display()))
+    })
+}

@@ -9,8 +9,56 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+use avin_utils::AvinError;
+
 #[derive(Debug, Deserialize)]
-pub struct WorkspaceDirs {
+pub struct AvinToml {
+    #[allow(dead_code)]
+    format: u32,
+    dirs: AvinTomlDirs,
+}
+
+impl AvinToml {
+    pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
+        let mut avin: Self = avin_utils::read_toml(path)?;
+
+        let ws_dir = path.parent().unwrap();
+        avin.dirs.resolve(ws_dir);
+
+        Ok(avin)
+    }
+
+    pub fn log(&self) -> &Path {
+        &self.dirs.log
+    }
+
+    pub fn configuration(&self) -> &Path {
+        &self.dirs.configuration
+    }
+
+    pub fn market_data(&self) -> &Path {
+        &self.dirs.market_data
+    }
+
+    pub fn instruments(&self) -> &Path {
+        &self.dirs.instruments
+    }
+
+    pub fn search(&self) -> &Path {
+        &self.dirs.search
+    }
+
+    pub fn test(&self) -> &Path {
+        &self.dirs.test
+    }
+
+    pub fn watchlist(&self) -> &Path {
+        &self.dirs.watchlist
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AvinTomlDirs {
     log: PathBuf,
     configuration: PathBuf,
     market_data: PathBuf,
@@ -20,36 +68,8 @@ pub struct WorkspaceDirs {
     watchlist: PathBuf,
 }
 
-impl WorkspaceDirs {
-    pub fn log(&self) -> PathBuf {
-        self.log.clone()
-    }
-
-    pub fn configuration(&self) -> PathBuf {
-        self.configuration.clone()
-    }
-
-    pub fn market_data(&self) -> PathBuf {
-        self.market_data.clone()
-    }
-
-    pub fn instruments(&self) -> PathBuf {
-        self.instruments.clone()
-    }
-
-    pub fn search(&self) -> PathBuf {
-        self.search.clone()
-    }
-
-    pub fn test(&self) -> PathBuf {
-        self.test.clone()
-    }
-
-    pub fn watchlist(&self) -> PathBuf {
-        self.watchlist.clone()
-    }
-
-    pub(crate) fn resolve(&mut self, root: &Path) {
+impl AvinTomlDirs {
+    pub fn resolve(&mut self, root: &Path) {
         self.log = resolve(root, &self.log);
         self.configuration = resolve(root, &self.configuration);
         self.market_data = resolve(root, &self.market_data);

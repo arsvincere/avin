@@ -186,7 +186,9 @@ version = "0.4.0"
 dependencies = [
  "chrono",
  "polars",
+ "serde",
  "tempfile",
+ "toml",
  "zip",
 ]
 

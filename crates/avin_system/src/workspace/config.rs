@@ -5,7 +5,11 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::path::Path;
+
 use serde::Deserialize;
+
+use avin_utils::AvinError;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -13,6 +17,12 @@ pub struct Config {
     format: u32,
     pub default: ConfigDefault,
     pub log: ConfigLog,
+}
+
+impl Config {
+    pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
+        avin_utils::read_toml(path)
+    }
 }
 
 #[derive(Debug, Deserialize)]

@@ -9,6 +9,7 @@ mod cmd;
 mod constant;
 mod dt;
 mod error;
+mod misc;
 
 pub use cmd::Cmd;
 pub use constant::{
@@ -16,3 +17,4 @@ pub use constant::{
 };
 pub use dt::{dt, next_month_start, prev_month_start, ts, utc_now};
 pub use error::AvinError;
+pub use misc::read_toml;

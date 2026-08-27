@@ -12,6 +12,8 @@ readme = "README.md"
 [dependencies]
 chrono = { workspace = true }
 polars = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
 zip = { workspace = true }
 
 [dev-dependencies]

@@ -5,30 +5,34 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+mod avin;
 mod config;
-mod dirs;
+mod global;
+
+pub use self::global::WORKSPACE;
 
 // ───────────────────────────────────────────────────────────────────────────
 
 use std::env;
 use std::path::{Path, PathBuf};
 
-use serde::Deserialize;
+use avin_utils::AvinError;
 
-use avin_utils::{AvinError, Cmd};
-
+use self::avin::AvinToml;
 use self::config::Config;
-use self::dirs::WorkspaceDirs;
 
-const WORKSPACE_FILE: &str = "AVIN.toml";
-const WORKSPACE_FILE_HIDDEN: &str = ".AVIN.toml";
 const WORKSPACE_ENV: &str = "AVIN_WORKSPACE";
+const AVIN_FILE: &str = "AVIN.toml";
+const AVIN_FILE_HIDDEN: &str = ".AVIN.toml";
 
-#[derive(Debug, Deserialize)]
+const CONFIG_FILE: &str = "config.toml";
+// const DATA_FILE: &str = "data.toml";
+// const GUI_FILE: &str = "gui.toml";
+// const SECRET_FILE: &str = "secret.toml";
+
+#[derive(Debug)]
 pub struct Workspace {
-    #[allow(dead_code)]
-    format: u32,
-    pub dirs: WorkspaceDirs,
+    pub avin: AvinToml,
     pub cfg: Config,
 }
 
@@ -43,20 +47,11 @@ impl Workspace {
 
     pub fn open() -> Result<Self, AvinError> {
         let ws_file = Self::locate_workspace_file()?;
-        let ws_dir = ws_file.parent().unwrap();
 
-        let toml_text = Cmd::read(&ws_file)?;
+        let avin = AvinToml::read(&ws_file)?;
+        let cfg = Config::read(&avin.configuration().join(CONFIG_FILE))?;
 
-        let mut ws: Self = toml::from_str(&toml_text).map_err(|err| {
-            AvinError::Parse(format!(
-                "failed to parse {}: {err}",
-                ws_file.display()
-            ))
-        })?;
-
-        ws.dirs.resolve(ws_dir);
-
-        Ok(ws)
+        Ok(Self { avin, cfg })
     }
 
     fn locate_workspace_file() -> Result<PathBuf, AvinError> {
@@ -78,24 +73,52 @@ impl Workspace {
 
             return Err(AvinError::Missing(format!(
                 "{} | {} not found in {WORKSPACE_ENV}",
-                WORKSPACE_FILE, WORKSPACE_FILE_HIDDEN
+                AVIN_FILE, AVIN_FILE_HIDDEN
             )));
         }
 
         Err(AvinError::Missing(format!(
             "not an AVIN workspace: {} | {} not found",
-            WORKSPACE_FILE, WORKSPACE_FILE_HIDDEN
+            AVIN_FILE, AVIN_FILE_HIDDEN
         )))
+    }
+
+    pub fn log(&self) -> &Path {
+        self.avin.log()
+    }
+
+    pub fn configuration(&self) -> &Path {
+        self.avin.configuration()
+    }
+
+    pub fn market_data(&self) -> &Path {
+        self.avin.market_data()
+    }
+
+    pub fn instruments(&self) -> &Path {
+        self.avin.instruments()
+    }
+
+    pub fn search(&self) -> &Path {
+        self.avin.search()
+    }
+
+    pub fn test(&self) -> &Path {
+        self.avin.test()
+    }
+
+    pub fn watchlist(&self) -> &Path {
+        self.avin.watchlist()
     }
 }
 
 fn workspace_file_in(dir: &Path) -> Option<PathBuf> {
-    let path = dir.join(WORKSPACE_FILE);
+    let path = dir.join(AVIN_FILE);
     if path.is_file() {
         return Some(path);
     }
 
-    let path = dir.join(WORKSPACE_FILE_HIDDEN);
+    let path = dir.join(AVIN_FILE_HIDDEN);
     if path.is_file() {
         return Some(path);
     }
