@@ -1,0 +1,8 @@
+[book]
+title = "AVIN Book"
+authors = ["Alex Avin"]
+language = "ru"
+src = "src"
+
+[output.html]
+git-repository-url = "https://github.com/arsvincere/avin"

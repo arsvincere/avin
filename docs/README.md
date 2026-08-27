@@ -10,4 +10,3 @@
 `naming.md` — project-specific naming rules.
 `testing.md` — testing rules.
 `todo.md` — пока отложено, но необходимо сделать.
-
