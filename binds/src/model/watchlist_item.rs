@@ -34,9 +34,9 @@ impl PyWatchlistItem {
 
     fn instrument(&self) -> Option<PyInstrumentId> {
         match &self.inner {
-            WatchlistItem::Instrument(iid) => Some(PyInstrumentId {
-                inner: iid.clone(),
-            }),
+            WatchlistItem::Instrument(iid) => {
+                Some(PyInstrumentId { inner: iid.clone() })
+            }
             WatchlistItem::Group(_) => None,
         }
     }
