@@ -34,7 +34,8 @@ Session.vim*
 # Benchmark results
 /bench/results/*.csv
 
-# Project-local temporary/archive folders
+# Project-local temporary folders
+/docs/note/
 /tmp
 /workspace
 
