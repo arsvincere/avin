@@ -101,7 +101,7 @@ py:
 
 # Maturin build
 [group('Project')]
-build:
+maturin:
     uv run maturin develop
 
 # Fix imports, format, lint, typecheck and test
