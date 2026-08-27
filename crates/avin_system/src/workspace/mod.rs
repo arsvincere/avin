@@ -5,8 +5,10 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-// TODO: del it after implementation
-#![allow(dead_code)]
+mod config;
+mod dirs;
+
+// ───────────────────────────────────────────────────────────────────────────
 
 use std::env;
 use std::path::{Path, PathBuf};
@@ -15,17 +17,30 @@ use serde::Deserialize;
 
 use avin_utils::{AvinError, Cmd};
 
+use self::config::Config;
+use self::dirs::WorkspaceDirs;
+
 const WORKSPACE_FILE: &str = "AVIN.toml";
 const WORKSPACE_FILE_HIDDEN: &str = ".AVIN.toml";
 const WORKSPACE_ENV: &str = "AVIN_WORKSPACE";
 
 #[derive(Debug, Deserialize)]
 pub struct Workspace {
+    #[allow(dead_code)]
     format: u32,
     pub dirs: WorkspaceDirs,
+    pub cfg: Config,
 }
 
 impl Workspace {
+    pub fn create(_path: &Path) -> Result<(), AvinError> {
+        // создает directory, если ее еще нет
+        // создает AVIN.toml
+        // создает необходимые cfg/*
+        // создает workspace dirs
+        todo!()
+    }
+
     pub fn open() -> Result<Self, AvinError> {
         let ws_file = Self::locate_workspace_file()?;
         let ws_dir = ws_file.parent().unwrap();
@@ -74,57 +89,6 @@ impl Workspace {
     }
 }
 
-#[derive(Debug, Deserialize)]
-pub struct WorkspaceDirs {
-    log: PathBuf,
-    configuration: PathBuf,
-    market_data: PathBuf,
-    instruments: PathBuf,
-    search: PathBuf,
-    test: PathBuf,
-    watchlist: PathBuf,
-}
-
-impl WorkspaceDirs {
-    pub fn log(&self) -> PathBuf {
-        self.log.clone()
-    }
-
-    pub fn configuration(&self) -> PathBuf {
-        self.configuration.clone()
-    }
-
-    pub fn market_data(&self) -> PathBuf {
-        self.market_data.clone()
-    }
-
-    pub fn instruments(&self) -> PathBuf {
-        self.instruments.clone()
-    }
-
-    pub fn search(&self) -> PathBuf {
-        self.search.clone()
-    }
-
-    pub fn test(&self) -> PathBuf {
-        self.test.clone()
-    }
-
-    pub fn watchlist(&self) -> PathBuf {
-        self.watchlist.clone()
-    }
-
-    fn resolve(&mut self, root: &Path) {
-        self.log = resolve(root, &self.log);
-        self.configuration = resolve(root, &self.configuration);
-        self.market_data = resolve(root, &self.market_data);
-        self.instruments = resolve(root, &self.instruments);
-        self.search = resolve(root, &self.search);
-        self.test = resolve(root, &self.test);
-        self.watchlist = resolve(root, &self.watchlist);
-    }
-}
-
 fn workspace_file_in(dir: &Path) -> Option<PathBuf> {
     let path = dir.join(WORKSPACE_FILE);
     if path.is_file() {
@@ -137,12 +101,4 @@ fn workspace_file_in(dir: &Path) -> Option<PathBuf> {
     }
 
     None
-}
-
-fn resolve(dir: &Path, path: &Path) -> PathBuf {
-    if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        dir.join(path)
-    }
 }
