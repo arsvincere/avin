@@ -34,7 +34,7 @@ install-dev: venv
 # Code quality
 # ────────────────────────────────────────────────────────────────────────────
 
-# Format & lint rust code
+# Format, lint rust code
 [group('Code quality')]
 check-rs:
     cargo fmt --all
