@@ -108,7 +108,7 @@ maturin:
 [group('Project')]
 pre-commit:
     just rs
-    just build
+    just maturin
     just py
 
 # Build AVIN Book and open in browser
