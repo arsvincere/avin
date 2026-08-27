@@ -27,6 +27,9 @@ impl Deref for GlobalWorkspace {
     type Target = Workspace;
 
     fn deref(&self) -> &Self::Target {
-        self.inner.get().expect("current workspace is not set")
+        match self.inner.get() {
+            Some(ws) => ws,
+            None => panic!("current workspace is not set"),
+        }
     }
 }
