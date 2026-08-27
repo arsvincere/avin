@@ -13,6 +13,15 @@ use polars::prelude::{DataFrame, ParquetReader, ParquetWriter, SerReader};
 
 use crate::AvinError;
 
+/// `Cmd` is short for "command" and serves as a convenience namespace for
+/// common system and file operations.
+///
+/// It provides a small, consistent AVIN API for path utilities, file system
+/// operations, text and binary I/O, Parquet files, archives, and subprocesses.
+///
+/// `Cmd` has no state; all operations are exposed as associated functions.
+/// Fallible operations return `AvinError` with AVIN-specific context while
+/// preserving the underlying source error when available.
 pub struct Cmd {}
 
 impl Cmd {
@@ -137,15 +146,6 @@ impl Cmd {
         };
 
         Ok(parent.to_path_buf())
-    }
-
-    /// Returns `true` if the path points to an existing file system entry.
-    ///
-    /// Symbolic links are followed. A broken symbolic link returns `false`.
-    /// File system errors, such as permission errors, are also treated as
-    /// `false`.
-    pub fn is_exist(path: &Path) -> bool {
-        path.exists()
     }
 
     /// Returns `true` if the path points to a regular file.
@@ -1107,7 +1107,7 @@ impl Cmd {
                 tail.pop_front();
             }
 
-            tail.push_back(line.clone());
+            tail.push_back(line);
         }
 
         Ok(tail.into_iter().collect())
