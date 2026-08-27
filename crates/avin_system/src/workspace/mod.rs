@@ -46,7 +46,7 @@ impl Workspace {
     }
 
     pub fn open() -> Result<Self, AvinError> {
-        let ws_file = Self::locate_workspace_file()?;
+        let ws_file = locate_workspace_file()?;
 
         let avin = AvinToml::read(&ws_file)?;
         let cfg = Config::read(&avin.configuration().join(CONFIG_FILE))?;
@@ -77,36 +77,35 @@ impl Workspace {
     pub fn watchlist(&self) -> &Path {
         self.avin.watchlist()
     }
+}
 
-    fn locate_workspace_file() -> Result<PathBuf, AvinError> {
-        let cur_dir = env::current_dir().map_err(|err| AvinError::Io {
-            message: "failed to get current directory".to_string(),
-            source: err,
-        })?;
+fn locate_workspace_file() -> Result<PathBuf, AvinError> {
+    let cur_dir = env::current_dir().map_err(|err| AvinError::Io {
+        message: "failed to get current directory".to_string(),
+        source: err,
+    })?;
 
-        if let Some(ws_file) = workspace_file_in(&cur_dir) {
+    if let Some(ws_file) = workspace_file_in(&cur_dir) {
+        return Ok(ws_file);
+    }
+
+    if let Some(ws_dir) = env::var_os(WORKSPACE_ENV) {
+        let ws_dir = PathBuf::from(ws_dir);
+
+        if let Some(ws_file) = workspace_file_in(&ws_dir) {
             return Ok(ws_file);
         }
 
-        if let Some(ws_dir) = env::var_os(WORKSPACE_ENV) {
-            let ws_dir = PathBuf::from(ws_dir);
-
-            if let Some(ws_file) = workspace_file_in(&ws_dir) {
-                return Ok(ws_file);
-            }
-
-            return Err(AvinError::Missing(format!(
-                "{} | {} not found in {WORKSPACE_ENV}",
-                AVIN_FILE, AVIN_FILE_HIDDEN
-            )));
-        }
-
-        Err(AvinError::Missing(format!(
-            "not an AVIN workspace: {} | {} not found",
+        return Err(AvinError::Missing(format!(
+            "{} | {} not found in {WORKSPACE_ENV}",
             AVIN_FILE, AVIN_FILE_HIDDEN
-        )))
+        )));
     }
 
+    Err(AvinError::Missing(format!(
+        "not an AVIN workspace: {} | {} not found",
+        AVIN_FILE, AVIN_FILE_HIDDEN
+    )))
 }
 
 fn workspace_file_in(dir: &Path) -> Option<PathBuf> {
