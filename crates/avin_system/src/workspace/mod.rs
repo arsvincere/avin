@@ -10,6 +10,7 @@ mod config;
 mod data;
 mod global;
 mod secret;
+mod manifest;
 
 pub use self::global::WORKSPACE;
 

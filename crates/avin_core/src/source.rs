@@ -96,3 +96,30 @@ impl FromStr for Source {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn all() {
+        assert_eq!(Source::all(), &[Source::TBank, Source::MoexAlgo]);
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!(Source::TBank.to_string(), "TBank");
+        assert_eq!(Source::MoexAlgo.to_string(), "MoexAlgo");
+    }
+
+    #[test]
+    fn from_str() {
+        assert_eq!(Source::from_str("tbank").unwrap(), Source::TBank);
+        assert_eq!(Source::from_str("TBANK").unwrap(), Source::TBank);
+
+        assert!(matches!(
+            Source::from_str("foo").unwrap_err(),
+            AvinError::Value(_)
+        ));
+    }
+}
