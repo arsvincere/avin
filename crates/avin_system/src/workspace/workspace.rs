@@ -138,3 +138,46 @@ fn workspace_file_in(dir: &Path) -> Option<PathBuf> {
 
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn workspace_file_in_prefers_avin_toml() {
+        let dir = tempdir().unwrap();
+
+        let avin = dir.path().join(AVIN_FILE);
+        let hidden = dir.path().join(AVIN_FILE_HIDDEN);
+
+        fs::write(&avin, "").unwrap();
+        fs::write(&hidden, "").unwrap();
+
+        let path = workspace_file_in(dir.path()).unwrap();
+
+        assert_eq!(path, avin);
+    }
+
+    #[test]
+    fn workspace_file_in_finds_hidden_avin_toml() {
+        let dir = tempdir().unwrap();
+
+        let hidden = dir.path().join(AVIN_FILE_HIDDEN);
+        fs::write(&hidden, "").unwrap();
+
+        let path = workspace_file_in(dir.path()).unwrap();
+
+        assert_eq!(path, hidden);
+    }
+
+    #[test]
+    fn workspace_file_in_returns_none() {
+        let dir = tempdir().unwrap();
+
+        assert!(workspace_file_in(dir.path()).is_none());
+    }
+}
