@@ -12,6 +12,10 @@ use serde::Deserialize;
 
 use avin_utils::AvinError;
 
+/// Workspace configuration.
+///
+/// The configuration is loaded from the workspace `config.toml` file and
+/// contains default application settings and logging settings.
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -21,10 +25,6 @@ pub struct Config {
     pub log: ConfigLog,
 }
 
-/// Workspace configuration.
-///
-/// The configuration is loaded from the workspace `config.toml` file and
-/// contains default application settings and logging settings.
 impl Config {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
         let config: Self = avin_utils::read_toml(path)?;

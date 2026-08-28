@@ -25,10 +25,6 @@ pub struct DataManifest {
     sets: Vec<DataProviderSet>,
 }
 
-/// Describes the market data desired from one source.
-///
-/// Empty collections mean that the corresponding data is not requested.
-/// A history depth of `0` means that no history of that type is requested.
 impl DataManifest {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
         let raw: DataToml = avin_utils::read_toml(path)?;
@@ -59,6 +55,10 @@ impl DataManifest {
     }
 }
 
+/// Describes the market data desired from one source.
+///
+/// Empty collections mean that the corresponding data is not requested.
+/// A history depth of `0` means that no history of that type is requested.
 #[derive(Debug)]
 pub struct DataProviderSet {
     /// Market data source.
@@ -419,7 +419,7 @@ foo = 42
 format = 1
 
 [tbank]
-i.struments = ["MOEX.SHARE.SBER"]
+ebanina = ["MOEX.SHARE.SBER"]
 "#,
         );
 
@@ -441,7 +441,7 @@ history_years = 2
     }
 
     #[test]
-    fn reject_missing_tick_tick_field() {
+    fn reject_missing_tick_field() {
         let file = data_file(
             r#"
 format = 1
