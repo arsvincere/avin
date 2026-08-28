@@ -11,7 +11,9 @@ mod data;
 mod secret;
 mod workspace;
 
-pub use workspace::Workspace;
+pub(crate) use workspace::Workspace;
+
+// ───────────────────────────────────────────────────────────────────────────
 
 use std::ops::Deref;
 use std::sync::OnceLock;

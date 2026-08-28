@@ -10,4 +10,4 @@
 mod logger;
 mod workspace;
 
-pub use workspace::{WORKSPACE, Workspace};
+pub use workspace::WORKSPACE;
