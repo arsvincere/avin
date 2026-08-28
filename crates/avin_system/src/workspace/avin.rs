@@ -11,6 +11,8 @@ use serde::Deserialize;
 
 use avin_utils::AvinError;
 
+const FORMAT: u32 = 1;
+
 /// AVIN workspace layout.
 ///
 /// The layout is loaded from the workspace `AVIN.toml` file and defines
@@ -22,7 +24,6 @@ use avin_utils::AvinError;
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AvinToml {
-    #[allow(dead_code)]
     format: u32,
     dirs: AvinTomlDirs,
 }
@@ -30,6 +31,13 @@ pub struct AvinToml {
 impl AvinToml {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
         let mut avin: Self = avin_utils::read_toml(path)?;
+
+        if avin.format != FORMAT {
+            return Err(AvinError::Value(format!(
+                "unsupported AVIN.toml format: {}, supported={FORMAT}",
+                avin.format
+            )));
+        }
 
         let ws_dir = path.parent().unwrap();
         avin.dirs.resolve(ws_dir);
@@ -119,6 +127,26 @@ mod tests {
         fs::write(&path, content).unwrap();
 
         (dir, path)
+    }
+
+    #[test]
+    fn reject_unsupported_format() {
+        let (_dir, path) = avin_toml(
+            r#"
+format = 2
+
+[dirs]
+cfg = "cfg"
+log = ".log"
+market_data = "data"
+instruments = "data/instruments"
+search = "search"
+test = "test"
+watchlist = "watchlist"
+"#,
+        );
+
+        assert!(AvinToml::read(&path).is_err());
     }
 
     #[test]

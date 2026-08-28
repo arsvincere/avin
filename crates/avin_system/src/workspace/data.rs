@@ -14,6 +14,8 @@ use avin_core::Source;
 use avin_domain::{InstrumentId, TimeFrame};
 use avin_utils::AvinError;
 
+const FORMAT: u32 = 1;
+
 /// Describes the market data desired for the AVIN workspace.
 ///
 /// The manifest is produced by parsing the workspace data.toml file and
@@ -28,6 +30,13 @@ pub struct DataManifest {
 impl DataManifest {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
         let raw: DataToml = avin_utils::read_toml(path)?;
+
+        if raw.format != FORMAT {
+            return Err(AvinError::Value(format!(
+                "unsupported data.toml format: {}, supported={FORMAT}",
+                raw.format
+            )));
+        }
 
         let mut sets = Vec::new();
 
@@ -89,7 +98,6 @@ pub struct DataProviderSet {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct DataToml {
-    #[allow(dead_code)]
     format: u32,
     tbank: Option<SourceDataToml>,
 }
@@ -248,6 +256,20 @@ mod tests {
         let mut file = NamedTempFile::new().unwrap();
         file.write_all(content.as_bytes()).unwrap();
         file
+    }
+
+    #[test]
+    fn reject_unsupported_format() {
+        let file = data_file(
+            r#"
+format = 2
+
+[tbank]
+instruments = ["MOEX.SHARE.SBER"]
+"#,
+        );
+
+        assert!(DataManifest::read(file.path()).is_err());
     }
 
     #[test]

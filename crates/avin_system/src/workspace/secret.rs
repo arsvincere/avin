@@ -11,6 +11,8 @@ use serde::Deserialize;
 
 use avin_utils::AvinError;
 
+const FORMAT: u32 = 1;
+
 /// Workspace secrets.
 ///
 /// Secrets are loaded from the workspace `secret.toml` file and contain
@@ -21,7 +23,6 @@ use avin_utils::AvinError;
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Secret {
-    #[allow(dead_code)]
     format: u32,
 
     tbank_token: String,
@@ -33,7 +34,16 @@ pub struct Secret {
 
 impl Secret {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
-        avin_utils::read_toml(path)
+        let secret: Self = avin_utils::read_toml(path)?;
+
+        if secret.format != FORMAT {
+            return Err(AvinError::Value(format!(
+                "unsupported secret.toml format: {}, supported={FORMAT}",
+                secret.format
+            )));
+        }
+
+        Ok(secret)
     }
 
     /// Returns the TBank API token.
@@ -69,6 +79,22 @@ mod tests {
         let mut file = NamedTempFile::new().unwrap();
         file.write_all(content.as_bytes()).unwrap();
         file
+    }
+
+    #[test]
+    fn reject_unsupported_format() {
+        let file = secret_file(
+            r#"
+format = 2
+
+tbank_token = ""
+moex_login = ""
+moex_password = ""
+moex_api_key = ""
+"#,
+        );
+
+        assert!(Secret::read(file.path()).is_err());
     }
 
     #[test]

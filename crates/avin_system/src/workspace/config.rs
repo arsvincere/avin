@@ -12,6 +12,8 @@ use serde::Deserialize;
 
 use avin_utils::AvinError;
 
+const FORMAT: u32 = 1;
+
 /// Workspace configuration.
 ///
 /// The configuration is loaded from the workspace `config.toml` file and
@@ -19,7 +21,6 @@ use avin_utils::AvinError;
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    #[allow(dead_code)]
     format: u32,
     pub default: ConfigDefault,
     pub log: ConfigLog,
@@ -28,6 +29,13 @@ pub struct Config {
 impl Config {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
         let config: Self = avin_utils::read_toml(path)?;
+
+        if config.format != FORMAT {
+            return Err(AvinError::Value(format!(
+                "unsupported config.toml format: {}, supported={FORMAT}",
+                config.format
+            )));
+        }
 
         config.validate()?;
 
@@ -114,6 +122,28 @@ mod tests {
         let mut file = NamedTempFile::new().unwrap();
         file.write_all(content.as_bytes()).unwrap();
         file
+    }
+
+    #[test]
+    fn reject_unsupported_format() {
+        let file = config_file(
+            r#"
+format = 2
+
+[default]
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
     }
 
     #[test]
