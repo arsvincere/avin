@@ -186,6 +186,8 @@ dependencies = [
  "avin_core",
  "avin_domain",
  "avin_utils",
+ "chrono",
+ "log",
  "serde",
  "tempfile",
  "toml",

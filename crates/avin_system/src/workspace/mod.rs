@@ -13,40 +13,60 @@ mod workspace;
 
 pub use workspace::Workspace;
 
-/// Current AVIN workspace for the process.
-///
-/// The workspace must be initialized once with [GlobalWorkspace::set] before
-/// it is accessed.
-pub static WORKSPACE: GlobalWorkspace = GlobalWorkspace::new();
-
-// ───────────────────────────────────────────────────────────────────────────
-
 use std::ops::Deref;
 use std::sync::OnceLock;
 
-/// Process-wide holder for the current AVIN workspace.
+use avin_utils::AvinError;
+
+pub static WORKSPACE: GlobalWorkspace = GlobalWorkspace::new();
+
+/// Current AVIN workspace for the process.
 ///
-/// A workspace can be set only once and is then available through dereferencing
-/// the global [WORKSPACE] value.
+/// The workspace must be initialized with [`GlobalWorkspace::init`] before it
+/// is accessed.
 pub struct GlobalWorkspace {
     inner: OnceLock<Workspace>,
 }
 
 impl GlobalWorkspace {
-    /// Sets the current workspace for the process.
+    /// Initializes the current AVIN workspace and process environment.
+    ///
+    /// Opens the workspace, initializes logging from its configuration, and
+    /// makes the workspace available process-wide.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the workspace cannot be opened or logging cannot
+    /// be initialized.
     ///
     /// # Panics
     ///
-    /// Panics if the current workspace has already been set.
-    pub fn set(&self, workspace: Workspace) {
-        if self.inner.set(workspace).is_err() {
-            panic!("current workspace is already set");
+    /// Panics if the current workspace has already been initialized.
+    pub fn init(&self) -> Result<(), AvinError> {
+        // Check first to avoid reporting logger reinitialization instead of
+        // the real error: the workspace has already been initialized.
+        if self.inner.get().is_some() {
+            panic!("current workspace is already initialized");
         }
+
+        let workspace = Workspace::open()?;
+
+        crate::logger::init_logger(&workspace)?;
+
+        self.set(workspace);
+
+        Ok(())
     }
 
     const fn new() -> Self {
         Self {
             inner: OnceLock::new(),
+        }
+    }
+
+    fn set(&self, workspace: Workspace) {
+        if self.inner.set(workspace).is_err() {
+            panic!("current workspace is already initialized");
         }
     }
 }
@@ -57,7 +77,7 @@ impl Deref for GlobalWorkspace {
     fn deref(&self) -> &Self::Target {
         match self.inner.get() {
             Some(ws) => ws,
-            None => panic!("current workspace is not set"),
+            None => panic!("current workspace is not initialized"),
         }
     }
 }

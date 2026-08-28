@@ -7,9 +7,10 @@
 
 use std::{path::Path, str::FromStr};
 
-use avin_core::Source;
+use log::LevelFilter;
 use serde::Deserialize;
 
+use avin_core::Source;
 use avin_utils::AvinError;
 
 const FORMAT: u32 = 1;
@@ -44,6 +45,10 @@ impl Config {
 
     fn validate(&self) -> Result<(), AvinError> {
         Source::from_str(&self.default.source)?;
+
+        LevelFilter::from_str(&self.log.level).map_err(|_| {
+            AvinError::Value(format!("unknown log level: {}", self.log.level))
+        })?;
 
         Ok(())
     }
@@ -88,25 +93,19 @@ impl ConfigDefault {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ConfigLog {
+    level: String,
     history: usize,
-    debug: bool,
-    info: bool,
 }
 
 impl ConfigLog {
+    /// Returns the configured logging level.
+    pub fn level(&self) -> LevelFilter {
+        LevelFilter::from_str(&self.level).unwrap()
+    }
+
     /// Returns the number of days to keep log history.
     pub fn history(&self) -> usize {
         self.history
-    }
-
-    /// Returns whether debug logging is enabled.
-    pub fn debug(&self) -> bool {
-        self.debug
-    }
-
-    /// Returns whether info logging is enabled.
-    pub fn info(&self) -> bool {
-        self.info
     }
 }
 
@@ -137,9 +136,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -159,9 +157,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -172,9 +169,8 @@ info = true
         assert_eq!(config.default.bars_count(), 5000);
         assert_eq!(config.default.tick_days(), 7);
 
+        assert_eq!(config.log.level(), LevelFilter::Info);
         assert_eq!(config.log.history(), 5);
-        assert!(!config.log.debug());
-        assert!(config.log.info());
     }
 
     #[test]
@@ -190,9 +186,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -214,9 +209,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -237,9 +231,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -260,9 +253,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -282,9 +274,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 ebanina = 42
 "#,
         );
@@ -303,9 +294,8 @@ bars_count = 5000
 tick_days = 7
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 
@@ -324,9 +314,8 @@ watchlist = "trio"
 bars_count = 5000
 
 [log]
+level = "info"
 history = 5
-debug = false
-info = true
 "#,
         );
 

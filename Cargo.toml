@@ -29,6 +29,7 @@ avin_core = { path = "crates/avin_core" }
 avin_domain = { path = "crates/avin_domain" }
 avin_utils = { path = "crates/avin_utils" }
 
+log = { version = "0.4", features = ["std"] }
 chrono = "0.4"
 pyo3 = { version = "0.29", features = ["chrono"] }
 serde = { version = "1", features = ["derive"] }

@@ -7,6 +7,7 @@
 
 #![allow(clippy::module_inception)]
 
+mod logger;
 mod workspace;
 
 pub use workspace::{WORKSPACE, Workspace};
