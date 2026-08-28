@@ -36,31 +36,23 @@ const SECRET_FILE: &str = "secret.toml";
 
 pub struct Workspace {
     avin: AvinToml,
-    pub cfg: Config,
+    pub config: Config,
     pub data: Data,
     pub secret: Secret,
 }
 
 impl Workspace {
-    pub fn create(_path: &Path) -> Result<(), AvinError> {
-        // создает directory, если ее еще нет
-        // создает AVIN.toml
-        // создает необходимые cfg/*
-        // создает workspace dirs
-        todo!()
-    }
-
     pub fn open() -> Result<Self, AvinError> {
         let ws_file = locate_workspace_file()?;
 
         let avin = AvinToml::read(&ws_file)?;
-        let cfg = Config::read(&avin.configuration().join(CONFIG_FILE))?;
-        let secret = Secret::read(&avin.configuration().join(SECRET_FILE))?;
-        let data = Data::read(&avin.configuration().join(DATA_FILE))?;
+        let config = Config::read(&avin.cfg().join(CONFIG_FILE))?;
+        let data = Data::read(&avin.cfg().join(DATA_FILE))?;
+        let secret = Secret::read(&avin.cfg().join(SECRET_FILE))?;
 
         Ok(Self {
             avin,
-            cfg,
+            config,
             data,
             secret,
         })

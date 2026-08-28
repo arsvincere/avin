@@ -28,8 +28,8 @@ impl AvinToml {
         Ok(avin)
     }
 
-    pub(super) fn configuration(&self) -> &Path {
-        &self.dirs.configuration
+    pub(super) fn cfg(&self) -> &Path {
+        &self.dirs.cfg
     }
 
     pub fn log(&self) -> &Path {
@@ -59,8 +59,8 @@ impl AvinToml {
 
 #[derive(Debug, Deserialize)]
 pub struct AvinTomlDirs {
+    cfg: PathBuf,
     log: PathBuf,
-    configuration: PathBuf,
     market_data: PathBuf,
     instruments: PathBuf,
     search: PathBuf,
@@ -70,8 +70,8 @@ pub struct AvinTomlDirs {
 
 impl AvinTomlDirs {
     fn resolve(&mut self, root: &Path) {
+        self.cfg = resolve(root, &self.cfg);
         self.log = resolve(root, &self.log);
-        self.configuration = resolve(root, &self.configuration);
         self.market_data = resolve(root, &self.market_data);
         self.instruments = resolve(root, &self.instruments);
         self.search = resolve(root, &self.search);
