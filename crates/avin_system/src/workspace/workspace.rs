@@ -24,6 +24,11 @@ const DATA_FILE: &str = "data.toml";
 // const GUI_FILE: &str = "gui.toml";
 const SECRET_FILE: &str = "secret.toml";
 
+/// Open AVIN workspace.
+///
+/// `Workspace` represents the process runtime environment loaded from the
+/// workspace configuration files. It provides access to application settings,
+/// desired market data, secrets, and resolved workspace directories.
 pub struct Workspace {
     avin: AvinToml,
     pub config: Config,
@@ -32,6 +37,16 @@ pub struct Workspace {
 }
 
 impl Workspace {
+    /// Opens the current AVIN workspace.
+    ///
+    /// The workspace is located in the current directory or through the
+    /// AVIN_WORKSPACE environment variable. Its AVIN.toml, config.toml,
+    /// data.toml, and secret.toml files are then loaded and validated.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the workspace cannot be located or any required
+    /// workspace file cannot be read, parsed, or validated.
     pub fn open() -> Result<Self, AvinError> {
         let ws_file = locate_workspace_file()?;
 
@@ -50,26 +65,32 @@ impl Workspace {
 
     // AvinToml proxy methods:
 
+    /// Returns the log directory.
     pub fn log(&self) -> &Path {
         self.avin.log()
     }
 
+    /// Returns the market data directory.
     pub fn market_data(&self) -> &Path {
         self.avin.market_data()
     }
 
+    /// Returns the instrument info cache directory.
     pub fn instruments(&self) -> &Path {
         self.avin.instruments()
     }
 
+    /// Returns the pattern search results directory.
     pub fn search(&self) -> &Path {
         self.avin.search()
     }
 
+    /// Returns the tester results directory.
     pub fn test(&self) -> &Path {
         self.avin.test()
     }
 
+    /// Returns the watchlist directory.
     pub fn watchlist(&self) -> &Path {
         self.avin.watchlist()
     }
