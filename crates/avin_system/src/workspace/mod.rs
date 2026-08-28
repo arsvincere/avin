@@ -10,7 +10,6 @@ mod config;
 mod data;
 mod global;
 mod secret;
-mod manifest;
 
 pub use self::global::WORKSPACE;
 
@@ -23,7 +22,7 @@ use avin_utils::AvinError;
 
 use self::avin::AvinToml;
 use self::config::Config;
-use self::data::Data;
+use self::data::DataManifest;
 use self::secret::Secret;
 
 const WORKSPACE_ENV: &str = "AVIN_WORKSPACE";
@@ -38,7 +37,7 @@ const SECRET_FILE: &str = "secret.toml";
 pub struct Workspace {
     avin: AvinToml,
     pub config: Config,
-    pub data: Data,
+    pub data: DataManifest,
     pub secret: Secret,
 }
 
@@ -48,7 +47,7 @@ impl Workspace {
 
         let avin = AvinToml::read(&ws_file)?;
         let config = Config::read(&avin.cfg().join(CONFIG_FILE))?;
-        let data = Data::read(&avin.cfg().join(DATA_FILE))?;
+        let data = DataManifest::read(&avin.cfg().join(DATA_FILE))?;
         let secret = Secret::read(&avin.cfg().join(SECRET_FILE))?;
 
         Ok(Self {
