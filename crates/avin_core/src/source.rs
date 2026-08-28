@@ -10,7 +10,27 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-/// Market data source.
+/// Identifies a market data source supported by AVIN.
+///
+/// `Source` is a low-level identifier shared across AVIN components. It names
+/// the provider from which market data is obtained, but contains no
+/// provider-specific behavior or configuration.
+///
+/// Source names have a canonical representation defined by [`Display`] and
+/// can be parsed case-insensitively using [`FromStr`].
+///
+/// # Examples
+///
+/// ```
+/// use std::str::FromStr;
+///
+/// use avin_core::Source;
+///
+/// let source = Source::from_str("tbank").unwrap();
+///
+/// assert_eq!(source, Source::TBank);
+/// assert_eq!(source.to_string(), "TBank");
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Source {
     TBank,
@@ -36,7 +56,7 @@ impl Display for Source {
 impl FromStr for Source {
     type Err = AvinError;
 
-    /// Parses an source name.
+    /// Parses a market data source name.
     ///
     /// Parsing is case-insensitive.
     ///
@@ -52,6 +72,7 @@ impl FromStr for Source {
     /// use avin_core::Source;
     ///
     /// assert_eq!(Source::from_str("TBank").unwrap(), Source::TBank);
+    /// assert_eq!(Source::from_str("tbank").unwrap(), Source::TBank);
     /// assert!(Source::from_str("foo").is_err());
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -61,12 +82,12 @@ impl FromStr for Source {
             _ => {
                 let available = Self::all()
                     .iter()
-                    .map(Self::to_string)
+                    .map(|source| source.to_string())
                     .collect::<Vec<_>>()
                     .join(", ");
 
                 let msg = format!(
-                    "unknown Source '{}', available=[{}]",
+                    "unknown source '{}', available=[{}]",
                     s, available
                 );
 
