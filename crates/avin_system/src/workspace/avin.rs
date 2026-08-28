@@ -69,7 +69,7 @@ pub struct AvinTomlDirs {
 }
 
 impl AvinTomlDirs {
-    pub fn resolve(&mut self, root: &Path) {
+    fn resolve(&mut self, root: &Path) {
         self.log = resolve(root, &self.log);
         self.configuration = resolve(root, &self.configuration);
         self.market_data = resolve(root, &self.market_data);

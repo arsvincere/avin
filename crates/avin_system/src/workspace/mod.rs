@@ -7,7 +7,9 @@
 
 mod avin;
 mod config;
+mod data;
 mod global;
+mod secret;
 
 pub use self::global::WORKSPACE;
 
@@ -20,20 +22,23 @@ use avin_utils::AvinError;
 
 use self::avin::AvinToml;
 use self::config::Config;
+use self::data::Data;
+use self::secret::Secret;
 
 const WORKSPACE_ENV: &str = "AVIN_WORKSPACE";
 const AVIN_FILE: &str = "AVIN.toml";
 const AVIN_FILE_HIDDEN: &str = ".AVIN.toml";
 
 const CONFIG_FILE: &str = "config.toml";
-// const DATA_FILE: &str = "data.toml";
+const DATA_FILE: &str = "data.toml";
 // const GUI_FILE: &str = "gui.toml";
-// const SECRET_FILE: &str = "secret.toml";
+const SECRET_FILE: &str = "secret.toml";
 
-#[derive(Debug)]
 pub struct Workspace {
-    pub avin: AvinToml,
+    avin: AvinToml,
     pub cfg: Config,
+    pub data: Data,
+    pub secret: Secret,
 }
 
 impl Workspace {
@@ -50,9 +55,18 @@ impl Workspace {
 
         let avin = AvinToml::read(&ws_file)?;
         let cfg = Config::read(&avin.configuration().join(CONFIG_FILE))?;
+        let secret = Secret::read(&avin.configuration().join(SECRET_FILE))?;
+        let data = Data::read(&avin.configuration().join(DATA_FILE))?;
 
-        Ok(Self { avin, cfg })
+        Ok(Self {
+            avin,
+            cfg,
+            data,
+            secret,
+        })
     }
+
+    // AvinToml proxy methods:
 
     pub fn log(&self) -> &Path {
         self.avin.log()
