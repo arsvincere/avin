@@ -5,11 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-// TODO: del after impl
-#![allow(dead_code)]
-#![allow(unused)]
-
 use std::path::Path;
+use std::str::FromStr;
 
 use serde::Deserialize;
 
@@ -32,13 +29,13 @@ impl DataManifest {
             let tbank_set = DataProviderSet {
                 source: Source::TBank,
                 instruments: get_instruments(&tbank)?,
-                bar_history_years: get_bar_history_years(&tbank)?,
+                bar_history_years: get_bar_history_years(&tbank),
                 bar_timeframes: get_bar_timeframes(&tbank)?,
-                tick_history_years: get_tick_history_years(&tbank)?,
-                time_footprint: get_time_footprint(&tbank)?,
-                tick_footprint: get_tick_footprint(&tbank)?,
-                volume_footprint: get_volume_footprint(&tbank)?,
-                value_footprint: get_value_footprint(&tbank)?,
+                tick_history_years: get_tick_history_years(&tbank),
+                time_footprints: get_time_footprints(&tbank)?,
+                tick_footprints: get_tick_footprints(&tbank),
+                volume_footprints: get_volume_footprints(&tbank),
+                value_footprints: get_value_footprints(&tbank),
             };
             sets.push(tbank_set);
         }
@@ -61,10 +58,10 @@ pub struct DataProviderSet {
 
     pub tick_history_years: u32,
 
-    pub time_footprint: Vec<TimeFrame>,
-    pub tick_footprint: Vec<u64>,
-    pub volume_footprint: Vec<u64>,
-    pub value_footprint: Vec<u64>,
+    pub time_footprints: Vec<TimeFrame>,
+    pub tick_footprints: Vec<u64>,
+    pub volume_footprints: Vec<u64>,
+    pub value_footprints: Vec<u64>,
 }
 
 // TOML ---------------------------------------------------------------------
@@ -113,43 +110,108 @@ struct FootprintsDataToml {
 fn get_instruments(
     source: &SourceDataToml,
 ) -> Result<Vec<InstrumentId>, AvinError> {
-    todo!()
+    let instruments = match &source.instruments {
+        Some(instruments) => instruments,
+        None => return Ok(Vec::new()),
+    };
+
+    let mut result = Vec::new();
+
+    for iid_str in instruments.iter() {
+        let iid = InstrumentId::from_str(iid_str)?;
+        result.push(iid);
+    }
+
+    Ok(result)
 }
 
-fn get_bar_history_years(source: &SourceDataToml) -> Result<u32, AvinError> {
-    todo!()
+fn get_bar_history_years(source: &SourceDataToml) -> u32 {
+    match &source.bars {
+        None => 0,
+        Some(bars_data) => bars_data.history_years,
+    }
 }
 
 fn get_bar_timeframes(
     source: &SourceDataToml,
 ) -> Result<Vec<TimeFrame>, AvinError> {
-    todo!()
+    let bars_data = match &source.bars {
+        None => return Ok(Vec::new()),
+        Some(bars_data) => bars_data,
+    };
+
+    let mut timeframes = Vec::new();
+
+    for tf_str in bars_data.timeframes.iter() {
+        let tf = TimeFrame::from_str(tf_str)?;
+        timeframes.push(tf);
+    }
+
+    Ok(timeframes)
 }
 
-fn get_tick_history_years(source: &SourceDataToml) -> Result<u32, AvinError> {
-    todo!()
+fn get_tick_history_years(source: &SourceDataToml) -> u32 {
+    match &source.ticks {
+        None => 0,
+        Some(ticks_data) => ticks_data.history_years,
+    }
 }
 
-fn get_time_footprint(
+fn get_time_footprints(
     source: &SourceDataToml,
 ) -> Result<Vec<TimeFrame>, AvinError> {
-    todo!()
+    let footprints_data = match &source.footprints {
+        None => return Ok(Vec::new()),
+        Some(footprints_data) => footprints_data,
+    };
+
+    let time_footprints = match &footprints_data.time {
+        None => return Ok(Vec::new()),
+        Some(time_footprints) => time_footprints,
+    };
+
+    let mut timeframes = Vec::new();
+
+    for tf_str in time_footprints.iter() {
+        let tf = TimeFrame::from_str(tf_str)?;
+        timeframes.push(tf);
+    }
+
+    Ok(timeframes)
 }
 
-fn get_tick_footprint(
-    source: &SourceDataToml,
-) -> Result<Vec<u64>, AvinError> {
-    todo!()
+fn get_tick_footprints(source: &SourceDataToml) -> Vec<u64> {
+    let footprints_data = match &source.footprints {
+        None => return Vec::new(),
+        Some(footprints_data) => footprints_data,
+    };
+
+    match &footprints_data.tick {
+        None => Vec::new(),
+        Some(tick_footprints) => tick_footprints.clone(),
+    }
 }
 
-fn get_volume_footprint(
-    source: &SourceDataToml,
-) -> Result<Vec<u64>, AvinError> {
-    todo!()
+fn get_volume_footprints(source: &SourceDataToml) -> Vec<u64> {
+    let footprints_data = match &source.footprints {
+        None => return Vec::new(),
+        Some(footprints_data) => footprints_data,
+    };
+
+    match &footprints_data.volume {
+        None => Vec::new(),
+        Some(volume_footprints) => volume_footprints.clone(),
+    }
 }
 
-fn get_value_footprint(
-    source: &SourceDataToml,
-) -> Result<Vec<u64>, AvinError> {
-    todo!()
+fn get_value_footprints(source: &SourceDataToml) -> Vec<u64> {
+    let footprints_data = match &source.footprints {
+        None => return Vec::new(),
+        Some(footprints_data) => footprints_data,
+    };
+
+    match &footprints_data.value {
+        None => Vec::new(),
+        Some(value_footprints) => value_footprints.clone(),
+    }
 }
