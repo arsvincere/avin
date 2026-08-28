@@ -104,3 +104,66 @@ fn cleanup_old_logs(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn cleanup_removes_expired_logs() {
+        let dir = tempdir().unwrap();
+        let today = NaiveDate::from_ymd_opt(2026, 8, 29).unwrap();
+
+        let expired = dir.path().join("2026-08-24.log");
+        let recent = dir.path().join("2026-08-25.log");
+        let current = dir.path().join("2026-08-29.log");
+
+        fs::write(&expired, "").unwrap();
+        fs::write(&recent, "").unwrap();
+        fs::write(&current, "").unwrap();
+
+        cleanup_old_logs(dir.path(), today, 5).unwrap();
+
+        assert!(!expired.exists());
+        assert!(recent.exists());
+        assert!(current.exists());
+    }
+
+    #[test]
+    fn cleanup_zero_history_removes_previous_logs() {
+        let dir = tempdir().unwrap();
+        let today = NaiveDate::from_ymd_opt(2026, 8, 29).unwrap();
+
+        let previous = dir.path().join("2026-08-28.log");
+        let current = dir.path().join("2026-08-29.log");
+
+        fs::write(&previous, "").unwrap();
+        fs::write(&current, "").unwrap();
+
+        cleanup_old_logs(dir.path(), today, 0).unwrap();
+
+        assert!(!previous.exists());
+        assert!(current.exists());
+    }
+
+    #[test]
+    fn cleanup_ignores_other_files() {
+        let dir = tempdir().unwrap();
+        let today = NaiveDate::from_ymd_opt(2026, 8, 29).unwrap();
+
+        let text = dir.path().join("notes.txt");
+        let invalid_log = dir.path().join("debug.log");
+
+        fs::write(&text, "").unwrap();
+        fs::write(&invalid_log, "").unwrap();
+
+        cleanup_old_logs(dir.path(), today, 5).unwrap();
+
+        assert!(text.exists());
+        assert!(invalid_log.exists());
+    }
+}
