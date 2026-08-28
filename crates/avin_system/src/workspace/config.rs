@@ -101,3 +101,205 @@ impl ConfigLog {
         self.info
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::io::Write;
+
+    use tempfile::NamedTempFile;
+
+    use super::*;
+
+    fn config_file(content: &str) -> NamedTempFile {
+        let mut file = NamedTempFile::new().unwrap();
+        file.write_all(content.as_bytes()).unwrap();
+        file
+    }
+
+    #[test]
+    fn read_config() {
+        let file = config_file(
+            r#"
+format = 1
+
+[default]
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        let config = Config::read(file.path()).unwrap();
+
+        assert_eq!(config.default.source(), Source::TBank);
+        assert_eq!(config.default.watchlist(), "trio");
+        assert_eq!(config.default.bars_count(), 5000);
+        assert_eq!(config.default.tick_days(), 7);
+
+        assert_eq!(config.log.history(), 5);
+        assert!(!config.log.debug());
+        assert!(config.log.info());
+    }
+
+    #[test]
+    fn read_source_case_insensitive() {
+        let file = config_file(
+            r#"
+format = 1
+
+[default]
+source = "TBANK"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        let config = Config::read(file.path()).unwrap();
+
+        assert_eq!(config.default.source(), Source::TBank);
+    }
+
+    #[test]
+    fn reject_invalid_source() {
+        let file = config_file(
+            r#"
+format = 1
+
+[default]
+source = "ebanina"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
+    }
+
+    #[test]
+    fn reject_unknown_root_field() {
+        let file = config_file(
+            r#"
+format = 1
+ebanina = 42
+
+[default]
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
+    }
+
+    #[test]
+    fn reject_unknown_default_field() {
+        let file = config_file(
+            r#"
+format = 1
+
+[default]
+EBANINA = 42
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
+    }
+
+    #[test]
+    fn reject_unknown_log_field() {
+        let file = config_file(
+            r#"
+format = 1
+
+[default]
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+ebanina = 42
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
+    }
+
+    #[test]
+    fn reject_missing_format() {
+        let file = config_file(
+            r#"
+[default]
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+tick_days = 7
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
+    }
+
+    #[test]
+    fn reject_missing_required_field() {
+        let file = config_file(
+            r#"
+format = 1
+
+[default]
+source = "tbank"
+watchlist = "trio"
+bars_count = 5000
+
+[log]
+history = 5
+debug = false
+info = true
+"#,
+        );
+
+        assert!(Config::read(file.path()).is_err());
+    }
+}
