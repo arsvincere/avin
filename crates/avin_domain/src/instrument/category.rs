@@ -10,19 +10,6 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-// TODO: rename Currency -> CurrencyPair???
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Category {
-    Index,
-    Share,
-    Future,
-    Bond,
-    Option,
-    ETF,
-    /// Currency pair / FX market instruments.
-    Currency,
-}
-
 /// Category.
 ///
 /// Represents a financial instrument category.
@@ -42,6 +29,17 @@ pub enum Category {
 /// let category = Category::from_str("future").unwrap();
 /// assert_eq!(category, Category::Future);
 /// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Category {
+    Index,
+    Share,
+    Future,
+    Bond,
+    Option,
+    Etf,
+    CurrencyPair,
+}
+
 impl Category {
     /// Returns all supported categories.
     pub const fn all() -> &'static [Self] {
@@ -51,22 +49,36 @@ impl Category {
             Self::Future,
             Self::Bond,
             Self::Option,
-            Self::ETF,
-            Self::Currency,
+            Self::Etf,
+            Self::CurrencyPair,
         ]
+    }
+
+    /// Returns a stable machine-readable identifier suitable for persistence
+    /// and serialization.
+    pub const fn key(&self) -> &'static str {
+        match self {
+            Self::Index => "index",
+            Self::Share => "share",
+            Self::Future => "future",
+            Self::Bond => "bond",
+            Self::Option => "option",
+            Self::Etf => "etf",
+            Self::CurrencyPair => "currency_pair",
+        }
     }
 }
 
 impl Display for Category {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Index => f.write_str("INDEX"),
-            Self::Share => f.write_str("SHARE"),
-            Self::Future => f.write_str("FUTURE"),
-            Self::Bond => f.write_str("BOND"),
-            Self::Option => f.write_str("OPTION"),
-            Self::ETF => f.write_str("ETF"),
-            Self::Currency => f.write_str("CURRENCY"),
+            Self::Index => f.write_str("Index"),
+            Self::Share => f.write_str("Share"),
+            Self::Future => f.write_str("Future"),
+            Self::Bond => f.write_str("Bond"),
+            Self::Option => f.write_str("Option"),
+            Self::Etf => f.write_str("ETF"),
+            Self::CurrencyPair => f.write_str("Currency pair"),
         }
     }
 }
@@ -74,13 +86,13 @@ impl Display for Category {
 impl FromStr for Category {
     type Err = AvinError;
 
-    /// Parses a category.
+    /// Parses a category key.
     ///
     /// Parsing is case-insensitive.
     ///
     /// # Errors
     ///
-    /// Returns an error if the category is unknown.
+    /// Returns an error if the category key is unknown.
     ///
     /// # Examples
     ///
@@ -95,7 +107,7 @@ impl FromStr for Category {
     /// );
     /// assert_eq!(
     ///     Category::from_str("ETF").unwrap(),
-    ///     Category::ETF
+    ///     Category::Etf
     /// );
     ///
     /// assert!(Category::from_str("foo").is_err());
@@ -107,17 +119,17 @@ impl FromStr for Category {
             "future" => Ok(Self::Future),
             "bond" => Ok(Self::Bond),
             "option" => Ok(Self::Option),
-            "etf" => Ok(Self::ETF),
-            "currency" => Ok(Self::Currency),
+            "etf" => Ok(Self::Etf),
+            "currency_pair" => Ok(Self::CurrencyPair),
             _ => {
                 let available = Self::all()
                     .iter()
-                    .map(Self::to_string)
+                    .map(|category| category.key())
                     .collect::<Vec<_>>()
                     .join(", ");
 
                 let msg = format!(
-                    "unknown category '{}', available=[{}]",
+                    "unknown category key '{}', available=[{}]",
                     s, available
                 );
 
@@ -139,37 +151,49 @@ mod tests {
             Category::Future,
             Category::Bond,
             Category::Option,
-            Category::ETF,
-            Category::Currency,
+            Category::Etf,
+            Category::CurrencyPair,
         ];
 
         assert_eq!(Category::all(), expected);
     }
 
     #[test]
+    fn key() {
+        assert_eq!(Category::Index.key(), "index");
+        assert_eq!(Category::Share.key(), "share");
+        assert_eq!(Category::Future.key(), "future");
+        assert_eq!(Category::Bond.key(), "bond");
+        assert_eq!(Category::Option.key(), "option");
+        assert_eq!(Category::Etf.key(), "etf");
+        assert_eq!(Category::CurrencyPair.key(), "currency_pair");
+    }
+
+    #[test]
     fn display() {
-        assert_eq!(Category::Index.to_string(), "INDEX");
-        assert_eq!(Category::Share.to_string(), "SHARE");
-        assert_eq!(Category::Future.to_string(), "FUTURE");
-        assert_eq!(Category::Bond.to_string(), "BOND");
-        assert_eq!(Category::Option.to_string(), "OPTION");
-        assert_eq!(Category::ETF.to_string(), "ETF");
-        assert_eq!(Category::Currency.to_string(), "CURRENCY");
+        assert_eq!(Category::Index.to_string(), "Index");
+        assert_eq!(Category::Share.to_string(), "Share");
+        assert_eq!(Category::Future.to_string(), "Future");
+        assert_eq!(Category::Bond.to_string(), "Bond");
+        assert_eq!(Category::Option.to_string(), "Option");
+        assert_eq!(Category::Etf.to_string(), "ETF");
+        assert_eq!(Category::CurrencyPair.to_string(), "Currency pair");
     }
 
     #[test]
     fn from_str() {
-        assert_eq!(Category::from_str("INDEX").unwrap(), Category::Index);
-        assert_eq!(Category::from_str("SHARE").unwrap(), Category::Share);
-        assert_eq!(Category::from_str("FUTURE").unwrap(), Category::Future);
-        assert_eq!(Category::from_str("BoNd").unwrap(), Category::Bond);
-        assert_eq!(Category::from_str("OPTION").unwrap(), Category::Option);
-        assert_eq!(Category::from_str("etf").unwrap(), Category::ETF);
-        assert_eq!(
-            Category::from_str("CURRENCY").unwrap(),
-            Category::Currency
-        );
+        for category in Category::all().iter() {
+            assert_eq!(
+                Category::from_str(category.key()).unwrap(),
+                *category
+            );
+        }
 
-        assert!(Category::from_str("foo").is_err());
+        assert_eq!(Category::from_str("sHarE").unwrap(), Category::Share);
+
+        assert!(matches!(
+            Category::from_str("foo").unwrap_err(),
+            AvinError::Value(_)
+        ));
     }
 }

@@ -24,13 +24,13 @@ class PyExchange:
     def key(self) -> str: ...
 
 class PyCategory:
-    Currency: ClassVar[PyCategory]
     Index: ClassVar[PyCategory]
     Share: ClassVar[PyCategory]
     Future: ClassVar[PyCategory]
     Bond: ClassVar[PyCategory]
     Option: ClassVar[PyCategory]
-    ETF: ClassVar[PyCategory]
+    Etf: ClassVar[PyCategory]
+    CurrencyPair: ClassVar[PyCategory]
 
     @staticmethod
     def all() -> list[PyCategory]: ...
@@ -38,6 +38,7 @@ class PyCategory:
     def from_str(s: str) -> PyCategory: ...
     def display(self) -> str: ...
     def eq(self, other: PyCategory) -> bool: ...
+    def key(self) -> str: ...
 
 class PyTicker:
     def __init__(self, value: str) -> None: ...

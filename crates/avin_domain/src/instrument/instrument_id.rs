@@ -83,7 +83,13 @@ impl InstrumentId {
 
 impl Display for InstrumentId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.exchange, self.category, self.ticker)
+        write!(
+            f,
+            "{}.{}.{}",
+            self.exchange,
+            self.category.key().to_uppercase(),
+            self.ticker
+        )
     }
 }
 

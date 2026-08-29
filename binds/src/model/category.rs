@@ -22,12 +22,6 @@ pub struct PyCategory {
 impl PyCategory {
     #[classattr]
     #[allow(non_upper_case_globals)]
-    const Currency: Self = Self {
-        inner: Category::Currency,
-    };
-
-    #[classattr]
-    #[allow(non_upper_case_globals)]
     const Index: Self = Self {
         inner: Category::Index,
     };
@@ -57,8 +51,15 @@ impl PyCategory {
     };
 
     #[classattr]
-    const ETF: Self = Self {
-        inner: Category::ETF,
+    #[allow(non_upper_case_globals)]
+    const Etf: Self = Self {
+        inner: Category::Etf,
+    };
+
+    #[classattr]
+    #[allow(non_upper_case_globals)]
+    const CurrencyPair: Self = Self {
+        inner: Category::CurrencyPair,
     };
 
     #[staticmethod]
@@ -83,5 +84,9 @@ impl PyCategory {
 
     fn eq(&self, other: &Self) -> bool {
         self.inner == other.inner
+    }
+
+    fn key(&self) -> &'static str {
+        self.inner.key()
     }
 }
