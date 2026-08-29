@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
-use avin_core::Source;
+use avin_core::DataProvider;
 use avin_domain::{InstrumentId, TimeFrame};
 use avin_utils::AvinError;
 
@@ -19,7 +19,7 @@ const FORMAT: u32 = 1;
 /// Describes the market data desired for the AVIN workspace.
 ///
 /// The manifest is produced by parsing the workspace data.toml file and
-/// contains one [DataProviderSet] for each configured market data source.
+/// contains one [DataProviderSet] for each configured market data provider.
 /// It represents the desired data state, but does not define whether that data
 /// is downloaded, built from other data, or already present in storage.
 #[derive(Debug)]
@@ -42,7 +42,7 @@ impl DataManifest {
 
         if let Some(tbank) = raw.tbank {
             let tbank_set = DataProviderSet {
-                source: Source::TBank,
+                provider: DataProvider::TBank,
                 instruments: get_instruments(&tbank)?,
                 bar_history_years: get_bar_history_years(&tbank),
                 bar_timeframes: get_bar_timeframes(&tbank)?,
@@ -64,14 +64,14 @@ impl DataManifest {
     }
 }
 
-/// Describes the market data desired from one source.
+/// Describes the market data desired from one provider.
 ///
 /// Empty collections mean that the corresponding data is not requested.
 /// A history depth of `0` means that no history of that type is requested.
 #[derive(Debug)]
 pub struct DataProviderSet {
-    /// Market data source.
-    pub source: Source,
+    /// Market data provider.
+    pub provider: DataProvider,
     /// Instruments for which data is desired.
     pub instruments: Vec<InstrumentId>,
 
@@ -99,12 +99,12 @@ pub struct DataProviderSet {
 #[serde(deny_unknown_fields)]
 struct DataToml {
     format: u32,
-    tbank: Option<SourceDataToml>,
+    tbank: Option<ProviderDataToml>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct SourceDataToml {
+struct ProviderDataToml {
     instruments: Option<Vec<String>>,
     bars: Option<BarsDataToml>,
     ticks: Option<TicksDataToml>,
@@ -136,9 +136,9 @@ struct FootprintsDataToml {
 // helpers -------------------------------------------------------------------
 
 fn get_instruments(
-    source: &SourceDataToml,
+    provider: &ProviderDataToml,
 ) -> Result<Vec<InstrumentId>, AvinError> {
-    let instruments = match &source.instruments {
+    let instruments = match &provider.instruments {
         Some(instruments) => instruments,
         None => return Ok(Vec::new()),
     };
@@ -153,17 +153,17 @@ fn get_instruments(
     Ok(result)
 }
 
-fn get_bar_history_years(source: &SourceDataToml) -> u32 {
-    match &source.bars {
+fn get_bar_history_years(provider: &ProviderDataToml) -> u32 {
+    match &provider.bars {
         None => 0,
         Some(bars_data) => bars_data.history_years,
     }
 }
 
 fn get_bar_timeframes(
-    source: &SourceDataToml,
+    provider: &ProviderDataToml,
 ) -> Result<Vec<TimeFrame>, AvinError> {
-    let bars_data = match &source.bars {
+    let bars_data = match &provider.bars {
         None => return Ok(Vec::new()),
         Some(bars_data) => bars_data,
     };
@@ -178,17 +178,17 @@ fn get_bar_timeframes(
     Ok(timeframes)
 }
 
-fn get_tick_history_years(source: &SourceDataToml) -> u32 {
-    match &source.ticks {
+fn get_tick_history_years(provider: &ProviderDataToml) -> u32 {
+    match &provider.ticks {
         None => 0,
         Some(ticks_data) => ticks_data.history_years,
     }
 }
 
 fn get_time_footprints(
-    source: &SourceDataToml,
+    provider: &ProviderDataToml,
 ) -> Result<Vec<TimeFrame>, AvinError> {
-    let footprints_data = match &source.footprints {
+    let footprints_data = match &provider.footprints {
         None => return Ok(Vec::new()),
         Some(footprints_data) => footprints_data,
     };
@@ -208,8 +208,8 @@ fn get_time_footprints(
     Ok(timeframes)
 }
 
-fn get_tick_footprints(source: &SourceDataToml) -> Vec<u64> {
-    let footprints_data = match &source.footprints {
+fn get_tick_footprints(provider: &ProviderDataToml) -> Vec<u64> {
+    let footprints_data = match &provider.footprints {
         None => return Vec::new(),
         Some(footprints_data) => footprints_data,
     };
@@ -220,8 +220,8 @@ fn get_tick_footprints(source: &SourceDataToml) -> Vec<u64> {
     }
 }
 
-fn get_volume_footprints(source: &SourceDataToml) -> Vec<u64> {
-    let footprints_data = match &source.footprints {
+fn get_volume_footprints(provider: &ProviderDataToml) -> Vec<u64> {
+    let footprints_data = match &provider.footprints {
         None => return Vec::new(),
         Some(footprints_data) => footprints_data,
     };
@@ -232,8 +232,8 @@ fn get_volume_footprints(source: &SourceDataToml) -> Vec<u64> {
     }
 }
 
-fn get_value_footprints(source: &SourceDataToml) -> Vec<u64> {
-    let footprints_data = match &source.footprints {
+fn get_value_footprints(provider: &ProviderDataToml) -> Vec<u64> {
+    let footprints_data = match &provider.footprints {
         None => return Vec::new(),
         Some(footprints_data) => footprints_data,
     };
@@ -286,7 +286,7 @@ format = 1
     }
 
     #[test]
-    fn read_empty_source() {
+    fn read_empty_provider() {
         let file = data_file(
             r#"
 format = 1
@@ -301,7 +301,7 @@ format = 1
 
         let set = &manifest.sets()[0];
 
-        assert_eq!(set.source, Source::TBank);
+        assert_eq!(set.provider, DataProvider::TBank);
         assert!(set.instruments.is_empty());
 
         assert_eq!(set.bar_history_years, 0);
@@ -316,7 +316,7 @@ format = 1
     }
 
     #[test]
-    fn read_full_source() {
+    fn read_full_provider() {
         let file = data_file(
             r#"
 format = 1
@@ -348,7 +348,7 @@ value = [100_000, 1_000_000]
 
         let set = &manifest.sets()[0];
 
-        assert_eq!(set.source, Source::TBank);
+        assert_eq!(set.provider, DataProvider::TBank);
 
         assert_eq!(
             set.instruments,
@@ -435,7 +435,7 @@ foo = 42
     }
 
     #[test]
-    fn reject_unknown_source_field() {
+    fn reject_unknown_provider_field() {
         let file = data_file(
             r#"
 format = 1

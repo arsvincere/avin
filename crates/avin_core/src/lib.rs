@@ -5,6 +5,6 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod source;
+mod data_provider;
 
-pub use source::Source;
+pub use data_provider::DataProvider;

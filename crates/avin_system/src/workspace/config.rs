@@ -10,7 +10,7 @@ use std::{path::Path, str::FromStr};
 use log::LevelFilter;
 use serde::Deserialize;
 
-use avin_core::Source;
+use avin_core::DataProvider;
 use avin_utils::AvinError;
 
 const FORMAT: u32 = 1;
@@ -44,7 +44,7 @@ impl Config {
     }
 
     fn validate(&self) -> Result<(), AvinError> {
-        Source::from_str(&self.default.source)?;
+        DataProvider::from_str(&self.default.data_provider)?;
 
         LevelFilter::from_str(&self.log.level).map_err(|_| {
             AvinError::Value(format!("unknown log level: {}", self.log.level))
@@ -61,16 +61,16 @@ impl Config {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ConfigDefault {
-    source: String,
+    data_provider: String,
     watchlist: String,
     bars_count: usize,
     tick_days: usize,
 }
 
 impl ConfigDefault {
-    /// Returns the default market data source.
-    pub fn source(&self) -> Source {
-        Source::from_str(&self.source).unwrap()
+    /// Returns the default market data provider.
+    pub fn data_provider(&self) -> DataProvider {
+        DataProvider::from_str(&self.data_provider).unwrap()
     }
 
     /// Returns the default watchlist name.
@@ -130,7 +130,7 @@ mod tests {
 format = 2
 
 [default]
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -151,7 +151,7 @@ history = 5
 format = 1
 
 [default]
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -164,7 +164,7 @@ history = 5
 
         let config = Config::read(file.path()).unwrap();
 
-        assert_eq!(config.default.source(), Source::TBank);
+        assert_eq!(config.default.data_provider(), DataProvider::TBank);
         assert_eq!(config.default.watchlist(), "trio");
         assert_eq!(config.default.bars_count(), 5000);
         assert_eq!(config.default.tick_days(), 7);
@@ -174,13 +174,13 @@ history = 5
     }
 
     #[test]
-    fn read_source_case_insensitive() {
+    fn read_data_provider_case_insensitive() {
         let file = config_file(
             r#"
 format = 1
 
 [default]
-source = "TBANK"
+data_provider = "TBANK"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -193,17 +193,17 @@ history = 5
 
         let config = Config::read(file.path()).unwrap();
 
-        assert_eq!(config.default.source(), Source::TBank);
+        assert_eq!(config.default.data_provider(), DataProvider::TBank);
     }
 
     #[test]
-    fn reject_invalid_source() {
+    fn reject_invalid_data_provider() {
         let file = config_file(
             r#"
 format = 1
 
 [default]
-source = "ebanina"
+data_provider = "ebanina"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -225,7 +225,7 @@ format = 1
 ebanina = 42
 
 [default]
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -247,7 +247,7 @@ format = 1
 
 [default]
 EBANINA = 42
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -268,7 +268,7 @@ history = 5
 format = 1
 
 [default]
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -288,7 +288,7 @@ ebanina = 42
         let file = config_file(
             r#"
 [default]
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 tick_days = 7
@@ -309,7 +309,7 @@ history = 5
 format = 1
 
 [default]
-source = "tbank"
+data_provider = "tbank"
 watchlist = "trio"
 bars_count = 5000
 
