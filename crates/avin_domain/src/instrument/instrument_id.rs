@@ -86,7 +86,7 @@ impl Display for InstrumentId {
         write!(
             f,
             "{}.{}.{}",
-            self.exchange,
+            self.exchange.key().to_uppercase(),
             self.category.key().to_uppercase(),
             self.ticker
         )
@@ -112,7 +112,7 @@ impl FromStr for InstrumentId {
     ///
     /// use avin_domain::{Exchange, InstrumentId, Category};
     ///
-    /// let iid = InstrumentId::from_str("moex.SHARE.SBER").unwrap();
+    /// let iid = InstrumentId::from_str("MOEX.SHARE.SBER").unwrap();
     ///
     /// assert_eq!(iid.exchange(), Exchange::Moex);
     /// assert_eq!(iid.category(), Category::Share);
@@ -166,7 +166,7 @@ mod tests {
 
     #[test]
     fn from_str() {
-        let iid = InstrumentId::from_str("moex.SHARE.SBER").unwrap();
+        let iid = InstrumentId::from_str("MOEX.SHARE.SBER").unwrap();
 
         assert_eq!(iid.exchange(), Exchange::Moex);
         assert_eq!(iid.category(), Category::Share);
@@ -182,9 +182,9 @@ mod tests {
 
     #[test]
     fn invalid_id() {
-        assert!(InstrumentId::from_str("MOEX.SHARE").is_err());
         assert!(InstrumentId::from_str("foo.SHARE.SBER").is_err());
         assert!(InstrumentId::from_str("MOEX.foo.SBER").is_err());
         assert!(InstrumentId::from_str("MOEX.SHARE.").is_err());
+        assert!(InstrumentId::from_str("MOEX.SHARE").is_err());
     }
 }
