@@ -47,7 +47,7 @@ impl DataProvider {
 
     /// Returns a stable machine-readable identifier suitable for persistence
     /// and serialization.
-    pub fn key(&self) -> &'static str {
+    pub const fn key(&self) -> &'static str {
         match self {
             Self::TBank => "tbank",
             Self::MoexAlgo => "moexalgo",

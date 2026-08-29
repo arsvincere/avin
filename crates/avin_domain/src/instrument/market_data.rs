@@ -68,7 +68,7 @@ impl MarketData {
 
     /// Returns a stable machine-readable identifier suitable for persistence
     /// and serialization.
-    pub fn key(&self) -> &'static str {
+    pub const fn key(&self) -> &'static str {
         match self {
             Self::Bar1M => "bar_1m",
             Self::Bar5M => "bar_5m",
