@@ -76,7 +76,7 @@ mod tests {
     fn valid_info() {
         let future = Future::try_from(get_info(Category::Future)).unwrap();
 
-        assert_eq!(future.exchange(), Exchange::MOEX);
+        assert_eq!(future.exchange(), Exchange::Moex);
         assert_eq!(future.category(), Category::Future);
         assert_eq!(future.ticker().to_string(), "IMOEXF");
         assert_eq!(future.name(), "IMOEX Future");

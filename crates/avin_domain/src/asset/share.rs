@@ -76,7 +76,7 @@ mod tests {
     fn valid_info() {
         let share = Share::try_from(get_info(Category::Share)).unwrap();
 
-        assert_eq!(share.exchange(), Exchange::MOEX);
+        assert_eq!(share.exchange(), Exchange::Moex);
         assert_eq!(share.category(), Category::Share);
         assert_eq!(share.ticker().to_string(), "SBER");
         assert_eq!(share.name(), "Сбер Банк");

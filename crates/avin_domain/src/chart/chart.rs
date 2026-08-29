@@ -181,7 +181,7 @@ mod tests {
 
     fn iid() -> InstrumentId {
         InstrumentId::new(
-            Exchange::MOEX,
+            Exchange::Moex,
             Category::Share,
             Ticker::new("SBER").unwrap(),
         )

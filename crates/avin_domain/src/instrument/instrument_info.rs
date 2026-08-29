@@ -220,7 +220,7 @@ mod tests {
         let raw_info = valid_raw_info();
         let info = InstrumentInfo::new(raw_info).unwrap();
 
-        assert_eq!(info.exchange(), Exchange::MOEX);
+        assert_eq!(info.exchange(), Exchange::Moex);
         assert_eq!(info.category(), Category::Share);
         assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
         assert_eq!(info.figi(), "BBG004730N88");
@@ -234,7 +234,7 @@ mod tests {
         assert_eq!(
             info.iid(),
             InstrumentId::new(
-                Exchange::MOEX,
+                Exchange::Moex,
                 Category::Share,
                 Ticker::new("SBER").unwrap(),
             )

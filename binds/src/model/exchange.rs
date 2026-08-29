@@ -35,13 +35,13 @@ impl PyExchange {
     #[classattr]
     #[allow(non_upper_case_globals)]
     const MOEX: Self = Self {
-        inner: Exchange::MOEX,
+        inner: Exchange::Moex,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
     const SPB: Self = Self {
-        inner: Exchange::SPB,
+        inner: Exchange::Spb,
     };
 
     #[staticmethod]
@@ -68,7 +68,7 @@ impl PyExchange {
         self.inner == other.inner
     }
 
-    fn name(&self) -> &'static str {
-        self.inner.name()
+    fn key(&self) -> &'static str {
+        self.inner.key()
     }
 }

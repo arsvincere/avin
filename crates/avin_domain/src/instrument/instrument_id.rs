@@ -32,7 +32,7 @@ use crate::{Category, Exchange, Ticker};
 /// use avin_domain::{Exchange, InstrumentId, Category, Ticker};
 ///
 /// let iid = InstrumentId::new(
-///     Exchange::MOEX,
+///     Exchange::Moex,
 ///     Category::Share,
 ///     Ticker::new("SBER").unwrap(),
 /// );
@@ -40,7 +40,7 @@ use crate::{Category, Exchange, Ticker};
 /// assert_eq!(iid.to_string(), "MOEX.SHARE.SBER");
 ///
 /// let iid = InstrumentId::from_str("MOEX.SHARE.SBER").unwrap();
-/// assert_eq!(iid.exchange(), Exchange::MOEX);
+/// assert_eq!(iid.exchange(), Exchange::Moex);
 /// assert_eq!(iid.category(), Category::Share);
 /// assert_eq!(iid.ticker(), &Ticker::new("SBER").unwrap());
 /// ```
@@ -108,7 +108,7 @@ impl FromStr for InstrumentId {
     ///
     /// let iid = InstrumentId::from_str("moex.SHARE.SBER").unwrap();
     ///
-    /// assert_eq!(iid.exchange(), Exchange::MOEX);
+    /// assert_eq!(iid.exchange(), Exchange::Moex);
     /// assert_eq!(iid.category(), Category::Share);
     /// assert_eq!(iid.ticker().to_string(), "SBER");
     ///
@@ -137,12 +137,12 @@ mod tests {
     #[test]
     fn instrument_id() {
         let iid = InstrumentId::new(
-            Exchange::MOEX,
+            Exchange::Moex,
             Category::Share,
             Ticker::new("SBER").unwrap(),
         );
 
-        assert_eq!(iid.exchange(), Exchange::MOEX);
+        assert_eq!(iid.exchange(), Exchange::Moex);
         assert_eq!(iid.category(), Category::Share);
         assert_eq!(iid.ticker(), &Ticker::new("SBER").unwrap());
     }
@@ -150,7 +150,7 @@ mod tests {
     #[test]
     fn display() {
         let iid = InstrumentId::new(
-            Exchange::MOEX,
+            Exchange::Moex,
             Category::Share,
             Ticker::new("SBER").unwrap(),
         );
@@ -162,7 +162,7 @@ mod tests {
     fn from_str() {
         let iid = InstrumentId::from_str("moex.SHARE.SBER").unwrap();
 
-        assert_eq!(iid.exchange(), Exchange::MOEX);
+        assert_eq!(iid.exchange(), Exchange::Moex);
         assert_eq!(iid.category(), Category::Share);
         assert_eq!(iid.ticker(), &Ticker::new("SBER").unwrap());
     }
