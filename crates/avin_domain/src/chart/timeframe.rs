@@ -77,6 +77,26 @@ impl TimeFrame {
         ]
     }
 
+    /// Returns a stable machine-readable identifier suitable for persistence
+    /// and serialization.
+    pub const fn key(&self) -> &'static str {
+        match self {
+            Self::S1 => "1s",
+            Self::S5 => "5s",
+            Self::S10 => "10s",
+            Self::S15 => "15s",
+            Self::M1 => "1m",
+            Self::M5 => "5m",
+            Self::M10 => "10m",
+            Self::M15 => "15m",
+            Self::H1 => "1h",
+            Self::H4 => "4h",
+            Self::Day => "d",
+            Self::Week => "w",
+            Self::Month => "m",
+        }
+    }
+
     /// Returns the fixed duration in nanoseconds.
     ///
     /// Returns `None` if the timeframe has no fixed duration.
@@ -275,15 +295,13 @@ impl Display for TimeFrame {
 impl std::str::FromStr for TimeFrame {
     type Err = AvinError;
 
-    /// Parses a timeframe from its canonical textual representation.
+    /// Parses a timeframe.
     ///
-    /// Parsing is case-insensitive. Accepted values correspond to the
-    /// representation produced by [`std::fmt::Display`], such as `"1S"`,
-    /// `"15M"`, `"4H"`, `"D"`, `"W"`, and `"M"`.
+    /// Parsing is case-insensitive.
     ///
     /// # Errors
     ///
-    /// Returns an error if the timeframe is unknown.
+    /// Returns an error if the timeframe key is unknown.
     ///
     /// # Examples
     ///
@@ -294,27 +312,31 @@ impl std::str::FromStr for TimeFrame {
     ///
     /// assert_eq!(TimeFrame::from_str("1m").unwrap(), TimeFrame::M1);
     /// assert_eq!(TimeFrame::from_str("1M").unwrap(), TimeFrame::M1);
-    /// assert_eq!(TimeFrame::from_str("4H").unwrap(), TimeFrame::H4);
+    /// assert_eq!(TimeFrame::from_str("d").unwrap(), TimeFrame::Day);
     /// assert_eq!(TimeFrame::from_str("D").unwrap(), TimeFrame::Day);
     ///
+    /// assert!(TimeFrame::from_str("Day").is_err());
     /// assert!(TimeFrame::from_str("M1").is_err());
     /// assert!(TimeFrame::from_str("foo").is_err());
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(timeframe) = Self::all()
             .iter()
-            .copied()
-            .find(|tf| tf.to_string().eq_ignore_ascii_case(s))
+            .find(|tf| tf.key().eq_ignore_ascii_case(s))
         {
-            return Ok(timeframe);
+            return Ok(*timeframe);
         }
 
-        let all = Self::all()
+        let available = Self::all()
             .iter()
-            .map(Self::to_string)
+            .map(|tf| tf.key())
             .collect::<Vec<_>>()
             .join(", ");
-        let msg = format!("unknown timeframe '{}', available=[{}]", s, all);
+
+        let msg = format!(
+            "unknown timeframe key '{}', available=[{}]",
+            s, available
+        );
 
         Err(AvinError::Value(msg))
     }
@@ -366,6 +388,23 @@ mod tests {
         ];
 
         assert_eq!(TimeFrame::all(), expected);
+    }
+
+    #[test]
+    fn key() {
+        assert_eq!(TimeFrame::S1.key(), "1s");
+        assert_eq!(TimeFrame::S5.key(), "5s");
+        assert_eq!(TimeFrame::S10.key(), "10s");
+        assert_eq!(TimeFrame::S15.key(), "15s");
+        assert_eq!(TimeFrame::M1.key(), "1m");
+        assert_eq!(TimeFrame::M5.key(), "5m");
+        assert_eq!(TimeFrame::M10.key(), "10m");
+        assert_eq!(TimeFrame::M15.key(), "15m");
+        assert_eq!(TimeFrame::H1.key(), "1h");
+        assert_eq!(TimeFrame::H4.key(), "4h");
+        assert_eq!(TimeFrame::Day.key(), "d");
+        assert_eq!(TimeFrame::Week.key(), "w");
+        assert_eq!(TimeFrame::Month.key(), "m");
     }
 
     #[test]
@@ -477,13 +516,13 @@ mod tests {
 
     #[test]
     fn from_str() {
-        for timeframe in TimeFrame::all() {
-            let canonical = timeframe.to_string();
-            assert_eq!(TimeFrame::from_str(&canonical).unwrap(), *timeframe);
-
-            let lower_case = canonical.to_ascii_lowercase();
-            assert_eq!(TimeFrame::from_str(&lower_case).unwrap(), *timeframe);
+        for timeframe in TimeFrame::all().iter() {
+            let key = timeframe.key();
+            assert_eq!(TimeFrame::from_str(key).unwrap(), *timeframe);
         }
+
+        assert_eq!(TimeFrame::from_str("4H").unwrap(), TimeFrame::H4);
+        assert_eq!(TimeFrame::from_str("D").unwrap(), TimeFrame::Day);
 
         assert!(TimeFrame::from_str("M1").is_err());
         assert!(TimeFrame::from_str("Day").is_err());

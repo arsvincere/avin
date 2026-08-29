@@ -57,7 +57,7 @@ class TimeFrame(Enum):
 
     def __new__(cls, inner: PyTimeFrame):
         obj = object.__new__(cls)
-        obj._value_ = inner.display()
+        obj._value_ = inner.key()
         obj._inner = inner
 
         return obj
@@ -65,23 +65,31 @@ class TimeFrame(Enum):
     def __str__(self) -> str:
         return self._inner.display()
 
+    @property
+    def key(self) -> str:
+        """
+        Return the stable machine-readable timeframe key.
+
+        The key is intended for persistence, configuration, and serialization.
+        """
+        return self._inner.key()
+
     @classmethod
     def from_str(cls, s: str) -> TimeFrame:
         """
-        Parse a timeframe from its canonical text representation.
+        Parse a timeframe key.
 
-        Parsing is case-insensitive. Valid representations include ``"1S"``,
-        ``"15M"``, ``"4H"``, ``"D"``, ``"W"``, and ``"M"``.
+        Parsing is case-insensitive.
 
         Parameters
         ----------
         s : str
-            Timeframe representation.
+            Timeframe key.
 
         Raises
         ------
         ValueError
-            If the timeframe is unknown.
+            If the timeframe key is unknown.
         RuntimeError
             If the native and public Python timeframe definitions are out of
             sync.

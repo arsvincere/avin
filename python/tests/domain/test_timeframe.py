@@ -20,6 +20,11 @@ def ts(year, month, day, hour, minute, second, microsecond, tz) -> int:
     return ts
 
 
+def test_timeframe_key():
+    assert TimeFrame.M5.key == "5m"
+    assert TimeFrame.DAY.key == "d"
+
+
 def test_timeframe_duration():
     tf = TimeFrame.M5
 
@@ -71,8 +76,10 @@ def test_timeframe_str():
 
 def test_timeframe_from_str():
     assert TimeFrame.from_str("15M") is TimeFrame.M15
-    assert TimeFrame.from_str("15m") is TimeFrame.M15
-    assert TimeFrame.from_str("W") is TimeFrame.WEEK
+    assert TimeFrame.from_str("d") is TimeFrame.DAY
+
+    with pytest.raises(ValueError):
+        TimeFrame.from_str("Week")
 
     with pytest.raises(ValueError):
         TimeFrame.from_str("foo")

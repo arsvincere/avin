@@ -96,6 +96,10 @@ impl PyTimeFrame {
         Ok(Self { inner })
     }
 
+    fn key(&self) -> &'static str {
+        self.inner.key()
+    }
+
     fn display(&self) -> String {
         self.inner.to_string()
     }
