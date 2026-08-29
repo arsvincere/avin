@@ -15,6 +15,13 @@ def test_exchange_str():
     assert str(Exchange.BYBIT) == "Bybit"
 
 
+def test_exchange_key():
+    assert Exchange.BINANCE.key == "binance"
+    assert Exchange.BYBIT.key == "bybit"
+    assert Exchange.MOEX.key == "moex"
+    assert Exchange.SPB.key == "spb"
+
+
 def test_exchange_from_str():
     assert Exchange.from_str("BiNaNcE") == Exchange.BINANCE
     assert Exchange.from_str("SPB") is Exchange.SPB

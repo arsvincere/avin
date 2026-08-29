@@ -12,8 +12,8 @@ from typing import ClassVar
 class PyExchange:
     Binance: ClassVar[PyExchange]
     Bybit: ClassVar[PyExchange]
-    MOEX: ClassVar[PyExchange]
-    SPB: ClassVar[PyExchange]
+    Moex: ClassVar[PyExchange]
+    Spb: ClassVar[PyExchange]
 
     @staticmethod
     def all() -> list[PyExchange]: ...
@@ -21,7 +21,7 @@ class PyExchange:
     def from_str(s: str) -> PyExchange: ...
     def display(self) -> str: ...
     def eq(self, other: PyExchange) -> bool: ...
-    def name(self) -> str: ...
+    def key(self) -> str: ...
 
 class PyCategory:
     Currency: ClassVar[PyCategory]

@@ -35,14 +35,14 @@ class Exchange(Enum):
 
     BINANCE = PyExchange.Binance
     BYBIT = PyExchange.Bybit
-    MOEX = PyExchange.MOEX
-    SPB = PyExchange.SPB
+    MOEX = PyExchange.Moex
+    SPB = PyExchange.Spb
 
     _inner: PyExchange
 
     def __new__(cls, inner: PyExchange):
         obj = object.__new__(cls)
-        obj._value_ = inner.display()
+        obj._value_ = inner.key()
         obj._inner = inner
 
         return obj
@@ -50,22 +50,31 @@ class Exchange(Enum):
     def __str__(self) -> str:
         return self._inner.display()
 
+    @property
+    def key(self) -> str:
+        """
+        Return the stable machine-readable exchange key.
+
+        The key is intended for persistence, configuration, and serialization.
+        """
+        return self._inner.key()
+
     @classmethod
     def from_str(cls, s: str) -> Exchange:
         """
-        Parse an exchange name.
+        Parse an exchange key.
 
         Parsing is case-insensitive.
 
         Parameters
         ----------
         s : str
-            Exchange name.
+            Exchange key.
 
         Raises
         ------
         ValueError
-            If the exchange name is unknown.
+            If the exchange key is unknown.
         """
         return Exchange._from_native(PyExchange.from_str(s))
 

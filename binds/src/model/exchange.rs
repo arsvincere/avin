@@ -34,13 +34,13 @@ impl PyExchange {
 
     #[classattr]
     #[allow(non_upper_case_globals)]
-    const MOEX: Self = Self {
+    const Moex: Self = Self {
         inner: Exchange::Moex,
     };
 
     #[classattr]
     #[allow(non_upper_case_globals)]
-    const SPB: Self = Self {
+    const Spb: Self = Self {
         inner: Exchange::Spb,
     };
 
