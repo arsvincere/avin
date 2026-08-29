@@ -29,7 +29,7 @@ use avin_utils::AvinError;
 /// let source = Source::from_str("tbank").unwrap();
 ///
 /// assert_eq!(source, Source::TBank);
-/// assert_eq!(source.to_string(), "TBank");
+/// assert_eq!(source.to_string(), "T-Bank");
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Source {
@@ -42,13 +42,22 @@ impl Source {
     pub const fn all() -> &'static [Self] {
         &[Self::TBank, Self::MoexAlgo]
     }
+
+    /// Returns a stable machine-readable identifier suitable for persistence
+    /// and serialization.
+    pub fn key(&self) -> &'static str {
+        match self {
+            Self::TBank => "tbank",
+            Self::MoexAlgo => "moexalgo",
+        }
+    }
 }
 
 impl Display for Source {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::TBank => f.write_str("TBank"),
-            Self::MoexAlgo => f.write_str("MoexAlgo"),
+            Self::TBank => f.write_str("T-Bank"),
+            Self::MoexAlgo => f.write_str("MOEX ALGOPACK"),
         }
     }
 }
@@ -107,9 +116,15 @@ mod tests {
     }
 
     #[test]
+    fn key() {
+        assert_eq!(Source::TBank.key(), "tbank");
+        assert_eq!(Source::MoexAlgo.key(), "moexalgo");
+    }
+
+    #[test]
     fn display() {
-        assert_eq!(Source::TBank.to_string(), "TBank");
-        assert_eq!(Source::MoexAlgo.to_string(), "MoexAlgo");
+        assert_eq!(Source::TBank.to_string(), "T-Bank");
+        assert_eq!(Source::MoexAlgo.to_string(), "MOEX ALGOPACK");
     }
 
     #[test]
