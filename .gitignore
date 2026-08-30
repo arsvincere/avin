@@ -43,18 +43,13 @@ Session.vim*
 /*.bak
 /*.tmp
 /local.justfile
-/prompt.md
-/tmp
+/!prompt.md
 /tmp.*
 
-# Local python scratch files
-/python/1.*
-/python/2.*
-/python/3.*
-/python/4.*
-/python/5.*
+# Python scratch files
+/python/[12345].py
 
-# Local rust scratch files
+# Rust scratch files
 **/src/bin/scratch.rs
 
 # book
