@@ -12,6 +12,17 @@ use avin_utils::AvinError;
 
 use crate::{Category, Exchange, Ticker};
 
+// TODO: Закрыть создание InstrumentId.
+// InstrumentId должен представлять только валидный идентификатор реально
+// существующего инструмента.
+// * InstrumentId::new(...) сделать pub(crate).
+// * Удалить FromStr для InstrumentId.
+// * Парсинг строкового code "moex.share.sber" перенести в InstrumentCatalog
+//   это единственное место, где такой code действительно нужно разбирать и
+//   где результат можно проверить по каталогу инструментов.
+// * InstrumentId создавать только из валидного InstrumentInfo через
+//   InstrumentInfo::iid().
+
 /// Canonical instrument identifier used by AVIN.
 ///
 /// An `InstrumentId` combines an exchange, category, and ticker into
