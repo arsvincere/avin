@@ -139,10 +139,5 @@ clean-all:
     just clean
     rm -rf {{venv}}/
 
-# Create avin.zip from HEAD
-[group('Project')]
-archive:
-    git archive --format zip HEAD -o avin.zip
-
 
 import? 'local.justfile'

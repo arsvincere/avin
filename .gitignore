@@ -35,7 +35,7 @@ Session.vim*
 /bench/results/*.csv
 
 # Project-local temporary folders
-/docs/note/
+/note
 /tmp
 /workspace
 
@@ -56,9 +56,6 @@ Session.vim*
 
 # Local rust scratch files
 **/src/bin/scratch.rs
-
-# Project-local archive
-/avin.zip
 
 # book
 /avin_book/book/
