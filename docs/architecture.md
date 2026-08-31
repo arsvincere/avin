@@ -2,8 +2,8 @@
 
 ```text
 avin    - public package interface / main cli entry point
-gui     - data and research visualization
 tools   - trader toolkit: tester, pattern search, simulator, analyse etc
+gui     - lib, generic widgets for avin tools
 
 service - internal operations and orchestration
 
@@ -25,9 +25,7 @@ utils   - generic helpers
 ```text
 avin
     ↓
-gui
-    ↓
-tools
+tools / gui
     ↓
 service
     ↓
