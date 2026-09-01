@@ -1,6 +1,4 @@
-# cli
-
-## Commands overview
+# CLI commands
 
 ```bash
 avin data instruments cache
@@ -9,18 +7,18 @@ avin data instruments cache --provider tbank
 avin data instruments clear
 avin data instruments clear --provider tbank
 
-avin data sync
-avin data sync --dry-run
 avin data sync --resume
 avin data sync --abort
 avin data sync --status
 
+avin data sync
 avin data sync --force
 avin data sync --force --provider tbank
 avin data sync --force --provider tbank --instrument moex.share.sber
 avin data sync --force --provider tbank --instrument moex.share.sber --data bar_1m
 avin data sync --force --provider tbank --instrument moex.share.sber --data bar_1m --year 2025
 
+avin data delete
 avin data delete --provider tbank
 avin data delete --provider tbank --instrument moex.share.sber
 avin data delete --provider tbank --instrument moex.share.sber --data bar_1m
@@ -30,186 +28,6 @@ avin data prune
 
 avin data compact
 ```
-
-## Principle
-
-CLI для работы с локальными market data и instrument reference data.
-
-Основной namespace:
-
-```text
-avin data ...
-```
-
-Первое слово после `avin` выбирает tool/module. В будущем рядом будут другие команды:
-
-```text
-avin data ...
-avin tester ...
-avin search ...
-avin analyse ...
-...
-```
-
-Поэтому `data` не поднимается в root-команды вроде `avin sync`.
-
-## Общие решения
-
-* CLI должен оставаться тонкой внешней boundary.
-* `avin_service` не принимает пользовательский `code: &str`; внутренние сервисы работают с валидным `InstrumentId`.
-* В CLI допустим локальный helper для преобразования:
-
-```text
-code
-→ InstrumentCatalog
-→ InstrumentInfo
-→ InstrumentId
-```
-
-Например:
-
-```text
-avin/src/cli/
-├── mod.rs
-└── helpers.rs
-```
-
-Если `helpers.rs` начнёт заметно разрастаться, это будет сигналом пересмотреть boundary/layout.
-
-* Не требуется полная идентичность CLI и public Rust/Python API.
-* CLI может обращаться к service API напрямую, если это не приводит к размазыванию business logic по CLI.
-* Редкие операции могут быть длиннее, если синтаксис от этого становится очевиднее.
-* Для scope используются named options, а не positional arguments.
-
-Scope имеет единый порядок:
-
-```text
-provider
-→ instrument
-→ data
-→ year
-```
-
-## Instruments
-
-InstrumentInfo cache относится к `data` subsystem.
-
-```text
-avin data instruments cache
-avin data instruments cache --provider tbank
-
-avin data instruments clear
-avin data instruments clear --provider tbank
-```
-
-`cache` сохраняет полный справочник выбранного provider, а не только инструменты из `data.toml`.
-
-Обычному пользователю вручную вызывать `cache` обычно не требуется: `sync` автоматически обеспечивает наличие нужных provider catalogs.
-
-## Sync
-
-Главный happy path:
-
-```text
-avin data sync
-```
-
-`sync` работает с декларативным `data.toml`:
-
-1. читает `data.toml`;
-2. определяет используемые providers;
-3. для каждого provider проверяет InstrumentInfo cache;
-4. при отсутствии cache загружает полный provider catalog;
-5. разрешает instrument codes из manifest;
-6. синхронизирует заявленные market data.
-
-### Syntax
-
-```text
-avin data sync
-avin data sync --dry-run
-avin data sync --resume
-avin data sync --abort
-avin data sync --status
-
-avin data sync --force
-avin data sync --force --provider tbank
-avin data sync --force --provider tbank --instrument moex.share.sber
-avin data sync --force --provider tbank --instrument moex.share.sber --data bar_1m
-avin data sync --force --provider tbank --instrument moex.share.sber --data bar_1m --year 2025
-```
-
-Обычный `sync` всегда синхронизирует manifest целиком и сам пропускает уже актуальные данные.
-
-Уточнение scope вручную имеет смысл прежде всего вместе с `--force`, когда пользователь хочет пересинхронизировать конкретную часть dataset.
-
-### Recovery
-
-```text
-avin data sync --status
-avin data sync --resume
-avin data sync --abort
-```
-
-Точное поведение recovery, конфликтов с `--force` и интерактивных подтверждений пока не фиксируется.
-
-Для неоднозначных destructive/recovery ситуаций допустим CLI prompt:
-
-```text
-[y/N]
-```
-
-Storage/service при этом должны оставаться детерминированными и не заниматься пользовательским диалогом.
-
-### Dry run
-
-```text
-avin data sync --dry-run
-```
-
-Должен показывать план синхронизации без изменения storage.
-
-Точный формат плана пока не определён.
-
-## Delete
-
-```text
-avin data delete --provider tbank
-avin data delete --provider tbank --instrument moex.share.sber
-avin data delete --provider tbank --instrument moex.share.sber --data bar_1m
-avin data delete --provider tbank --instrument moex.share.sber --data bar_1m --year 2025
-```
-
-Scope последовательно сужается:
-
-```text
-provider
-→ instrument
-→ data
-→ year
-```
-
-`delete` относится к market data.
-
-InstrumentInfo cache очищается отдельно через:
-
-```text
-avin data instruments clear
-```
-
-Для destructive operations поведение confirmation пока отдельно не проектировалось.
-
-## Prune
-
-```text
-avin data prune
-```
-
-Семантика:
-
-> удалить из локального market data storage всё, что больше не входит в текущий `data.toml`.
-
-`prune` приводит фактическое содержимое storage к declarative manifest со стороны удаления лишних данных.
 
 ## clap
 
@@ -232,9 +50,6 @@ struct SyncArgs {
 
     #[arg(long)]
     force: bool,
-
-    #[arg(long)]
-    dry_run: bool,
 
     #[arg(long)]
     resume: bool,
@@ -280,38 +95,28 @@ Recovery options:
 
 должны быть взаимоисключающими.
 
-Точные `requires`, `conflicts_with`, argument groups и правила комбинации с `--dry-run` / `--force` будут определены при реализации.
-
-## Пока не решено
-
-* точная семантика `--force` при наличии pending operation;
-* точное взаимодействие `--force`, `--resume`, `--abort`, `--status`;
-* формат `--dry-run`;
-* confirmation policy для destructive/recovery операций;
-* нужен ли дополнительный scope для `prune`;
-* short options — отдельно после окончательного утверждения long-form CLI.
-
-## Imperative mode - будущая feature
-
-На будущее можно добавить императивный режим.
-
-Что качать задается непосредственно в cli command args, а не в data.toml.
-
-А `update` просматривает текущий storage и запрашивает append только для существующих данных.
-
-```
-avin data download --provider tbank --instrument moex.share.sber
-avin data download --provider tbank --instrument moex.share.sber --data bar_1m
-avin data download --provider tbank --instrument moex.share.sber --data bar_1m --year 2025
-
-avin data update
-```
-
 # Architecture
 
 canonical historical data storage = Parquet
 research data representation = Polars DataFrame
 call: service -> storage -> domain
+
+# Happy path
+
+Главный happy path:
+
+```text
+avin data sync
+```
+
+`sync` работает с декларативным `data.toml`:
+
+1. читает `data.toml`;
+2. определяет используемые providers;
+3. для каждого provider проверяет InstrumentInfo cache;
+4. при отсутствии cache загружает полный provider catalog;
+5. разрешает instrument codes из manifest;
+6. синхронизирует заявленные market data.
 
 # File system
 
@@ -376,77 +181,16 @@ tbank/
 complete = true
 ```
 
-# Operations
-Storage:
-    CREATE
-    REPLACE
-    APPEND
-    DELETE
-    --
-    COMPACT
-        current year:
-        base + tail → base
-    FINALIZE
-        stage year → YYYY.parquet
-        или current open year → YYYY.parquet
-
-Service:
-    backfill    -> CREATE year
-    force       -> REPLACE year
-    sync        -> APPEND days
-    delete      -> DELETE
-
-# Vocabularity
-
-normal workflow:
-    start
-    add
-    finalize
-
-recovery:
-    status
-    abort
-    continue
-
-read:
-    load_range
-    load_latest
-
-mutation:
-    delete
-
-maintenance:
-    compact
-
-internal:
-    stage
-    append
-    create
-    replace
-    compaction policy
-
 # Api
-service-facing:
-    add
-    finalize
-    load_range
-    load_latest
-    delete
-
-maintenance:
-    compact
-
-storage-internal:
-    stage
-    append
-    create
-    replace
-    compaction policy
-
 
 ## InstrumentInfoStorage
 
 ```rust
+InstrumentInfoStorage::exists(
+    provider: DataProvider,
+    category: Category,
+) -> Result<bool, AvinError>
+
 InstrumentInfoStorage::save(
     provider: DataProvider,
     category: Category,
@@ -467,13 +211,12 @@ InstrumentInfoStorage::delete(
 ## MarketDataStorage
 
 ```rust
-// этот метод уже не нужем см api v2 там вырисовывается новая картинка
-MarketDataStorage::save(
+MarketDataStorage::exists(
     provider: DataProvider,
     iid: &InstrumentId,
     md: MarketData,
-    df: DataFrame,
-) -> Result<(), AvinError>
+    year: Year,
+) -> Result<bool, AvinError>
 
 MarketDataStorage::load_range(
     provider: DataProvider,
@@ -489,37 +232,77 @@ MarketDataStorage::load_latest(
     quantity: Quantity,
 ) -> Result<DataFrame, AvinError>
 
-MarketDataStorage::delete(
+MarketDataStorage::delete_provider(
+    provider: DataProvider,
+) -> Result<(), AvinError>
+
+MarketDataStorage::delete_instrument(
+    provider: DataProvider,
+    iid: &InstrumentId,
+) -> Result<(), AvinError>
+
+MarketDataStorage::delete_data(
     provider: DataProvider,
     iid: &InstrumentId,
     md: MarketData,
 ) -> Result<(), AvinError>
-```
 
+MarketDataStorage::delete_year(
+    provider: DataProvider,
+    iid: &InstrumentId,
+    md: MarketData,
+    year: Year,
+) -> Result<(), AvinError>
 
+MarketDataStorage::write(
+    provider: DataProvider,
+    iid: &InstrumentId,
+    md: MarketData,
+    year: Year,
+) -> Result<WriteOperation, AvinError>
 
-```rust
-MarketDataStorage::start(provider, iid, md, year)
-MarketDataStorage::add(provider, iid, md, chunk)
-MarketDataStorage::finalize(provider, iid, md, year)
-MarketDataStorage::abort()
-
+MarketDataStorage::compact() -> Result<(), AvinError>
 MarketDataStorage::status() -> Result<StorageStatus, AvinError>
 
+MarketDataStorage::inventory() -> Result<Vec<StoragePartition>, AvinError>
+```
+
+### Impl
+
+```rust
 enum StorageStatus {
     Clean,
-    Dirty(PendingOperation),
+    Dirty(WriteOperation),
 }
 
-struct PendingOperation {
+struct WriteOperation {
     provider: DataProvider,
     iid: InstrumentId,
     md: MarketData,
     year: Year,
 }
 
-// альтернатива:
-let operation = MarketDataStorage::start(
+impl WriteOperation {
+    pub fn add(&self, chunk: DataChunk) -> Result<(), AvinError>
+    pub fn finalize(self) -> Result<(), AvinError>
+    pub fn abort(self) -> Result<(), AvinError>
+    pub fn next_time(&self) -> Result<Option<Time>, AvinError>
+}
+
+struct DataChunk {
+    coverage_range: TimeRange,
+    df: DataFrame,
+}
+
+struct StoragePartition {
+    provider: DataProvider,
+    iid: InstrumentId,
+    market_data: MarketData,
+    year: Year,
+}
+
+// how to use
+let operation = MarketDataStorage::write(
     provider,
     iid,
     md,
@@ -529,15 +312,11 @@ for chunk in provider {
     operation.add(chunk)?;
 }
 operation.finalize()?;
-
-// оператион тогда еще должна уметь возвращать last date
-operation.latest_date() -> Option<Date>
-// или изменить имя... чтобы избавиться от оптион, возвращать не latest date а
-// день который нужен следующий... а ну один хер... тогда не сходится если
-// 365/365 уже скачано...
 ```
 
-# хранить ли незавершенные бары
+# Пока не решено
+
+## хранить ли незавершенные бары
 основной трабл - 1М есть до середины месяца, скачали еще пару дней, упали...
 Хранилище рассинхронизировано...
 хотя если только завершенные таже проблема скачали вторую половину 1М и еще пару
@@ -549,7 +328,7 @@ operation.latest_date() -> Option<Date>
 Склоняюсь к "не хранить незавершенный бар".
 Не сохранять сконвертированный незавершенный бар.
 
-# Как хранить InstrumentInfo, как устроен InstrumentInfo внутри
+## Как хранить InstrumentInfo, как устроен InstrumentInfo внутри
 Провайдер отдает
 ti.Instrument
 там куча полей
@@ -606,7 +385,30 @@ ti.Instrument
 
 А должно быть HashMap -> InstrumentInfo -> InstrumentList -> storage
 
-# release
+## Разное
+* точная семантика `--force` при наличии pending operation;
+* точное взаимодействие `--force`, `--resume`, `--abort`, `--status`;
+* confirmation policy для destructive/recovery операций;
+* нужен ли дополнительный scope для `prune`;
+* short options — отдельно после окончательного утверждения long-form CLI.
+
+## Imperative mode - будущая feature
+
+На будущее можно добавить императивный режим.
+
+Что качать задается непосредственно в cli command args, а не в data.toml.
+
+А `update` просматривает текущий storage и запрашивает append только для существующих данных.
+
+```
+avin data download --provider tbank --instrument moex.share.sber
+avin data download --provider tbank --instrument moex.share.sber --data bar_1m
+avin data download --provider tbank --instrument moex.share.sber --data bar_1m --year 2025
+
+avin data update
+```
+
+# release build
 То есть наличие кода внутри зависимого crate не означает, что весь машинный код этого crate окажется в executable.
 
 Особенно хорошо это работает в:
