@@ -1,13 +1,9 @@
 # InstrumentService
 
 ```rust
-InstrumentService::cache(scope: InstrumentScope) -> Result<(), AvinError>
-InstrumentService::clear(scope: InstrumentScope) -> Result<(), AvinError>
-
-InstrumentService::cache() -> Result<(), AvinError>
-InstrumentService::cache_provider(provider: DataProvider) -> Result<(), AvinError>
-InstrumentService::clear() -> Result<(), AvinError>
-InstrumentService::clear_provider(provider: DataProvider) -> Result<(), AvinError>
+// разрешение провайдера - дело cli
+InstrumentService::cache(provider: DataProvider) -> Result<(), AvinError>
+InstrumentService::clear(provider: DataProvider) -> Result<(), AvinError>
 
 InstrumentService::find(
     provider: DataProvider,
@@ -23,15 +19,6 @@ InstrumentService::list(
     provider: DataProvider,
     category: Category
 ) -> Result<InstrumentList, AvinError>
-```
-
-### Impl
-
-```rust
-enum InstrumentScope {
-    __Manifest, // User? Default? UserDefault? UserManifest?
-    Provider(DataProvider),
-}
 ```
 
 ## InstrumentCatalog
@@ -64,10 +51,15 @@ InstrumentCatalog::list(
 # DataService
 
 ```rust
+// простой и тупой вариант, service собирает avin_storage::StorageKey
 DataService::sync(
-    scope: DataSelector,
+    provider: DataProvider,
+    code: Option<String>,
+    md: Option<MarketData>,
+    year: Option<Year>,
     force: bool,
 ) -> Result<(), AvinError>
+
 DataService::resume() -> Result<(), AvinError>
 DataService::abort() -> Result<(), AvinError>
 DataService::status() -> Result<StorageStatus, AvinError>
@@ -80,13 +72,13 @@ DataService::load(
 ) -> Result<DataFrame, AvinError>
 DataService::compact() -> Result<(), AvinError>
 DataService::prune() -> Result<(), AvinError>
-DataService::delete(scope: DataSelector) -> Result<(), AvinError>
+DataService::delete(key: StorageKey) -> Result<(), AvinError>
 ```
 
 ## DataSyncer
 
 ```rust
-DataSyncer::sync(scope: DataSelector, force: bool) -> Result<(), AvinError>
+DataSyncer::sync(key: StorageKey, force: bool) -> Result<(), AvinError>
 DataSyncer::resume() -> Result<(), AvinError>
 DataSyncer::abort() -> Result<(), AvinError>
 DataSyncer::status() -> Result<StorageStatus, AvinError>
@@ -94,52 +86,6 @@ DataSyncer::status() -> Result<StorageStatus, AvinError>
 
 ### Impl
 ```rust
-enum DataSelector {
-    Providers(Vec<DataProvider>),
-
-    Instruments {
-        provider: DataProvider,
-        code: Vec<&str>,
-    },
-
-    MarketData {
-        provider: DataProvider,
-        code: &str,
-        md: Vec<MarketData>,
-    },
-
-    Years {
-        provider: DataProvider,
-        code: &str,
-        md: MarketData,
-        year: Vec<Year>,
-    },
-}
-
-impl DataSelector {
-    pub fn providers(
-        providers: Vec<DataProvider>,
-    ) -> Result<Self, AvinError>
-
-    pub fn instruments(
-        provider: DataProvider,
-        iids: Vec<InstrumentId>,
-    ) -> Result<Self, AvinError>
-
-    pub fn data(
-        provider: DataProvider,
-        iid: InstrumentId,
-        data: Vec<MarketData>,
-    ) -> Result<Self, AvinError>
-
-    pub fn years(
-        provider: DataProvider,
-        iid: InstrumentId,
-        md: MarketData,
-        years: Vec<Year>,
-    ) -> Result<Self, AvinError>
-}
-
 struct DataSyncTask {
     provider: Provider,
     iid: InstrumentId,
@@ -165,5 +111,5 @@ DataManager::load(
 ) -> Result<DataFrame, AvinError>
 DataManager::compact() -> Result<(), AvinError>
 DataManager::prune() -> Result<(), AvinError>
-DataManager::delete(scope: DataSelector) -> Result<(), AvinError>
+DataManager::delete(key: DataSelector) -> Result<(), AvinError>
 ```

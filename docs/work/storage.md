@@ -211,13 +211,6 @@ InstrumentInfoStorage::delete(
 ## MarketDataStorage
 
 ```rust
-MarketDataStorage::exists(
-    provider: DataProvider,
-    iid: &InstrumentId,
-    md: MarketData,
-    year: Year,
-) -> Result<bool, AvinError>
-
 MarketDataStorage::load_range(
     provider: DataProvider,
     iid: &InstrumentId,
@@ -232,39 +225,21 @@ MarketDataStorage::load_latest(
     quantity: Quantity,
 ) -> Result<DataFrame, AvinError>
 
-MarketDataStorage::delete_provider(
-    provider: DataProvider,
-) -> Result<(), AvinError>
+MarketDataStorage::exists(
+    key: StorageKey,
+) -> Result<bool, AvinError>
 
-MarketDataStorage::delete_instrument(
-    provider: DataProvider,
-    iid: &InstrumentId,
-) -> Result<(), AvinError>
-
-MarketDataStorage::delete_data(
-    provider: DataProvider,
-    iid: &InstrumentId,
-    md: MarketData,
-) -> Result<(), AvinError>
-
-MarketDataStorage::delete_year(
-    provider: DataProvider,
-    iid: &InstrumentId,
-    md: MarketData,
-    year: Year,
+MarketDataStorage::delete(
+    key: StorageKey,
 ) -> Result<(), AvinError>
 
 MarketDataStorage::write(
-    provider: DataProvider,
-    iid: &InstrumentId,
-    md: MarketData,
-    year: Year,
+    key: StorageKey,
 ) -> Result<WriteOperation, AvinError>
 
 MarketDataStorage::compact() -> Result<(), AvinError>
 MarketDataStorage::status() -> Result<StorageStatus, AvinError>
-
-MarketDataStorage::inventory() -> Result<Vec<StoragePartition>, AvinError>
+MarketDataStorage::inventory() -> Result<Vec<StorageKey>, AvinError>
 ```
 
 ### Impl
@@ -294,12 +269,14 @@ struct DataChunk {
     df: DataFrame,
 }
 
-struct StoragePartition {
+// лучший вариант пока такой!
+struct StorageKey {
     provider: DataProvider,
-    iid: InstrumentId,
-    market_data: MarketData,
-    year: Year,
+    iid: Option<InstrumentId>,
+    md: Option<MarketData>,
+    year: Option<Year>,
 }
+
 
 // how to use
 let operation = MarketDataStorage::write(
