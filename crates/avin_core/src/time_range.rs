@@ -27,11 +27,11 @@ use crate::{CoreError, Time};
 ///
 /// assert_eq!(range.to_string(), "[2025-01-01, 2026-01-01)");
 ///
-/// let time = Time::from_str("2025-01-02 12:55:03").unwrap();
-/// assert!(range.contains(time));
+/// let inside = Time::from_str("2025-01-02 12:55:03").unwrap();
+/// assert!(range.contains(inside));
 ///
-/// let time = Time::from_str("2020-01-01").unwrap();
-/// assert!(!range.contains(time));
+/// let outside = Time::from_str("2020-01-01").unwrap();
+/// assert!(!range.contains(outside));
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TimeRange {
