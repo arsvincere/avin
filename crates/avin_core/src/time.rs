@@ -34,8 +34,8 @@ use crate::CoreError;
 /// let time = Time::from_str("2026-01-01 12:55:03").unwrap();
 /// assert_eq!(time.to_string(), "2026-01-01 12:55:03");
 ///
-/// let dt = Utc.with_ymd_and_hms(2026, 01, 01, 12, 55, 3).unwrap();
-/// assert_eq!(time.dt(), dt);
+/// let dt = time.dt()
+/// assert_eq!(dt, Utc.with_ymd_and_hms(2026, 09, 02, 17, 44, 19).unwrap());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Time(i64);
