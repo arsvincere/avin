@@ -7,12 +7,6 @@
 
 use crate::WatchlistItem;
 
-#[derive(Debug)]
-pub struct Watchlist {
-    name: String,
-    items: Vec<WatchlistItem>,
-}
-
 /// An ordered collection of instruments and instrument groups.
 ///
 /// A watchlist contains top-level [`WatchlistItem`] entries in their stored
@@ -32,6 +26,12 @@ pub struct Watchlist {
 /// assert_eq!(watchlist.name(), "My favorite");
 /// assert!(watchlist.is_empty());
 /// ```
+#[derive(Debug)]
+pub struct Watchlist {
+    name: String,
+    items: Vec<WatchlistItem>,
+}
+
 impl Watchlist {
     /// Creates an empty watchlist with the given name.
     pub fn new(name: &str) -> Self {
