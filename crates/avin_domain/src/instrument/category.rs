@@ -10,8 +10,6 @@ use std::str::FromStr;
 
 use avin_utils::AvinError;
 
-/// Category.
-///
 /// Represents a financial instrument category.
 ///
 /// # Examples
