@@ -7,8 +7,6 @@
 
 use std::fmt::Display;
 
-/// Bar direction.
-///
 /// Indicates whether the bar is bullish, neutral, or bearish.
 #[repr(i8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
