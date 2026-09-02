@@ -11,12 +11,14 @@ use std::fmt::Display;
 #[derive(Debug)]
 pub enum CoreError {
     Time(String),
+    TimeRange(String),
 }
 
 impl Display for CoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Time(msg) => f.write_str(msg),
+            Self::TimeRange(msg) => f.write_str(msg),
         }
     }
 }
