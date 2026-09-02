@@ -11,8 +11,6 @@ use chrono::{Datelike, Days, TimeDelta, Timelike};
 
 use avin_utils::AvinError;
 
-/// Timeframe.
-///
 /// Represents a timeframe supported by AVIN.
 ///
 /// Used by charts and footprints.
