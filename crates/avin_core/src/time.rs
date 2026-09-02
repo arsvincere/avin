@@ -55,6 +55,7 @@ impl Time {
     pub fn dt(&self) -> DateTime<Utc> {
         DateTime::from_timestamp_nanos(self.0)
     }
+
     /// Returns the Unix timestamp in nanoseconds.
     pub fn ts(&self) -> i64 {
         self.0
@@ -186,10 +187,11 @@ mod tests {
 
     #[test]
     fn datetime() {
-        let time = Time::from_str("2026-01-01 12:55:00").unwrap();
-        let expected = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 0).unwrap();
+        let dt = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 0).unwrap();
+        let ts = dt.timestamp_nanos_opt().unwrap();
+        let time = Time::new(ts);
 
-        assert_eq!(time.dt(), expected);
+        assert_eq!(time.dt(), dt);
     }
 
     #[test]
