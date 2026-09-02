@@ -180,6 +180,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "avin_service"
+version = "0.4.0"
+dependencies = [
+ "avin_domain",
+]
+
+[[package]]
 name = "avin_system"
 version = "0.4.0"
 dependencies = [
