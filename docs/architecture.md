@@ -3,7 +3,7 @@
 ```text
 avin    - public package interface / main cli entry point
 tools   - trader toolkit: tester, pattern search, simulator, analyse etc
-gui     - lib, generic widgets for avin tools
+gui     - lib, generic widgets for AVIN tools
 
 service - internal operations and orchestration
 
@@ -12,8 +12,8 @@ data    - historical market data providers and normalization
 storage - local persistence, storage layout and codecs
 system  - workspace, configuration and process environment
 
-domain  - trading abstractions
-core    - low-level type defenitions
+domain  - higher-level market and trading models
+core    - low-level foundational vocabulary shared by all AVIN layers
 
 utils   - generic helpers
 ```
@@ -41,17 +41,19 @@ utils
 Допустимые направления зависимостей:
 
 ```text
-avin    -> re-exports public api
+avin    -> re-exports
+tools   -> core, domain, service
+gui     -> core, domain, system, service
 
-service -> utils core domain system storage data connect
+service -> core, domain, system, storage, data, connect
 
-connect ->
-data    ->
-storage -> utils core domain system
-system  -> utils core domain
+storage -> core, system
+data    -> core, system
+connect -> core, system
+system  -> core
 
-domain  -> utils core
-core    -> utils
+domain  -> core
+core    ->
 
 utils   ->
 ```
