@@ -72,6 +72,7 @@ from avin.utils.alias import Date, DateTime, Time, TimeDelta, TimeZone, UTC
 [begin, end)    - полуоткрытый диапазон
 [from, till]    - закрытый диапазон
 [start, finish] - закрытый диапазон
+[low, high]     - закрытый диапазон
 ```
 
 # Python - fields, properties and methods
