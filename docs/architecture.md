@@ -43,7 +43,15 @@ utils
 ```text
 avin    -> re-exports public api
 
-domain  -> utils
+service -> utils core domain system storage data connect
+
+connect ->
+data    ->
+storage -> utils core domain system
+system  -> utils core domain
+
+domain  -> utils core
+core    -> utils
 
 utils   ->
 ```
@@ -217,11 +225,15 @@ MainWindow и widgets получают controller и передают ему use
 Принципиальная схема:
 
 ```text
-external historical market data
-    -> data provider -> normalization
-    -> storage -> .parquet raw data
-    -> domain objects / derived objects
-    -> GUI / CLI
+external historical market data, provider specific format
+    ↓
+data provider -> normalization
+    ↓
+storage -> .parquet raw data
+    ↓
+domain objects / derived objects
+    ↓
+public user API / GUI / CLI
 ```
 
 ## Asset
@@ -229,20 +241,22 @@ external historical market data
 Принципиальная схема:
 
 ```text
-InstrumentId - identity
+InstrumentId                - identity
     ↓
-InstrumentInfo - reference data
+InstrumentInfo              - reference data
     ↓
-Share / Future / Bond / Option / ... - concrete types
+Share / Future / Bond / ... - concrete types, runtime container for loaded data
     ↓
-Asset - wrapper for all tradable instrument kind
+Asset                       - wrapper for all tradable instrument kind
+    ↓
+Whatchlist                  - ordered user instruments collection
 ```
 
 # File formats
 
 ## .parquet data
 
-Основной формат хранения рыночных данных, локального справочника инструментов, derived data.
+Основной формат хранения рыночных данных, локального справочника инструментов, производных данных (Footprint, large timeframes) и результатов анализа пользователя.
 
 Почему `.parquet`:
 
@@ -263,3 +277,15 @@ Asset - wrapper for all tradable instrument kind
 * простой парсинг из python/rust;
 * все его знают;
 * интуитивно понятен даже когда первый раз видишь этот формат;
+
+# Workspace
+
+Один процесс должен одновременно работать с одним workspace.
+
+AVIN workspace это директория содержащая файл `AVIN.toml` (или `.AVIN.toml`).
+
+В нем задаются все остальные рабочие директории системы: где лежит конфигурация, дата манифест, логины пароли токены брокеров, GUI настройки.
+
+avin_system::WORKSPACE - singlton
+
+Решить - WORKSPACE.init() явный vs lazylock???
