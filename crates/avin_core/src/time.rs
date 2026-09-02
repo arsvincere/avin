@@ -16,29 +16,32 @@ use crate::CoreError;
 ///
 /// Internally, it stores a Unix timestamp in nanoseconds as an `i64`.
 ///
+/// Supported times range from `1677-09-21 00:12:43` to `2262-04-11 23:47:16`.
+///
 /// **IMPORTANT!!!**
 /// Human-readable string parsing always interprets input as UTC.
+/// Local time zones are not inferred or applied automatically.
 ///
 /// # Examples
 ///
 /// ```
 /// use std::str::FromStr;
 ///
-/// use chrono::Utc;
+/// use chrono::{Utc, TimeZone};
 ///
 /// use avin_core::Time;
 ///
-/// let time = Time::from_str("2026-01-01 12:55:00").unwrap();
-/// assert_eq!(time.to_string(), "2026-01-01 12:55:00");
+/// let time = Time::from_str("2026-01-01 12:55:03").unwrap();
+/// assert_eq!(time.to_string(), "2026-01-01 12:55:03");
 ///
-/// let dt = Utc.with_ymd_and_hms(2026, 01, 01, 12, 55, 0).unwrap();
+/// let dt = Utc.with_ymd_and_hms(2026, 01, 01, 12, 55, 3).unwrap();
 /// assert_eq!(time.dt(), dt);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Time(i64);
 
 impl Time {
-    /// Creates a new time from a Unix timestamp in nanoseconds.
+    /// Creates a new Time from a Unix timestamp in nanoseconds.
     pub fn new(timestamp_nanos: i64) -> Self {
         Time(timestamp_nanos)
     }
@@ -103,7 +106,7 @@ impl FromStr for Time {
     /// ```
     ///
     /// **IMPORTANT!!!**
-    /// All values are interpreted as UTC.
+    /// All parsed values are interpreted as UTC.
     ///
     /// # Errors
     ///
@@ -156,4 +159,137 @@ fn parse_dt_str(s: &str) -> Result<DateTime<Utc>, CoreError> {
     }
 
     Err(CoreError::Time(format!("invalid time format: {s}")))
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::TimeZone;
+
+    use super::*;
+
+    #[test]
+    fn new() {
+        let time = Time::new(123456789);
+
+        assert_eq!(time.ts(), 123456789);
+    }
+
+    #[test]
+    fn now() {
+        let before = Utc::now().timestamp_nanos_opt().unwrap();
+        let now = Time::now().ts();
+        let after = Utc::now().timestamp_nanos_opt().unwrap();
+
+        assert!(before <= now);
+        assert!(now <= after);
+    }
+
+    #[test]
+    fn datetime() {
+        let time = Time::from_str("2026-01-01 12:55:00").unwrap();
+        let expected = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 0).unwrap();
+
+        assert_eq!(time.dt(), expected);
+    }
+
+    #[test]
+    fn from_str_seconds() {
+        let time = Time::from_str("2026-01-01 12:55:01").unwrap();
+        let expected = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 1).unwrap();
+
+        assert_eq!(time.dt(), expected);
+    }
+
+    #[test]
+    fn from_str_minutes() {
+        let time = Time::from_str("2026-01-01 12:55").unwrap();
+        let expected = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 0).unwrap();
+
+        assert_eq!(time.dt(), expected);
+    }
+
+    #[test]
+    fn from_str_date() {
+        let time = Time::from_str("2026-01-01").unwrap();
+        let expected = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+
+        assert_eq!(time.dt(), expected);
+    }
+
+    #[test]
+    fn from_str_invalid_format() {
+        assert!(matches!(
+            Time::from_str("2026/01/01").unwrap_err(),
+            CoreError::Time(_)
+        ));
+    }
+
+    #[test]
+    fn from_str_invalid_date() {
+        assert!(matches!(
+            Time::from_str("2026-02-30").unwrap_err(),
+            CoreError::Time(_)
+        ));
+    }
+
+    #[test]
+    fn from_str_outside_supported_range() {
+        assert!(matches!(
+            Time::from_str("1600-01-01").unwrap_err(),
+            CoreError::Time(_)
+        ));
+
+        assert!(matches!(
+            Time::from_str("2300-01-01").unwrap_err(),
+            CoreError::Time(_)
+        ));
+    }
+
+    #[test]
+    fn display_seconds() {
+        let time = Time::from_str("2026-01-01 15:05:01").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:05:01");
+    }
+
+    #[test]
+    fn display_minutes() {
+        let time = Time::from_str("2026-01-01 15:05:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:05");
+
+        let time = Time::from_str("2026-01-01 15:00:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:00");
+    }
+
+    #[test]
+    fn display_date() {
+        let time = Time::from_str("2026-01-01 00:00:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01");
+    }
+
+    #[test]
+    fn display_subseconds() {
+        // when subseconds == 0
+        let time = Time::from_str("2026-01-01 15:00:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:00");
+
+        // show seconds when subseconds != 0
+        let time = Time::new(time.ts() + 854_680_000);
+
+        assert_eq!(time.to_string(), "2026-01-01 15:00:00");
+
+        // date only
+        let time = Time::from_str("2026-01-01").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01");
+
+        // show HH:MM:SS when subseconds != 0
+        let time = Time::new(time.ts() + 100_000);
+
+        assert_eq!(time.to_string(), "2026-01-01 00:00:00");
+    }
 }
