@@ -7,7 +7,7 @@
 
 pub use std::str::FromStr;
 
-pub use crate::domain::{
+pub use crate::model::{
     Asset, Future, HasCharts, InstrumentInfoView, Share, Time, TimeFrame,
     TimeRange, Watchlist,
 };

@@ -17,4 +17,7 @@
 
 pub mod prelude;
 
-pub use avin_domain as domain;
+pub mod model {
+    pub use avin_core::*;
+    pub use avin_domain::*;
+}
