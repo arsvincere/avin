@@ -21,13 +21,14 @@ use chrono::{Utc, TimeZone};
 use avin_core::Time;
 
 // Создание из строки (время интерпретируется как UTC)
-let time = Time::from_str("2026-09-02 17:44:19").unwrap();
-assert_eq!(time.to_string(), "2026-09-02 17:44:19");
+let time = Time::from_str("2026-01-01 12:55:19").unwrap();
+assert_eq!(time.to_string(), "2026-01-01 12:55:19");
 
 // Преобразование в chrono::DateTime<Utc>:
-let dt = time.dt()
-assert_eq!(dt, Utc.with_ymd_and_hms(2026, 09, 02, 17, 44, 19).unwrap());
+let dt = time.dt();
+assert_eq!(dt, Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 19).unwrap());
 ```
+
 
 # TimeRange
 
