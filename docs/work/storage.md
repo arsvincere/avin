@@ -234,7 +234,7 @@ MarketDataStorage::delete(
 ) -> Result<(), AvinError>
 
 MarketDataStorage::write(
-    key: StorageKey,
+    key: StorageKey, // или provider, iid, md, year??? key может быть не валиден...
 ) -> Result<WriteOperation, AvinError>
 
 MarketDataStorage::compact() -> Result<(), AvinError>
@@ -269,12 +269,28 @@ struct DataChunk {
     df: DataFrame,
 }
 
-// лучший вариант пока такой!
-struct StorageKey {
-    provider: DataProvider,
-    iid: Option<InstrumentId>,
-    md: Option<MarketData>,
-    year: Option<Year>,
+enum StorageKey {
+    Provider {
+        provider: DataProvider,
+    },
+
+    Instrument {
+        provider: DataProvider,
+        iid: InstrumentId,
+    },
+
+    MarketData {
+        provider: DataProvider,
+        iid: InstrumentId,
+        md: MarketData,
+    },
+
+    Year {
+        provider: DataProvider,
+        iid: InstrumentId,
+        md: MarketData,
+        year: Year,
+    },
 }
 
 
