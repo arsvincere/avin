@@ -17,5 +17,4 @@
 
 pub mod prelude;
 
-pub use avin_core as core;
 pub use avin_domain as domain;

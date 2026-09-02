@@ -19,3 +19,6 @@ pub use instrument::{
     MarketData, Ticker,
 };
 pub use watchlist::{Watchlist, WatchlistGroup, WatchlistItem};
+
+// re-export
+pub use avin_core::{DataProvider, Time, TimeRange};
