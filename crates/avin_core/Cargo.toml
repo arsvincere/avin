@@ -11,3 +11,5 @@ readme = "README.md"
 
 [dependencies]
 avin_utils = { workspace = true }
+
+chrono = { workspace = true }

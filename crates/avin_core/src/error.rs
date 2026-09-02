@@ -5,10 +5,20 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod data_provider;
-mod error;
-mod time;
+use std::error::Error;
+use std::fmt::Display;
 
-pub use data_provider::DataProvider;
-pub use error::CoreError;
-pub use time::Time;
+#[derive(Debug)]
+pub enum CoreError {
+    Time(String),
+}
+
+impl Display for CoreError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Time(msg) => f.write_str(msg),
+        }
+    }
+}
+
+impl Error for CoreError {}
