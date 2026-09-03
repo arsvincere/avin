@@ -8,8 +8,6 @@
 use std::error::Error;
 use std::fmt::Display;
 
-use polars::error::PolarsError;
-
 #[derive(Debug)]
 pub enum AvinError {
     Value(String),   // invalid value
@@ -21,15 +19,14 @@ pub enum AvinError {
         message: String,
         source: std::io::Error,
     },
-    Zip {
-        message: String,
-        source: zip::result::ZipError,
-    },
-    Polars {
-        message: String,
-        source: PolarsError,
-    },
-
+    // Zip {
+    //     message: String,
+    //     source: zip::result::ZipError,
+    // },
+    // Polars {
+    //     message: String,
+    //     source: PolarsError,
+    // },
     InstrumentInfo {
         message: String,
         source: Box<AvinError>,
@@ -60,8 +57,8 @@ impl Display for AvinError {
             Self::Process(msg) => write!(f, "{msg}"),
 
             Self::Io { message, .. } => write!(f, "{message}"),
-            Self::Zip { message, .. } => write!(f, "{message}"),
-            Self::Polars { message, .. } => write!(f, "{message}"),
+            // Self::Zip { message, .. } => write!(f, "{message}"),
+            // Self::Polars { message, .. } => write!(f, "{message}"),
             Self::InstrumentInfo { message, .. } => {
                 write!(f, "{message}")
             }
@@ -78,8 +75,8 @@ impl Error for AvinError {
             Self::Missing(_) => None,
             Self::Process(_) => None,
             Self::Io { source, .. } => Some(source),
-            Self::Zip { source, .. } => Some(source),
-            Self::Polars { source, .. } => Some(source),
+            // Self::Zip { source, .. } => Some(source),
+            // Self::Polars { source, .. } => Some(source),
             Self::InstrumentInfo { source, .. } => Some(source),
         }
     }
