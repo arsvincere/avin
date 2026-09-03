@@ -250,9 +250,9 @@ impl TimeFrame {
             }
             _ => {
                 let begin = self.begin_frame(time);
-                let begin_ts = begin.ts() + self.nanos().unwrap() as i64;
+                let end_ts = begin.ts() + self.nanos().unwrap() as i64;
 
-                Time::new(begin_ts)
+                Time::new(end_ts)
             }
         }
     }
@@ -413,15 +413,13 @@ mod tests {
 
     #[test]
     fn begin_frame() {
-        let ts = Utc
+        let dt = Utc
             .with_ymd_and_hms(2023, 8, 2, 10, 13, 42)
             .unwrap()
             .with_nanosecond(123_456_789)
-            .unwrap()
-            .timestamp_nanos_opt()
             .unwrap();
 
-        let input = Time::new(ts);
+        let input = Time::try_from(dt).unwrap();
 
         let cases = [
             (TimeFrame::S1, Time::from_str("2023-08-02 10:13:42")),
@@ -446,15 +444,13 @@ mod tests {
 
     #[test]
     fn end_frame() {
-        let ts = Utc
+        let dt = Utc
             .with_ymd_and_hms(2023, 8, 2, 10, 13, 42)
             .unwrap()
             .with_nanosecond(123_456_789)
-            .unwrap()
-            .timestamp_nanos_opt()
             .unwrap();
 
-        let input = Time::new(ts);
+        let input = Time::try_from(dt).unwrap();
 
         let cases = [
             (TimeFrame::S1, Time::from_str("2023-08-02 10:13:43")),
