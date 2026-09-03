@@ -7,8 +7,6 @@
 
 use chrono::{DateTime, Datelike, Months, Timelike, Utc};
 
-// TODO: ?
-// перенести в Time?
 /// Returns the start of the next calendar month in UTC.
 ///
 /// The returned datetime is always the first day of the next month at
@@ -34,8 +32,6 @@ pub fn next_month_start(dt: DateTime<Utc>) -> DateTime<Utc> {
         .unwrap()
 }
 
-// TODO: ?
-// перенести в Time?
 /// Returns the start of the previous calendar month in UTC.
 ///
 /// The returned datetime is always the first day of the previous month at
