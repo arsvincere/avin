@@ -7,6 +7,7 @@
 
 use std::fmt::Display;
 
+use avin_core::Time;
 use chrono::{DateTime, Utc};
 
 use crate::{BarDirection, PriceRange};
@@ -18,7 +19,7 @@ use crate::{BarDirection, PriceRange};
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bar {
     /// Bar start timestamp in Unix nanoseconds.
-    pub ts: i64,
+    pub time: Time,
     /// Open price.
     pub o: f64,
     /// High price.
@@ -33,13 +34,20 @@ pub struct Bar {
 
 impl Bar {
     /// Creates a bar from trusted OHLCV values without validation.
-    pub fn new(ts: i64, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
-        Bar { ts, o, h, l, c, v }
+    pub fn new(t: Time, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
+        Bar {
+            time: t,
+            o,
+            h,
+            l,
+            c,
+            v,
+        }
     }
 
     /// Returns the bar start timestamp as a UTC datetime.
     pub fn dt(&self) -> DateTime<Utc> {
-        avin_utils::dt(self.ts)
+        self.time.dt()
     }
 
     /// Returns the bar direction.
@@ -116,29 +124,24 @@ impl Display for Bar {
         write!(
             f,
             "{} O={} H={} L={} C={} V={}",
-            self.dt(),
-            self.o,
-            self.h,
-            self.l,
-            self.c,
-            self.v
+            self.time, self.o, self.h, self.l, self.c, self.v
         )
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use chrono::TimeZone;
+    use std::str::FromStr;
 
     use super::*;
 
     #[test]
-    fn ohlcv_ts_dt() {
-        let dt = Utc.with_ymd_and_hms(2026, 8, 20, 14, 20, 5).unwrap();
-        let ts = avin_utils::ts(dt);
-        let bar = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
+    fn ohlcv_time_dt() {
+        let time = Time::from_str("2026-08-20 14:20:05").unwrap();
+        let dt = time.dt();
+        let bar = Bar::new(time, 10.0, 11.1, 9.9, 10.5, 5000);
 
-        assert_eq!(bar.ts, ts);
+        assert_eq!(bar.time, time);
         assert_eq!(bar.o, 10.0);
         assert_eq!(bar.h, 11.1);
         assert_eq!(bar.l, 9.9);
@@ -149,22 +152,22 @@ mod tests {
 
     #[test]
     fn direction() {
-        let ts = 123_456_789;
+        let time = Time::from_str("2026-08-20 14:20:05").unwrap();
         let vol = 5000;
 
-        let bull_bar = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, vol);
+        let bull_bar = Bar::new(time, 10.0, 11.1, 9.9, 10.5, vol);
         assert!(bull_bar.is_bull());
         assert!(!bull_bar.is_bear());
         assert!(!bull_bar.is_neutral());
         assert_eq!(bull_bar.direction(), BarDirection::Bull);
 
-        let bear_bar = Bar::new(ts, 10.0, 11.1, 9.9, 9.5, vol);
+        let bear_bar = Bar::new(time, 10.0, 11.1, 9.9, 9.5, vol);
         assert!(!bear_bar.is_bull());
         assert!(bear_bar.is_bear());
         assert!(!bear_bar.is_neutral());
         assert_eq!(bear_bar.direction(), BarDirection::Bear);
 
-        let neutral_bar = Bar::new(ts, 10.0, 11.1, 9.9, 10.0, vol);
+        let neutral_bar = Bar::new(time, 10.0, 11.1, 9.9, 10.0, vol);
         assert!(!neutral_bar.is_bull());
         assert!(!neutral_bar.is_bear());
         assert!(neutral_bar.is_neutral());
@@ -173,22 +176,22 @@ mod tests {
 
     #[test]
     fn ranges() {
-        let ts = 123_456_789;
+        let time = Time::from_str("2026-08-20 14:20:05").unwrap();
         let vol = 5000;
 
-        let bull = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, vol);
+        let bull = Bar::new(time, 10.0, 11.1, 9.9, 10.5, vol);
         assert_eq!(bull.range(), PriceRange::new(9.9, 11.1).unwrap());
         assert_eq!(bull.body(), PriceRange::new(10.0, 10.5).unwrap());
         assert_eq!(bull.lower(), PriceRange::new(9.9, 10.0).unwrap());
         assert_eq!(bull.upper(), PriceRange::new(10.5, 11.1).unwrap());
 
-        let bear = Bar::new(ts, 10.0, 11.1, 9.4, 9.5, vol);
+        let bear = Bar::new(time, 10.0, 11.1, 9.4, 9.5, vol);
         assert_eq!(bear.range(), PriceRange::new(9.4, 11.1).unwrap());
         assert_eq!(bear.body(), PriceRange::new(9.5, 10.0).unwrap());
         assert_eq!(bear.lower(), PriceRange::new(9.4, 9.5).unwrap());
         assert_eq!(bear.upper(), PriceRange::new(10.0, 11.1).unwrap());
 
-        let neutral = Bar::new(ts, 10.0, 11.1, 9.9, 10.0, vol);
+        let neutral = Bar::new(time, 10.0, 11.1, 9.9, 10.0, vol);
         assert_eq!(neutral.range(), PriceRange::new(9.9, 11.1).unwrap());
         assert_eq!(neutral.body(), PriceRange::new(10.0, 10.0).unwrap());
         assert_eq!(neutral.lower(), PriceRange::new(9.9, 10.0).unwrap());
@@ -197,7 +200,7 @@ mod tests {
 
     #[test]
     fn contains() {
-        let bar = Bar::new(123_456_789, 10.0, 11.1, 9.9, 10.5, 5000);
+        let bar = Bar::new(Time::new(123), 10.0, 11.1, 9.9, 10.5, 5000);
 
         assert!(bar.contains(10.3));
         assert!(bar.contains(9.9));
@@ -209,13 +212,12 @@ mod tests {
 
     #[test]
     fn display() {
-        let dt = Utc.with_ymd_and_hms(2026, 8, 20, 14, 20, 5).unwrap();
-        let ts = avin_utils::ts(dt);
-        let bar = Bar::new(ts, 10.0, 11.1, 9.9, 10.5, 5000);
+        let time = Time::from_str("2026-08-20 14:20:05").unwrap();
+        let bar = Bar::new(time, 10.0, 11.1, 9.9, 10.5, 5000);
 
         assert_eq!(
             bar.to_string(),
-            "2026-08-20 14:20:05 UTC O=10 H=11.1 L=9.9 C=10.5 V=5000"
+            "2026-08-20 14:20:05 O=10 H=11.1 L=9.9 C=10.5 V=5000"
         );
     }
 }

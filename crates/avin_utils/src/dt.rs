@@ -7,32 +7,6 @@
 
 use chrono::{DateTime, Datelike, Months, Timelike, Utc};
 
-// TODO: delete, use avin_core::Time
-/// Converts a UTC datetime to a Unix timestamp in nanoseconds.
-///
-/// # Panics
-///
-/// Panics if the datetime cannot be represented as an `i64` nanosecond
-/// timestamp.
-#[inline]
-pub fn ts(dt: DateTime<Utc>) -> i64 {
-    dt.timestamp_nanos_opt().unwrap()
-}
-
-// TODO: delete, use avin_core::Time
-/// Converts a Unix timestamp in nanoseconds to a UTC datetime.
-#[inline]
-pub fn dt(ts: i64) -> DateTime<Utc> {
-    DateTime::from_timestamp_nanos(ts)
-}
-
-// TODO: delete, use avin_core::Time
-/// Returns the current UTC datetime.
-#[inline]
-pub fn utc_now() -> DateTime<Utc> {
-    Utc::now()
-}
-
 // TODO: ?
 // перенести в Time?
 /// Returns the start of the next calendar month in UTC.
@@ -92,20 +66,6 @@ mod tests {
     use chrono::TimeZone;
 
     use super::*;
-
-    #[test]
-    fn dt_ts_conversion() {
-        let x = Utc
-            .with_ymd_and_hms(2023, 8, 2, 10, 7, 15)
-            .unwrap()
-            .with_nanosecond(123_456_789)
-            .unwrap();
-
-        let ts = ts(x);
-        let dt = dt(ts);
-
-        assert_eq!(dt, x);
-    }
 
     #[test]
     fn test_next_month_start() {

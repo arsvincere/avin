@@ -5,6 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use avin_core::Time;
 use avin_utils::AvinError;
 
 use crate::{Bar, InstrumentId, Ticker, TimeFrame};
@@ -16,9 +17,9 @@ use crate::{Bar, InstrumentId, Ticker, TimeFrame};
 ///
 /// # Invariants
 ///
-/// - bars are ordered by increasing `ts`;
-/// - bars have unique `ts`;
-/// - every `Bar::ts` is the beginning timestamp of its timeframe frame;
+/// - bars are ordered by increasing `time`;
+/// - bars have unique `time`;
+/// - every `Bar::time` is the beginning timestamp of its timeframe frame;
 ///
 /// The constructor accepts trusted bars. Historical validation belongs to
 /// storage/service, not to `Chart`.
@@ -126,17 +127,17 @@ impl Chart {
     /// Returns an error if `from_ts > till_ts`.
     pub fn select(
         &self,
-        from_ts: i64,
-        till_ts: i64,
+        from: Time,
+        till: Time,
     ) -> Result<&[Bar], AvinError> {
-        if from_ts > till_ts {
+        if from > till {
             return Err(AvinError::Value(
                 "Chart select from_ts > till_ts".to_string(),
             ));
         }
 
-        let left = self.bars.partition_point(|bar| bar.ts < from_ts);
-        let right = self.bars.partition_point(|bar| bar.ts <= till_ts);
+        let left = self.bars.partition_point(|bar| bar.time < from);
+        let right = self.bars.partition_point(|bar| bar.time <= till);
 
         Ok(&self.bars[left..right])
     }
@@ -152,16 +153,16 @@ impl Chart {
         }
 
         // 2. The bar is newer than the last one — append it.
-        if bar.ts > self.bars.last().unwrap().ts {
+        if bar.time > self.bars.last().unwrap().time {
             self.bars.push(bar);
             return;
         }
 
         // 3. Find the bar position by timestamp.
-        let index = self.bars.partition_point(|b| b.ts < bar.ts);
+        let index = self.bars.partition_point(|b| b.time < bar.time);
 
         // 4. A bar with the same timestamp exists — replace it.
-        if index < self.bars.len() && self.bars[index].ts == bar.ts {
+        if index < self.bars.len() && self.bars[index].time == bar.time {
             self.bars[index] = bar;
             return;
         }
@@ -188,9 +189,10 @@ mod tests {
     }
 
     fn bar(n: i64) -> Bar {
+        let time = Time::new(n * SECOND);
         let price = (n + 1) as f64;
 
-        Bar::new(n * SECOND, price, price, price, price, (n + 1) as u64 * 100)
+        Bar::new(time, price, price, price, price, (n + 1) as u64 * 100)
     }
 
     fn chart() -> Chart {
@@ -242,15 +244,21 @@ mod tests {
     fn select() {
         let chart = chart();
 
-        let selected = chart.select(SECOND, 3 * SECOND).unwrap();
+        let selected = chart
+            .select(Time::new(SECOND), Time::new(3 * SECOND))
+            .unwrap();
 
         assert_eq!(selected, &[bar(1), bar(2), bar(3)]);
 
-        let selected = chart.select(SECOND + 1, 4 * SECOND - 1).unwrap();
+        let selected = chart
+            .select(Time::new(SECOND + 1), Time::new(4 * SECOND - 1))
+            .unwrap();
 
         assert_eq!(selected, &[bar(2), bar(3)]);
 
-        let selected = chart.select(5 * SECOND, 6 * SECOND).unwrap();
+        let selected = chart
+            .select(Time::new(5 * SECOND), Time::new(6 * SECOND))
+            .unwrap();
 
         assert!(selected.is_empty());
     }
@@ -259,7 +267,7 @@ mod tests {
     fn select_invalid_range() {
         let chart = chart();
 
-        assert!(chart.select(SECOND, 0).is_err());
+        assert!(chart.select(Time::new(SECOND), Time::new(0)).is_err());
     }
 
     #[test]
@@ -283,7 +291,8 @@ mod tests {
         assert_eq!(chart.bars(), &[bar(1), bar(2), bar(3), bar(4)]);
 
         // Replace.
-        let replacement = Bar::new(3 * SECOND, 30.0, 31.0, 29.0, 30.5, 999);
+        let time = Time::new(3 * SECOND);
+        let replacement = Bar::new(time, 30.0, 31.0, 29.0, 30.5, 999);
 
         chart.upsert(replacement);
 

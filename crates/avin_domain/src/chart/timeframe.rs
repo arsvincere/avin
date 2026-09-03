@@ -7,6 +7,7 @@
 
 use std::fmt::Display;
 
+use avin_core::Time;
 use chrono::{Datelike, Days, TimeDelta, Timelike};
 
 use avin_utils::AvinError;
@@ -138,9 +139,7 @@ impl TimeFrame {
         }
     }
 
-    /// Returns the inclusive beginning of the frame containing `ts`.
-    ///
-    /// `ts` and the returned value are Unix timestamps in nanoseconds.
+    /// Returns the inclusive beginning of the frame containing `time`.
     ///
     /// Frame boundaries are aligned in UTC. Weeks begin on Monday and months
     /// begin on the first day of the month.
@@ -148,28 +147,21 @@ impl TimeFrame {
     /// # Examples
     ///
     /// ```
-    /// use chrono::{TimeZone, Utc};
+    /// use std::str::FromStr;
     ///
+    /// use avin_core::Time;
     /// use avin_domain::TimeFrame;
     ///
-    /// let ts = Utc
-    ///     .with_ymd_and_hms(2026, 8, 18, 10, 13, 42)
-    ///     .unwrap()
-    ///     .timestamp_nanos_opt()
-    ///     .unwrap();
+    /// let time = Time::from_str("2026-08-18 10:13:42").unwrap();
     ///
-    /// let expected = Utc
-    ///     .with_ymd_and_hms(2026, 8, 18, 10, 10, 0)
-    ///     .unwrap()
-    ///     .timestamp_nanos_opt()
-    ///     .unwrap();
+    /// let expected = Time::from_str("2026-08-18 10:10").unwrap();
     ///
-    /// assert_eq!(TimeFrame::M10.begin_frame_ts(ts), expected);
+    /// assert_eq!(TimeFrame::M10.begin_frame(time), expected);
     /// ```
-    pub fn begin_frame_ts(&self, ts: i64) -> i64 {
+    pub fn begin_frame(&self, time: Time) -> Time {
         let floor = |value: u32, step: u32| value - value % step;
 
-        let dt = avin_utils::dt(ts).with_nanosecond(0).unwrap();
+        let dt = time.dt().with_nanosecond(0).unwrap();
 
         let floor_dt = match self {
             Self::S1 => dt,
@@ -241,27 +233,26 @@ impl TimeFrame {
                 .unwrap(),
         };
 
-        avin_utils::ts(floor_dt)
+        Time::try_from(floor_dt).unwrap()
     }
 
-    /// Returns the exclusive end of the frame containing `ts`.
+    /// Returns the exclusive end of the frame containing `time`.
     ///
-    /// `ts` and the returned value are Unix timestamps in nanoseconds.
-    ///
-    /// Together with [`TimeFrame::begin_frame_ts`], this defines the frame as
+    /// Together with [`TimeFrame::begin_frame`], this defines the frame as
     /// a half-open interval `[begin, end)`.
-    pub fn end_frame_ts(&self, ts: i64) -> i64 {
+    pub fn end_frame(&self, time: Time) -> Time {
         match self {
             Self::Month => {
-                let dt = avin_utils::dt(ts);
+                let dt = time.dt();
                 let next_month_start = avin_utils::next_month_start(dt);
 
-                avin_utils::ts(next_month_start)
+                Time::try_from(next_month_start).unwrap()
             }
             _ => {
-                let begin_ts = self.begin_frame_ts(ts);
+                let begin = self.begin_frame(time);
+                let begin_ts = begin.ts() + self.nanos().unwrap() as i64;
 
-                begin_ts + self.nanos().unwrap() as i64
+                Time::new(begin_ts)
             }
         }
     }
@@ -348,25 +339,6 @@ mod tests {
 
     use super::*;
 
-    // helper - returns timestamp nanos of datetime
-    fn ts(
-        year: i32,
-        month: u32,
-        day: u32,
-        hour: u32,
-        minute: u32,
-        second: u32,
-        nanos: u32,
-    ) -> i64 {
-        let dt = Utc
-            .with_ymd_and_hms(year, month, day, hour, minute, second)
-            .unwrap()
-            .with_nanosecond(nanos)
-            .unwrap();
-
-        avin_utils::ts(dt)
-    }
-
     #[test]
     fn all() {
         let expected = [
@@ -440,52 +412,68 @@ mod tests {
     }
 
     #[test]
-    fn begin_frame_ts() {
-        let input = ts(2023, 8, 2, 10, 13, 42, 123_456_789);
+    fn begin_frame() {
+        let ts = Utc
+            .with_ymd_and_hms(2023, 8, 2, 10, 13, 42)
+            .unwrap()
+            .with_nanosecond(123_456_789)
+            .unwrap()
+            .timestamp_nanos_opt()
+            .unwrap();
+
+        let input = Time::new(ts);
 
         let cases = [
-            (TimeFrame::S1, ts(2023, 8, 2, 10, 13, 42, 0)),
-            (TimeFrame::S5, ts(2023, 8, 2, 10, 13, 40, 0)),
-            (TimeFrame::S10, ts(2023, 8, 2, 10, 13, 40, 0)),
-            (TimeFrame::S15, ts(2023, 8, 2, 10, 13, 30, 0)),
-            (TimeFrame::M1, ts(2023, 8, 2, 10, 13, 0, 0)),
-            (TimeFrame::M5, ts(2023, 8, 2, 10, 10, 0, 0)),
-            (TimeFrame::M10, ts(2023, 8, 2, 10, 10, 0, 0)),
-            (TimeFrame::M15, ts(2023, 8, 2, 10, 0, 0, 0)),
-            (TimeFrame::H1, ts(2023, 8, 2, 10, 0, 0, 0)),
-            (TimeFrame::H4, ts(2023, 8, 2, 8, 0, 0, 0)),
-            (TimeFrame::Day, ts(2023, 8, 2, 0, 0, 0, 0)),
-            (TimeFrame::Week, ts(2023, 7, 31, 0, 0, 0, 0)),
-            (TimeFrame::Month, ts(2023, 8, 1, 0, 0, 0, 0)),
+            (TimeFrame::S1, Time::from_str("2023-08-02 10:13:42")),
+            (TimeFrame::S5, Time::from_str("2023-08-02 10:13:40")),
+            (TimeFrame::S10, Time::from_str("2023-08-02 10:13:40")),
+            (TimeFrame::S15, Time::from_str("2023-08-02 10:13:30")),
+            (TimeFrame::M1, Time::from_str("2023-08-02 10:13:00")),
+            (TimeFrame::M5, Time::from_str("2023-08-02 10:10:00")),
+            (TimeFrame::M10, Time::from_str("2023-08-02 10:10:00")),
+            (TimeFrame::M15, Time::from_str("2023-08-02 10:00:00")),
+            (TimeFrame::H1, Time::from_str("2023-08-02 10:00:00")),
+            (TimeFrame::H4, Time::from_str("2023-08-02 08:00:00")),
+            (TimeFrame::Day, Time::from_str("2023-08-02 00:00:00")),
+            (TimeFrame::Week, Time::from_str("2023-07-31 00:00:00")),
+            (TimeFrame::Month, Time::from_str("2023-08-01 00:00:00")),
         ];
 
         for (timeframe, expected) in cases {
-            assert_eq!(timeframe.begin_frame_ts(input), expected);
+            assert_eq!(timeframe.begin_frame(input), expected.unwrap());
         }
     }
 
     #[test]
-    fn end_frame_ts() {
-        let input = ts(2023, 8, 2, 10, 13, 42, 123_456_789);
+    fn end_frame() {
+        let ts = Utc
+            .with_ymd_and_hms(2023, 8, 2, 10, 13, 42)
+            .unwrap()
+            .with_nanosecond(123_456_789)
+            .unwrap()
+            .timestamp_nanos_opt()
+            .unwrap();
+
+        let input = Time::new(ts);
 
         let cases = [
-            (TimeFrame::S1, ts(2023, 8, 2, 10, 13, 43, 0)),
-            (TimeFrame::S5, ts(2023, 8, 2, 10, 13, 45, 0)),
-            (TimeFrame::S10, ts(2023, 8, 2, 10, 13, 50, 0)),
-            (TimeFrame::S15, ts(2023, 8, 2, 10, 13, 45, 0)),
-            (TimeFrame::M1, ts(2023, 8, 2, 10, 14, 0, 0)),
-            (TimeFrame::M5, ts(2023, 8, 2, 10, 15, 0, 0)),
-            (TimeFrame::M10, ts(2023, 8, 2, 10, 20, 0, 0)),
-            (TimeFrame::M15, ts(2023, 8, 2, 10, 15, 0, 0)),
-            (TimeFrame::H1, ts(2023, 8, 2, 11, 0, 0, 0)),
-            (TimeFrame::H4, ts(2023, 8, 2, 12, 0, 0, 0)),
-            (TimeFrame::Day, ts(2023, 8, 3, 0, 0, 0, 0)),
-            (TimeFrame::Week, ts(2023, 8, 7, 0, 0, 0, 0)),
-            (TimeFrame::Month, ts(2023, 9, 1, 0, 0, 0, 0)),
+            (TimeFrame::S1, Time::from_str("2023-08-02 10:13:43")),
+            (TimeFrame::S5, Time::from_str("2023-08-02 10:13:45")),
+            (TimeFrame::S10, Time::from_str("2023-08-02 10:13:50")),
+            (TimeFrame::S15, Time::from_str("2023-08-02 10:13:45")),
+            (TimeFrame::M1, Time::from_str("2023-08-02 10:14:00")),
+            (TimeFrame::M5, Time::from_str("2023-08-02 10:15:00")),
+            (TimeFrame::M10, Time::from_str("2023-08-02 10:20:00")),
+            (TimeFrame::M15, Time::from_str("2023-08-02 10:15:00")),
+            (TimeFrame::H1, Time::from_str("2023-08-02 11:00:00")),
+            (TimeFrame::H4, Time::from_str("2023-08-02 12:00:00")),
+            (TimeFrame::Day, Time::from_str("2023-08-03 00:00:00")),
+            (TimeFrame::Week, Time::from_str("2023-08-07 00:00:00")),
+            (TimeFrame::Month, Time::from_str("2023-09-01 00:00:00")),
         ];
 
         for (timeframe, expected) in cases {
-            assert_eq!(timeframe.end_frame_ts(input), expected);
+            assert_eq!(timeframe.end_frame(input), expected.unwrap());
         }
     }
 

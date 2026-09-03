@@ -136,10 +136,26 @@ impl FromStr for Time {
         let dt = parse_dt_str(s)?;
 
         let ts = dt.timestamp_nanos_opt().ok_or_else(|| {
-            let begin = Time::new(i64::MIN);
-            let end = Time::new(i64::MAX);
+            let from = Time::new(i64::MIN);
+            let till = Time::new(i64::MAX);
             CoreError::Time(format!(
-                "time {s} is outside supported range [{begin}, {end}]"
+                "time {s} is outside supported range [{from}, {till}]"
+            ))
+        })?;
+
+        Ok(Time::new(ts))
+    }
+}
+
+impl TryFrom<DateTime<Utc>> for Time {
+    type Error = CoreError;
+
+    fn try_from(dt: DateTime<Utc>) -> Result<Self, Self::Error> {
+        let ts = dt.timestamp_nanos_opt().ok_or_else(|| {
+            let from = Time::new(i64::MIN);
+            let till = Time::new(i64::MAX);
+            CoreError::Time(format!(
+                "time {dt} is outside supported range [{from}, {till}]"
             ))
         })?;
 
@@ -197,6 +213,54 @@ mod tests {
     }
 
     #[test]
+    fn display_seconds() {
+        let time = Time::from_str("2026-01-01 15:05:01").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:05:01");
+    }
+
+    #[test]
+    fn display_minutes() {
+        let time = Time::from_str("2026-01-01 15:05:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:05");
+
+        let time = Time::from_str("2026-01-01 15:00:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:00");
+    }
+
+    #[test]
+    fn display_date() {
+        let time = Time::from_str("2026-01-01 00:00:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01");
+    }
+
+    #[test]
+    fn display_subseconds() {
+        // when subseconds == 0
+        let time = Time::from_str("2026-01-01 15:00:00").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01 15:00");
+
+        // show seconds when subseconds != 0
+        let time = Time::new(time.ts() + 854_680_000);
+
+        assert_eq!(time.to_string(), "2026-01-01 15:00:00");
+
+        // date only
+        let time = Time::from_str("2026-01-01").unwrap();
+
+        assert_eq!(time.to_string(), "2026-01-01");
+
+        // show HH:MM:SS when subseconds != 0
+        let time = Time::new(time.ts() + 100_000);
+
+        assert_eq!(time.to_string(), "2026-01-01 00:00:00");
+    }
+
+    #[test]
     fn from_str_seconds() {
         let time = Time::from_str("2026-01-01 12:55:01").unwrap();
         let expected = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 1).unwrap();
@@ -250,50 +314,10 @@ mod tests {
     }
 
     #[test]
-    fn display_seconds() {
-        let time = Time::from_str("2026-01-01 15:05:01").unwrap();
+    fn try_from_datetime() {
+        let dt = Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 0).unwrap();
+        let time = Time::try_from(dt).unwrap();
 
-        assert_eq!(time.to_string(), "2026-01-01 15:05:01");
-    }
-
-    #[test]
-    fn display_minutes() {
-        let time = Time::from_str("2026-01-01 15:05:00").unwrap();
-
-        assert_eq!(time.to_string(), "2026-01-01 15:05");
-
-        let time = Time::from_str("2026-01-01 15:00:00").unwrap();
-
-        assert_eq!(time.to_string(), "2026-01-01 15:00");
-    }
-
-    #[test]
-    fn display_date() {
-        let time = Time::from_str("2026-01-01 00:00:00").unwrap();
-
-        assert_eq!(time.to_string(), "2026-01-01");
-    }
-
-    #[test]
-    fn display_subseconds() {
-        // when subseconds == 0
-        let time = Time::from_str("2026-01-01 15:00:00").unwrap();
-
-        assert_eq!(time.to_string(), "2026-01-01 15:00");
-
-        // show seconds when subseconds != 0
-        let time = Time::new(time.ts() + 854_680_000);
-
-        assert_eq!(time.to_string(), "2026-01-01 15:00:00");
-
-        // date only
-        let time = Time::from_str("2026-01-01").unwrap();
-
-        assert_eq!(time.to_string(), "2026-01-01");
-
-        // show HH:MM:SS when subseconds != 0
-        let time = Time::new(time.ts() + 100_000);
-
-        assert_eq!(time.to_string(), "2026-01-01 00:00:00");
+        assert_eq!(time.dt(), dt);
     }
 }
