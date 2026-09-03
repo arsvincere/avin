@@ -6,9 +6,8 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use avin_core::Time;
-use avin_utils::AvinError;
 
-use crate::{Bar, InstrumentId, Ticker, TimeFrame};
+use crate::{Bar, DomainError, InstrumentId, Ticker, TimeFrame};
 
 /// Mutable candlestick chart for one instrument and one timeframe.
 ///
@@ -129,9 +128,9 @@ impl Chart {
         &self,
         from: Time,
         till: Time,
-    ) -> Result<&[Bar], AvinError> {
+    ) -> Result<&[Bar], DomainError> {
         if from > till {
-            return Err(AvinError::Value(
+            return Err(DomainError::Value(
                 "Chart select from > till".to_string(),
             ));
         }

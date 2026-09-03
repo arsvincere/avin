@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 /// Identifies a market data type supported by AVIN.
 ///
@@ -104,7 +104,7 @@ impl Display for MarketData {
 }
 
 impl FromStr for MarketData {
-    type Err = AvinError;
+    type Err = DomainError;
 
     /// Parses a market data key.
     ///
@@ -149,7 +149,7 @@ impl FromStr for MarketData {
                     s, available
                 );
 
-                Err(AvinError::Value(msg))
+                Err(DomainError::Value(msg))
             }
         }
     }
@@ -225,7 +225,7 @@ mod tests {
 
         assert!(matches!(
             MarketData::from_str("foo").unwrap_err(),
-            AvinError::Value(_)
+            DomainError::Value(_)
         ));
     }
 }

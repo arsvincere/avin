@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 /// Identifies an exchange supported by AVIN.
 ///
@@ -71,7 +71,7 @@ impl Display for Exchange {
 }
 
 impl FromStr for Exchange {
-    type Err = AvinError;
+    type Err = DomainError;
 
     /// Parses an exchange key.
     ///
@@ -109,7 +109,7 @@ impl FromStr for Exchange {
                     s, available
                 );
 
-                Err(AvinError::Value(msg))
+                Err(DomainError::Value(msg))
             }
         }
     }
@@ -160,7 +160,7 @@ mod tests {
 
         assert!(matches!(
             Exchange::from_str("foo").unwrap_err(),
-            AvinError::Value(_)
+            DomainError::Value(_)
         ));
     }
 }

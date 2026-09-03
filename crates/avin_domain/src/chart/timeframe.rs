@@ -10,7 +10,7 @@ use std::fmt::Display;
 use avin_core::Time;
 use chrono::{DateTime, Datelike, Days, Months, TimeDelta, Timelike, Utc};
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 /// Represents a timeframe supported by AVIN.
 ///
@@ -282,7 +282,7 @@ impl Display for TimeFrame {
 }
 
 impl std::str::FromStr for TimeFrame {
-    type Err = AvinError;
+    type Err = DomainError;
 
     /// Parses a timeframe.
     ///
@@ -327,7 +327,7 @@ impl std::str::FromStr for TimeFrame {
             s, available
         );
 
-        Err(AvinError::Value(msg))
+        Err(DomainError::Value(msg))
     }
 }
 

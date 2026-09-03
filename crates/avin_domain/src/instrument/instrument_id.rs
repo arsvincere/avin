@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 use crate::{Category, Exchange, Ticker};
 
@@ -105,7 +105,7 @@ impl Display for InstrumentId {
 }
 
 impl FromStr for InstrumentId {
-    type Err = AvinError;
+    type Err = DomainError;
 
     /// Parses an instrument ID from `EXCHANGE.CATEGORY.TICKER`.
     ///
@@ -136,7 +136,7 @@ impl FromStr for InstrumentId {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
         if parts.len() != 3 {
             let msg = format!("invalid instrument id '{s}'");
-            return Err(AvinError::Value(msg));
+            return Err(DomainError::Value(msg));
         }
 
         let exchange = Exchange::from_str(parts[0])?;

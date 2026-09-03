@@ -7,7 +7,7 @@
 
 use std::collections::HashMap;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 use crate::{InstrumentId, InstrumentInfo};
 
@@ -55,7 +55,7 @@ impl InstrumentList {
     pub fn add(
         &mut self,
         instrument: InstrumentInfo,
-    ) -> Result<(), AvinError> {
+    ) -> Result<(), DomainError> {
         let iid = instrument.iid();
 
         match self.instruments.entry(iid) {
@@ -66,7 +66,7 @@ impl InstrumentList {
             }
             // if in hash map
             std::collections::hash_map::Entry::Occupied(entry) => {
-                Err(AvinError::Value(format!(
+                Err(DomainError::Value(format!(
                     "Duplicate InstrumentId in InstrumentList: {}",
                     entry.key()
                 )))
@@ -173,6 +173,6 @@ mod tests {
 
         let result = list.add(second);
 
-        assert!(matches!(result, Err(AvinError::Value(_))));
+        assert!(matches!(result, Err(DomainError::Value(_))));
     }
 }

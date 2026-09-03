@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 /// Trading instrument ticker.
 ///
@@ -22,7 +22,7 @@ impl Ticker {
     /// # Errors
     ///
     /// Returns an error if the ticker is empty or contains whitespace.
-    pub fn new(value: impl Into<String>) -> Result<Self, AvinError> {
+    pub fn new(value: impl Into<String>) -> Result<Self, DomainError> {
         let s: String = value.into();
 
         validate_ticker(&s)?;
@@ -38,22 +38,22 @@ impl Display for Ticker {
 }
 
 impl FromStr for Ticker {
-    type Err = AvinError;
+    type Err = DomainError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::new(s)
     }
 }
 
-fn validate_ticker(s: &str) -> Result<(), AvinError> {
+fn validate_ticker(s: &str) -> Result<(), DomainError> {
     if s.is_empty() {
-        return Err(AvinError::Value(
+        return Err(DomainError::Value(
             "instrument ticker can't be empty".to_string(),
         ));
     }
 
     if s.chars().any(|c| c.is_whitespace()) {
-        return Err(AvinError::Value(
+        return Err(DomainError::Value(
             "instrument ticker can't contain whitespace".to_string(),
         ));
     }

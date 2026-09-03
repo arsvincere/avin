@@ -7,10 +7,9 @@
 
 use std::collections::HashMap;
 
-use avin_utils::AvinError;
-
 use crate::{
-    Category, Chart, HasCharts, InstrumentInfo, InstrumentInfoView, TimeFrame,
+    Category, Chart, DomainError, HasCharts, InstrumentInfo,
+    InstrumentInfoView, TimeFrame,
 };
 
 pub struct Share {
@@ -19,13 +18,13 @@ pub struct Share {
 }
 
 impl TryFrom<InstrumentInfo> for Share {
-    type Error = AvinError;
+    type Error = DomainError;
 
     fn try_from(value: InstrumentInfo) -> Result<Self, Self::Error> {
         let category = value.category();
 
         if category != Category::Share {
-            return Err(AvinError::Value(format!(
+            return Err(DomainError::Value(format!(
                 "invalid instrument info, expected 'Share' category, got {}",
                 category
             )));
@@ -88,6 +87,6 @@ mod tests {
     fn invalid_category() {
         let result = Share::try_from(get_info(Category::Future));
 
-        assert!(matches!(result, Err(AvinError::Value(_))));
+        assert!(matches!(result, Err(DomainError::Value(_))));
     }
 }

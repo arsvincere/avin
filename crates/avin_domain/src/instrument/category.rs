@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 /// Represents a financial instrument category.
 ///
@@ -82,7 +82,7 @@ impl Display for Category {
 }
 
 impl FromStr for Category {
-    type Err = AvinError;
+    type Err = DomainError;
 
     /// Parses a category key.
     ///
@@ -131,7 +131,7 @@ impl FromStr for Category {
                     s, available
                 );
 
-                Err(AvinError::Value(msg))
+                Err(DomainError::Value(msg))
             }
         }
     }
@@ -191,7 +191,7 @@ mod tests {
 
         assert!(matches!(
             Category::from_str("foo").unwrap_err(),
-            AvinError::Value(_)
+            DomainError::Value(_)
         ));
     }
 }

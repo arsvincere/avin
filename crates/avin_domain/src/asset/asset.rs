@@ -5,7 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 use crate::{
     Category, Chart, Future, HasCharts, InstrumentInfo, InstrumentInfoView,
@@ -26,13 +26,13 @@ pub enum Asset {
 }
 
 impl TryFrom<InstrumentInfo> for Asset {
-    type Error = AvinError;
+    type Error = DomainError;
 
     fn try_from(value: InstrumentInfo) -> Result<Self, Self::Error> {
         match value.category() {
             Category::Share => Ok(Self::Share(Share::try_from(value)?)),
             Category::Future => Ok(Self::Future(Future::try_from(value)?)),
-            category => Err(AvinError::Value(format!(
+            category => Err(DomainError::Value(format!(
                 "unsupported asset category '{category}'"
             ))),
         }
@@ -101,6 +101,6 @@ mod tests {
     fn unsupported_category() {
         let result = Asset::try_from(get_info(Category::Index));
 
-        assert!(matches!(result, Err(AvinError::Value(_))));
+        assert!(matches!(result, Err(DomainError::Value(_))));
     }
 }

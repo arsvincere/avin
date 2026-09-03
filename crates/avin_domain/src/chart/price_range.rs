@@ -7,7 +7,7 @@
 
 use std::fmt::Display;
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 /// Closed price interval `[low, high]`.
 ///
@@ -58,15 +58,15 @@ impl PriceRange {
     /// assert!(PriceRange::new(f64::NAN, 100.0).is_err());
     /// assert!(PriceRange::new(f64::INFINITY, 100.0).is_err());
     /// ```
-    pub fn new(low: f64, high: f64) -> Result<Self, AvinError> {
+    pub fn new(low: f64, high: f64) -> Result<Self, DomainError> {
         if !low.is_finite() || !high.is_finite() {
-            return Err(AvinError::Value(format!(
+            return Err(DomainError::Value(format!(
                 "PriceRange non-finite [{low}, {high}]"
             )));
         }
 
         if low > high {
-            return Err(AvinError::Value(format!(
+            return Err(DomainError::Value(format!(
                 "PriceRange low > high [{low}, {high}]"
             )));
         }

@@ -146,7 +146,9 @@ fn get_instruments(
     let mut result = Vec::new();
 
     for iid_str in instruments.iter() {
-        let iid = InstrumentId::from_str(iid_str)?;
+        let iid = InstrumentId::from_str(iid_str)
+            // TODO: сделать обертку ошибки в SystemError
+            .map_err(|_| AvinError::Parse("TODO_ERR_MSG".to_string()))?;
         result.push(iid);
     }
 
@@ -171,7 +173,9 @@ fn get_bar_timeframes(
     let mut timeframes = Vec::new();
 
     for tf_str in bars_data.timeframes.iter() {
-        let tf = TimeFrame::from_str(tf_str)?;
+        let tf = TimeFrame::from_str(tf_str)
+            // TODO: обертку в SystemError
+            .map_err(|_| AvinError::Parse("TODO_ERR_MSG".to_string()))?;
         timeframes.push(tf);
     }
 
@@ -201,7 +205,9 @@ fn get_time_footprints(
     let mut timeframes = Vec::new();
 
     for tf_str in time_footprints.iter() {
-        let tf = TimeFrame::from_str(tf_str)?;
+        let tf = TimeFrame::from_str(tf_str)
+            // TODO: обертку в SystemError
+            .map_err(|_| AvinError::Parse("TODO_ERR_MSG".to_string()))?;
         timeframes.push(tf);
     }
 

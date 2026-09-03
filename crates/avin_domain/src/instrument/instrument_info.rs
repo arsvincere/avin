@@ -7,7 +7,7 @@
 
 use std::{collections::HashMap, str::FromStr};
 
-use avin_utils::AvinError;
+use crate::DomainError;
 
 use crate::{Category, Exchange, InstrumentId, Ticker};
 
@@ -49,7 +49,7 @@ impl InstrumentInfo {
     /// - `exchange`, `category`, or `ticker` is invalid;
     /// - `lot` cannot be parsed as `u32` or is zero;
     /// - `step` cannot be parsed as `f64`, is non-finite, or is not positive.
-    pub fn new(info: HashMap<String, String>) -> Result<Self, AvinError> {
+    pub fn new(info: HashMap<String, String>) -> Result<Self, DomainError> {
         validate_info(&info)?;
 
         Ok(Self { info })
@@ -114,12 +114,12 @@ impl InstrumentInfo {
     }
 }
 
-fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
+fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     validate_info_keys_complete(info)?;
 
     let exchange = info.get("exchange").unwrap();
     Exchange::from_str(exchange).map_err(|err| {
-        AvinError::InstrumentInfo {
+        DomainError::InstrumentInfo {
             message: "failed parsing 'exchange'".to_string(),
             source: Box::new(err),
         }
@@ -127,38 +127,38 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
 
     let category = info.get("category").unwrap();
     Category::from_str(category).map_err(|err| {
-        AvinError::InstrumentInfo {
+        DomainError::InstrumentInfo {
             message: "failed parsing 'category'".to_string(),
             source: Box::new(err),
         }
     })?;
 
     let ticker = info.get("ticker").unwrap();
-    Ticker::from_str(ticker).map_err(|err| AvinError::InstrumentInfo {
+    Ticker::from_str(ticker).map_err(|err| DomainError::InstrumentInfo {
         message: "failed parsing 'ticker'".to_string(),
         source: Box::new(err),
     })?;
 
     let lot = info.get("lot").unwrap();
     let lot = u32::from_str(lot).map_err(|err| {
-        AvinError::Parse(format!(
+        DomainError::Parse(format!(
             "failed parsing 'lot' as u32, got '{lot}': {err}"
         ))
     })?;
     if lot == 0 {
-        return Err(AvinError::Value(
+        return Err(DomainError::Value(
             "'lot' must be greater than zero".to_string(),
         ));
     }
 
     let step = info.get("step").unwrap();
     let step = f64::from_str(step).map_err(|err| {
-        AvinError::Parse(format!(
+        DomainError::Parse(format!(
             "failed parsing 'step' as f64, got '{step}': {err}"
         ))
     })?;
     if !step.is_finite() || step <= 0.0 {
-        return Err(AvinError::Value(
+        return Err(DomainError::Value(
             "'step' must be finite and greater than zero".to_string(),
         ));
     }
@@ -168,14 +168,14 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), AvinError> {
 
 fn validate_info_keys_complete(
     info: &HashMap<String, String>,
-) -> Result<(), AvinError> {
+) -> Result<(), DomainError> {
     for key in REQUIRED_KEYS {
         if !info.contains_key(key) {
-            return Err(AvinError::Key(format!("missing key '{key}'")));
+            return Err(DomainError::Key(format!("missing key '{key}'")));
         }
 
         if info.get(key).unwrap().is_empty() {
-            return Err(AvinError::Missing(format!(
+            return Err(DomainError::Missing(format!(
                 "missing value for '{key}'"
             )));
         }
@@ -249,7 +249,7 @@ mod tests {
 
             let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-            assert!(matches!(err, AvinError::Key(_)));
+            assert!(matches!(err, DomainError::Key(_)));
         }
     }
 
@@ -261,7 +261,7 @@ mod tests {
 
             let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-            assert!(matches!(err, AvinError::Missing(_)));
+            assert!(matches!(err, DomainError::Missing(_)));
         }
     }
 
@@ -272,7 +272,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, AvinError::InstrumentInfo { .. }));
+        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
     }
 
     #[test]
@@ -282,7 +282,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, AvinError::Parse(_)));
+        assert!(matches!(err, DomainError::Parse(_)));
     }
 
     #[test]
@@ -292,7 +292,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, AvinError::Value(_)));
+        assert!(matches!(err, DomainError::Value(_)));
     }
 
     #[test]
@@ -302,7 +302,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, AvinError::Parse(_)));
+        assert!(matches!(err, DomainError::Parse(_)));
     }
 
     #[test]
@@ -313,7 +313,7 @@ mod tests {
 
             let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-            assert!(matches!(err, AvinError::Value(_)));
+            assert!(matches!(err, DomainError::Value(_)));
         }
     }
 }
