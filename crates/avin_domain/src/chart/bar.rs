@@ -18,7 +18,7 @@ use crate::{BarDirection, PriceRange};
 /// must be validated before constructing bars.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bar {
-    /// Bar start timestamp in Unix nanoseconds.
+    /// Bar start time.
     pub time: Time,
     /// Open price.
     pub o: f64,
@@ -34,9 +34,9 @@ pub struct Bar {
 
 impl Bar {
     /// Creates a bar from trusted OHLCV values without validation.
-    pub fn new(t: Time, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
+    pub fn new(time: Time, o: f64, h: f64, l: f64, c: f64, v: u64) -> Bar {
         Bar {
-            time: t,
+            time,
             o,
             h,
             l,
@@ -136,9 +136,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn ohlcv_time_dt() {
+    fn new_and_dt() {
         let time = Time::from_str("2026-08-20 14:20:05").unwrap();
-        let dt = time.dt();
         let bar = Bar::new(time, 10.0, 11.1, 9.9, 10.5, 5000);
 
         assert_eq!(bar.time, time);
@@ -147,6 +146,8 @@ mod tests {
         assert_eq!(bar.l, 9.9);
         assert_eq!(bar.c, 10.5);
         assert_eq!(bar.v, 5000);
+
+        let dt = time.dt();
         assert_eq!(bar.dt(), dt);
     }
 
