@@ -8,32 +8,32 @@
 mod error;
 mod model;
 
-use pyo3::prelude::*;
-
-use model::{
-    PyBar, PyBarDirection, PyCategory, PyChart, PyExchange, PyInstrumentId,
-    PyInstrumentInfo, PyInstrumentList, PyPriceRange, PyTicker, PyTimeFrame,
-    PyWatchlist, PyWatchlistGroup, PyWatchlistItem,
-};
-
-#[pymodule]
-#[pyo3(name = "_native")]
-fn avin_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<PyExchange>()?;
-    m.add_class::<PyCategory>()?;
-    m.add_class::<PyTicker>()?;
-    m.add_class::<PyInstrumentId>()?;
-    m.add_class::<PyInstrumentInfo>()?;
-    m.add_class::<PyInstrumentList>()?;
-    m.add_class::<PyWatchlistGroup>()?;
-    m.add_class::<PyWatchlistItem>()?;
-    m.add_class::<PyWatchlist>()?;
-
-    m.add_class::<PyPriceRange>()?;
-    m.add_class::<PyBarDirection>()?;
-    m.add_class::<PyBar>()?;
-    m.add_class::<PyTimeFrame>()?;
-    m.add_class::<PyChart>()?;
-
-    Ok(())
-}
+// use pyo3::prelude::*;
+//
+// use model::{
+//     PyBar, PyBarDirection, PyCategory, PyChart, PyExchange, PyInstrumentId,
+//     PyInstrumentInfo, PyInstrumentList, PyPriceRange, PyTicker, PyTimeFrame,
+//     PyWatchlist, PyWatchlistGroup, PyWatchlistItem,
+// };
+//
+// #[pymodule]
+// #[pyo3(name = "_native")]
+// fn avin_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
+//     m.add_class::<PyExchange>()?;
+//     m.add_class::<PyCategory>()?;
+//     m.add_class::<PyTicker>()?;
+//     m.add_class::<PyInstrumentId>()?;
+//     m.add_class::<PyInstrumentInfo>()?;
+//     m.add_class::<PyInstrumentList>()?;
+//     m.add_class::<PyWatchlistGroup>()?;
+//     m.add_class::<PyWatchlistItem>()?;
+//     m.add_class::<PyWatchlist>()?;
+//
+//     m.add_class::<PyPriceRange>()?;
+//     m.add_class::<PyBarDirection>()?;
+//     m.add_class::<PyBar>()?;
+//     m.add_class::<PyTimeFrame>()?;
+//     m.add_class::<PyChart>()?;
+//
+//     Ok(())
+// }
