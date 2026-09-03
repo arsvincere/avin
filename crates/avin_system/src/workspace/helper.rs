@@ -5,16 +5,16 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod cmd;
-mod constant;
-mod dt;
-mod error;
-mod misc;
+use std::path::Path;
 
-pub use cmd::Cmd;
-pub use constant::{
-    DAY_BEGIN, DAY_END, ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_SECOND, ONE_WEEK,
-};
-// pub use dt::{next_month_start, prev_month_start};
-pub use error::AvinError;
-// pub use misc::read_toml;
+use serde::de::DeserializeOwned;
+
+use avin_utils::{AvinError, Cmd};
+
+pub fn read_toml<T: DeserializeOwned>(path: &Path) -> Result<T, AvinError> {
+    let toml_text = Cmd::read(path)?;
+
+    toml::from_str(&toml_text).map_err(|err| {
+        AvinError::Parse(format!("failed to parse {}: {err}", path.display()))
+    })
+}

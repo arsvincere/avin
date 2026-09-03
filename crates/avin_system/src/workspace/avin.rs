@@ -30,7 +30,7 @@ pub struct AvinToml {
 
 impl AvinToml {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
-        let mut avin: Self = avin_utils::read_toml(path)?;
+        let mut avin: Self = super::helper::read_toml(path)?;
 
         if avin.format != FORMAT {
             return Err(AvinError::Value(format!(

@@ -29,7 +29,7 @@ pub struct Config {
 
 impl Config {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
-        let config: Self = avin_utils::read_toml(path)?;
+        let config: Self = super::helper::read_toml(path)?;
 
         if config.format != FORMAT {
             return Err(AvinError::Value(format!(

@@ -34,7 +34,7 @@ pub struct Secret {
 
 impl Secret {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
-        let secret: Self = avin_utils::read_toml(path)?;
+        let secret: Self = super::helper::read_toml(path)?;
 
         if secret.format != FORMAT {
             return Err(AvinError::Value(format!(

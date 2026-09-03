@@ -29,7 +29,7 @@ pub struct DataManifest {
 
 impl DataManifest {
     pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
-        let raw: DataToml = avin_utils::read_toml(path)?;
+        let raw: DataToml = super::helper::read_toml(path)?;
 
         if raw.format != FORMAT {
             return Err(AvinError::Value(format!(

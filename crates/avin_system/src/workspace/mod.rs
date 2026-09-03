@@ -8,6 +8,7 @@
 mod avin;
 mod config;
 mod data;
+mod helper;
 mod secret;
 mod workspace;
 
