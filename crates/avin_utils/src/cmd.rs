@@ -9,8 +9,6 @@ use std::fs::File;
 use std::io::{self, BufRead, Write};
 use std::path::{Path, PathBuf};
 
-use polars::prelude::{DataFrame, ParquetReader, ParquetWriter, SerReader};
-
 use crate::AvinError;
 
 /// `Cmd` is short for "command" and serves as a convenience namespace for
@@ -762,6 +760,26 @@ impl Cmd {
         }
     }
 
+    /// Writes a string to a file, overwriting its existing contents.
+    ///
+    /// Missing parent directories are created automatically.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the parent directories cannot be created or if the
+    /// file cannot be created or written.
+    pub fn write(string: &str, path: &Path) -> Result<(), AvinError> {
+        Self::make_dirs_for_file(path)?;
+
+        match std::fs::write(path, string) {
+            Ok(()) => Ok(()),
+            Err(err) => Err(AvinError::Io {
+                message: format!("Failed to write file: {}", path.display()),
+                source: err,
+            }),
+        }
+    }
+
     /// Opens a text file and returns an iterator over its lines.
     ///
     /// Lines are read lazily and do not include line ending characters.
@@ -810,58 +828,6 @@ impl Cmd {
             Ok(bytes) => Ok(bytes),
             Err(err) => Err(AvinError::Io {
                 message: format!("Failed to read file: {}", path.display()),
-                source: err,
-            }),
-        }
-    }
-
-    /// Reads a Parquet file into a Polars `DataFrame`.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the file cannot be opened or if Polars cannot read
-    /// the Parquet data.
-    pub fn read_pqt(path: &Path) -> Result<DataFrame, AvinError> {
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(AvinError::Io {
-                    message: format!(
-                        "Failed to open Parquet file: {}",
-                        path.display()
-                    ),
-                    source: err,
-                });
-            }
-        };
-
-        match ParquetReader::new(file).finish() {
-            Ok(df) => Ok(df),
-            Err(err) => Err(AvinError::Polars {
-                message: format!(
-                    "Failed to read Parquet file: {}",
-                    path.display()
-                ),
-                source: err,
-            }),
-        }
-    }
-
-    /// Writes a string to a file, overwriting its existing contents.
-    ///
-    /// Missing parent directories are created automatically.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the parent directories cannot be created or if the
-    /// file cannot be created or written.
-    pub fn write(string: &str, path: &Path) -> Result<(), AvinError> {
-        Self::make_dirs_for_file(path)?;
-
-        match std::fs::write(path, string) {
-            Ok(()) => Ok(()),
-            Err(err) => Err(AvinError::Io {
-                message: format!("Failed to write file: {}", path.display()),
                 source: err,
             }),
         }
@@ -928,46 +894,6 @@ impl Cmd {
             Err(err) => Err(AvinError::Io {
                 message: format!(
                     "Failed to write binary file: {}",
-                    path.display()
-                ),
-                source: err,
-            }),
-        }
-    }
-
-    /// Writes a Polars `DataFrame` to a Parquet file.
-    ///
-    /// Missing parent directories are created automatically. Existing file
-    /// contents are overwritten.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the parent directories cannot be created, if the
-    /// file cannot be created, or if Polars cannot write the Parquet data.
-    pub fn write_pqt(
-        df: &mut DataFrame,
-        path: &Path,
-    ) -> Result<(), AvinError> {
-        Self::make_dirs_for_file(path)?;
-
-        let file = match File::create(path) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(AvinError::Io {
-                    message: format!(
-                        "Failed to create Parquet file: {}",
-                        path.display()
-                    ),
-                    source: err,
-                });
-            }
-        };
-
-        match ParquetWriter::new(file).finish(df) {
-            Ok(_) => Ok(()),
-            Err(err) => Err(AvinError::Polars {
-                message: format!(
-                    "Failed to write Parquet file: {}",
                     path.display()
                 ),
                 source: err,
@@ -1142,56 +1068,6 @@ impl Cmd {
                 message: format!(
                     "Failed to delete directory: {}",
                     path.display()
-                ),
-                source: err,
-            }),
-        }
-    }
-
-    /// Extracts a ZIP archive into a directory.
-    ///
-    /// Existing files in the destination directory may be overwritten.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the archive cannot be opened, read, or extracted.
-    pub fn extract_zip(
-        archive_path: &Path,
-        dest_dir: &Path,
-    ) -> Result<(), AvinError> {
-        let file = match File::open(archive_path) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(AvinError::Io {
-                    message: format!(
-                        "Failed to open ZIP archive: {}",
-                        archive_path.display()
-                    ),
-                    source: err,
-                });
-            }
-        };
-
-        let mut archive = match zip::ZipArchive::new(file) {
-            Ok(archive) => archive,
-            Err(err) => {
-                return Err(AvinError::Zip {
-                    message: format!(
-                        "Failed to read ZIP archive: {}",
-                        archive_path.display()
-                    ),
-                    source: err,
-                });
-            }
-        };
-
-        match archive.extract(dest_dir) {
-            Ok(()) => Ok(()),
-            Err(err) => Err(AvinError::Zip {
-                message: format!(
-                    "Failed to extract ZIP archive '{}' to '{}'",
-                    archive_path.display(),
-                    dest_dir.display()
                 ),
                 source: err,
             }),
