@@ -12,14 +12,14 @@ use crate::{Bar, InstrumentId, Ticker, TimeFrame};
 
 /// Mutable candlestick chart for one instrument and one timeframe.
 ///
-/// Chart stores bars ordered by increasing timestamp.
+/// Chart stores bars ordered by increasing time.
 /// The last bar is the most recent bar and may be unfinished in realtime.
 ///
 /// # Invariants
 ///
 /// - bars are ordered by increasing `time`;
 /// - bars have unique `time`;
-/// - every `Bar::time` is the beginning timestamp of its timeframe frame;
+/// - every `Bar::time` is the beginning of its timeframe frame;
 ///
 /// The constructor accepts trusted bars. Historical validation belongs to
 /// storage/service, not to `Chart`.
@@ -118,13 +118,13 @@ impl Chart {
         Some(self.last()?.c)
     }
 
-    /// Selects bars in the closed interval `[from_ts, till_ts]`.
+    /// Selects bars in the closed interval `[from, till]`.
     ///
     /// Returns a borrowed slice without copying bars.
     ///
     /// # Errors
     ///
-    /// Returns an error if `from_ts > till_ts`.
+    /// Returns an error if `from > till`.
     pub fn select(
         &self,
         from: Time,
@@ -132,7 +132,7 @@ impl Chart {
     ) -> Result<&[Bar], AvinError> {
         if from > till {
             return Err(AvinError::Value(
-                "Chart select from_ts > till_ts".to_string(),
+                "Chart select from > till".to_string(),
             ));
         }
 
@@ -142,9 +142,9 @@ impl Chart {
         Ok(&self.bars[left..right])
     }
 
-    /// Inserts a bar or replaces an existing bar with the same timestamp.
+    /// Inserts a bar or replaces an existing bar with the same time.
     ///
-    /// Maintains bars ordered by increasing timestamp.
+    /// Maintains bars ordered by increasing time.
     pub fn upsert(&mut self, bar: Bar) {
         // 1. The chart is empty — add the first bar.
         if self.bars.is_empty() {
@@ -158,16 +158,16 @@ impl Chart {
             return;
         }
 
-        // 3. Find the bar position by timestamp.
+        // 3. Find the bar position by time.
         let index = self.bars.partition_point(|b| b.time < bar.time);
 
-        // 4. A bar with the same timestamp exists — replace it.
+        // 4. A bar with the same time exists — replace it.
         if index < self.bars.len() && self.bars[index].time == bar.time {
             self.bars[index] = bar;
             return;
         }
 
-        // 5. No bar with the same timestamp — insert it at the
+        // 5. No bar with the same time — insert it at the
         // correct position.
         self.bars.insert(index, bar);
     }
@@ -178,7 +178,7 @@ mod tests {
     use super::*;
     use crate::{Category, Exchange};
 
-    const SECOND: i64 = 1_000_000_000;
+    const NANOS_PER_SECOND: i64 = 1_000_000_000;
 
     fn iid() -> InstrumentId {
         InstrumentId::new(
@@ -189,7 +189,7 @@ mod tests {
     }
 
     fn bar(n: i64) -> Bar {
-        let time = Time::new(n * SECOND);
+        let time = Time::new(n * NANOS_PER_SECOND);
         let price = (n + 1) as f64;
 
         Bar::new(time, price, price, price, price, (n + 1) as u64 * 100)
@@ -245,19 +245,28 @@ mod tests {
         let chart = chart();
 
         let selected = chart
-            .select(Time::new(SECOND), Time::new(3 * SECOND))
+            .select(
+                Time::new(NANOS_PER_SECOND),
+                Time::new(3 * NANOS_PER_SECOND),
+            )
             .unwrap();
 
         assert_eq!(selected, &[bar(1), bar(2), bar(3)]);
 
         let selected = chart
-            .select(Time::new(SECOND + 1), Time::new(4 * SECOND - 1))
+            .select(
+                Time::new(NANOS_PER_SECOND + 1),
+                Time::new(4 * NANOS_PER_SECOND - 1),
+            )
             .unwrap();
 
         assert_eq!(selected, &[bar(2), bar(3)]);
 
         let selected = chart
-            .select(Time::new(5 * SECOND), Time::new(6 * SECOND))
+            .select(
+                Time::new(5 * NANOS_PER_SECOND),
+                Time::new(6 * NANOS_PER_SECOND),
+            )
             .unwrap();
 
         assert!(selected.is_empty());
@@ -267,7 +276,11 @@ mod tests {
     fn select_invalid_range() {
         let chart = chart();
 
-        assert!(chart.select(Time::new(SECOND), Time::new(0)).is_err());
+        assert!(
+            chart
+                .select(Time::new(NANOS_PER_SECOND), Time::new(0))
+                .is_err()
+        );
     }
 
     #[test]
@@ -291,7 +304,7 @@ mod tests {
         assert_eq!(chart.bars(), &[bar(1), bar(2), bar(3), bar(4)]);
 
         // Replace.
-        let time = Time::new(3 * SECOND);
+        let time = Time::new(3 * NANOS_PER_SECOND);
         let replacement = Bar::new(time, 30.0, 31.0, 29.0, 30.5, 999);
 
         chart.upsert(replacement);
