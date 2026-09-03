@@ -13,6 +13,7 @@ pub enum CoreError {
     Time(String),
     TimeRange(String),
     Year(String),
+    DataProvider(String),
 }
 
 impl Display for CoreError {
@@ -21,6 +22,7 @@ impl Display for CoreError {
             Self::Time(msg) => f.write_str(msg),
             Self::TimeRange(msg) => f.write_str(msg),
             Self::Year(msg) => f.write_str(msg),
+            Self::DataProvider(msg) => f.write_str(msg),
         }
     }
 }

@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use avin_utils::AvinError;
+use crate::CoreError;
 
 /// Identifies a market data provider supported by AVIN.
 ///
@@ -65,7 +65,7 @@ impl Display for DataProvider {
 }
 
 impl FromStr for DataProvider {
-    type Err = AvinError;
+    type Err = CoreError;
 
     /// Parses a market data provider key.
     ///
@@ -102,7 +102,7 @@ impl FromStr for DataProvider {
                     s, available
                 );
 
-                Err(AvinError::Value(msg))
+                Err(CoreError::DataProvider(msg))
             }
         }
     }
@@ -145,7 +145,7 @@ mod tests {
 
         assert!(matches!(
             DataProvider::from_str("foo").unwrap_err(),
-            AvinError::Value(_)
+            CoreError::DataProvider(_)
         ));
     }
 }

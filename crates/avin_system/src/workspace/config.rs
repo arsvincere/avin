@@ -44,7 +44,10 @@ impl Config {
     }
 
     fn validate(&self) -> Result<(), AvinError> {
-        DataProvider::from_str(&self.default.data_provider)?;
+        // TODO: здесь надо завернуть в SytemError
+        DataProvider::from_str(&self.default.data_provider).map_err(
+            |_| AvinError::Value("error parse data provider".to_string()),
+        )?;
 
         LevelFilter::from_str(&self.log.level).map_err(|_| {
             AvinError::Value(format!("unknown log level: {}", self.log.level))
