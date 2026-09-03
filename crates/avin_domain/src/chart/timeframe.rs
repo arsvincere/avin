@@ -8,7 +8,7 @@
 use std::fmt::Display;
 
 use avin_core::Time;
-use chrono::{Datelike, Days, TimeDelta, Timelike};
+use chrono::{DateTime, Datelike, Days, Months, TimeDelta, Timelike, Utc};
 
 use avin_utils::AvinError;
 
@@ -244,9 +244,9 @@ impl TimeFrame {
         match self {
             Self::Month => {
                 let dt = time.dt();
-                let next_month_start = avin_utils::next_month_start(dt);
+                let month_start = next_month_start(dt);
 
-                Time::try_from(next_month_start).unwrap()
+                Time::try_from(month_start).unwrap()
             }
             _ => {
                 let begin = self.begin_frame(time);
@@ -329,6 +329,30 @@ impl std::str::FromStr for TimeFrame {
 
         Err(AvinError::Value(msg))
     }
+}
+
+// Returns the start of the next calendar month in UTC.
+//
+// The returned datetime is always the first day of the next month at
+// `00:00:00`.
+//
+// # Panics
+//
+// Panics if the resulting datetime is outside the range supported by
+// `chrono`.
+fn next_month_start(dt: DateTime<Utc>) -> DateTime<Utc> {
+    dt.with_day(1)
+        .unwrap()
+        .with_hour(0)
+        .unwrap()
+        .with_minute(0)
+        .unwrap()
+        .with_second(0)
+        .unwrap()
+        .with_nanosecond(0)
+        .unwrap()
+        .checked_add_months(Months::new(1))
+        .unwrap()
 }
 
 #[cfg(test)]
@@ -509,5 +533,24 @@ mod tests {
         assert!(TimeFrame::from_str("M1").is_err());
         assert!(TimeFrame::from_str("Day").is_err());
         assert!(TimeFrame::from_str("foo").is_err());
+    }
+
+    #[test]
+    fn test_next_month_start() {
+        let dt = Utc
+            .with_ymd_and_hms(2023, 8, 2, 10, 7, 15)
+            .unwrap()
+            .with_nanosecond(123_456_789)
+            .unwrap();
+        let next = next_month_start(dt);
+        assert_eq!(next, Utc.with_ymd_and_hms(2023, 9, 1, 0, 0, 0).unwrap());
+
+        let dt = Utc.with_ymd_and_hms(2023, 12, 31, 23, 59, 59).unwrap();
+        let next = next_month_start(dt);
+        assert_eq!(next, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+
+        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let next = next_month_start(dt);
+        assert_eq!(next, Utc.with_ymd_and_hms(2023, 2, 1, 0, 0, 0).unwrap());
     }
 }
