@@ -9,8 +9,10 @@ mod data_provider;
 mod error;
 mod time;
 mod time_range;
+mod year;
 
 pub use data_provider::DataProvider;
 pub use error::CoreError;
 pub use time::Time;
 pub use time_range::TimeRange;
+pub use year::Year;

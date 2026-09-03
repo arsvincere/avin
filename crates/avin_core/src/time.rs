@@ -39,12 +39,12 @@ use crate::CoreError;
 /// let dt = time.dt();
 /// assert_eq!(dt, Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 19).unwrap());
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Time(i64);
 
 impl Time {
     /// Creates a new Time from a Unix timestamp in nanoseconds.
-    pub fn new(timestamp_nanos: i64) -> Self {
+    pub const fn new(timestamp_nanos: i64) -> Self {
         Time(timestamp_nanos)
     }
 
