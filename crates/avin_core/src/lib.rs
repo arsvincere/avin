@@ -8,6 +8,7 @@
 mod data_provider;
 mod error;
 mod market_data;
+mod price;
 mod price_range;
 mod time;
 mod time_range;
@@ -16,6 +17,7 @@ mod year;
 pub use data_provider::DataProvider;
 pub use error::CoreError;
 pub use market_data::MarketData;
+pub use price::Price;
 pub use price_range::PriceRange;
 pub use time::Time;
 pub use time_range::TimeRange;

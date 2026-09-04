@@ -9,7 +9,7 @@ service - internal operations and orchestration
 
 connect - broker and crypto exchange connectors
 data    - historical market data providers and normalization
-storage - local persistence, storage layout and codecs
+storage - persistence backends, storage layout and data access
 system  - workspace, configuration and process environment
 
 domain  - higher-level market and trading models
