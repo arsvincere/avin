@@ -13,9 +13,7 @@ storage - local persistence, storage layout and codecs
 system  - workspace, configuration and process environment
 
 domain  - higher-level market and trading models
-core    - low-level foundational vocabulary shared by all AVIN layers
-
-utils   - generic helpers
+core    - low-level foundational types
 ```
 
 # Dependency rules
@@ -34,8 +32,6 @@ connect / data / storage / system
 domain
     ↓
 core
-    ↓
-utils
 ```
 
 Допустимые направления зависимостей:
@@ -43,19 +39,17 @@ utils
 ```text
 avin    -> re-exports
 tools   -> core, domain, service
-gui     -> core, domain, system, service
+gui     -> core, domain, service
 
 service -> core, domain, system, storage, data, connect
 
-storage -> core, system
-data    -> core, system
-connect -> core, system
-system  -> core
+connect -> core, domain, system
+data    -> core, domain, system
+storage -> core, domain, system
+system  -> core, domain
 
 domain  -> core
 core    ->
-
-utils   ->
 ```
 
 # Modules

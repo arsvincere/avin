@@ -17,7 +17,6 @@ pub use asset::{Asset, Future, HasCharts, InstrumentInfoView, Share};
 pub use chart::{Bar, BarDirection, Chart, TimeFrame};
 pub use error::DomainError;
 pub use instrument::{
-    Category, Exchange, InstrumentId, InstrumentInfo, InstrumentList,
-    MarketData, Ticker,
+    Category, Exchange, InstrumentId, InstrumentInfo, InstrumentList, Ticker,
 };
 pub use watchlist::{Watchlist, WatchlistGroup, WatchlistItem};

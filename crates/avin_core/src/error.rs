@@ -15,6 +15,7 @@ pub enum CoreError {
     Year(String),
     PriceRange(String),
     DataProvider(String),
+    MarketData(String),
 }
 
 impl Display for CoreError {
@@ -25,6 +26,7 @@ impl Display for CoreError {
             Self::Year(msg) => f.write_str(msg),
             Self::PriceRange(msg) => f.write_str(msg),
             Self::DataProvider(msg) => f.write_str(msg),
+            Self::MarketData(msg) => f.write_str(msg),
         }
     }
 }

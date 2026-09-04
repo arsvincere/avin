@@ -5,8 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_core::{DataProvider, Year};
-use avin_domain::{InstrumentId, MarketData};
+use avin_core::{DataProvider, MarketData, Year};
+use avin_domain::InstrumentId;
 
 pub enum StorageKey {
     Provider {
