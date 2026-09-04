@@ -2,8 +2,8 @@
 avin
 avin_analyse
 avin_connect
-avin_core       -> unused
-avin_data       -> unused
+avin_core
+avin_data
 avin_gui
 avin_scanner    -> tool
 avin_simulator  -> tool
@@ -11,7 +11,7 @@ avin_strategy   -> tool
 avin_terminal   -> tool
 avin_tester     -> tool
 avin_trader     -> tool
-avin_utils
+avin_utils      -> unused
 
 # New
 avin
@@ -32,4 +32,3 @@ avin_tools      ! new
     terminal
     tester
     trader
-avin_utils

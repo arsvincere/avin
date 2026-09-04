@@ -12,7 +12,6 @@ readme = "README.md"
 [dependencies]
 avin_core = { workspace = true }
 avin_domain = { workspace = true }
-avin_utils = { workspace = true }
 
 chrono = { workspace = true }
 log = { workspace = true }
