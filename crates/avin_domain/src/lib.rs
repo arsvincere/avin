@@ -14,7 +14,7 @@ mod instrument;
 mod watchlist;
 
 pub use asset::{Asset, Future, HasCharts, InstrumentInfoView, Share};
-pub use chart::{Bar, BarDirection, Chart, PriceRange, TimeFrame};
+pub use chart::{Bar, BarDirection, Chart, TimeFrame};
 pub use error::DomainError;
 pub use instrument::{
     Category, Exchange, InstrumentId, InstrumentInfo, InstrumentList,

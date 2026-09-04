@@ -7,10 +7,10 @@
 
 use std::fmt::Display;
 
-use avin_core::Time;
+use avin_core::{PriceRange, Time};
 use chrono::{DateTime, Utc};
 
-use crate::{BarDirection, PriceRange};
+use crate::BarDirection;
 
 /// An OHLCV market bar.
 ///

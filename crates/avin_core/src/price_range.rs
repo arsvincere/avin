@@ -7,7 +7,7 @@
 
 use std::fmt::Display;
 
-use crate::DomainError;
+use crate::CoreError;
 
 /// Closed price interval `[low, high]`.
 ///
@@ -16,7 +16,7 @@ use crate::DomainError;
 /// # Examples
 ///
 /// ```
-/// use avin_domain::PriceRange;
+/// use avin_core::PriceRange;
 ///
 /// let range = PriceRange::new(100.0, 105.0).unwrap();
 /// assert_eq!(range.low(), 100.0);
@@ -50,7 +50,7 @@ impl PriceRange {
     /// # Examples
     ///
     /// ```
-    /// use avin_domain::PriceRange;
+    /// use avin_core::PriceRange;
     ///
     /// assert!(PriceRange::new(100.0, 110.0).is_ok());
     ///
@@ -58,15 +58,15 @@ impl PriceRange {
     /// assert!(PriceRange::new(f64::NAN, 100.0).is_err());
     /// assert!(PriceRange::new(f64::INFINITY, 100.0).is_err());
     /// ```
-    pub fn new(low: f64, high: f64) -> Result<Self, DomainError> {
+    pub fn new(low: f64, high: f64) -> Result<Self, CoreError> {
         if !low.is_finite() || !high.is_finite() {
-            return Err(DomainError::Value(format!(
+            return Err(CoreError::PriceRange(format!(
                 "PriceRange non-finite [{low}, {high}]"
             )));
         }
 
         if low > high {
-            return Err(DomainError::Value(format!(
+            return Err(CoreError::PriceRange(format!(
                 "PriceRange low > high [{low}, {high}]"
             )));
         }
