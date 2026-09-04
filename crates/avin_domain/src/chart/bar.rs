@@ -10,11 +10,11 @@ use std::fmt::Display;
 use avin_core::{Price, PriceRange, Time};
 use chrono::{DateTime, Utc};
 
-use crate::BarDirection;
+use crate::{BarDirection, DomainError};
 
 /// An OHLCV market bar.
 ///
-/// Bar values are assumed to contain valid market data; external data
+/// Bar values are assumed to contain valid market data; bar-level invariants
 /// must be validated before constructing bars.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bar {
@@ -41,6 +41,30 @@ impl Bar {
         l: Price,
         c: Price,
         v: u64,
+    ) -> Result<Self, DomainError> {
+        if o < l || o > h {
+            return Err(DomainError::Bar(format!(
+                "open price {o} is outside bar range [{l}, {h}]"
+            )));
+        }
+
+        if c < l || c > h {
+            return Err(DomainError::Bar(format!(
+                "close price {c} is outside bar range [{l}, {h}]"
+            )));
+        }
+
+        Ok(Self::new_unchecked(time, o, h, l, c, v))
+    }
+
+    // TODO: вынести в "приватный трейт"
+    pub fn new_unchecked(
+        time: Time,
+        o: Price,
+        h: Price,
+        l: Price,
+        c: Price,
+        v: u64,
     ) -> Bar {
         Bar {
             time,
@@ -52,7 +76,7 @@ impl Bar {
         }
     }
 
-    /// Returns the bar start timestamp as a UTC datetime.
+    /// Returns the bar start time as a UTC datetime.
     pub fn dt(&self) -> DateTime<Utc> {
         self.time.dt()
     }
@@ -150,7 +174,7 @@ mod tests {
         let low = Price::new(9.0).unwrap();
         let close = Price::new(10.5).unwrap();
         let vol = 5000;
-        let bar = Bar::new(time, open, high, low, close, vol);
+        let bar = Bar::new(time, open, high, low, close, vol).unwrap();
 
         assert_eq!(bar.time, time);
         assert_eq!(bar.o.value(), 10.0);
@@ -172,25 +196,25 @@ mod tests {
         let close = Price::new(10.5).unwrap();
         let vol = 5000;
 
-        let bull_bar = Bar::new(time, open, high, low, close, vol);
-        assert!(bull_bar.is_bull());
-        assert!(!bull_bar.is_bear());
-        assert!(!bull_bar.is_neutral());
-        assert_eq!(bull_bar.direction(), BarDirection::Bull);
+        let bull = Bar::new(time, open, high, low, close, vol).unwrap();
+        assert!(bull.is_bull());
+        assert!(!bull.is_bear());
+        assert!(!bull.is_neutral());
+        assert_eq!(bull.direction(), BarDirection::Bull);
 
         let close = Price::new(9.5).unwrap();
-        let bear_bar = Bar::new(time, open, high, low, close, vol);
-        assert!(!bear_bar.is_bull());
-        assert!(bear_bar.is_bear());
-        assert!(!bear_bar.is_neutral());
-        assert_eq!(bear_bar.direction(), BarDirection::Bear);
+        let bear = Bar::new(time, open, high, low, close, vol).unwrap();
+        assert!(!bear.is_bull());
+        assert!(bear.is_bear());
+        assert!(!bear.is_neutral());
+        assert_eq!(bear.direction(), BarDirection::Bear);
 
         let close = Price::new(10.0).unwrap();
-        let neutral_bar = Bar::new(time, open, high, low, close, vol);
-        assert!(!neutral_bar.is_bull());
-        assert!(!neutral_bar.is_bear());
-        assert!(neutral_bar.is_neutral());
-        assert_eq!(neutral_bar.direction(), BarDirection::Neutral);
+        let neutral = Bar::new(time, open, high, low, close, vol).unwrap();
+        assert!(!neutral.is_bull());
+        assert!(!neutral.is_bear());
+        assert!(neutral.is_neutral());
+        assert_eq!(neutral.direction(), BarDirection::Neutral);
     }
 
     #[test]
@@ -202,21 +226,21 @@ mod tests {
         let close = Price::new(10.5).unwrap();
         let vol = 5000;
 
-        let bull = Bar::new(time, open, high, low, close, vol);
+        let bull = Bar::new(time, open, high, low, close, vol).unwrap();
         assert_eq!(bull.range(), PriceRange::new(low, high).unwrap());
         assert_eq!(bull.body(), PriceRange::new(open, close).unwrap());
         assert_eq!(bull.lower(), PriceRange::new(low, open).unwrap());
         assert_eq!(bull.upper(), PriceRange::new(close, high).unwrap());
 
         let close = Price::new(9.5).unwrap();
-        let bear = Bar::new(time, open, high, low, close, vol);
+        let bear = Bar::new(time, open, high, low, close, vol).unwrap();
         assert_eq!(bear.range(), PriceRange::new(low, high).unwrap());
         assert_eq!(bear.body(), PriceRange::new(close, open).unwrap());
         assert_eq!(bear.lower(), PriceRange::new(low, close).unwrap());
         assert_eq!(bear.upper(), PriceRange::new(open, high).unwrap());
 
         let close = Price::new(10.0).unwrap();
-        let neutral = Bar::new(time, open, high, low, close, vol);
+        let neutral = Bar::new(time, open, high, low, close, vol).unwrap();
         assert_eq!(neutral.range(), PriceRange::new(low, high).unwrap());
         assert_eq!(neutral.body(), PriceRange::new(open, close).unwrap());
         assert_eq!(neutral.body(), PriceRange::new(close, open).unwrap());
@@ -235,7 +259,7 @@ mod tests {
         let close = Price::new(10.5).unwrap();
         let vol = 5000;
 
-        let bar = Bar::new(time, open, high, low, close, vol);
+        let bar = Bar::new(time, open, high, low, close, vol).unwrap();
 
         assert!(bar.contains(Price::new(10.3).unwrap()));
         assert!(bar.contains(Price::new(9.0).unwrap()));
@@ -254,7 +278,7 @@ mod tests {
         let close = Price::new(10.5).unwrap();
         let vol = 5000;
 
-        let bar = Bar::new(time, open, high, low, close, vol);
+        let bar = Bar::new(time, open, high, low, close, vol).unwrap();
 
         assert_eq!(
             bar.to_string(),

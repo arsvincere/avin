@@ -10,6 +10,8 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum DomainError {
+    Bar(String),
+
     Value(String),   // invalid value
     Parse(String),   // parse error
     Key(String),     // key missing
@@ -50,6 +52,8 @@ impl DomainError {
 impl Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Bar(msg) => write!(f, "{msg}"),
+
             Self::Value(msg) => write!(f, "{msg}"),
             Self::Parse(msg) => write!(f, "{msg}"),
             Self::Key(msg) => write!(f, "{msg}"),
@@ -69,6 +73,8 @@ impl Display for DomainError {
 impl Error for DomainError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
+            Self::Bar(_) => None,
+
             Self::Value(_) => None,
             Self::Parse(_) => None,
             Self::Key(_) => None,

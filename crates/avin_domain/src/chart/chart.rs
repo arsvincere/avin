@@ -192,6 +192,7 @@ mod tests {
         let price = Price::new((n + 1) as f64).unwrap();
 
         Bar::new(time, price, price, price, price, (n + 1) as u64 * 100)
+            .unwrap()
     }
 
     fn chart() -> Chart {
@@ -305,7 +306,7 @@ mod tests {
         // Replace.
         let time = Time::new(3 * NANOS_PER_SECOND);
         let p = Price::new(100500.0).unwrap();
-        let replacement = Bar::new(time, p, p, p, p, 999);
+        let replacement = Bar::new(time, p, p, p, p, 999).unwrap();
 
         chart.upsert(replacement);
 
