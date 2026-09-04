@@ -10,8 +10,8 @@ service - internal operations and orchestration
 connect - broker and crypto exchange connectors
 data    - historical market data providers and normalization
 storage - persistence backends, storage layout and data access
-system  - workspace, configuration and process environment
 
+system  - workspace, configuration and process environment
 domain  - higher-level market and trading models
 core    - low-level foundational types
 ```
@@ -27,7 +27,9 @@ tools / gui
     ↓
 service
     ↓
-connect / data / storage / system
+connect / data / storage
+    ↓
+system
     ↓
 domain
     ↓
@@ -46,8 +48,8 @@ service -> core, domain, system, storage, data, connect
 connect -> core, domain, system
 data    -> core, domain, system
 storage -> core, domain, system
-system  -> core, domain
 
+system  -> core, domain
 domain  -> core
 core    ->
 ```
@@ -70,7 +72,7 @@ avin data sync
 avin gui
 ```
 
-## api
+### api
 
 Высокоуровневые интерфейсы пользователя.
 
@@ -104,37 +106,23 @@ avin gui
 - `domain`;
 - `system`;
 - `storage`;
-- `source`;
+- `data`;
 
-## source
+## data
 
-Получает provider-specific historical data и приводит их к единому формату AVIN DataFrame.
+Получает provider-specific historical data и приводит их к единому формату AVIN.
 
 - использует provider SDK и HTTP requests;
 - управляет provider-specific authentication;
 - знает provider schemas, formats и identifiers;
 - получает instrument reference data;
-- преобразует provider data в canonical AVIN DataFrames.
+- преобразует provider data в canonical AVIN types.
 
 Provider-specific код остается изолированным. Универсальный provider framework не создается до появления второго реального provider-а.
 
 ## storage
 
-Локальное хранение данных, структура хранилища, преобразование DataFrame <-> domain object.
-
-Пример пути к файлу внутри `workspace`:
-
-`data/MOEX/SHARE/GAZP/TINKOFF/BAR_1M/2026/2026-01-01.parquet`
-
-- Данные хранятся в `.parquet`.
-- При сохранении выполняет дополнительные проверки DataFrame: schema, sorting...
-
-Содержит `StorageCodec` для преобразования market data:
-
-```text
-DataFrame <-> list[Bar]
-DataFrame <-> list[Tick]
-```
+Локальное хранение данных.
 
 ## system
 
@@ -143,110 +131,22 @@ DataFrame <-> list[Tick]
 Основные components:
 
 - `Workspace` - рабочее пространство, root directory с `AVIN.toml`.
-- `Configuration` - конфигурация пользователя.
+- `WORKSPACE` - доступ к текущему `Workspace` процесса.
+- `Config` - конфигурация пользователя.
 - `DataManifest` - desired state of market data.
-- `ws()` - доступ к текущему `Workspace` процесса.
-- `log` - сконфигурированный логгер приложения.
+- `Secret` - token, login/password etc.
+- сконфигурированный логгер приложения.
 
 ## domain
 
 Основные трейдерские абстракции и их собственное состояние и поведение:
-`Iid`, `Tick`, `Bar`, `Chart`, `TimeFrame`, `Footprint`, `BaseAsset`, `Share`, ...
+`Bar`, `Chart`, `TimeFrame`, `Tick`, `Footprint`, `Share`, `Future`...
 
 Не занимается I/O, orchestration и взаимодействием с внешними системами.
 
-## errors
+## core
 
-Project-specific exceptions.
-
-Generic built-in exceptions используются там, где отдельная project exception
-не добавляет смысла.
-
-## utils
-
-Вспомогательные инструменты.
-
-Могут быть поняты отдельно от AVIN business model.
-
-`utils` не должен становиться складом кода с неопределенной responsibility.
-
-## analyse
-
-Исследование рынка, производные данные и статистический анализ.
-
-Модуль запланирован, реализация не начата.
-
-## gui
-
-Визуализация данных и исследований.
-
-Реализация начата, но пока это только эксперименты с Elm-подобной архитектурой на PyQt6.
-
-Что и как реально будет работать - предмет будущих обсуждений.
-
-Текущий экспериментальный GUI flow:
-
-```text
-Widget
-    -> Event
-    -> AppController
-    -> service
-    -> AppState / domain state
-    -> state_changed
-    -> Widgets
-```
-
-AvinApp создаёт:
-
-```
-AppState
-AppController
-MainWindow
-```
-
-AppController владеет AppState.
-
-MainWindow и widgets получают controller и передают ему user events.
-
-## connect
-
-Коннекторы к брокерам и криптовалютным биржам.
-
-Модуль запланирован, реализация не начата.
-
-# Flows
-
-## Historical data
-
-Принципиальная схема:
-
-```text
-external historical market data, provider specific format
-    ↓
-data provider -> normalization
-    ↓
-storage -> .parquet raw data
-    ↓
-domain objects / derived objects
-    ↓
-public user API / GUI / CLI
-```
-
-## Asset
-
-Принципиальная схема:
-
-```text
-InstrumentId                - identity
-    ↓
-InstrumentInfo              - reference data
-    ↓
-Share / Future / Bond / ... - concrete types, runtime container for loaded data
-    ↓
-Asset                       - wrapper for all tradable instrument kind
-    ↓
-Whatchlist                  - ordered user instruments collection
-```
+Общие примитивы для domain объектов.
 
 # File formats
 
@@ -285,3 +185,38 @@ AVIN workspace это директория содержащая файл `AVIN.t
 avin_system::WORKSPACE - singlton
 
 Решить - WORKSPACE.init() явный vs lazylock???
+
+# Flows
+
+## Historical data
+
+Принципиальная схема:
+
+```text
+external historical market data, provider specific format
+    ↓
+data provider -> normalization to AVIN domain objects
+    ↓
+service -> codec -> .parquet raw data
+    ↓
+storage
+    ↓
+service -> codec -> AVIN domain objects
+    ↓
+public user API / GUI / CLI
+```
+
+## Asset
+
+Принципиальная схема:
+
+```text
+InstrumentId                - identity
+    ↓
+InstrumentInfo              - reference data
+    ↓
+Share / Future / Bond / ... - concrete types, runtime container for loaded data
+    ↓
+Asset                       - wrapper for all tradable instrument kind
+```
+
