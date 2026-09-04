@@ -5,11 +5,12 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::cmp::Ordering;
 use std::fmt::Display;
 
 use crate::CoreError;
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Price(f64);
 
 /// Canonical price representation used across AVIN.
@@ -65,6 +66,20 @@ impl Price {
 impl Display for Price {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Eq for Price {}
+
+impl Ord for Price {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.partial_cmp(&other.0).unwrap()
+    }
+}
+
+impl PartialOrd for Price {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 

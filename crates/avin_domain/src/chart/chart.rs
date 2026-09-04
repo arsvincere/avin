@@ -5,7 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_core::Time;
+use avin_core::{Price, Time};
 
 use crate::{Bar, DomainError, InstrumentId, Ticker, TimeFrame};
 
@@ -113,7 +113,7 @@ impl Chart {
     }
 
     /// Returns the close price of the last bar.
-    pub fn last_price(&self) -> Option<f64> {
+    pub fn last_price(&self) -> Option<Price> {
         Some(self.last()?.c)
     }
 
@@ -189,7 +189,7 @@ mod tests {
 
     fn bar(n: i64) -> Bar {
         let time = Time::new(n * NANOS_PER_SECOND);
-        let price = (n + 1) as f64;
+        let price = Price::new((n + 1) as f64).unwrap();
 
         Bar::new(time, price, price, price, price, (n + 1) as u64 * 100)
     }
@@ -209,7 +209,7 @@ mod tests {
         assert_eq!(chart.bars().len(), 5);
         assert_eq!(chart.first(), Some(&bar(0)));
         assert_eq!(chart.last(), Some(&bar(4)));
-        assert_eq!(chart.last_price(), Some(5.0));
+        assert_eq!(chart.last_price(), Some(Price::new(5.0).unwrap()));
     }
 
     #[test]
@@ -304,7 +304,8 @@ mod tests {
 
         // Replace.
         let time = Time::new(3 * NANOS_PER_SECOND);
-        let replacement = Bar::new(time, 30.0, 31.0, 29.0, 30.5, 999);
+        let p = Price::new(100500.0).unwrap();
+        let replacement = Bar::new(time, p, p, p, p, 999);
 
         chart.upsert(replacement);
 
