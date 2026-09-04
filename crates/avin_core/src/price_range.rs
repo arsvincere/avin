@@ -7,7 +7,7 @@
 
 use std::fmt::Display;
 
-use crate::CoreError;
+use crate::{CoreError, Price};
 
 /// Closed price interval `[low, high]`.
 ///
@@ -16,27 +16,30 @@ use crate::CoreError;
 /// # Examples
 ///
 /// ```
-/// use avin_core::PriceRange;
+/// use avin_core::{Price, PriceRange};
 ///
-/// let range = PriceRange::new(100.0, 105.0).unwrap();
-/// assert_eq!(range.low(), 100.0);
-/// assert_eq!(range.high(), 105.0);
+/// let low = Price::new(100.0).unwrap();
+/// let high = Price::new(105.0).unwrap();
+/// let range = PriceRange::new(low, high).unwrap();
 ///
-/// assert!(range.contains(100.0));
-/// assert!(range.contains(103.0));
-/// assert!(range.contains(105.0));
+/// assert_eq!(range.low(), Price::new(100.0).unwrap());
+/// assert_eq!(range.high(), Price::new(105.0).unwrap());
 ///
-/// assert!(!range.contains(105.1));
-/// assert!(!range.contains(99.9));
+/// assert!(range.contains(Price::new(100.0).unwrap()));
+/// assert!(range.contains(Price::new(103.0).unwrap()));
+/// assert!(range.contains(Price::new(105.0).unwrap()));
 ///
-/// assert_eq!(range.middle(), 102.5);
+/// assert!(!range.contains(Price::new(105.1).unwrap()));
+/// assert!(!range.contains(Price::new(99.9).unwrap()));
+///
+/// assert_eq!(range.middle(), Price::new(102.5).unwrap());
 ///
 /// assert_eq!(range.width(), 5.0);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PriceRange {
-    low: f64,
-    high: f64,
+    low: Price,
+    high: Price,
 }
 
 impl PriceRange {
@@ -44,27 +47,22 @@ impl PriceRange {
     ///
     /// # Errors
     ///
-    /// Returns an error if either bound is non-finite (`NaN`, positive or
-    /// negative infinity), or if `low > high`.
+    /// Returns an error if `low > high`.
     ///
     /// # Examples
     ///
     /// ```
-    /// use avin_core::PriceRange;
+    /// use avin_core::{Price, PriceRange};
     ///
-    /// assert!(PriceRange::new(100.0, 110.0).is_ok());
+    /// let low = Price::new(100.0).unwrap();
+    /// let high = Price::new(110.0).unwrap();
+    /// assert!(PriceRange::new(low, high).is_ok());
     ///
-    /// assert!(PriceRange::new(105.0, 100.0).is_err());
-    /// assert!(PriceRange::new(f64::NAN, 100.0).is_err());
-    /// assert!(PriceRange::new(f64::INFINITY, 100.0).is_err());
+    /// let low = Price::new(105.0).unwrap();
+    /// let high = Price::new(100.0).unwrap();
+    /// assert!(PriceRange::new(low, high).is_err());
     /// ```
-    pub fn new(low: f64, high: f64) -> Result<Self, CoreError> {
-        if !low.is_finite() || !high.is_finite() {
-            return Err(CoreError::PriceRange(format!(
-                "PriceRange non-finite [{low}, {high}]"
-            )));
-        }
-
+    pub fn new(low: Price, high: Price) -> Result<Self, CoreError> {
         if low > high {
             return Err(CoreError::PriceRange(format!(
                 "PriceRange low > high [{low}, {high}]"
@@ -75,35 +73,37 @@ impl PriceRange {
     }
 
     /// Returns the lower bound of the range.
-    pub fn low(&self) -> f64 {
+    pub fn low(self) -> Price {
         self.low
     }
 
     /// Returns the upper bound of the range.
-    pub fn high(&self) -> f64 {
+    pub fn high(self) -> Price {
         self.high
     }
 
-    /// Checks whether the given value is within the range.
+    /// Checks whether the given price is within the range.
     ///
     /// Both boundary values are included.
-    pub fn contains(&self, value: f64) -> bool {
-        self.low <= value && value <= self.high
+    pub fn contains(self, price: Price) -> bool {
+        self.low <= price && price <= self.high
     }
 
     /// Returns the midpoint of the range.
-    pub fn middle(&self) -> f64 {
-        self.low.midpoint(self.high)
+    pub fn middle(self) -> Price {
+        let middle = self.low.value().midpoint(self.high.value());
+
+        Price::new(middle).unwrap()
     }
 
     /// Returns the width of the range.
-    pub fn width(&self) -> f64 {
-        self.high - self.low
+    pub fn width(self) -> f64 {
+        self.high.value() - self.low.value()
     }
 }
 
 impl Display for PriceRange {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{}, {}]", self.low, self.high)
     }
 }
@@ -114,69 +114,69 @@ mod tests {
 
     #[test]
     fn bounds() {
-        let r = PriceRange::new(100.0, 110.0).unwrap();
+        let from = Price::new(100.0).unwrap();
+        let till = Price::new(110.0).unwrap();
+        let r = PriceRange::new(from, till).unwrap();
 
-        assert_eq!(r.low(), 100.0);
-        assert_eq!(r.high(), 110.0);
+        assert_eq!(r.low(), from);
+        assert_eq!(r.high(), till);
     }
 
     #[test]
     fn invalid_range() {
-        let r = PriceRange::new(110.0, 100.0);
+        let from = Price::new(110.0).unwrap();
+        let till = Price::new(100.0).unwrap();
+        let r = PriceRange::new(from, till);
 
         assert!(r.is_err());
     }
 
     #[test]
-    fn infinite_range() {
-        assert!(PriceRange::new(f64::INFINITY, 100.0).is_err());
-        assert!(PriceRange::new(100.0, f64::INFINITY).is_err());
-        assert!(PriceRange::new(f64::NEG_INFINITY, 100.0).is_err());
-        assert!(PriceRange::new(100.0, f64::NEG_INFINITY).is_err());
-    }
-
-    #[test]
-    fn nan_range() {
-        assert!(PriceRange::new(f64::NAN, 100.0).is_err());
-        assert!(PriceRange::new(100.0, f64::NAN).is_err());
-    }
-
-    #[test]
     fn contains() {
-        let r = PriceRange::new(100.0, 110.0).unwrap();
+        let from = Price::new(100.0).unwrap();
+        let till = Price::new(110.0).unwrap();
+        let r = PriceRange::new(from, till).unwrap();
 
-        assert!(r.contains(105.0));
-        assert!(r.contains(100.0));
-        assert!(r.contains(110.0));
+        assert!(r.contains(Price::new(105.0).unwrap()));
+        assert!(r.contains(Price::new(100.0).unwrap()));
+        assert!(r.contains(Price::new(110.0).unwrap()));
 
-        assert!(!r.contains(111.1));
-        assert!(!r.contains(5.0));
+        assert!(!r.contains(Price::new(111.1).unwrap()));
+        assert!(!r.contains(Price::new(5.0).unwrap()));
     }
 
     #[test]
     fn middle() {
-        let r = PriceRange::new(100.0, 110.0).unwrap();
+        let from = Price::new(100.0).unwrap();
+        let till = Price::new(110.0).unwrap();
+        let r = PriceRange::new(from, till).unwrap();
 
-        assert_eq!(r.middle(), 105.0);
+        assert_eq!(r.middle(), Price::new(105.0).unwrap());
     }
 
     #[test]
     fn middle_large_opposite_bounds() {
-        let r = PriceRange::new(-1e308, 1e308).unwrap();
+        let from = Price::new(-1e308).unwrap();
+        let till = Price::new(1e308).unwrap();
+        let r = PriceRange::new(from, till).unwrap();
 
-        assert_eq!(r.middle(), 0.0);
+        assert_eq!(r.middle(), Price::new(0.0).unwrap());
     }
 
     #[test]
     fn width() {
-        let r = PriceRange::new(4000.0, 5000.0).unwrap();
+        let from = Price::new(4000.0).unwrap();
+        let till = Price::new(5000.0).unwrap();
+        let r = PriceRange::new(from, till).unwrap();
 
         assert_eq!(r.width(), 1000.0);
     }
 
     #[test]
     fn display() {
-        let r = PriceRange::new(125.5, 129.1).unwrap();
+        let from = Price::new(125.5).unwrap();
+        let till = Price::new(129.1).unwrap();
+        let r = PriceRange::new(from, till).unwrap();
 
         assert_eq!(r.to_string(), "[125.5, 129.1]");
     }
