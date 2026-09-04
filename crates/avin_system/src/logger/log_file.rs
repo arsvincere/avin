@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use chrono::{DateTime, Local, NaiveDate};
 use log::Record;
 
-use avin_utils::{AvinError, Cmd};
+use crate::SystemError;
 
 pub(super) struct LogFile {
     dir: PathBuf,
@@ -52,6 +52,57 @@ impl LogFile {
     }
 }
 
+pub fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
+    let iter = match std::fs::read_dir(dir_path) {
+        Ok(iter) => iter,
+        Err(err) => {
+            return Err(SystemError::Io {
+                message: format!(
+                    "Failed to read dir: {}",
+                    dir_path.display()
+                ),
+                source: err,
+            });
+        }
+    };
+
+    let mut files = Vec::new();
+
+    for entry in iter {
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(err) => {
+                return Err(SystemError::Io {
+                    message: format!(
+                        "Failed to read entry in directory: {}",
+                        dir_path.display()
+                    ),
+                    source: err,
+                });
+            }
+        };
+
+        let file_type = match entry.file_type() {
+            Ok(file_type) => file_type,
+            Err(err) => {
+                return Err(SystemError::Io {
+                    message: format!(
+                        "Failed to read file type: {}",
+                        entry.path().display()
+                    ),
+                    source: err,
+                });
+            }
+        };
+
+        if file_type.is_file() {
+            files.push(entry.path());
+        }
+    }
+
+    Ok(files)
+}
+
 fn open_log_file(dir: &Path, date: NaiveDate) -> io::Result<File> {
     let path = dir.join(format!("{date}.log"));
 
@@ -77,11 +128,12 @@ fn cleanup_old_logs(
     dir: &Path,
     today: NaiveDate,
     history: usize,
-) -> Result<(), AvinError> {
-    let files = Cmd::get_files(dir)?;
+) -> Result<(), SystemError> {
+    let files = get_files(dir)?;
 
     for path in files.iter() {
-        let name = Cmd::name(path)?;
+        // TODO: обертка ошибки
+        let name = path.file_name().unwrap().to_str().unwrap();
 
         let Some(date_str) = name.strip_suffix(".log") else {
             continue;
@@ -98,7 +150,8 @@ fn cleanup_old_logs(
         let age = today.signed_duration_since(date).num_days();
 
         if history == 0 || age >= history as i64 {
-            Cmd::delete(path)?;
+            // TODO: обертка ошибки
+            std::fs::remove_file(path).unwrap();
         }
     }
 

@@ -19,7 +19,7 @@ pub(crate) use workspace::Workspace;
 use std::ops::Deref;
 use std::sync::OnceLock;
 
-use avin_utils::AvinError;
+use crate::SystemError;
 
 pub static WORKSPACE: GlobalWorkspace = GlobalWorkspace::new();
 
@@ -45,7 +45,7 @@ impl GlobalWorkspace {
     /// # Panics
     ///
     /// Panics if the current workspace has already been initialized.
-    pub fn init(&self) -> Result<(), AvinError> {
+    pub fn init(&self) -> Result<(), SystemError> {
         // Check first to avoid reporting logger reinitialization instead of
         // the real error: the workspace has already been initialized.
         if self.inner.get().is_some() {

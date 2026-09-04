@@ -11,7 +11,8 @@ use log::LevelFilter;
 use serde::Deserialize;
 
 use avin_core::DataProvider;
-use avin_utils::AvinError;
+
+use crate::SystemError;
 
 const FORMAT: u32 = 1;
 
@@ -28,11 +29,11 @@ pub struct Config {
 }
 
 impl Config {
-    pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
+    pub(super) fn read(path: &Path) -> Result<Self, SystemError> {
         let config: Self = super::helper::read_toml(path)?;
 
         if config.format != FORMAT {
-            return Err(AvinError::Value(format!(
+            return Err(SystemError::Value(format!(
                 "unsupported config.toml format: {}, supported={FORMAT}",
                 config.format
             )));
@@ -43,14 +44,16 @@ impl Config {
         Ok(config)
     }
 
-    fn validate(&self) -> Result<(), AvinError> {
-        // TODO: здесь надо завернуть в SytemError
+    fn validate(&self) -> Result<(), SystemError> {
         DataProvider::from_str(&self.default.data_provider).map_err(
-            |_| AvinError::Value("error parse data provider".to_string()),
+            |_| SystemError::Value("error parse data provider".to_string()),
         )?;
 
         LevelFilter::from_str(&self.log.level).map_err(|_| {
-            AvinError::Value(format!("unknown log level: {}", self.log.level))
+            SystemError::Value(format!(
+                "unknown log level: {}",
+                self.log.level
+            ))
         })?;
 
         Ok(())

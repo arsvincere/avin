@@ -7,7 +7,9 @@
 
 #![allow(clippy::module_inception)]
 
+mod error;
 mod logger;
 mod workspace;
 
+pub use error::SystemError;
 pub use workspace::WORKSPACE;

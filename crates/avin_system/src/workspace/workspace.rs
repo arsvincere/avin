@@ -8,7 +8,7 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use avin_utils::AvinError;
+use crate::SystemError;
 
 use super::avin::AvinToml;
 use super::config::Config;
@@ -47,7 +47,7 @@ impl Workspace {
     ///
     /// Returns an error if the workspace cannot be located or any required
     /// workspace file cannot be read, parsed, or validated.
-    pub fn open() -> Result<Self, AvinError> {
+    pub fn open() -> Result<Self, SystemError> {
         let ws_file = locate_workspace_file()?;
 
         let avin = AvinToml::read(&ws_file)?;
@@ -96,8 +96,8 @@ impl Workspace {
     }
 }
 
-fn locate_workspace_file() -> Result<PathBuf, AvinError> {
-    let cur_dir = env::current_dir().map_err(|err| AvinError::Io {
+fn locate_workspace_file() -> Result<PathBuf, SystemError> {
+    let cur_dir = env::current_dir().map_err(|err| SystemError::Io {
         message: "failed to get current directory".to_string(),
         source: err,
     })?;
@@ -113,13 +113,13 @@ fn locate_workspace_file() -> Result<PathBuf, AvinError> {
             return Ok(ws_file);
         }
 
-        return Err(AvinError::Missing(format!(
+        return Err(SystemError::Missing(format!(
             "{} | {} not found in {WORKSPACE_ENV}",
             AVIN_FILE, AVIN_FILE_HIDDEN
         )));
     }
 
-    Err(AvinError::Missing(format!(
+    Err(SystemError::Missing(format!(
         "not an AVIN workspace: {} | {} not found",
         AVIN_FILE, AVIN_FILE_HIDDEN
     )))

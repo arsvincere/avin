@@ -9,7 +9,7 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-use avin_utils::AvinError;
+use crate::SystemError;
 
 const FORMAT: u32 = 1;
 
@@ -33,11 +33,11 @@ pub struct Secret {
 }
 
 impl Secret {
-    pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
+    pub(super) fn read(path: &Path) -> Result<Self, SystemError> {
         let secret: Self = super::helper::read_toml(path)?;
 
         if secret.format != FORMAT {
-            return Err(AvinError::Value(format!(
+            return Err(SystemError::Value(format!(
                 "unsupported secret.toml format: {}, supported={FORMAT}",
                 secret.format
             )));

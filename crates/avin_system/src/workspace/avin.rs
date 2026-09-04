@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
-use avin_utils::AvinError;
+use crate::SystemError;
 
 const FORMAT: u32 = 1;
 
@@ -29,11 +29,11 @@ pub struct AvinToml {
 }
 
 impl AvinToml {
-    pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
+    pub(super) fn read(path: &Path) -> Result<Self, SystemError> {
         let mut avin: Self = super::helper::read_toml(path)?;
 
         if avin.format != FORMAT {
-            return Err(AvinError::Value(format!(
+            return Err(SystemError::Value(format!(
                 "unsupported AVIN.toml format: {}, supported={FORMAT}",
                 avin.format
             )));

@@ -12,7 +12,8 @@ use serde::Deserialize;
 
 use avin_core::DataProvider;
 use avin_domain::{InstrumentId, TimeFrame};
-use avin_utils::AvinError;
+
+use crate::SystemError;
 
 const FORMAT: u32 = 1;
 
@@ -28,11 +29,11 @@ pub struct DataManifest {
 }
 
 impl DataManifest {
-    pub(super) fn read(path: &Path) -> Result<Self, AvinError> {
+    pub(super) fn read(path: &Path) -> Result<Self, SystemError> {
         let raw: DataToml = super::helper::read_toml(path)?;
 
         if raw.format != FORMAT {
-            return Err(AvinError::Value(format!(
+            return Err(SystemError::Value(format!(
                 "unsupported data.toml format: {}, supported={FORMAT}",
                 raw.format
             )));
@@ -137,7 +138,7 @@ struct FootprintsDataToml {
 
 fn get_instruments(
     provider: &ProviderDataToml,
-) -> Result<Vec<InstrumentId>, AvinError> {
+) -> Result<Vec<InstrumentId>, SystemError> {
     let instruments = match &provider.instruments {
         Some(instruments) => instruments,
         None => return Ok(Vec::new()),
@@ -147,8 +148,7 @@ fn get_instruments(
 
     for iid_str in instruments.iter() {
         let iid = InstrumentId::from_str(iid_str)
-            // TODO: сделать обертку ошибки в SystemError
-            .map_err(|_| AvinError::Parse("TODO_ERR_MSG".to_string()))?;
+            .map_err(|_| SystemError::Parse("TODO_ERR_MSG".to_string()))?;
         result.push(iid);
     }
 
@@ -164,7 +164,7 @@ fn get_bar_history_years(provider: &ProviderDataToml) -> u32 {
 
 fn get_bar_timeframes(
     provider: &ProviderDataToml,
-) -> Result<Vec<TimeFrame>, AvinError> {
+) -> Result<Vec<TimeFrame>, SystemError> {
     let bars_data = match &provider.bars {
         None => return Ok(Vec::new()),
         Some(bars_data) => bars_data,
@@ -174,8 +174,7 @@ fn get_bar_timeframes(
 
     for tf_str in bars_data.timeframes.iter() {
         let tf = TimeFrame::from_str(tf_str)
-            // TODO: обертку в SystemError
-            .map_err(|_| AvinError::Parse("TODO_ERR_MSG".to_string()))?;
+            .map_err(|_| SystemError::Parse("TODO_ERR_MSG".to_string()))?;
         timeframes.push(tf);
     }
 
@@ -191,7 +190,7 @@ fn get_tick_history_years(provider: &ProviderDataToml) -> u32 {
 
 fn get_time_footprints(
     provider: &ProviderDataToml,
-) -> Result<Vec<TimeFrame>, AvinError> {
+) -> Result<Vec<TimeFrame>, SystemError> {
     let footprints_data = match &provider.footprints {
         None => return Ok(Vec::new()),
         Some(footprints_data) => footprints_data,
@@ -206,8 +205,7 @@ fn get_time_footprints(
 
     for tf_str in time_footprints.iter() {
         let tf = TimeFrame::from_str(tf_str)
-            // TODO: обертку в SystemError
-            .map_err(|_| AvinError::Parse("TODO_ERR_MSG".to_string()))?;
+            .map_err(|_| SystemError::Parse("TODO_ERR_MSG".to_string()))?;
         timeframes.push(tf);
     }
 
