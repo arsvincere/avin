@@ -109,7 +109,7 @@ impl FromStr for Exchange {
                     s, available
                 );
 
-                Err(DomainError::Value(msg))
+                Err(DomainError::Exchange(msg))
             }
         }
     }
@@ -160,7 +160,7 @@ mod tests {
 
         assert!(matches!(
             Exchange::from_str("foo").unwrap_err(),
-            DomainError::Value(_)
+            DomainError::Exchange(_)
         ));
     }
 }
