@@ -120,7 +120,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     let exchange = info.get("exchange").unwrap();
     Exchange::from_str(exchange).map_err(|err| {
         DomainError::InstrumentInfo {
-            context: "failed parsing 'exchange'".to_string(),
+            message: "failed parsing 'exchange'".to_string(),
             source: Some(Box::new(err)),
         }
     })?;
@@ -128,28 +128,28 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     let category = info.get("category").unwrap();
     Category::from_str(category).map_err(|err| {
         DomainError::InstrumentInfo {
-            context: "failed parsing 'category'".to_string(),
+            message: "failed parsing 'category'".to_string(),
             source: Some(Box::new(err)),
         }
     })?;
 
     let ticker = info.get("ticker").unwrap();
     Ticker::new(ticker).map_err(|err| DomainError::InstrumentInfo {
-        context: "failed parsing 'ticker'".to_string(),
+        message: "failed parsing 'ticker'".to_string(),
         source: Some(Box::new(err)),
     })?;
 
     let lot = info.get("lot").unwrap();
     let lot =
         u32::from_str(lot).map_err(|err| DomainError::InstrumentInfo {
-            context: format!(
+            message: format!(
                 "failed parsing 'lot' as u32, got '{lot}': {err}"
             ),
             source: None,
         })?;
     if lot == 0 {
         return Err(DomainError::InstrumentInfo {
-            context: "'lot' must be greater than zero".to_string(),
+            message: "'lot' must be greater than zero".to_string(),
             source: None,
         });
     }
@@ -157,14 +157,14 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     let step = info.get("step").unwrap();
     let step =
         f64::from_str(step).map_err(|err| DomainError::InstrumentInfo {
-            context: format!(
+            message: format!(
                 "failed parsing 'step' as f64, got '{step}': {err}"
             ),
             source: None,
         })?;
     if !step.is_finite() || step <= 0.0 {
         let err = DomainError::InstrumentInfo {
-            context: "'step' must be finite and greater than zero".into(),
+            message: "'step' must be finite and greater than zero".into(),
             source: None,
         };
         return Err(err);
@@ -179,14 +179,14 @@ fn validate_info_keys_complete(
     for key in REQUIRED_KEYS {
         if !info.contains_key(key) {
             return Err(DomainError::InstrumentInfo {
-                context: format!("missing key '{key}'"),
+                message: format!("missing key '{key}'"),
                 source: None,
             });
         }
 
         if info.get(key).unwrap().is_empty() {
             return Err(DomainError::InstrumentInfo {
-                context: format!("missing value for '{key}'"),
+                message: format!("missing value for '{key}'"),
                 source: None,
             });
         }

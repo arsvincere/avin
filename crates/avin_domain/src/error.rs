@@ -13,18 +13,18 @@ use avin_core::CoreError;
 #[derive(Debug)]
 pub enum DomainError {
     Core {
-        context: String,
+        message: String,
         source: CoreError,
     },
     Exchange(String),
     Category(String),
     Ticker(String),
     InstrumentId {
-        context: String,
+        message: String,
         source: Option<Box<DomainError>>,
     },
     InstrumentInfo {
-        context: String,
+        message: String,
         source: Option<Box<DomainError>>,
     },
     InstrumentList(String),
@@ -53,16 +53,12 @@ impl DomainError {
 impl Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Core { context, .. } => write!(f, "{context}"),
+            Self::Core { message, .. } => write!(f, "{message}"),
             Self::Exchange(msg) => write!(f, "{msg}"),
             Self::Category(msg) => write!(f, "{msg}"),
             Self::Ticker(msg) => write!(f, "{msg}"),
-            Self::InstrumentId { context, .. } => {
-                write!(f, "{context}")
-            }
-            Self::InstrumentInfo { context, .. } => {
-                write!(f, "{context}")
-            }
+            Self::InstrumentId { message, .. } => write!(f, "{message}"),
+            Self::InstrumentInfo { message, .. } => write!(f, "{message}"),
             Self::InstrumentList(msg) => write!(f, "{msg}"),
             Self::Share(msg) => write!(f, "{msg}"),
             Self::Future(msg) => write!(f, "{msg}"),

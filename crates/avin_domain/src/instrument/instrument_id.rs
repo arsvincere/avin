@@ -126,28 +126,28 @@ impl FromStr for InstrumentId {
 
         if parts.len() != 3 {
             return Err(DomainError::InstrumentId {
-                context: format!("invalid instrument id '{s}'"),
+                message: format!("invalid instrument id '{s}'"),
                 source: None,
             });
         }
 
         let exchange = Exchange::from_str(parts[0]).map_err(|err| {
             DomainError::InstrumentId {
-                context: "failed parsing exchange".to_string(),
+                message: "failed parsing exchange".to_string(),
                 source: Some(Box::new(err)),
             }
         })?;
 
         let category = Category::from_str(parts[1]).map_err(|err| {
             DomainError::InstrumentId {
-                context: "failed parsing category".to_string(),
+                message: "failed parsing category".to_string(),
                 source: Some(Box::new(err)),
             }
         })?;
 
         let ticker = Ticker::new(parts[2]).map_err(|err| {
             DomainError::InstrumentId {
-                context: "failed parsing ticker".to_string(),
+                message: "failed parsing ticker".to_string(),
                 source: Some(Box::new(err)),
             }
         })?;
