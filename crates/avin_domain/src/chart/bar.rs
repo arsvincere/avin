@@ -190,6 +190,30 @@ mod tests {
     }
 
     #[test]
+    fn invalid_prices() {
+        let time = Time::from_str("2026-08-20 14:20:05").unwrap();
+        let high = Price::new(11.0).unwrap();
+        let low = Price::new(9.0).unwrap();
+        let vol = Quantity::new(5000.0).unwrap();
+
+        // Open outside [low, high].
+        let open = Price::new(12.0).unwrap();
+        let close = Price::new(10.0).unwrap();
+
+        let err = Bar::new(time, open, high, low, close, vol).unwrap_err();
+
+        assert!(matches!(err, DomainError::Bar(_)));
+
+        // Close outside [low, high].
+        let open = Price::new(10.0).unwrap();
+        let close = Price::new(8.0).unwrap();
+
+        let err = Bar::new(time, open, high, low, close, vol).unwrap_err();
+
+        assert!(matches!(err, DomainError::Bar(_)));
+    }
+
+    #[test]
     fn direction() {
         let time = Time::from_str("2026-08-20 14:20:05").unwrap();
         let open = Price::new(10.0).unwrap();
