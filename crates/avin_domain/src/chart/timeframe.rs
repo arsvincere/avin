@@ -530,9 +530,18 @@ mod tests {
         assert_eq!(TimeFrame::from_str("4H").unwrap(), TimeFrame::H4);
         assert_eq!(TimeFrame::from_str("D").unwrap(), TimeFrame::Day);
 
-        assert!(TimeFrame::from_str("M1").is_err());
-        assert!(TimeFrame::from_str("Day").is_err());
-        assert!(TimeFrame::from_str("foo").is_err());
+        assert!(matches!(
+            TimeFrame::from_str("M1").unwrap_err(),
+            DomainError::TimeFrame(_)
+        ));
+        assert!(matches!(
+            TimeFrame::from_str("Day").unwrap_err(),
+            DomainError::TimeFrame(_)
+        ));
+        assert!(matches!(
+            TimeFrame::from_str("foo").unwrap_err(),
+            DomainError::TimeFrame(_)
+        ));
     }
 
     #[test]
