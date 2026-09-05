@@ -101,9 +101,18 @@ mod tests {
 
     #[test]
     fn finite() {
-        assert!(Price::new(f64::INFINITY).is_err());
-        assert!(Price::new(f64::NEG_INFINITY).is_err());
-        assert!(Price::new(f64::NAN).is_err());
+        assert!(matches!(
+            Price::new(f64::INFINITY).unwrap_err(),
+            CoreError::Price(_)
+        ));
+        assert!(matches!(
+            Price::new(f64::NEG_INFINITY).unwrap_err(),
+            CoreError::Price(_)
+        ));
+        assert!(matches!(
+            Price::new(f64::NAN).unwrap_err(),
+            CoreError::Price(_)
+        ));
     }
 
     #[test]
