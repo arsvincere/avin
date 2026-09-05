@@ -47,13 +47,13 @@ impl FromStr for Ticker {
 
 fn validate_ticker(s: &str) -> Result<(), DomainError> {
     if s.is_empty() {
-        return Err(DomainError::Value(
+        return Err(DomainError::Ticker(
             "instrument ticker can't be empty".to_string(),
         ));
     }
 
     if s.chars().any(|c| c.is_whitespace()) {
-        return Err(DomainError::Value(
+        return Err(DomainError::Ticker(
             "instrument ticker can't contain whitespace".to_string(),
         ));
     }
