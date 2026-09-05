@@ -33,10 +33,13 @@ impl AvinToml {
         let mut avin: Self = super::helper::read_toml(path)?;
 
         if avin.format != FORMAT {
-            return Err(SystemError::Value(format!(
-                "unsupported AVIN.toml format: {}, supported={FORMAT}",
-                avin.format
-            )));
+            return Err(SystemError::AvinToml {
+                message: format!(
+                    "unsupported AVIN.toml format: {}, supported={FORMAT}",
+                    avin.format,
+                ),
+                source: None,
+            });
         }
 
         let ws_dir = path.parent().unwrap();

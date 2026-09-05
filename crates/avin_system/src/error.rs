@@ -8,19 +8,10 @@
 use std::error::Error;
 use std::fmt::Display;
 
-use avin_core::CoreError;
-use avin_domain::DomainError;
+type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum SystemError {
-    Core {
-        message: String,
-        source: CoreError,
-    },
-    Domain {
-        message: String,
-        source: DomainError,
-    },
     Io {
         message: String,
         source: std::io::Error,
@@ -28,6 +19,22 @@ pub enum SystemError {
     ParseToml {
         message: String,
         source: toml::de::Error,
+    },
+    AvinToml {
+        message: String,
+        source: Option<ErrorSource>,
+    },
+    Config {
+        message: String,
+        source: Option<ErrorSource>,
+    },
+    DataManifest {
+        message: String,
+        source: Option<ErrorSource>,
+    },
+    Secret {
+        message: String,
+        source: Option<ErrorSource>,
     },
 
     Value(String),   // invalid value
@@ -58,10 +65,12 @@ impl SystemError {
 impl Display for SystemError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Core { message, .. } => write!(f, "{message}"),
-            Self::Domain { message, .. } => write!(f, "{message}"),
             Self::Io { message, .. } => write!(f, "{message}"),
             Self::ParseToml { message, .. } => write!(f, "{message}"),
+            Self::AvinToml { message, .. } => write!(f, "{message}"),
+            Self::Config { message, .. } => write!(f, "{message}"),
+            Self::DataManifest { message, .. } => write!(f, "{message}"),
+            Self::Secret { message, .. } => write!(f, "{message}"),
 
             Self::Value(message) => write!(f, "{message}"),
             Self::Parse(message) => write!(f, "{message}"),
@@ -76,10 +85,14 @@ impl Display for SystemError {
 impl Error for SystemError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Core { source, .. } => Some(source),
-            Self::Domain { source, .. } => Some(source),
             Self::Io { source, .. } => Some(source),
             Self::ParseToml { source, .. } => Some(source),
+            Self::AvinToml { source, .. }
+            | Self::Config { source, .. }
+            | Self::DataManifest { source, .. }
+            | Self::Secret { source, .. } => {
+                source.as_deref().map(|err| err as &(dyn Error + 'static))
+            }
 
             Self::Value(_) => None,
             Self::Parse(_) => None,
