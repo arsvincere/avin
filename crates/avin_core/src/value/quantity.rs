@@ -118,14 +118,26 @@ mod tests {
 
     #[test]
     fn finite() {
-        assert!(Quantity::new(f64::INFINITY).is_err());
-        assert!(Quantity::new(f64::NEG_INFINITY).is_err());
-        assert!(Quantity::new(f64::NAN).is_err());
+        assert!(matches!(
+            Quantity::new(f64::INFINITY).unwrap_err(),
+            CoreError::Quantity(_)
+        ));
+        assert!(matches!(
+            Quantity::new(f64::NEG_INFINITY).unwrap_err(),
+            CoreError::Quantity(_)
+        ));
+        assert!(matches!(
+            Quantity::new(f64::NAN).unwrap_err(),
+            CoreError::Quantity(_)
+        ));
     }
 
     #[test]
     fn not_negative() {
-        assert!(Quantity::new(-37.63).is_err());
+        assert!(matches!(
+            Quantity::new(-37.63).unwrap_err(),
+            CoreError::Quantity(_)
+        ));
     }
 
     #[test]
