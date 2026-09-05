@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+#![allow(clippy::module_inception)]
+
 mod data;
 mod error;
 mod time;

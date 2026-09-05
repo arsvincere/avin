@@ -64,6 +64,9 @@ impl Quantity {
             )));
         }
 
+        // fix Price::new(-0.0).unwrap().to_string() -> "-0"
+        let value = if value == -0.0 { 0.0 } else { value };
+
         Ok(Self(value))
     }
 
@@ -126,10 +129,21 @@ mod tests {
     }
 
     #[test]
+    fn negative_zero() {
+        let pos = Quantity::new(0.0).unwrap();
+        let neg = Quantity::new(-0.0).unwrap();
+
+        assert!(!neg.value().is_sign_negative());
+        assert_eq!(pos, neg);
+    }
+
+    #[test]
     fn display() {
         let quantity = Quantity::new(4593.1).unwrap();
-
         assert_eq!(quantity.to_string(), "4593.1");
+
+        let quantity = Quantity::new(-0.0).unwrap();
+        assert_eq!(quantity.to_string(), "0");
     }
 
     #[test]

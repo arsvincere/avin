@@ -54,6 +54,9 @@ impl Price {
             )));
         }
 
+        // fix Price::new(-0.0).unwrap().to_string() -> "-0"
+        let value = if value == -0.0 { 0.0 } else { value };
+
         Ok(Self(value))
     }
 
@@ -110,10 +113,21 @@ mod tests {
     }
 
     #[test]
+    fn negative_zero() {
+        let pos = Price::new(0.0).unwrap();
+        let neg = Price::new(-0.0).unwrap();
+
+        assert!(!neg.value().is_sign_negative());
+        assert_eq!(pos, neg);
+    }
+
+    #[test]
     fn display() {
         let price = Price::new(4593.1).unwrap();
-
         assert_eq!(price.to_string(), "4593.1");
+
+        let price = Price::new(-0.0).unwrap();
+        assert_eq!(price.to_string(), "0");
     }
 
     #[test]

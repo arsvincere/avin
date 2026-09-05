@@ -36,7 +36,7 @@ use crate::{CoreError, Price};
 ///
 /// assert_eq!(range.width(), 5.0);
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PriceRange {
     low: Price,
     high: Price,
@@ -93,7 +93,7 @@ impl PriceRange {
     pub fn middle(self) -> Price {
         let middle = self.low.value().midpoint(self.high.value());
 
-        Price::new(middle).unwrap()
+        Price::new(middle).expect("midpoint of finite prices must be finite")
     }
 
     /// Returns the width of the range.
@@ -130,7 +130,6 @@ mod tests {
 
         assert!(r.is_err());
     }
-
     #[test]
     fn contains() {
         let from = Price::new(100.0).unwrap();
@@ -170,6 +169,15 @@ mod tests {
         let r = PriceRange::new(from, till).unwrap();
 
         assert_eq!(r.width(), 1000.0);
+    }
+
+    #[test]
+    fn zero_width() {
+        let price = Price::new(100.0).unwrap();
+        let range = PriceRange::new(price, price).unwrap();
+
+        assert!(range.contains(price));
+        assert_eq!(range.width(), 0.0);
     }
 
     #[test]

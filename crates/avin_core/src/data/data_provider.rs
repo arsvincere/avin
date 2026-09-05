@@ -73,7 +73,7 @@ impl FromStr for DataProvider {
     ///
     /// # Errors
     ///
-    /// Returns an error if the provider name is unknown.
+    /// Returns an error if the provider key is unknown.
     ///
     /// # Examples
     ///
@@ -134,10 +134,13 @@ mod tests {
 
     #[test]
     fn from_str() {
-        assert_eq!(
-            DataProvider::from_str("tbank").unwrap(),
-            DataProvider::TBank
-        );
+        for provider in DataProvider::all().iter() {
+            assert_eq!(
+                DataProvider::from_str(provider.key()).unwrap(),
+                *provider
+            );
+        }
+
         assert_eq!(
             DataProvider::from_str("mOExalGO").unwrap(),
             DataProvider::MoexAlgo
