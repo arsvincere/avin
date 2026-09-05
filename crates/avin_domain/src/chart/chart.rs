@@ -130,9 +130,9 @@ impl Chart {
         till: Time,
     ) -> Result<&[Bar], DomainError> {
         if from > till {
-            return Err(DomainError::Value(
-                "Chart select from > till".to_string(),
-            ));
+            return Err(DomainError::Chart(format!(
+                "Chart select from > till [{from}, {till}]"
+            )));
         }
 
         let left = self.bars.partition_point(|bar| bar.time < from);
@@ -263,6 +263,15 @@ mod tests {
             .unwrap();
 
         assert_eq!(selected, &[bar(2), bar(3)]);
+
+        let selected = chart
+            .select(
+                Time::new(3 * NANOS_PER_SECOND),
+                Time::new(3 * NANOS_PER_SECOND),
+            )
+            .unwrap();
+
+        assert_eq!(selected, &[bar(3)]);
 
         let selected = chart
             .select(

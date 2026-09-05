@@ -8,9 +8,16 @@
 use std::error::Error;
 use std::fmt::Display;
 
+use avin_core::CoreError;
+
 #[derive(Debug)]
 pub enum DomainError {
+    Core {
+        context: String,
+        source: CoreError,
+    },
     Bar(String),
+    Chart(String),
 
     Value(String),   // invalid value
     Parse(String),   // parse error
@@ -52,7 +59,9 @@ impl DomainError {
 impl Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Core { context, .. } => write!(f, "{context}"),
             Self::Bar(msg) => write!(f, "{msg}"),
+            Self::Chart(msg) => write!(f, "{msg}"),
 
             Self::Value(msg) => write!(f, "{msg}"),
             Self::Parse(msg) => write!(f, "{msg}"),
@@ -73,7 +82,9 @@ impl Display for DomainError {
 impl Error for DomainError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
+            Self::Core { source, .. } => Some(source),
             Self::Bar(_) => None,
+            Self::Chart(_) => None,
 
             Self::Value(_) => None,
             Self::Parse(_) => None,

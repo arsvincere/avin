@@ -7,8 +7,9 @@
 
 use std::fmt::Display;
 
-use avin_core::{Price, PriceRange, Quantity, Time};
 use chrono::{DateTime, Utc};
+
+use avin_core::{Price, PriceRange, Quantity, Time};
 
 use crate::{BarDirection, DomainError};
 
