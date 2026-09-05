@@ -20,6 +20,10 @@ pub enum DomainError {
     Category(String),
     Ticker(String),
     InstrumentId(String),
+    InstrumentInfo {
+        context: String,
+        source: Box<DomainError>,
+    },
     Bar(String),
     TimeFrame(String),
     Chart(String),
@@ -41,10 +45,6 @@ pub enum DomainError {
     //     message: String,
     //     source: PolarsError,
     // },
-    InstrumentInfo {
-        message: String,
-        source: Box<DomainError>,
-    },
 }
 
 impl DomainError {
@@ -69,6 +69,9 @@ impl Display for DomainError {
             Self::Category(msg) => write!(f, "{msg}"),
             Self::Ticker(msg) => write!(f, "{msg}"),
             Self::InstrumentId(msg) => write!(f, "{msg}"),
+            Self::InstrumentInfo { context, .. } => {
+                write!(f, "{context}")
+            }
             Self::Bar(msg) => write!(f, "{msg}"),
             Self::TimeFrame(msg) => write!(f, "{msg}"),
             Self::Chart(msg) => write!(f, "{msg}"),
@@ -82,9 +85,6 @@ impl Display for DomainError {
             Self::Io { message, .. } => write!(f, "{message}"),
             // Self::Zip { message, .. } => write!(f, "{message}"),
             // Self::Polars { message, .. } => write!(f, "{message}"),
-            Self::InstrumentInfo { message, .. } => {
-                write!(f, "{message}")
-            }
         }
     }
 }
@@ -97,6 +97,7 @@ impl Error for DomainError {
             Self::Category(_) => None,
             Self::Ticker(_) => None,
             Self::InstrumentId(_) => None,
+            Self::InstrumentInfo { source, .. } => Some(source),
             Self::Bar(_) => None,
             Self::TimeFrame(_) => None,
             Self::Chart(_) => None,
@@ -109,7 +110,6 @@ impl Error for DomainError {
             Self::Io { source, .. } => Some(source),
             // Self::Zip { source, .. } => Some(source),
             // Self::Polars { source, .. } => Some(source),
-            Self::InstrumentInfo { source, .. } => Some(source),
         }
     }
 }

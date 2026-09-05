@@ -120,7 +120,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     let exchange = info.get("exchange").unwrap();
     Exchange::from_str(exchange).map_err(|err| {
         DomainError::InstrumentInfo {
-            message: "failed parsing 'exchange'".to_string(),
+            context: "failed parsing 'exchange'".to_string(),
             source: Box::new(err),
         }
     })?;
@@ -128,14 +128,14 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     let category = info.get("category").unwrap();
     Category::from_str(category).map_err(|err| {
         DomainError::InstrumentInfo {
-            message: "failed parsing 'category'".to_string(),
+            context: "failed parsing 'category'".to_string(),
             source: Box::new(err),
         }
     })?;
 
     let ticker = info.get("ticker").unwrap();
     Ticker::from_str(ticker).map_err(|err| DomainError::InstrumentInfo {
-        message: "failed parsing 'ticker'".to_string(),
+        context: "failed parsing 'ticker'".to_string(),
         source: Box::new(err),
     })?;
 
