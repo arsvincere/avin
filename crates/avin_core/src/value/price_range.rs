@@ -128,7 +128,9 @@ mod tests {
         let till = Price::new(100.0).unwrap();
         let r = PriceRange::new(from, till);
 
-        assert!(r.is_err());
+        let err = r.unwrap_err();
+
+        assert!(matches!(err, CoreError::PriceRange(_)));
     }
     #[test]
     fn contains() {
