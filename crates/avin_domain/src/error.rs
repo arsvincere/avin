@@ -25,6 +25,7 @@ pub enum DomainError {
         source: Option<Box<DomainError>>,
     },
     InstrumentList(String),
+    Share(String),
     Future(String),
     Asset(String),
     Bar(String),
@@ -76,6 +77,7 @@ impl Display for DomainError {
                 write!(f, "{context}")
             }
             Self::InstrumentList(msg) => write!(f, "{msg}"),
+            Self::Share(msg) => write!(f, "{msg}"),
             Self::Future(msg) => write!(f, "{msg}"),
             Self::Asset(msg) => write!(f, "{msg}"),
             Self::Bar(msg) => write!(f, "{msg}"),
@@ -108,6 +110,7 @@ impl Error for DomainError {
                 None => None,
             },
             Self::InstrumentList(_) => None,
+            Self::Share(_) => None,
             Self::Future(_) => None,
             Self::Asset(_) => None,
             Self::Bar(_) => None,

@@ -24,7 +24,7 @@ impl TryFrom<InstrumentInfo> for Share {
         let category = value.category();
 
         if category != Category::Share {
-            return Err(DomainError::Value(format!(
+            return Err(DomainError::Share(format!(
                 "invalid instrument info, expected 'Share' category, got {}",
                 category
             )));
@@ -87,6 +87,6 @@ mod tests {
     fn invalid_category() {
         let result = Share::try_from(get_info(Category::Future));
 
-        assert!(matches!(result, Err(DomainError::Value(_))));
+        assert!(matches!(result, Err(DomainError::Share(_))));
     }
 }
