@@ -327,7 +327,7 @@ impl std::str::FromStr for TimeFrame {
             s, available
         );
 
-        Err(DomainError::Value(msg))
+        Err(DomainError::TimeFrame(msg))
     }
 }
 

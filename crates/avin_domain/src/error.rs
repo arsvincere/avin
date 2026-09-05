@@ -17,6 +17,7 @@ pub enum DomainError {
         source: CoreError,
     },
     Bar(String),
+    TimeFrame(String),
     Chart(String),
 
     Value(String),   // invalid value
@@ -61,6 +62,7 @@ impl Display for DomainError {
         match self {
             Self::Core { context, .. } => write!(f, "{context}"),
             Self::Bar(msg) => write!(f, "{msg}"),
+            Self::TimeFrame(msg) => write!(f, "{msg}"),
             Self::Chart(msg) => write!(f, "{msg}"),
 
             Self::Value(msg) => write!(f, "{msg}"),
@@ -84,6 +86,7 @@ impl Error for DomainError {
         match self {
             Self::Core { source, .. } => Some(source),
             Self::Bar(_) => None,
+            Self::TimeFrame(_) => None,
             Self::Chart(_) => None,
 
             Self::Value(_) => None,
