@@ -5,11 +5,9 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use crate::DomainError;
-
 use crate::{
-    Category, Chart, Future, HasCharts, InstrumentInfo, InstrumentInfoView,
-    Share, TimeFrame,
+    Category, Chart, DomainError, Future, HasCharts, InstrumentInfo,
+    InstrumentInfoView, Share, TimeFrame,
 };
 
 /// Tradable runtime asset.
@@ -32,7 +30,7 @@ impl TryFrom<InstrumentInfo> for Asset {
         match value.category() {
             Category::Share => Ok(Self::Share(Share::try_from(value)?)),
             Category::Future => Ok(Self::Future(Future::try_from(value)?)),
-            category => Err(DomainError::Value(format!(
+            category => Err(DomainError::Asset(format!(
                 "unsupported asset category '{category}'"
             ))),
         }
@@ -101,6 +99,6 @@ mod tests {
     fn unsupported_category() {
         let result = Asset::try_from(get_info(Category::Index));
 
-        assert!(matches!(result, Err(DomainError::Value(_))));
+        assert!(matches!(result, Err(DomainError::Asset(_))));
     }
 }
