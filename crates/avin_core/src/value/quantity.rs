@@ -74,6 +74,11 @@ impl Quantity {
     pub fn value(self) -> f64 {
         self.0
     }
+
+    /// Returns whether the quantity is zero.
+    pub fn is_zero(self) -> bool {
+        self.0 == 0.0
+    }
 }
 
 impl Display for Quantity {
