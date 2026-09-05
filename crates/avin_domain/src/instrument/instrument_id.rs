@@ -12,17 +12,6 @@ use crate::DomainError;
 
 use crate::{Category, Exchange, Ticker};
 
-// TODO: Закрыть создание InstrumentId.
-// InstrumentId должен представлять только валидный идентификатор реально
-// существующего инструмента.
-// * InstrumentId::new(...) сделать pub(crate).
-// * Удалить FromStr для InstrumentId.
-// * Парсинг строкового code "moex.share.sber" перенести в InstrumentCatalog
-//   это единственное место, где такой code действительно нужно разбирать и
-//   где результат можно проверить по каталогу инструментов.
-// * InstrumentId создавать только из валидного InstrumentInfo через
-//   InstrumentInfo::iid().
-
 /// Canonical instrument identifier used by AVIN.
 ///
 /// An `InstrumentId` combines an exchange, category, and ticker into
@@ -136,7 +125,7 @@ impl FromStr for InstrumentId {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
         if parts.len() != 3 {
             let msg = format!("invalid instrument id '{s}'");
-            return Err(DomainError::Value(msg));
+            return Err(DomainError::InstrumentId(msg));
         }
 
         let exchange = Exchange::from_str(parts[0])?;
