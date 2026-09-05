@@ -5,7 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use std::{path::Path, str::FromStr};
+use std::path::Path;
+use std::str::FromStr;
 
 use log::LevelFilter;
 use serde::Deserialize;
@@ -33,10 +34,14 @@ impl Config {
         let config: Self = super::helper::read_toml(path)?;
 
         if config.format != FORMAT {
-            return Err(SystemError::Value(format!(
-                "unsupported config.toml format: {}, supported={FORMAT}",
+            let msg = format!(
+                "config.toml: unsupported format '{}', supported={FORMAT}",
                 config.format
-            )));
+            );
+            return Err(SystemError::Config {
+                message: msg,
+                source: None,
+            });
         }
 
         config.validate()?;
@@ -45,15 +50,27 @@ impl Config {
     }
 
     fn validate(&self) -> Result<(), SystemError> {
-        DataProvider::from_str(&self.default.data_provider).map_err(
-            |_| SystemError::Value("error parse data provider".to_string()),
-        )?;
+        let provider = &self.default.data_provider;
+        DataProvider::from_str(provider).map_err(|err| {
+            let msg = format!(
+                "config.toml: invalid default data provider '{provider}'"
+            );
+            SystemError::Config {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
 
-        LevelFilter::from_str(&self.log.level).map_err(|_| {
-            SystemError::Value(format!(
-                "unknown log level: {}",
-                self.log.level
-            ))
+        LevelFilter::from_str(&self.log.level).map_err(|err| {
+            let available = "[off, error, warn, info, debug, trace]";
+            let msg = format!(
+                "config.toml: unknown log level '{}', available {}",
+                self.log.level, available
+            );
+            SystemError::Config {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
         })?;
 
         Ok(())
