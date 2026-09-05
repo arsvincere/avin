@@ -31,24 +31,6 @@ pub enum DomainError {
     Bar(String),
     TimeFrame(String),
     Chart(String),
-
-    Value(String),   // invalid value
-    Parse(String),   // parse error
-    Key(String),     // key missing
-    Missing(String), // missing value
-    Process(String),
-    Io {
-        message: String,
-        source: std::io::Error,
-    },
-    // Zip {
-    //     message: String,
-    //     source: zip::result::ZipError,
-    // },
-    // Polars {
-    //     message: String,
-    //     source: PolarsError,
-    // },
 }
 
 impl DomainError {
@@ -83,16 +65,6 @@ impl Display for DomainError {
             Self::Bar(msg) => write!(f, "{msg}"),
             Self::TimeFrame(msg) => write!(f, "{msg}"),
             Self::Chart(msg) => write!(f, "{msg}"),
-
-            Self::Value(msg) => write!(f, "{msg}"),
-            Self::Parse(msg) => write!(f, "{msg}"),
-            Self::Key(msg) => write!(f, "{msg}"),
-            Self::Missing(msg) => write!(f, "{msg}"),
-            Self::Process(msg) => write!(f, "{msg}"),
-
-            Self::Io { message, .. } => write!(f, "{message}"),
-            // Self::Zip { message, .. } => write!(f, "{message}"),
-            // Self::Polars { message, .. } => write!(f, "{message}"),
         }
     }
 }
@@ -116,15 +88,6 @@ impl Error for DomainError {
             Self::Bar(_) => None,
             Self::TimeFrame(_) => None,
             Self::Chart(_) => None,
-
-            Self::Value(_) => None,
-            Self::Parse(_) => None,
-            Self::Key(_) => None,
-            Self::Missing(_) => None,
-            Self::Process(_) => None,
-            Self::Io { source, .. } => Some(source),
-            // Self::Zip { source, .. } => Some(source),
-            // Self::Polars { source, .. } => Some(source),
         }
     }
 }
