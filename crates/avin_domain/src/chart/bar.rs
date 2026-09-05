@@ -7,7 +7,7 @@
 
 use std::fmt::Display;
 
-use avin_core::{Price, PriceRange, Time};
+use avin_core::{Price, PriceRange, Quantity, Time};
 use chrono::{DateTime, Utc};
 
 use crate::{BarDirection, DomainError};
@@ -29,7 +29,7 @@ pub struct Bar {
     /// Close price.
     pub c: Price,
     /// Volume.
-    pub v: u64,
+    pub v: Quantity,
 }
 
 impl Bar {
@@ -40,7 +40,7 @@ impl Bar {
         h: Price,
         l: Price,
         c: Price,
-        v: u64,
+        v: Quantity,
     ) -> Result<Self, DomainError> {
         if o < l || o > h {
             return Err(DomainError::Bar(format!(
@@ -64,7 +64,7 @@ impl Bar {
         h: Price,
         l: Price,
         c: Price,
-        v: u64,
+        v: Quantity,
     ) -> Bar {
         Bar {
             time,
@@ -173,7 +173,8 @@ mod tests {
         let high = Price::new(11.0).unwrap();
         let low = Price::new(9.0).unwrap();
         let close = Price::new(10.5).unwrap();
-        let vol = 5000;
+        let vol = Quantity::new(5000.0).unwrap();
+
         let bar = Bar::new(time, open, high, low, close, vol).unwrap();
 
         assert_eq!(bar.time, time);
@@ -181,7 +182,7 @@ mod tests {
         assert_eq!(bar.h.value(), 11.0);
         assert_eq!(bar.l.value(), 9.0);
         assert_eq!(bar.c.value(), 10.5);
-        assert_eq!(bar.v, 5000);
+        assert_eq!(bar.v.value(), 5000.0);
 
         let dt = time.dt();
         assert_eq!(bar.dt(), dt);
@@ -194,7 +195,7 @@ mod tests {
         let high = Price::new(11.0).unwrap();
         let low = Price::new(9.0).unwrap();
         let close = Price::new(10.5).unwrap();
-        let vol = 5000;
+        let vol = Quantity::new(5000.0).unwrap();
 
         let bull = Bar::new(time, open, high, low, close, vol).unwrap();
         assert!(bull.is_bull());
@@ -224,7 +225,7 @@ mod tests {
         let high = Price::new(11.0).unwrap();
         let low = Price::new(9.0).unwrap();
         let close = Price::new(10.5).unwrap();
-        let vol = 5000;
+        let vol = Quantity::new(5000.0).unwrap();
 
         let bull = Bar::new(time, open, high, low, close, vol).unwrap();
         assert_eq!(bull.range(), PriceRange::new(low, high).unwrap());
@@ -257,7 +258,7 @@ mod tests {
         let high = Price::new(11.0).unwrap();
         let low = Price::new(9.0).unwrap();
         let close = Price::new(10.5).unwrap();
-        let vol = 5000;
+        let vol = Quantity::new(5000.0).unwrap();
 
         let bar = Bar::new(time, open, high, low, close, vol).unwrap();
 
@@ -276,7 +277,7 @@ mod tests {
         let high = Price::new(11.0).unwrap();
         let low = Price::new(9.0).unwrap();
         let close = Price::new(10.5).unwrap();
-        let vol = 5000;
+        let vol = Quantity::new(5000.0).unwrap();
 
         let bar = Bar::new(time, open, high, low, close, vol).unwrap();
 

@@ -174,6 +174,8 @@ impl Chart {
 
 #[cfg(test)]
 mod tests {
+    use avin_core::Quantity;
+
     use super::*;
     use crate::{Category, Exchange};
 
@@ -190,9 +192,9 @@ mod tests {
     fn bar(n: i64) -> Bar {
         let time = Time::new(n * NANOS_PER_SECOND);
         let price = Price::new((n + 1) as f64).unwrap();
+        let quantity = Quantity::new((n + 1) as f64 * 100.0).unwrap();
 
-        Bar::new(time, price, price, price, price, (n + 1) as u64 * 100)
-            .unwrap()
+        Bar::new(time, price, price, price, price, quantity).unwrap()
     }
 
     fn chart() -> Chart {
@@ -306,7 +308,8 @@ mod tests {
         // Replace.
         let time = Time::new(3 * NANOS_PER_SECOND);
         let p = Price::new(100500.0).unwrap();
-        let replacement = Bar::new(time, p, p, p, p, 999).unwrap();
+        let q = Quantity::new(999.9).unwrap();
+        let replacement = Bar::new(time, p, p, p, p, q).unwrap();
 
         chart.upsert(replacement);
 
