@@ -24,7 +24,7 @@ impl TryFrom<InstrumentInfo> for Future {
         let category = value.category();
 
         if category != Category::Future {
-            return Err(DomainError::Value(format!(
+            return Err(DomainError::Future(format!(
                 "invalid instrument info, expected 'Future' category, got {}",
                 category
             )));
@@ -87,6 +87,6 @@ mod tests {
     fn invalid_category() {
         let result = Future::try_from(get_info(Category::Share));
 
-        assert!(matches!(result, Err(DomainError::Value(_))));
+        assert!(matches!(result, Err(DomainError::Future(_))));
     }
 }
