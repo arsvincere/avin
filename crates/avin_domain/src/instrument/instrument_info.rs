@@ -121,7 +121,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     Exchange::from_str(exchange).map_err(|err| {
         DomainError::InstrumentInfo {
             context: "failed parsing 'exchange'".to_string(),
-            source: Box::new(err),
+            source: Some(Box::new(err)),
         }
     })?;
 
@@ -129,38 +129,45 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     Category::from_str(category).map_err(|err| {
         DomainError::InstrumentInfo {
             context: "failed parsing 'category'".to_string(),
-            source: Box::new(err),
+            source: Some(Box::new(err)),
         }
     })?;
 
     let ticker = info.get("ticker").unwrap();
     Ticker::from_str(ticker).map_err(|err| DomainError::InstrumentInfo {
         context: "failed parsing 'ticker'".to_string(),
-        source: Box::new(err),
+        source: Some(Box::new(err)),
     })?;
 
     let lot = info.get("lot").unwrap();
-    let lot = u32::from_str(lot).map_err(|err| {
-        DomainError::Parse(format!(
-            "failed parsing 'lot' as u32, got '{lot}': {err}"
-        ))
-    })?;
+    let lot =
+        u32::from_str(lot).map_err(|err| DomainError::InstrumentInfo {
+            context: format!(
+                "failed parsing 'lot' as u32, got '{lot}': {err}"
+            ),
+            source: None,
+        })?;
     if lot == 0 {
-        return Err(DomainError::Value(
-            "'lot' must be greater than zero".to_string(),
-        ));
+        return Err(DomainError::InstrumentInfo {
+            context: "'lot' must be greater than zero".to_string(),
+            source: None,
+        });
     }
 
     let step = info.get("step").unwrap();
-    let step = f64::from_str(step).map_err(|err| {
-        DomainError::Parse(format!(
-            "failed parsing 'step' as f64, got '{step}': {err}"
-        ))
-    })?;
+    let step =
+        f64::from_str(step).map_err(|err| DomainError::InstrumentInfo {
+            context: format!(
+                "failed parsing 'step' as f64, got '{step}': {err}"
+            ),
+            source: None,
+        })?;
     if !step.is_finite() || step <= 0.0 {
-        return Err(DomainError::Value(
-            "'step' must be finite and greater than zero".to_string(),
-        ));
+        let err = DomainError::InstrumentInfo {
+            context: "'step' must be finite and greater than zero".into(),
+            source: None,
+        };
+        return Err(err);
     }
 
     Ok(())
@@ -171,13 +178,17 @@ fn validate_info_keys_complete(
 ) -> Result<(), DomainError> {
     for key in REQUIRED_KEYS {
         if !info.contains_key(key) {
-            return Err(DomainError::Key(format!("missing key '{key}'")));
+            return Err(DomainError::InstrumentInfo {
+                context: format!("missing key '{key}'"),
+                source: None,
+            });
         }
 
         if info.get(key).unwrap().is_empty() {
-            return Err(DomainError::Missing(format!(
-                "missing value for '{key}'"
-            )));
+            return Err(DomainError::InstrumentInfo {
+                context: format!("missing value for '{key}'"),
+                source: None,
+            });
         }
     }
 
@@ -249,7 +260,7 @@ mod tests {
 
             let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-            assert!(matches!(err, DomainError::Key(_)));
+            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
         }
     }
 
@@ -261,7 +272,7 @@ mod tests {
 
             let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-            assert!(matches!(err, DomainError::Missing(_)));
+            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
         }
     }
 
@@ -282,7 +293,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, DomainError::Parse(_)));
+        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
     }
 
     #[test]
@@ -292,7 +303,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, DomainError::Value(_)));
+        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
     }
 
     #[test]
@@ -302,7 +313,7 @@ mod tests {
 
         let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-        assert!(matches!(err, DomainError::Parse(_)));
+        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
     }
 
     #[test]
@@ -313,7 +324,7 @@ mod tests {
 
             let err = InstrumentInfo::new(raw_info).unwrap_err();
 
-            assert!(matches!(err, DomainError::Value(_)));
+            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
         }
     }
 }

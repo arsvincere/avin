@@ -22,7 +22,7 @@ pub enum DomainError {
     InstrumentId(String),
     InstrumentInfo {
         context: String,
-        source: Box<DomainError>,
+        source: Option<Box<DomainError>>,
     },
     InstrumentList(String),
     Bar(String),
@@ -99,7 +99,10 @@ impl Error for DomainError {
             Self::Category(_) => None,
             Self::Ticker(_) => None,
             Self::InstrumentId(_) => None,
-            Self::InstrumentInfo { source, .. } => Some(source),
+            Self::InstrumentInfo { source, .. } => match source {
+                Some(source) => Some(source),
+                None => None,
+            },
             Self::InstrumentList(_) => None,
             Self::Bar(_) => None,
             Self::TimeFrame(_) => None,
