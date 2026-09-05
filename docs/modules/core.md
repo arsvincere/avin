@@ -29,7 +29,6 @@ let dt = time.dt();
 assert_eq!(dt, Utc.with_ymd_and_hms(2026, 1, 1, 12, 55, 19).unwrap());
 ```
 
-
 # TimeRange
 
 Полу-открытый интервал времени `[begin, end)`

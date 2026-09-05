@@ -12,7 +12,3 @@ fn contains(
 ) -> bool
 ```
 
-2. avin_core реализовать объекты:
-
-Time
-TimeRange
