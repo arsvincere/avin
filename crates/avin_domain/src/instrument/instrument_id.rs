@@ -123,14 +123,34 @@ impl FromStr for InstrumentId {
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
+
         if parts.len() != 3 {
-            let msg = format!("invalid instrument id '{s}'");
-            return Err(DomainError::InstrumentId(msg));
+            return Err(DomainError::InstrumentId {
+                context: format!("invalid instrument id '{s}'"),
+                source: None,
+            });
         }
 
-        let exchange = Exchange::from_str(parts[0])?;
-        let category = Category::from_str(parts[1])?;
-        let ticker = Ticker::from_str(parts[2])?;
+        let exchange = Exchange::from_str(parts[0]).map_err(|err| {
+            DomainError::InstrumentId {
+                context: "failed parsing exchange".to_string(),
+                source: Some(Box::new(err)),
+            }
+        })?;
+
+        let category = Category::from_str(parts[1]).map_err(|err| {
+            DomainError::InstrumentId {
+                context: "failed parsing category".to_string(),
+                source: Some(Box::new(err)),
+            }
+        })?;
+
+        let ticker = Ticker::from_str(parts[2]).map_err(|err| {
+            DomainError::InstrumentId {
+                context: "failed parsing ticker".to_string(),
+                source: Some(Box::new(err)),
+            }
+        })?;
 
         Ok(Self::new(exchange, category, ticker))
     }
@@ -182,9 +202,24 @@ mod tests {
 
     #[test]
     fn invalid_id() {
-        assert!(InstrumentId::from_str("foo.SHARE.SBER").is_err());
-        assert!(InstrumentId::from_str("MOEX.foo.SBER").is_err());
-        assert!(InstrumentId::from_str("MOEX.SHARE.").is_err());
-        assert!(InstrumentId::from_str("MOEX.SHARE").is_err());
+        assert!(matches!(
+            InstrumentId::from_str("foo.SHARE.SBER").unwrap_err(),
+            DomainError::InstrumentId { .. }
+        ));
+
+        assert!(matches!(
+            InstrumentId::from_str("MOEX.foo.SBER").unwrap_err(),
+            DomainError::InstrumentId { .. }
+        ));
+
+        assert!(matches!(
+            InstrumentId::from_str("MOEX.SHARE.").unwrap_err(),
+            DomainError::InstrumentId { .. }
+        ));
+
+        assert!(matches!(
+            InstrumentId::from_str("MOEX.SHARE").unwrap_err(),
+            DomainError::InstrumentId { .. }
+        ));
     }
 }

@@ -19,7 +19,10 @@ pub enum DomainError {
     Exchange(String),
     Category(String),
     Ticker(String),
-    InstrumentId(String),
+    InstrumentId {
+        context: String,
+        source: Option<Box<DomainError>>,
+    },
     InstrumentInfo {
         context: String,
         source: Option<Box<DomainError>>,
@@ -54,7 +57,9 @@ impl Display for DomainError {
             Self::Exchange(msg) => write!(f, "{msg}"),
             Self::Category(msg) => write!(f, "{msg}"),
             Self::Ticker(msg) => write!(f, "{msg}"),
-            Self::InstrumentId(msg) => write!(f, "{msg}"),
+            Self::InstrumentId { context, .. } => {
+                write!(f, "{context}")
+            }
             Self::InstrumentInfo { context, .. } => {
                 write!(f, "{context}")
             }
@@ -76,7 +81,10 @@ impl Error for DomainError {
             Self::Exchange(_) => None,
             Self::Category(_) => None,
             Self::Ticker(_) => None,
-            Self::InstrumentId(_) => None,
+            Self::InstrumentId { source, .. } => match source {
+                Some(source) => Some(source),
+                None => None,
+            },
             Self::InstrumentInfo { source, .. } => match source {
                 Some(source) => Some(source),
                 None => None,
