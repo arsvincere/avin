@@ -287,11 +287,11 @@ mod tests {
     fn select_invalid_range() {
         let chart = chart();
 
-        assert!(
-            chart
-                .select(Time::new(NANOS_PER_SECOND), Time::new(0))
-                .is_err()
-        );
+        let err = chart
+            .select(Time::new(NANOS_PER_SECOND), Time::new(0))
+            .unwrap_err();
+
+        assert!(matches!(err, DomainError::Chart(_)));
     }
 
     #[test]
