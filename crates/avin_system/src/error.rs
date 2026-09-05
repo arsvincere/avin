@@ -25,6 +25,10 @@ pub enum SystemError {
         message: String,
         source: std::io::Error,
     },
+    ParseToml {
+        message: String,
+        source: toml::de::Error,
+    },
 
     Value(String),   // invalid value
     Parse(String),   // parse error
@@ -57,6 +61,7 @@ impl Display for SystemError {
             Self::Core { message, .. } => write!(f, "{message}"),
             Self::Domain { message, .. } => write!(f, "{message}"),
             Self::Io { message, .. } => write!(f, "{message}"),
+            Self::ParseToml { message, .. } => write!(f, "{message}"),
 
             Self::Value(message) => write!(f, "{message}"),
             Self::Parse(message) => write!(f, "{message}"),
@@ -74,6 +79,7 @@ impl Error for SystemError {
             Self::Core { source, .. } => Some(source),
             Self::Domain { source, .. } => Some(source),
             Self::Io { source, .. } => Some(source),
+            Self::ParseToml { source, .. } => Some(source),
 
             Self::Value(_) => None,
             Self::Parse(_) => None,
