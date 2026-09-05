@@ -131,7 +131,7 @@ impl FromStr for Category {
                     s, available
                 );
 
-                Err(DomainError::Value(msg))
+                Err(DomainError::Category(msg))
             }
         }
     }
@@ -191,7 +191,7 @@ mod tests {
 
         assert!(matches!(
             Category::from_str("foo").unwrap_err(),
-            DomainError::Value(_)
+            DomainError::Category(_)
         ));
     }
 }

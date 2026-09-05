@@ -16,6 +16,7 @@ pub enum DomainError {
         context: String,
         source: CoreError,
     },
+    Category(String),
     Bar(String),
     TimeFrame(String),
     Chart(String),
@@ -61,6 +62,7 @@ impl Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Core { context, .. } => write!(f, "{context}"),
+            Self::Category(msg) => write!(f, "{msg}"),
             Self::Bar(msg) => write!(f, "{msg}"),
             Self::TimeFrame(msg) => write!(f, "{msg}"),
             Self::Chart(msg) => write!(f, "{msg}"),
@@ -85,6 +87,7 @@ impl Error for DomainError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Core { source, .. } => Some(source),
+            Self::Category(_) => None,
             Self::Bar(_) => None,
             Self::TimeFrame(_) => None,
             Self::Chart(_) => None,
