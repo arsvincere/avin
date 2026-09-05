@@ -145,7 +145,7 @@ impl FromStr for InstrumentId {
             }
         })?;
 
-        let ticker = Ticker::from_str(parts[2]).map_err(|err| {
+        let ticker = Ticker::new(parts[2]).map_err(|err| {
             DomainError::InstrumentId {
                 context: "failed parsing ticker".to_string(),
                 source: Some(Box::new(err)),

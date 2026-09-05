@@ -82,7 +82,7 @@ impl InstrumentInfo {
     pub fn ticker(&self) -> Ticker {
         let ticker = self.info.get("ticker").unwrap();
 
-        Ticker::from_str(ticker).unwrap()
+        Ticker::new(ticker).unwrap()
     }
 
     /// Returns FIGI - Financial Instrument Global Identifier.
@@ -134,7 +134,7 @@ fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
     })?;
 
     let ticker = info.get("ticker").unwrap();
-    Ticker::from_str(ticker).map_err(|err| DomainError::InstrumentInfo {
+    Ticker::new(ticker).map_err(|err| DomainError::InstrumentInfo {
         context: "failed parsing 'ticker'".to_string(),
         source: Some(Box::new(err)),
     })?;

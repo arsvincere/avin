@@ -6,7 +6,6 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use std::fmt::Display;
-use std::str::FromStr;
 
 use crate::DomainError;
 
@@ -34,14 +33,6 @@ impl Ticker {
 impl Display for Ticker {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
-    }
-}
-
-impl FromStr for Ticker {
-    type Err = DomainError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::new(s)
     }
 }
 
@@ -74,28 +65,35 @@ mod tests {
 
     #[test]
     fn empty_ticker() {
-        assert!(Ticker::new("").is_err());
+        assert!(matches!(
+            Ticker::new("").unwrap_err(),
+            DomainError::Ticker(_)
+        ));
     }
 
     #[test]
     fn has_whitespace() {
-        assert!(Ticker::new(" ").is_err());
-        assert!(Ticker::new("SBER ").is_err());
-        assert!(Ticker::new(" SBER").is_err());
-        assert!(Ticker::new("SB ER").is_err());
+        assert!(matches!(
+            Ticker::new(" ").unwrap_err(),
+            DomainError::Ticker(_)
+        ));
+        assert!(matches!(
+            Ticker::new("SBER ").unwrap_err(),
+            DomainError::Ticker(_)
+        ));
+        assert!(matches!(
+            Ticker::new(" SBER").unwrap_err(),
+            DomainError::Ticker(_)
+        ));
+        assert!(matches!(
+            Ticker::new("SB ER").unwrap_err(),
+            DomainError::Ticker(_)
+        ));
     }
 
     #[test]
     fn display() {
         let ticker = Ticker::new("SBER").unwrap();
         assert_eq!(ticker.to_string(), "SBER");
-    }
-
-    #[test]
-    fn from_str() {
-        assert_eq!(
-            Ticker::from_str("LKOH").unwrap(),
-            Ticker::new("LKOH").unwrap()
-        );
     }
 }
