@@ -5,12 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod data;
-mod error;
-mod time;
-mod value;
+mod data_provider;
+mod market_data;
 
-pub use data::{DataProvider, MarketData};
-pub use error::CoreError;
-pub use time::{Time, TimeRange, Year};
-pub use value::{Price, PriceRange, Quantity};
+pub use data_provider::DataProvider;
+pub use market_data::MarketData;
