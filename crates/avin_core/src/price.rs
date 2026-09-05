@@ -73,7 +73,9 @@ impl Eq for Price {}
 
 impl Ord for Price {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.0.partial_cmp(&other.0).unwrap()
+        self.0
+            .partial_cmp(&other.0)
+            .expect("Price always contains a finite value")
     }
 }
 
@@ -112,5 +114,15 @@ mod tests {
         let price = Price::new(4593.1).unwrap();
 
         assert_eq!(price.to_string(), "4593.1");
+    }
+
+    #[test]
+    fn ordering() {
+        let small = Price::new(10.0).unwrap();
+        let large = Price::new(20.0).unwrap();
+
+        assert!(small < large);
+        assert!(large > small);
+        assert_eq!(small, Price::new(10.0).unwrap());
     }
 }
