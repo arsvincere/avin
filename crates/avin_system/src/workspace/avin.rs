@@ -33,11 +33,12 @@ impl AvinToml {
         let mut avin: Self = super::helper::read_toml(path)?;
 
         if avin.format != FORMAT {
+            let msg = format!(
+                "unsupported AVIN.toml format: {}, supported={FORMAT}",
+                avin.format
+            );
             return Err(SystemError::AvinToml {
-                message: format!(
-                    "unsupported AVIN.toml format: {}, supported={FORMAT}",
-                    avin.format,
-                ),
+                message: msg,
                 source: None,
             });
         }
