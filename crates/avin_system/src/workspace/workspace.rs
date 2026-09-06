@@ -15,9 +15,9 @@ use super::config::Config;
 use super::data::DataManifest;
 use super::secret::Secret;
 
-const WORKSPACE_ENV: &str = "AVIN_WORKSPACE";
-const AVIN_FILE: &str = "AVIN.toml";
-const AVIN_FILE_HIDDEN: &str = ".AVIN.toml";
+const WS_FILE: &str = "AVIN.toml";
+const WS_FILE_HIDDEN: &str = ".AVIN.toml";
+const WS_ENV_VAR: &str = "AVIN_WORKSPACE";
 
 const CONFIG_FILE: &str = "config.toml";
 const DATA_FILE: &str = "data.toml";
@@ -97,8 +97,9 @@ impl Workspace {
 }
 
 fn locate_workspace_file() -> Result<PathBuf, SystemError> {
+    // locate in current dir
     let cur_dir = env::current_dir().map_err(|err| SystemError::Io {
-        message: "failed to get current directory".to_string(),
+        message: "failed to get current working directory".to_string(),
         source: err,
     })?;
 
@@ -106,32 +107,44 @@ fn locate_workspace_file() -> Result<PathBuf, SystemError> {
         return Ok(ws_file);
     }
 
-    if let Some(ws_dir) = env::var_os(WORKSPACE_ENV) {
-        let ws_dir = PathBuf::from(ws_dir);
+    // locate in env dir
+    let Some(env_dir) = env::var_os(WS_ENV_VAR) else {
+        let msg = format!(
+            "AVIN workspace file not found: \
+            neither '{WS_FILE}' nor '{WS_FILE_HIDDEN}' exists in {}, \
+            and env var {WS_ENV_VAR} is not set",
+            cur_dir.display()
+        );
+        return Err(SystemError::Workspace {
+            message: msg,
+            source: None,
+        });
+    };
 
-        if let Some(ws_file) = workspace_file_in(&ws_dir) {
-            return Ok(ws_file);
-        }
-
-        return Err(SystemError::Missing(format!(
-            "{} | {} not found in {WORKSPACE_ENV}",
-            AVIN_FILE, AVIN_FILE_HIDDEN
-        )));
+    let env_dir = PathBuf::from(env_dir);
+    if let Some(ws_file) = workspace_file_in(&env_dir) {
+        return Ok(ws_file);
     }
 
-    Err(SystemError::Missing(format!(
-        "not an AVIN workspace: {} | {} not found",
-        AVIN_FILE, AVIN_FILE_HIDDEN
-    )))
+    let msg = format!(
+        "AVIN workspace file not found: \
+        env var {WS_ENV_VAR}={}, \
+        but neither '{WS_FILE}' nor '{WS_FILE_HIDDEN}' exists there",
+        env_dir.display()
+    );
+    Err(SystemError::Workspace {
+        message: msg,
+        source: None,
+    })
 }
 
 fn workspace_file_in(dir: &Path) -> Option<PathBuf> {
-    let path = dir.join(AVIN_FILE);
+    let path = dir.join(WS_FILE);
     if path.is_file() {
         return Some(path);
     }
 
-    let path = dir.join(AVIN_FILE_HIDDEN);
+    let path = dir.join(WS_FILE_HIDDEN);
     if path.is_file() {
         return Some(path);
     }
@@ -151,8 +164,8 @@ mod tests {
     fn workspace_file_in_prefers_avin_toml() {
         let dir = tempdir().unwrap();
 
-        let avin = dir.path().join(AVIN_FILE);
-        let hidden = dir.path().join(AVIN_FILE_HIDDEN);
+        let avin = dir.path().join(WS_FILE);
+        let hidden = dir.path().join(WS_FILE_HIDDEN);
 
         fs::write(&avin, "").unwrap();
         fs::write(&hidden, "").unwrap();
@@ -166,7 +179,7 @@ mod tests {
     fn workspace_file_in_finds_hidden_avin_toml() {
         let dir = tempdir().unwrap();
 
-        let hidden = dir.path().join(AVIN_FILE_HIDDEN);
+        let hidden = dir.path().join(WS_FILE_HIDDEN);
         fs::write(&hidden, "").unwrap();
 
         let path = workspace_file_in(dir.path()).unwrap();
