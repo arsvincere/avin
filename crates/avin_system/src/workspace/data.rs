@@ -33,10 +33,14 @@ impl DataManifest {
         let raw: DataToml = super::helper::read_toml(path)?;
 
         if raw.format != FORMAT {
-            return Err(SystemError::Value(format!(
-                "unsupported data.toml format: {}, supported={FORMAT}",
+            let msg = format!(
+                "data.toml: unsupported format '{}', supported={FORMAT}",
                 raw.format
-            )));
+            );
+            return Err(SystemError::DataManifest {
+                message: msg,
+                source: None,
+            });
         }
 
         let mut sets = Vec::new();
@@ -146,9 +150,18 @@ fn get_instruments(
 
     let mut result = Vec::new();
 
-    for iid_str in instruments.iter() {
-        let iid = InstrumentId::from_str(iid_str)
-            .map_err(|_| SystemError::Parse("TODO_ERR_MSG".to_string()))?;
+    for iid in instruments.iter() {
+        let iid = InstrumentId::from_str(iid).map_err(|err| {
+            let msg = format!(
+                "data.toml: invalid instrument id in \
+                tbank.instruments '{iid}'"
+            );
+            SystemError::DataManifest {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
+
         result.push(iid);
     }
 
@@ -172,9 +185,18 @@ fn get_bar_timeframes(
 
     let mut timeframes = Vec::new();
 
-    for tf_str in bars_data.timeframes.iter() {
-        let tf = TimeFrame::from_str(tf_str)
-            .map_err(|_| SystemError::Parse("TODO_ERR_MSG".to_string()))?;
+    for tf in bars_data.timeframes.iter() {
+        let tf = TimeFrame::from_str(tf).map_err(|err| {
+            let msg = format!(
+                "data.toml: invalid timeframe in \
+                tbank.bars.timeframes '{tf}'"
+            );
+            SystemError::DataManifest {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
+
         timeframes.push(tf);
     }
 
@@ -203,9 +225,18 @@ fn get_time_footprints(
 
     let mut timeframes = Vec::new();
 
-    for tf_str in time_footprints.iter() {
-        let tf = TimeFrame::from_str(tf_str)
-            .map_err(|_| SystemError::Parse("TODO_ERR_MSG".to_string()))?;
+    for tf in time_footprints.iter() {
+        let tf = TimeFrame::from_str(tf).map_err(|err| {
+            let msg = format!(
+                "data.toml: invalid timeframe in \
+                tbank.footprints.time '{tf}'"
+            );
+            SystemError::DataManifest {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
+
         timeframes.push(tf);
     }
 
