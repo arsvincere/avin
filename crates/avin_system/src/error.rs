@@ -40,6 +40,10 @@ pub enum SystemError {
         message: String,
         source: Option<ErrorSource>,
     },
+    Logger {
+        message: String,
+        source: Option<ErrorSource>,
+    },
 
     Value(String),   // invalid value
     Parse(String),   // parse error
@@ -76,6 +80,7 @@ impl Display for SystemError {
             Self::DataManifest { message, .. } => write!(f, "{message}"),
             Self::Secret { message, .. } => write!(f, "{message}"),
             Self::Workspace { message, .. } => write!(f, "{message}"),
+            Self::Logger { message, .. } => write!(f, "{message}"),
 
             Self::Value(message) => write!(f, "{message}"),
             Self::Parse(message) => write!(f, "{message}"),
@@ -96,7 +101,8 @@ impl Error for SystemError {
             | Self::Config { source, .. }
             | Self::DataManifest { source, .. }
             | Self::Secret { source, .. }
-            | Self::Workspace { source, .. } => {
+            | Self::Workspace { source, .. }
+            | Self::Logger { source, .. } => {
                 source.as_deref().map(|err| err as &(dyn Error + 'static))
             }
 

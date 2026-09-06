@@ -6,7 +6,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use std::fs::{File, OpenOptions};
-use std::io::{self, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Local, NaiveDate};
@@ -17,21 +17,26 @@ use crate::SystemError;
 pub(super) struct LogFile {
     dir: PathBuf,
     date: NaiveDate,
+    history: usize,
     pub(super) file: File,
 }
 
 impl LogFile {
-    pub(super) fn new(dir: &Path, history: usize) -> io::Result<Self> {
+    pub(super) fn new(
+        dir: &Path,
+        history: usize,
+    ) -> Result<Self, SystemError> {
         let date = Local::now().date_naive();
         let file = open_log_file(dir, date)?;
 
         if let Err(err) = cleanup_old_logs(dir, date, history) {
-            eprintln!("AVIN logger: failed to clean old logs: {err}");
+            eprintln!("logger: failed to clean old logs: {err}");
         }
 
         Ok(Self {
             dir: dir.to_path_buf(),
             date,
+            history,
             file,
         })
     }
@@ -40,60 +45,75 @@ impl LogFile {
         &mut self,
         record: &Record,
         now: &DateTime<Local>,
-    ) -> io::Result<()> {
+    ) -> Result<(), SystemError> {
         let date = now.date_naive();
 
         if date != self.date {
             self.file = open_log_file(&self.dir, date)?;
             self.date = date;
+
+            if let Err(err) = cleanup_old_logs(&self.dir, date, self.history)
+            {
+                eprintln!("logger: failed to clean old logs: {err}");
+            }
         }
 
-        write_file_record(&mut self.file, record, now)
+        let result = writeln!(
+            self.file,
+            "{} [{}] {}: {}",
+            now.format("%Y-%m-%d %H:%M:%S"),
+            record.level(),
+            record.target(),
+            record.args()
+        );
+
+        result.map_err(|err| {
+            let path = self.dir.join(format!("{}.log", self.date));
+            let msg = format!(
+                "logger: failed to write log record to {}",
+                path.display()
+            );
+            SystemError::Io {
+                message: msg,
+                source: err,
+            }
+        })
     }
 }
 
-pub fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
-    let iter = match std::fs::read_dir(dir_path) {
-        Ok(iter) => iter,
-        Err(err) => {
-            return Err(SystemError::Io {
-                message: format!(
-                    "Failed to read dir: {}",
-                    dir_path.display()
-                ),
-                source: err,
-            });
+fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
+    let iter = std::fs::read_dir(dir_path).map_err(|err| {
+        let msg = format!("failed to read directory {}", dir_path.display());
+        SystemError::Io {
+            message: msg,
+            source: err,
         }
-    };
+    })?;
 
     let mut files = Vec::new();
 
     for entry in iter {
-        let entry = match entry {
-            Ok(entry) => entry,
-            Err(err) => {
-                return Err(SystemError::Io {
-                    message: format!(
-                        "Failed to read entry in directory: {}",
-                        dir_path.display()
-                    ),
-                    source: err,
-                });
+        let entry = entry.map_err(|err| {
+            let msg = format!(
+                "failed to read entry in directory {}",
+                dir_path.display()
+            );
+            SystemError::Io {
+                message: msg,
+                source: err,
             }
-        };
+        })?;
 
-        let file_type = match entry.file_type() {
-            Ok(file_type) => file_type,
-            Err(err) => {
-                return Err(SystemError::Io {
-                    message: format!(
-                        "Failed to read file type: {}",
-                        entry.path().display()
-                    ),
-                    source: err,
-                });
+        let file_type = entry.file_type().map_err(|err| {
+            let msg = format!(
+                "failed to read file type for {}",
+                entry.path().display()
+            );
+            SystemError::Io {
+                message: msg,
+                source: err,
             }
-        };
+        })?;
 
         if file_type.is_file() {
             files.push(entry.path());
@@ -103,25 +123,19 @@ pub fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
     Ok(files)
 }
 
-fn open_log_file(dir: &Path, date: NaiveDate) -> io::Result<File> {
+fn open_log_file(dir: &Path, date: NaiveDate) -> Result<File, SystemError> {
     let path = dir.join(format!("{date}.log"));
 
-    OpenOptions::new().create(true).append(true).open(path)
-}
+    let result = OpenOptions::new().create(true).append(true).open(&path);
 
-fn write_file_record(
-    file: &mut File,
-    record: &Record,
-    now: &DateTime<Local>,
-) -> io::Result<()> {
-    writeln!(
-        file,
-        "{} [{}] {}: {}",
-        now.format("%Y-%m-%d %H:%M:%S"),
-        record.level(),
-        record.target(),
-        record.args()
-    )
+    result.map_err(|err| {
+        let msg =
+            format!("logger: failed to open log file {}", path.display());
+        SystemError::Io {
+            message: msg,
+            source: err,
+        }
+    })
 }
 
 fn cleanup_old_logs(
@@ -132,8 +146,10 @@ fn cleanup_old_logs(
     let files = get_files(dir)?;
 
     for path in files.iter() {
-        // TODO: обертка ошибки
-        let name = path.file_name().unwrap().to_str().unwrap();
+        let Some(name) = path.file_name().and_then(|name| name.to_str())
+        else {
+            continue;
+        };
 
         let Some(date_str) = name.strip_suffix(".log") else {
             continue;
@@ -149,9 +165,17 @@ fn cleanup_old_logs(
 
         let age = today.signed_duration_since(date).num_days();
 
-        if history == 0 || age >= history as i64 {
-            // TODO: обертка ошибки
-            std::fs::remove_file(path).unwrap();
+        if age >= history as i64 {
+            std::fs::remove_file(path).map_err(|err| {
+                let msg = format!(
+                    "failed to delete old log file {}",
+                    path.display()
+                );
+                SystemError::Io {
+                    message: msg,
+                    source: err,
+                }
+            })?;
         }
     }
 

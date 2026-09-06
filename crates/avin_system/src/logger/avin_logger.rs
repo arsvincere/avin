@@ -5,13 +5,12 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use std::io::{self, Write};
 use std::sync::Mutex;
 
 use chrono::{DateTime, Local};
 use log::{LevelFilter, Log, Metadata, Record};
 
-use crate::logger::log_file::LogFile;
+use super::log_file::LogFile;
 
 pub(super) struct AvinLogger {
     pub(super) level: LevelFilter,
@@ -31,27 +30,10 @@ impl Log for AvinLogger {
         let now = Local::now();
 
         write_console(record, &now);
-
-        let mut log_file = match self.log_file.lock() {
-            Ok(log_file) => log_file,
-            Err(err) => {
-                eprintln!("AVIN logger: log file lock poisoned: {err}");
-                return;
-            }
-        };
-
-        if let Err(err) = log_file.write(record, &now) {
-            eprintln!("AVIN logger: failed to write log file: {err}");
-        }
+        write_file(&self.log_file, record, &now);
     }
 
-    fn flush(&self) {
-        let _ = io::stderr().flush();
-
-        if let Ok(mut log_file) = self.log_file.lock() {
-            let _ = log_file.file.flush();
-        }
-    }
+    fn flush(&self) {}
 }
 
 fn write_console(record: &Record, now: &DateTime<Local>) {
@@ -61,4 +43,22 @@ fn write_console(record: &Record, now: &DateTime<Local>) {
         record.level(),
         record.args()
     );
+}
+
+fn write_file(
+    log_file: &Mutex<LogFile>,
+    record: &Record,
+    now: &DateTime<Local>,
+) {
+    let mut log_file = match log_file.lock() {
+        Ok(log_file) => log_file,
+        Err(err) => {
+            eprintln!("logger: log file lock poisoned: {err}");
+            return;
+        }
+    };
+
+    if let Err(err) = log_file.write(record, now) {
+        eprintln!("{err}");
+    }
 }
