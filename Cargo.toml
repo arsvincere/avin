@@ -29,6 +29,7 @@ avin_core = { path = "crates/avin_core" }
 avin_domain = { path = "crates/avin_domain" }
 avin_service = { path = "crates/avin_service" }
 avin_storage = { path = "crates/avin_storage" }
+avin_system = { path = "crates/avin_system" }
 
 log = { version = "0.4", features = ["std"] }
 chrono = "0.4"
