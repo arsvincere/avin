@@ -34,7 +34,7 @@ impl AvinToml {
 
         if avin.format != FORMAT {
             let msg = format!(
-                "unsupported AVIN.toml format: {}, supported={FORMAT}",
+                "AVIN.toml: unsupported format '{}', supported={FORMAT}",
                 avin.format
             );
             return Err(SystemError::AvinToml {

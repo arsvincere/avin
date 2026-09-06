@@ -18,7 +18,7 @@ pub(super) struct LogFile {
     dir: PathBuf,
     date: NaiveDate,
     history: usize,
-    pub(super) file: File,
+    file: File,
 }
 
 impl LogFile {
@@ -31,9 +31,9 @@ impl LogFile {
         let date = Local::now().date_naive();
         let file = open_log_file(dir, date)?;
 
-        // don't crash on fail cleanup
+        // cleanup failure is non-fatal
         if let Err(err) = cleanup_old_logs(dir, date, history) {
-            eprintln!("{err}");
+            eprintln!("{}", err.report());
         }
 
         Ok(Self {
@@ -55,10 +55,10 @@ impl LogFile {
             self.file = open_log_file(&self.dir, date)?;
             self.date = date;
 
-            // don't crash on fail cleanup
+            // cleanup failure is non-fatal
             if let Err(err) = cleanup_old_logs(&self.dir, date, self.history)
             {
-                eprintln!("{err}");
+                eprintln!("{}", err.report());
             }
         }
 
@@ -87,8 +87,10 @@ impl LogFile {
 
 fn create_dirs(dir_path: &Path) -> Result<(), SystemError> {
     std::fs::create_dir_all(dir_path).map_err(|err| {
-        let msg =
-            format!("logger: failed create log dir {}", dir_path.display());
+        let msg = format!(
+            "logger: failed to create log dir {}",
+            dir_path.display()
+        );
         SystemError::Logger {
             message: msg,
             source: Some(Box::new(err)),

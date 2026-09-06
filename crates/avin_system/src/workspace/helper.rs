@@ -13,7 +13,7 @@ use crate::SystemError;
 
 pub fn read_toml<T: DeserializeOwned>(path: &Path) -> Result<T, SystemError> {
     let toml_text = std::fs::read_to_string(path).map_err(|err| {
-        let msg = format!("failed to read TOML file '{}'", path.display());
+        let msg = format!("failed to read TOML file {}", path.display());
         SystemError::Workspace {
             message: msg,
             source: Some(Box::new(err)),
@@ -21,7 +21,7 @@ pub fn read_toml<T: DeserializeOwned>(path: &Path) -> Result<T, SystemError> {
     })?;
 
     toml::from_str(&toml_text).map_err(|err| {
-        let msg = format!("failed to parse TOML file '{}'", path.display());
+        let msg = format!("failed to parse TOML file {}", path.display());
 
         SystemError::Workspace {
             message: msg,

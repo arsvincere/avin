@@ -16,8 +16,8 @@ use crate::SystemError;
 use super::log_file::LogFile;
 
 pub(super) struct AvinLogger {
-    pub(super) level: LevelFilter,
-    pub(super) log_file: Mutex<LogFile>,
+    level: LevelFilter,
+    log_file: Mutex<LogFile>,
 }
 
 impl AvinLogger {
@@ -52,8 +52,9 @@ impl AvinLogger {
             }
         };
 
+        // log file write failure is non-fatal
         if let Err(err) = log_file.write(record, now) {
-            eprintln!("{err}");
+            eprintln!("{}", err.report());
         }
     }
 }
