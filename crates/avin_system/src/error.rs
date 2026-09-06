@@ -44,16 +44,6 @@ pub enum SystemError {
         message: String,
         source: Option<ErrorSource>,
     },
-
-    Value(String),   // invalid value
-    Parse(String),   // parse error
-    Key(String),     // key missing
-    Missing(String), // missing value
-    Process(String),
-    InstrumentInfo {
-        message: String,
-        source: Box<SystemError>,
-    },
 }
 
 impl SystemError {
@@ -81,13 +71,6 @@ impl Display for SystemError {
             Self::Secret { message, .. } => write!(f, "{message}"),
             Self::Workspace { message, .. } => write!(f, "{message}"),
             Self::Logger { message, .. } => write!(f, "{message}"),
-
-            Self::Value(message) => write!(f, "{message}"),
-            Self::Parse(message) => write!(f, "{message}"),
-            Self::Key(message) => write!(f, "{message}"),
-            Self::Missing(message) => write!(f, "{message}"),
-            Self::Process(message) => write!(f, "{message}"),
-            Self::InstrumentInfo { message, .. } => write!(f, "{message}"),
         }
     }
 }
@@ -105,13 +88,6 @@ impl Error for SystemError {
             | Self::Logger { source, .. } => {
                 source.as_deref().map(|err| err as &(dyn Error + 'static))
             }
-
-            Self::Value(_) => None,
-            Self::Parse(_) => None,
-            Self::Key(_) => None,
-            Self::Missing(_) => None,
-            Self::Process(_) => None,
-            Self::InstrumentInfo { source, .. } => Some(source),
         }
     }
 }
