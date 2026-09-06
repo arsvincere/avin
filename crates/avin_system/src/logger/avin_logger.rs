@@ -5,16 +5,57 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::path::Path;
 use std::sync::Mutex;
 
 use chrono::{DateTime, Local};
 use log::{LevelFilter, Log, Metadata, Record};
+
+use crate::SystemError;
 
 use super::log_file::LogFile;
 
 pub(super) struct AvinLogger {
     pub(super) level: LevelFilter,
     pub(super) log_file: Mutex<LogFile>,
+}
+
+impl AvinLogger {
+    pub(super) fn new(
+        level: LevelFilter,
+        log_dir: &Path,
+        history: usize,
+    ) -> Result<Self, SystemError> {
+        let log_file = LogFile::new(log_dir, history)?;
+
+        Ok(Self {
+            level,
+            log_file: Mutex::new(log_file),
+        })
+    }
+
+    fn write_console(&self, record: &Record, now: &DateTime<Local>) {
+        eprintln!(
+            "{} [{}] {}",
+            now.format("%H:%M:%S"),
+            record.level(),
+            record.args()
+        );
+    }
+
+    fn write_file(&self, record: &Record, now: &DateTime<Local>) {
+        let mut log_file = match self.log_file.lock() {
+            Ok(log_file) => log_file,
+            Err(err) => {
+                eprintln!("logger: log file lock poisoned: {err}");
+                return;
+            }
+        };
+
+        if let Err(err) = log_file.write(record, now) {
+            eprintln!("{err}");
+        }
+    }
 }
 
 impl Log for AvinLogger {
@@ -29,36 +70,9 @@ impl Log for AvinLogger {
 
         let now = Local::now();
 
-        write_console(record, &now);
-        write_file(&self.log_file, record, &now);
+        self.write_console(record, &now);
+        self.write_file(record, &now);
     }
 
     fn flush(&self) {}
-}
-
-fn write_console(record: &Record, now: &DateTime<Local>) {
-    eprintln!(
-        "{} [{}] {}",
-        now.format("%H:%M:%S"),
-        record.level(),
-        record.args()
-    );
-}
-
-fn write_file(
-    log_file: &Mutex<LogFile>,
-    record: &Record,
-    now: &DateTime<Local>,
-) {
-    let mut log_file = match log_file.lock() {
-        Ok(log_file) => log_file,
-        Err(err) => {
-            eprintln!("logger: log file lock poisoned: {err}");
-            return;
-        }
-    };
-
-    if let Err(err) = log_file.write(record, now) {
-        eprintln!("{err}");
-    }
 }

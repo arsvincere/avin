@@ -26,11 +26,14 @@ impl LogFile {
         dir: &Path,
         history: usize,
     ) -> Result<Self, SystemError> {
+        create_dirs(dir)?;
+
         let date = Local::now().date_naive();
         let file = open_log_file(dir, date)?;
 
+        // don't crash on fail cleanup
         if let Err(err) = cleanup_old_logs(dir, date, history) {
-            eprintln!("logger: failed to clean old logs: {err}");
+            eprintln!("{err}");
         }
 
         Ok(Self {
@@ -52,9 +55,10 @@ impl LogFile {
             self.file = open_log_file(&self.dir, date)?;
             self.date = date;
 
+            // don't crash on fail cleanup
             if let Err(err) = cleanup_old_logs(&self.dir, date, self.history)
             {
-                eprintln!("logger: failed to clean old logs: {err}");
+                eprintln!("{err}");
             }
         }
 
@@ -73,54 +77,23 @@ impl LogFile {
                 "logger: failed to write log record to {}",
                 path.display()
             );
-            SystemError::Io {
+            SystemError::Logger {
                 message: msg,
-                source: err,
+                source: Some(Box::new(err)),
             }
         })
     }
 }
 
-fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
-    let iter = std::fs::read_dir(dir_path).map_err(|err| {
-        let msg = format!("failed to read directory {}", dir_path.display());
+fn create_dirs(dir_path: &Path) -> Result<(), SystemError> {
+    std::fs::create_dir_all(dir_path).map_err(|err| {
+        let msg =
+            format!("logger: failed create log dir {}", dir_path.display());
         SystemError::Io {
             message: msg,
             source: err,
         }
-    })?;
-
-    let mut files = Vec::new();
-
-    for entry in iter {
-        let entry = entry.map_err(|err| {
-            let msg = format!(
-                "failed to read entry in directory {}",
-                dir_path.display()
-            );
-            SystemError::Io {
-                message: msg,
-                source: err,
-            }
-        })?;
-
-        let file_type = entry.file_type().map_err(|err| {
-            let msg = format!(
-                "failed to read file type for {}",
-                entry.path().display()
-            );
-            SystemError::Io {
-                message: msg,
-                source: err,
-            }
-        })?;
-
-        if file_type.is_file() {
-            files.push(entry.path());
-        }
-    }
-
-    Ok(files)
+    })
 }
 
 fn open_log_file(dir: &Path, date: NaiveDate) -> Result<File, SystemError> {
@@ -168,7 +141,7 @@ fn cleanup_old_logs(
         if age >= history as i64 {
             std::fs::remove_file(path).map_err(|err| {
                 let msg = format!(
-                    "failed to delete old log file {}",
+                    "logger: failed to delete old log file {}",
                     path.display()
                 );
                 SystemError::Io {
@@ -180,6 +153,51 @@ fn cleanup_old_logs(
     }
 
     Ok(())
+}
+
+fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
+    let iter = std::fs::read_dir(dir_path).map_err(|err| {
+        let msg = format!(
+            "logger: failed to read directory {}",
+            dir_path.display()
+        );
+        SystemError::Logger {
+            message: msg,
+            source: Some(Box::new(err)),
+        }
+    })?;
+
+    let mut files = Vec::new();
+
+    for entry in iter {
+        let entry = entry.map_err(|err| {
+            let msg = format!(
+                "logger: failed to read entry in directory {}",
+                dir_path.display()
+            );
+            SystemError::Logger {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
+
+        let file_type = entry.file_type().map_err(|err| {
+            let msg = format!(
+                "logger: failed to read file type for {}",
+                entry.path().display()
+            );
+            SystemError::Logger {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
+
+        if file_type.is_file() {
+            files.push(entry.path());
+        }
+    }
+
+    Ok(files)
 }
 
 #[cfg(test)]
