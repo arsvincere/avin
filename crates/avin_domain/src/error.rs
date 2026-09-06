@@ -8,24 +8,20 @@
 use std::error::Error;
 use std::fmt::Display;
 
-use avin_core::CoreError;
+type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum DomainError {
-    Core {
-        message: String,
-        source: CoreError,
-    },
     Exchange(String),
     Category(String),
     Ticker(String),
     InstrumentId {
         message: String,
-        source: Option<Box<DomainError>>,
+        source: Option<ErrorSource>,
     },
     InstrumentInfo {
         message: String,
-        source: Option<Box<DomainError>>,
+        source: Option<ErrorSource>,
     },
     InstrumentList(String),
     Share(String),
@@ -53,7 +49,6 @@ impl DomainError {
 impl Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Core { message, .. } => write!(f, "{message}"),
             Self::Exchange(msg) => write!(f, "{msg}"),
             Self::Category(msg) => write!(f, "{msg}"),
             Self::Ticker(msg) => write!(f, "{msg}"),
@@ -73,18 +68,13 @@ impl Display for DomainError {
 impl Error for DomainError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Core { source, .. } => Some(source),
             Self::Exchange(_) => None,
             Self::Category(_) => None,
             Self::Ticker(_) => None,
-            Self::InstrumentId { source, .. } => match source {
-                Some(source) => Some(source),
-                None => None,
-            },
-            Self::InstrumentInfo { source, .. } => match source {
-                Some(source) => Some(source),
-                None => None,
-            },
+            Self::InstrumentInfo { source, .. }
+            | Self::InstrumentId { source, .. } => {
+                source.as_deref().map(|err| err as &(dyn Error + 'static))
+            }
             Self::InstrumentList(_) => None,
             Self::Share(_) => None,
             Self::Future(_) => None,
