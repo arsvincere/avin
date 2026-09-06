@@ -37,10 +37,14 @@ impl Secret {
         let secret: Self = super::helper::read_toml(path)?;
 
         if secret.format != FORMAT {
-            return Err(SystemError::Value(format!(
-                "unsupported secret.toml format: {}, supported={FORMAT}",
+            let msg = format!(
+                "secret.toml: unsupported format '{}', supported={FORMAT}",
                 secret.format
-            )));
+            );
+            return Err(SystemError::Secret {
+                message: msg,
+                source: None,
+            });
         }
 
         Ok(secret)
