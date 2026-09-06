@@ -13,6 +13,7 @@ mod secret;
 mod workspace;
 
 pub(crate) use workspace::Workspace;
+pub static WORKSPACE: GlobalWorkspace = GlobalWorkspace::new();
 
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -20,8 +21,6 @@ use std::ops::Deref;
 use std::sync::OnceLock;
 
 use crate::SystemError;
-
-pub static WORKSPACE: GlobalWorkspace = GlobalWorkspace::new();
 
 /// Current AVIN workspace for the process.
 ///
@@ -86,3 +85,16 @@ impl Deref for GlobalWorkspace {
         })
     }
 }
+
+// pub static WORKSPACE: LazyLock<Workspace> = LazyLock::new(|| {
+//     let workspace = match Workspace::open() {
+//         Ok(ws) => ws,
+//         Err(err) => panic!("{}", err.report()),
+//     };
+//
+//     if let Err(err) = crate::logger::init_logger(&workspace) {
+//         panic!("{}", err.report());
+//     }
+//
+//     workspace
+// });

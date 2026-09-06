@@ -67,7 +67,7 @@ impl InstrumentList {
             // if in hash map
             std::collections::hash_map::Entry::Occupied(entry) => {
                 Err(DomainError::InstrumentList(format!(
-                    "Duplicate InstrumentId in InstrumentList: {}",
+                    "duplicate InstrumentId in InstrumentList: {}",
                     entry.key()
                 )))
             }

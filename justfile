@@ -59,7 +59,7 @@ test-rs-mod crate mod:
 # Run rust ignored tests
 [group('Tests')]
 test-rs-ignored:
-	cargo test --lib --jobs 4 -- --ignored
+	cargo test --jobs 4 -- --ignored
 
 # Run python unit tests
 [group('Tests')]

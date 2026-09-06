@@ -64,7 +64,7 @@ impl Quantity {
             )));
         }
 
-        // fix Price::new(-0.0).unwrap().to_string() -> "-0"
+        // fix Quantity::new(-0.0).unwrap().to_string() -> "-0"
         let value = if value == -0.0 { 0.0 } else { value };
 
         Ok(Self(value))

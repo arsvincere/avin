@@ -34,7 +34,10 @@ pub struct Bar {
 }
 
 impl Bar {
-    /// Creates a bar from trusted OHLCV values without validation.
+    /// Creates a bar and validates its OHLC price relationships.
+    ///
+    /// Returns an error if the open or close price is outside
+    /// the `[low, high]` range.
     pub fn new(
         time: Time,
         o: Price,
@@ -59,6 +62,7 @@ impl Bar {
     }
 
     // TODO: вынести в "приватный трейт"
+    /// Creates a bar from trusted OHLCV values without validation.
     pub fn new_unchecked(
         time: Time,
         o: Price,
