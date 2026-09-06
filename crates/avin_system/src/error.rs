@@ -12,14 +12,6 @@ type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum SystemError {
-    Io {
-        message: String,
-        source: std::io::Error,
-    },
-    ParseToml {
-        message: String,
-        source: toml::de::Error,
-    },
     AvinToml {
         message: String,
         source: Option<ErrorSource>,
@@ -63,8 +55,6 @@ impl SystemError {
 impl Display for SystemError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Io { message, .. } => write!(f, "{message}"),
-            Self::ParseToml { message, .. } => write!(f, "{message}"),
             Self::AvinToml { message, .. } => write!(f, "{message}"),
             Self::Config { message, .. } => write!(f, "{message}"),
             Self::DataManifest { message, .. } => write!(f, "{message}"),
@@ -78,8 +68,6 @@ impl Display for SystemError {
 impl Error for SystemError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Io { source, .. } => Some(source),
-            Self::ParseToml { source, .. } => Some(source),
             Self::AvinToml { source, .. }
             | Self::Config { source, .. }
             | Self::DataManifest { source, .. }

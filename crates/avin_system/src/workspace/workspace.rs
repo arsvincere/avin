@@ -98,9 +98,12 @@ impl Workspace {
 
 fn locate_workspace_file() -> Result<PathBuf, SystemError> {
     // locate in current dir
-    let cur_dir = env::current_dir().map_err(|err| SystemError::Io {
-        message: "failed to get current working directory".to_string(),
-        source: err,
+    let cur_dir = env::current_dir().map_err(|err| {
+        let msg = "failed to get current working directory".to_string();
+        SystemError::Workspace {
+            message: msg,
+            source: Some(Box::new(err)),
+        }
     })?;
 
     if let Some(ws_file) = workspace_file_in(&cur_dir) {

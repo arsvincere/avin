@@ -89,9 +89,9 @@ fn create_dirs(dir_path: &Path) -> Result<(), SystemError> {
     std::fs::create_dir_all(dir_path).map_err(|err| {
         let msg =
             format!("logger: failed create log dir {}", dir_path.display());
-        SystemError::Io {
+        SystemError::Logger {
             message: msg,
-            source: err,
+            source: Some(Box::new(err)),
         }
     })
 }
@@ -104,9 +104,9 @@ fn open_log_file(dir: &Path, date: NaiveDate) -> Result<File, SystemError> {
     result.map_err(|err| {
         let msg =
             format!("logger: failed to open log file {}", path.display());
-        SystemError::Io {
+        SystemError::Logger {
             message: msg,
-            source: err,
+            source: Some(Box::new(err)),
         }
     })
 }
@@ -144,9 +144,9 @@ fn cleanup_old_logs(
                     "logger: failed to delete old log file {}",
                     path.display()
                 );
-                SystemError::Io {
+                SystemError::Logger {
                     message: msg,
-                    source: err,
+                    source: Some(Box::new(err)),
                 }
             })?;
         }
