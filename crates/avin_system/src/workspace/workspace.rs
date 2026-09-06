@@ -63,7 +63,7 @@ impl Workspace {
             return Ok(workspace);
         }
 
-        let workspace = Self::open()?;
+        let workspace = Self::load()?;
         crate::logger::init_logger(&workspace)?;
 
         WORKSPACE
@@ -73,7 +73,7 @@ impl Workspace {
         Ok(WORKSPACE.get().expect("workspace must be initialized"))
     }
 
-    fn open() -> Result<Self, SystemError> {
+    fn load() -> Result<Self, SystemError> {
         let ws_file = locate_workspace_file()?;
 
         let avin = AvinToml::read(&ws_file)?;
