@@ -19,8 +19,8 @@ const FORMAT: u32 = 1;
 /// Secrets are loaded from the workspace `secret.toml` file and contain
 /// credentials and API keys required to access external services.
 ///
-/// The type intentionally does not implement [`Debug`] to avoid accidental
-/// exposure of secret values in logs or diagnostic output.
+/// Secret values are redacted in the [`Debug`] implementation to prevent
+/// accidental exposure in logs and diagnostic output.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Secret {
