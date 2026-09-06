@@ -13,7 +13,7 @@ mod log_file;
 use crate::SystemError;
 use crate::workspace::Workspace;
 
-use crate::logger::avin_logger::AvinLogger;
+use self::avin_logger::AvinLogger;
 
 pub(crate) fn init_logger(ws: &Workspace) -> Result<(), SystemError> {
     let log_dir = ws.log();

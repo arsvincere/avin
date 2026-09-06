@@ -25,8 +25,10 @@ pub static WORKSPACE: GlobalWorkspace = GlobalWorkspace::new();
 
 /// Current AVIN workspace for the process.
 ///
-/// The workspace must be initialized with [`GlobalWorkspace::init`] before it
-/// is accessed.
+/// Executables may explicitly initialize the workspace with
+/// [`GlobalWorkspace::init`] to handle initialization errors at startup.
+///
+/// Otherwise, the workspace is initialized automatically on first access.
 pub struct GlobalWorkspace {
     inner: OnceLock<Workspace>,
 }
@@ -41,22 +43,20 @@ impl GlobalWorkspace {
     ///
     /// Returns an error if the workspace cannot be opened or logging cannot
     /// be initialized.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the current workspace has already been initialized.
     pub fn init(&self) -> Result<(), SystemError> {
-        // Check first to avoid reporting logger reinitialization instead of
-        // the real error: the workspace has already been initialized.
         if self.inner.get().is_some() {
-            panic!("current workspace is already initialized");
+            let msg = "current workspace is already initialized".to_string();
+            return Err(SystemError::Workspace {
+                message: msg,
+                source: None,
+            });
         }
 
         let workspace = Workspace::open()?;
 
         crate::logger::init_logger(&workspace)?;
 
-        self.set(workspace);
+        let _ = self.inner.set(workspace);
 
         Ok(())
     }
@@ -66,21 +66,23 @@ impl GlobalWorkspace {
             inner: OnceLock::new(),
         }
     }
-
-    fn set(&self, workspace: Workspace) {
-        if self.inner.set(workspace).is_err() {
-            panic!("current workspace is already initialized");
-        }
-    }
 }
 
 impl Deref for GlobalWorkspace {
     type Target = Workspace;
 
     fn deref(&self) -> &Self::Target {
-        match self.inner.get() {
-            Some(ws) => ws,
-            None => panic!("current workspace is not initialized"),
-        }
+        self.inner.get_or_init(|| {
+            let workspace = match Workspace::open() {
+                Ok(ws) => ws,
+                Err(err) => panic!("{}", err.report()),
+            };
+
+            if let Err(err) = crate::logger::init_logger(&workspace) {
+                panic!("{}", err.report());
+            }
+
+            workspace
+        })
     }
 }
