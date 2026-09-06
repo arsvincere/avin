@@ -16,7 +16,7 @@ use crate::workspace::Workspace;
 use self::avin_logger::AvinLogger;
 
 pub(crate) fn init_logger(ws: &Workspace) -> Result<(), SystemError> {
-    let log_dir = ws.log();
+    let log_dir = ws.dirs.log();
     let level = ws.config.log.level();
     let history = ws.config.log.history();
 

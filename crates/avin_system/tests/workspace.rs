@@ -5,12 +5,12 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_system::WORKSPACE;
+use avin_system::Workspace;
 
 #[test]
 #[ignore = "requires real AVIN workspace"]
 fn workspace_init() {
-    WORKSPACE.init().unwrap();
+    let _ = Workspace::get().unwrap();
 
     log::info!("Hello from AVIN");
 }

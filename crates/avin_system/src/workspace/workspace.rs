@@ -7,6 +7,7 @@
 
 use std::env;
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 use crate::SystemError;
 
@@ -24,30 +25,55 @@ const DATA_FILE: &str = "data.toml";
 // const GUI_FILE: &str = "gui.toml";
 const SECRET_FILE: &str = "secret.toml";
 
-/// Open AVIN workspace.
+static WORKSPACE: OnceLock<Workspace> = OnceLock::new();
+
+/// Represents the AVIN process runtime environment.
 ///
-/// `Workspace` represents the process runtime environment loaded from the
-/// workspace configuration files. It provides access to application settings,
-/// desired market data, secrets, and resolved workspace directories.
+/// Loads the workspace configuration from:
+/// - `AVIN.toml`
+/// - `config.toml`
+/// - `data.toml`
+/// - `secret.toml`
+///
+/// Provides access to application settings, market data requirements, secrets,
+/// and resolved workspace directories.
+#[derive(Debug)]
 pub struct Workspace {
-    avin: AvinToml,
+    pub dirs: AvinToml,
     pub config: Config,
     pub data: DataManifest,
     pub secret: Secret,
 }
 
 impl Workspace {
-    /// Opens the current AVIN workspace.
+    /// Returns the global AVIN workspace, initializing it on first access.
     ///
-    /// The workspace is located in the current directory or through the
-    /// AVIN_WORKSPACE environment variable. Its AVIN.toml, config.toml,
-    /// data.toml, and secret.toml files are then loaded and validated.
+    /// On first access, locates and opens the current workspace, loads and
+    /// validates its configuration files, initializes the logger, and stores
+    /// the resulting [`Workspace`] for subsequent calls.
+    ///
+    /// Later calls return the same workspace instance.
     ///
     /// # Errors
     ///
-    /// Returns an error if the workspace cannot be located or any required
-    /// workspace file cannot be read, parsed, or validated.
-    pub fn open() -> Result<Self, SystemError> {
+    /// Returns an error if the workspace cannot be opened or the logger
+    /// cannot be initialized.
+    pub fn get() -> Result<&'static Self, SystemError> {
+        if let Some(workspace) = WORKSPACE.get() {
+            return Ok(workspace);
+        }
+
+        let workspace = Self::open()?;
+        crate::logger::init_logger(&workspace)?;
+
+        WORKSPACE
+            .set(workspace)
+            .expect("workspace must NOT be initialized");
+
+        Ok(WORKSPACE.get().expect("workspace must be initialized"))
+    }
+
+    fn open() -> Result<Self, SystemError> {
         let ws_file = locate_workspace_file()?;
 
         let avin = AvinToml::read(&ws_file)?;
@@ -56,43 +82,11 @@ impl Workspace {
         let secret = Secret::read(&avin.cfg().join(SECRET_FILE))?;
 
         Ok(Self {
-            avin,
+            dirs: avin,
             config,
             data,
             secret,
         })
-    }
-
-    // AvinToml proxy methods:
-
-    /// Returns the log directory.
-    pub fn log(&self) -> &Path {
-        self.avin.log()
-    }
-
-    /// Returns the market data directory.
-    pub fn market_data(&self) -> &Path {
-        self.avin.market_data()
-    }
-
-    /// Returns the instrument info cache directory.
-    pub fn instruments(&self) -> &Path {
-        self.avin.instruments()
-    }
-
-    /// Returns the pattern search results directory.
-    pub fn search(&self) -> &Path {
-        self.avin.search()
-    }
-
-    /// Returns the tester results directory.
-    pub fn test(&self) -> &Path {
-        self.avin.test()
-    }
-
-    /// Returns the watchlist directory.
-    pub fn watchlist(&self) -> &Path {
-        self.avin.watchlist()
     }
 }
 

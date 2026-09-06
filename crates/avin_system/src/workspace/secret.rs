@@ -5,6 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use std::fmt::Debug;
 use std::path::Path;
 
 use serde::Deserialize;
@@ -68,6 +69,18 @@ impl Secret {
     /// Returns the MOEX API key.
     pub fn moex_api_key(&self) -> &str {
         &self.moex_api_key
+    }
+}
+
+impl Debug for Secret {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Secret")
+            .field("format", &self.format)
+            .field("tbank_token", &"***")
+            .field("moex_login", &"***")
+            .field("moex_password", &"***")
+            .field("moex_api_key", &"***")
+            .finish()
     }
 }
 
