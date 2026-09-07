@@ -5,10 +5,15 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use clap::{Args, Parser, Subcommand};
+mod data;
+mod instruments;
 
-use avin_core::{DataProvider, MarketData, Year};
-use avin_domain::InstrumentId;
+// ───────────────────────────────────────────────────────────────────────────
+
+use clap::{Parser, Subcommand};
+
+use self::data::DataCommand;
+use self::instruments::InstrumentsCommand;
 
 #[derive(Parser)]
 pub struct Cli {
@@ -91,85 +96,4 @@ enum Group {
         #[command(subcommand)]
         command: DataCommand,
     },
-}
-
-// Instruments ---------------------------------------------------------------
-
-#[derive(Subcommand)]
-enum InstrumentsCommand {
-    Cache {
-        #[arg(long)]
-        provider: Option<DataProvider>,
-    },
-
-    Clear {
-        #[arg(long)]
-        provider: Option<DataProvider>,
-    },
-}
-
-// Data ----------------------------------------------------------------------
-
-#[derive(Subcommand)]
-enum DataCommand {
-    Sync(SyncOptions),
-    Delete(DeleteOptions),
-    Prune,
-    Compact,
-}
-
-// Sync ----------------------------------------------------------------------
-
-#[derive(Args)]
-struct SyncOptions {
-    #[arg(long, exclusive = true)]
-    resume: bool,
-
-    #[arg(long, exclusive = true)]
-    abort: bool,
-
-    #[arg(long, exclusive = true)]
-    status: bool,
-
-    #[arg(long)]
-    force: bool,
-
-    #[arg(long, requires = "force")]
-    provider: Option<DataProvider>,
-
-    #[arg(long, requires = "provider")]
-    instrument: Option<InstrumentId>,
-
-    #[arg(long, requires = "instrument")]
-    data: Option<MarketData>,
-
-    #[arg(long, requires = "data", value_parser = parse_year)]
-    year: Option<Year>,
-}
-
-// Delete --------------------------------------------------------------------
-
-#[derive(Args)]
-struct DeleteOptions {
-    #[arg(long)]
-    provider: Option<DataProvider>,
-
-    #[arg(long, requires = "provider")]
-    instrument: Option<InstrumentId>,
-
-    #[arg(long, requires = "instrument")]
-    data: Option<MarketData>,
-
-    #[arg(long, requires = "data", value_parser = parse_year)]
-    year: Option<Year>,
-}
-
-// Parsers -------------------------------------------------------------------
-
-fn parse_year(value: &str) -> Result<Year, String> {
-    let year = value
-        .parse::<u16>()
-        .map_err(|_| format!("invalid year '{value}'"))?;
-
-    Year::new(year).map_err(|err| err.to_string())
 }
