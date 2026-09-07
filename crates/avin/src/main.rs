@@ -13,26 +13,26 @@ use avin_domain::InstrumentId;
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
-    command: RootCommand,
+    group: Group,
 }
 
 #[derive(Subcommand)]
-enum RootCommand {
+enum Group {
     Instruments {
         #[command(subcommand)]
-        action: InstrumentsAction,
+        command: InstrumentsCommand,
     },
 
     Data {
         #[command(subcommand)]
-        action: DataAction,
+        command: DataCommand,
     },
 }
 
 // Instruments ---------------------------------------------------------------
 
 #[derive(Subcommand)]
-enum InstrumentsAction {
+enum InstrumentsCommand {
     Cache {
         #[arg(long)]
         provider: Option<DataProvider>,
@@ -47,7 +47,7 @@ enum InstrumentsAction {
 // Data ----------------------------------------------------------------------
 
 #[derive(Subcommand)]
-enum DataAction {
+enum DataCommand {
     Sync(SyncOptions),
     Delete(DeleteOptions),
     Prune,
@@ -115,19 +115,19 @@ fn parse_year(value: &str) -> Result<Year, String> {
 fn main() {
     let cli = Cli::parse();
 
-    match cli.command {
-        RootCommand::Instruments { action } => match action {
-            InstrumentsAction::Cache { provider } => {
+    match cli.group {
+        Group::Instruments { command } => match command {
+            InstrumentsCommand::Cache { provider } => {
                 println!("Caching instruments info: {provider:?}");
             }
 
-            InstrumentsAction::Clear { provider } => {
+            InstrumentsCommand::Clear { provider } => {
                 println!("Clear instruments info: {provider:?}");
             }
         },
 
-        RootCommand::Data { action } => match action {
-            DataAction::Sync(options) => {
+        Group::Data { command } => match command {
+            DataCommand::Sync(options) => {
                 if options.resume {
                     println!("Resume sync");
                     return;
@@ -153,7 +153,7 @@ fn main() {
                 );
             }
 
-            DataAction::Delete(options) => {
+            DataCommand::Delete(options) => {
                 println!(
                     "Delete: p={:?}, i={:?}, d={:?}, y={:?}",
                     options.provider,
@@ -163,11 +163,11 @@ fn main() {
                 );
             }
 
-            DataAction::Prune => {
+            DataCommand::Prune => {
                 println!("Prune data");
             }
 
-            DataAction::Compact => {
+            DataCommand::Compact => {
                 println!("Compact data");
             }
         },
