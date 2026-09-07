@@ -5,8 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin::cli::Cli;
+use avin::cli::AvinCli;
 
 fn main() {
-    Cli::run();
+    AvinCli::run();
 }
