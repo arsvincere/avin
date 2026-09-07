@@ -5,9 +5,21 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod avin_cli;
-mod data;
-mod instruments;
-mod workspace;
+use clap::Subcommand;
 
-pub use avin_cli::AvinCli;
+use avin::err::AvinError;
+
+#[derive(Subcommand)]
+pub(super) enum WorkspaceCommand {
+    Init,
+    New { name: String },
+}
+
+impl WorkspaceCommand {
+    pub(super) fn run(self) -> Result<(), AvinError> {
+        match self {
+            Self::Init => todo!(),
+            Self::New { .. } => todo!(),
+        }
+    }
+}

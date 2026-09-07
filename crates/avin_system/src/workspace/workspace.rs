@@ -107,8 +107,9 @@ fn locate_workspace_file() -> Result<PathBuf, SystemError> {
     // locate in env dir
     let Some(env_dir) = env::var_os(WS_ENV_VAR) else {
         let msg = format!(
-            "AVIN workspace file not found: \
-            neither '{WS_FILE}' nor '{WS_FILE_HIDDEN}' exists in {}, \
+            "workspace file not found, \
+            neither '{WS_FILE}' nor '{WS_FILE_HIDDEN}' exists in \
+            current directory {}, \
             and env var {WS_ENV_VAR} is not set",
             cur_dir.display()
         );
@@ -124,7 +125,7 @@ fn locate_workspace_file() -> Result<PathBuf, SystemError> {
     }
 
     let msg = format!(
-        "AVIN workspace file not found: \
+        "workspace file not found, \
         env var {WS_ENV_VAR}={}, \
         but neither '{WS_FILE}' nor '{WS_FILE_HIDDEN}' exists there",
         env_dir.display()
