@@ -12,3 +12,5 @@ homepage.workspace = true
 [dependencies]
 avin_core = { workspace = true }
 avin_domain = { workspace = true }
+
+clap = { workspace = true }
