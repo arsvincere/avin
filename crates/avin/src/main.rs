@@ -13,53 +13,51 @@ use avin_domain::InstrumentId;
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
-    command: Command,
+    command: RootCommand,
 }
 
 #[derive(Subcommand)]
-enum Command {
-    Instruments(InstrumentsArgs),
-    Data(DataArgs),
-}
+enum RootCommand {
+    Instruments {
+        #[command(subcommand)]
+        action: InstrumentsAction,
+    },
 
-#[derive(Args)]
-struct DataArgs {
-    #[command(subcommand)]
-    command: DataCommand,
-}
-
-#[derive(Subcommand)]
-enum DataCommand {
-    Sync(SyncArgs),
-    Delete(DeleteArgs),
-    Prune,
-    Compact,
+    Data {
+        #[command(subcommand)]
+        action: DataAction,
+    },
 }
 
 // Instruments ---------------------------------------------------------------
 
-#[derive(Args)]
-struct InstrumentsArgs {
-    #[command(subcommand)]
-    command: InstrumentsCommand,
-}
-
 #[derive(Subcommand)]
-enum InstrumentsCommand {
+enum InstrumentsAction {
     Cache {
         #[arg(long)]
         provider: Option<DataProvider>,
     },
+
     Clear {
         #[arg(long)]
         provider: Option<DataProvider>,
     },
 }
 
+// Data ----------------------------------------------------------------------
+
+#[derive(Subcommand)]
+enum DataAction {
+    Sync(SyncOptions),
+    Delete(DeleteOptions),
+    Prune,
+    Compact,
+}
+
 // Sync ----------------------------------------------------------------------
 
 #[derive(Args)]
-struct SyncArgs {
+struct SyncOptions {
     #[arg(long, exclusive = true)]
     resume: bool,
 
@@ -88,7 +86,7 @@ struct SyncArgs {
 // Delete --------------------------------------------------------------------
 
 #[derive(Args)]
-struct DeleteArgs {
+struct DeleteOptions {
     #[arg(long)]
     provider: Option<DataProvider>,
 
@@ -118,54 +116,58 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Instruments(instruments) => match instruments.command {
-            InstrumentsCommand::Cache { provider } => {
+        RootCommand::Instruments { action } => match action {
+            InstrumentsAction::Cache { provider } => {
                 println!("Caching instruments info: {provider:?}");
             }
-            InstrumentsCommand::Clear { provider } => {
+
+            InstrumentsAction::Clear { provider } => {
                 println!("Clear instruments info: {provider:?}");
             }
         },
 
-        Command::Data(data) => match data.command {
-            DataCommand::Sync(args) => {
-                if args.resume {
+        RootCommand::Data { action } => match action {
+            DataAction::Sync(options) => {
+                if options.resume {
                     println!("Resume sync");
                     return;
                 }
 
-                if args.abort {
+                if options.abort {
                     println!("Abort sync");
                     return;
                 }
 
-                if args.status {
+                if options.status {
                     println!("Sync status");
                     return;
                 }
 
                 println!(
                     "Sync: f={}, p={:?}, i={:?}, d={:?}, y={:?}",
-                    args.force,
-                    args.provider,
-                    args.instrument,
-                    args.data,
-                    args.year,
+                    options.force,
+                    options.provider,
+                    options.instrument,
+                    options.data,
+                    options.year,
                 );
             }
 
-            DataCommand::Delete(args) => {
+            DataAction::Delete(options) => {
                 println!(
                     "Delete: p={:?}, i={:?}, d={:?}, y={:?}",
-                    args.provider, args.instrument, args.data, args.year,
+                    options.provider,
+                    options.instrument,
+                    options.data,
+                    options.year,
                 );
             }
 
-            DataCommand::Prune => {
+            DataAction::Prune => {
                 println!("Prune data");
             }
 
-            DataCommand::Compact => {
+            DataAction::Compact => {
                 println!("Compact data");
             }
         },
