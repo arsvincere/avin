@@ -27,15 +27,34 @@ pub(super) enum InstrumentsCommand {
 impl InstrumentsCommand {
     pub(super) fn run(self) -> Result<(), AvinError> {
         match self {
-            Self::Cache { provider } => {
-                println!("Caching instruments info: {provider:?}");
-            }
-
-            Self::Clear { provider } => {
-                println!("Clear instruments info: {provider:?}");
-            }
+            Self::Cache { provider } => cache(provider)?,
+            Self::Clear { provider } => clear(provider)?,
         }
 
         Ok(())
     }
+}
+
+fn cache(provider: Option<DataProvider>) -> Result<(), AvinError> {
+    println!("Caching instruments info: {provider:?}");
+
+    let _provider = match provider {
+        Some(p) => p,
+        None => {
+            todo!()
+        }
+    };
+    todo!()
+}
+
+fn clear(provider: Option<DataProvider>) -> Result<(), AvinError> {
+    println!("Clear instruments info: {provider:?}");
+
+    let _provider = match provider {
+        Some(p) => p,
+        None => {
+            todo!()
+        }
+    };
+    todo!()
 }
