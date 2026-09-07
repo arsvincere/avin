@@ -9,6 +9,8 @@ use clap::Subcommand;
 
 use avin_core::DataProvider;
 
+use crate::AvinError;
+
 #[derive(Subcommand)]
 pub(super) enum InstrumentsCommand {
     Cache {
@@ -23,7 +25,7 @@ pub(super) enum InstrumentsCommand {
 }
 
 impl InstrumentsCommand {
-    pub(super) fn run(self) {
+    pub(super) fn run(self) -> Result<(), AvinError> {
         match self {
             Self::Cache { provider } => {
                 println!("Caching instruments info: {provider:?}");
@@ -33,5 +35,7 @@ impl InstrumentsCommand {
                 println!("Clear instruments info: {provider:?}");
             }
         }
+
+        Ok(())
     }
 }

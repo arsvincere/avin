@@ -4,7 +4,6 @@
 //
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
-// CREATED: 2023.07.23 15:06
 
 //! # AVIN  -  Ars Vincere (лат. искусство побеждать)
 //! ```text
@@ -23,3 +22,6 @@ pub mod model {
 }
 
 pub mod cli;
+
+mod error;
+pub use error::AvinError;

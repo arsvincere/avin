@@ -7,6 +7,8 @@
 
 use clap::{Parser, Subcommand};
 
+use crate::AvinError;
+
 use super::data::DataCommand;
 use super::instruments::InstrumentsCommand;
 
@@ -17,7 +19,7 @@ pub struct AvinCli {
 }
 
 impl AvinCli {
-    pub fn run() {
+    pub fn run() -> Result<(), AvinError> {
         let cli = Self::parse();
 
         match cli.group {

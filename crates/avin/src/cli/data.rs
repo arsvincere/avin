@@ -10,6 +10,8 @@ use clap::{Args, Subcommand};
 use avin_core::{DataProvider, MarketData, Year};
 use avin_domain::InstrumentId;
 
+use crate::AvinError;
+
 #[derive(Subcommand)]
 pub(super) enum DataCommand {
     Sync(SyncOptions),
@@ -19,22 +21,22 @@ pub(super) enum DataCommand {
 }
 
 impl DataCommand {
-    pub(super) fn run(self) {
+    pub(super) fn run(self) -> Result<(), AvinError> {
         match self {
             DataCommand::Sync(options) => {
                 if options.resume {
                     println!("Resume sync");
-                    return;
+                    return Ok(());
                 }
 
                 if options.abort {
                     println!("Abort sync");
-                    return;
+                    return Ok(());
                 }
 
                 if options.status {
                     println!("Sync status");
-                    return;
+                    return Ok(());
                 }
 
                 println!(
@@ -65,6 +67,8 @@ impl DataCommand {
                 println!("Compact data");
             }
         };
+
+        Ok(())
     }
 }
 
