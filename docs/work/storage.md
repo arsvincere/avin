@@ -1,11 +1,11 @@
 # CLI commands
 
 ```bash
-avin data instruments cache
-avin data instruments cache --provider tbank
+avin instruments cache
+avin instruments cache --provider tbank
 
-avin data instruments clear
-avin data instruments clear --provider tbank
+avin instruments clear
+avin instruments clear --provider tbank
 
 avin data sync --resume
 avin data sync --abort
@@ -28,72 +28,6 @@ avin data prune
 
 avin data compact
 ```
-
-## clap
-
-Предпочтительный стиль — typed named options:
-
-```rust
-#[derive(Args)]
-struct SyncArgs {
-    #[arg(long)]
-    provider: Option<DataProvider>,
-
-    #[arg(long)]
-    instrument: Option<String>,
-
-    #[arg(long)]
-    data: Option<MarketData>,
-
-    #[arg(long)]
-    year: Option<Year>,
-
-    #[arg(long)]
-    force: bool,
-
-    #[arg(long)]
-    resume: bool,
-
-    #[arg(long)]
-    abort: bool,
-
-    #[arg(long)]
-    status: bool,
-}
-```
-
-Named options не позиционные, поэтому их порядок в команде не должен иметь значения.
-
-Зависимости аргументов желательно описывать декларативно через возможности `clap`.
-
-Например:
-
-```text
---instrument requires --provider
---data       requires --instrument
---year       requires --data
-```
-
-Для `sync` scoped options:
-
-```text
---provider
---instrument
---data
---year
-```
-
-предполагаются прежде всего для режима `--force`.
-
-Recovery options:
-
-```text
---resume
---abort
---status
-```
-
-должны быть взаимоисключающими.
 
 # Architecture
 

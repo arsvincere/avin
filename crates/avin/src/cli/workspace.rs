@@ -5,11 +5,21 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-pub use std::str::FromStr;
+use clap::Subcommand;
 
-pub use crate::model::{
-    Asset, Future, HasCharts, InstrumentInfoView, Share, Time, TimeFrame,
-    TimeRange, Watchlist,
-};
+use avin::err::AvinError;
 
-pub use crate::system::Workspace;
+#[derive(Subcommand)]
+pub(super) enum WorkspaceCommand {
+    Init,
+    New { name: String },
+}
+
+impl WorkspaceCommand {
+    pub(super) fn run(self) -> Result<(), AvinError> {
+        match self {
+            Self::Init => todo!(),
+            Self::New { .. } => todo!(),
+        }
+    }
+}

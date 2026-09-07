@@ -50,7 +50,7 @@ Session.vim*
 /python/[12345].py
 
 # Rust scratch files
-**/src/bin/scratch.rs
+**/src/bin/*_scratch.rs
 
 # book
 /avin_book/book/
