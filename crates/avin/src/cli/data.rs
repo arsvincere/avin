@@ -18,46 +18,96 @@ pub(super) enum DataCommand {
     Compact,
 }
 
+impl DataCommand {
+    pub(super) fn run(self) {
+        match self {
+            DataCommand::Sync(options) => {
+                if options.resume {
+                    println!("Resume sync");
+                    return;
+                }
+
+                if options.abort {
+                    println!("Abort sync");
+                    return;
+                }
+
+                if options.status {
+                    println!("Sync status");
+                    return;
+                }
+
+                println!(
+                    "Sync: f={}, p={:?}, i={:?}, d={:?}, y={:?}",
+                    options.force,
+                    options.provider,
+                    options.instrument,
+                    options.data,
+                    options.year,
+                );
+            }
+
+            DataCommand::Delete(options) => {
+                println!(
+                    "Delete: p={:?}, i={:?}, d={:?}, y={:?}",
+                    options.provider,
+                    options.instrument,
+                    options.data,
+                    options.year,
+                );
+            }
+
+            DataCommand::Prune => {
+                println!("Prune data");
+            }
+
+            DataCommand::Compact => {
+                println!("Compact data");
+            }
+        };
+    }
+}
+
 #[derive(Args)]
 pub(super) struct SyncOptions {
     #[arg(long, exclusive = true)]
-    pub resume: bool,
+    resume: bool,
 
     #[arg(long, exclusive = true)]
-    pub abort: bool,
+    abort: bool,
 
     #[arg(long, exclusive = true)]
-    pub status: bool,
+    status: bool,
 
     #[arg(long)]
-    pub force: bool,
+    force: bool,
 
     #[arg(long, requires = "force")]
-    pub provider: Option<DataProvider>,
+    provider: Option<DataProvider>,
 
     #[arg(long, requires = "provider")]
-    pub instrument: Option<InstrumentId>,
+    instrument: Option<InstrumentId>,
 
     #[arg(long, requires = "instrument")]
-    pub data: Option<MarketData>,
+    data: Option<MarketData>,
 
     #[arg(long, requires = "data", value_parser = parse_year)]
-    pub year: Option<Year>,
+    year: Option<Year>,
 }
 
 #[derive(Args)]
 pub(super) struct DeleteOptions {
     #[arg(long)]
-    pub provider: Option<DataProvider>,
+    provider: Option<DataProvider>,
 
     #[arg(long, requires = "provider")]
-    pub instrument: Option<InstrumentId>,
+    instrument: Option<InstrumentId>,
 
     #[arg(long, requires = "instrument")]
-    pub data: Option<MarketData>,
+    data: Option<MarketData>,
 
     #[arg(long, requires = "data", value_parser = parse_year)]
-    pub year: Option<Year>,
+    year: Option<Year>,
 }
 
 fn parse_year(value: &str) -> Result<Year, String> {

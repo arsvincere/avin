@@ -21,3 +21,17 @@ pub(super) enum InstrumentsCommand {
         provider: Option<DataProvider>,
     },
 }
+
+impl InstrumentsCommand {
+    pub(super) fn run(self) {
+        match self {
+            Self::Cache { provider } => {
+                println!("Caching instruments info: {provider:?}");
+            }
+
+            Self::Clear { provider } => {
+                println!("Clear instruments info: {provider:?}");
+            }
+        }
+    }
+}
