@@ -9,7 +9,7 @@ use clap::Subcommand;
 
 use avin_core::DataProvider;
 
-use crate::AvinError;
+use avin::err::AvinError;
 
 #[derive(Subcommand)]
 pub(super) enum InstrumentsCommand {

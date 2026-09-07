@@ -7,7 +7,7 @@
 
 use clap::{Parser, Subcommand};
 
-use crate::error::AvinError;
+use avin::err::AvinError;
 
 use super::data::DataCommand;
 use super::instruments::InstrumentsCommand;

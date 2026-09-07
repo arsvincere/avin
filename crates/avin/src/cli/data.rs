@@ -10,7 +10,7 @@ use clap::{Args, Subcommand};
 use avin_core::{DataProvider, MarketData, Year};
 use avin_domain::InstrumentId;
 
-use crate::error::AvinError;
+use avin::err::AvinError;
 
 #[derive(Subcommand)]
 pub(super) enum DataCommand {

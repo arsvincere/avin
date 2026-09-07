@@ -5,9 +5,11 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+mod cli;
+
 use std::process::ExitCode;
 
-use avin::cli::AvinCli;
+use cli::AvinCli;
 
 fn main() -> ExitCode {
     match AvinCli::run() {

@@ -15,7 +15,6 @@
 //! ```
 
 // self
-pub mod cli;
 mod error;
 
 // re-exports
