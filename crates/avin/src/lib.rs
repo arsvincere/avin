@@ -14,14 +14,22 @@
 //!
 //! ```
 
+// self
+pub mod cli;
+mod error;
+
+// re-exports
 pub mod prelude;
 
 pub mod model {
     pub use avin_core::*;
     pub use avin_domain::*;
 }
+pub use avin_system as system;
 
-pub mod cli;
-
-mod error;
-pub use error::AvinError;
+pub mod err {
+    pub use crate::error::AvinError;
+    pub use avin_core::CoreError;
+    pub use avin_domain::DomainError;
+    pub use avin_system::SystemError;
+}

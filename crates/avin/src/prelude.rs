@@ -11,3 +11,5 @@ pub use crate::model::{
     Asset, Future, HasCharts, InstrumentInfoView, Share, Time, TimeFrame,
     TimeRange, Watchlist,
 };
+
+pub use crate::system::Workspace;
