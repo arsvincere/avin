@@ -103,7 +103,7 @@ mod tests {
             ("step".to_string(), "0.01".to_string()),
         ]);
 
-        InstrumentInfo::new(info).unwrap()
+        InstrumentInfo::new_unchecked(info)
     }
 
     #[test]

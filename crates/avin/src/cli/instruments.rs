@@ -5,9 +5,11 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use avin_service::InstrumentService;
+use avin_system::Workspace;
 use clap::Subcommand;
 
-use avin_core::DataProvider;
+use avin_domain::DataProvider;
 
 use avin::err::AvinError;
 
@@ -25,26 +27,36 @@ pub(super) enum InstrumentsCommand {
 }
 
 impl InstrumentsCommand {
-    pub(super) fn run(self) -> Result<(), AvinError> {
+    pub(super) async fn run(self) -> Result<(), AvinError> {
         match self {
-            Self::Cache { provider } => cache(provider)?,
-            Self::Clear { provider } => clear(provider)?,
+            Self::Cache { provider } => cache(provider).await,
+            Self::Clear { provider } => clear(provider),
         }
-
-        Ok(())
     }
 }
 
-fn cache(provider: Option<DataProvider>) -> Result<(), AvinError> {
-    println!("Caching instruments info: {provider:?}");
-
-    let _provider = match provider {
-        Some(p) => p,
+async fn cache(provider: Option<DataProvider>) -> Result<(), AvinError> {
+    let providers = match provider {
+        Some(p) => vec![p],
         None => {
-            todo!()
+            let ws = Workspace::get().expect("TODO msg");
+            ws.data.providers()
         }
     };
-    todo!()
+
+    for provider in providers {
+        log::info!("Caching instruments info: {provider}");
+        InstrumentService::cache(provider).await.map_err(|err| {
+            let msg = "TODO msg".to_string();
+            // TODO: тип ошибки? или тут вообще уже похую и нужен anyhow?
+            AvinError::Cli {
+                message: msg,
+                source: Some(Box::new(err)),
+            }
+        })?;
+    }
+
+    Ok(())
 }
 
 fn clear(provider: Option<DataProvider>) -> Result<(), AvinError> {

@@ -8,7 +8,7 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use crate::CoreError;
+use crate::DomainError;
 
 /// Identifies a market data provider supported by AVIN.
 ///
@@ -25,7 +25,7 @@ use crate::CoreError;
 /// ```
 /// use std::str::FromStr;
 ///
-/// use avin_core::DataProvider;
+/// use avin_domain::DataProvider;
 ///
 /// let provider = DataProvider::from_str("tbank").unwrap();
 ///
@@ -65,7 +65,7 @@ impl Display for DataProvider {
 }
 
 impl FromStr for DataProvider {
-    type Err = CoreError;
+    type Err = DomainError;
 
     /// Parses a market data provider key.
     ///
@@ -80,7 +80,7 @@ impl FromStr for DataProvider {
     /// ```
     /// use std::str::FromStr;
     ///
-    /// use avin_core::DataProvider;
+    /// use avin_domain::DataProvider;
     ///
     /// assert_eq!(DataProvider::from_str("TBank").unwrap(), DataProvider::TBank);
     /// assert_eq!(DataProvider::from_str("tbank").unwrap(), DataProvider::TBank);
@@ -102,7 +102,7 @@ impl FromStr for DataProvider {
                     s, available
                 );
 
-                Err(CoreError::DataProvider(msg))
+                Err(DomainError::DataProvider(msg))
             }
         }
     }
@@ -148,7 +148,7 @@ mod tests {
 
         assert!(matches!(
             DataProvider::from_str("foo").unwrap_err(),
-            CoreError::DataProvider(_)
+            DomainError::DataProvider(_)
         ));
     }
 }

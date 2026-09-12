@@ -1,3 +1,10 @@
+// ───────────────────────────────────────────────────────────────────────────
+// AVIN
+// Understand the market before trading it.
+//
+// https://avin.info
+// ───────────────────────────────────────────────────────────────────────────
+
 // /// Reads a Parquet file into a Polars `DataFrame`.
 // ///
 // /// # Errors

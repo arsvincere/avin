@@ -11,8 +11,9 @@ use std::process::ExitCode;
 
 use cli::AvinCli;
 
-fn main() -> ExitCode {
-    match AvinCli::run() {
+#[tokio::main]
+async fn main() -> ExitCode {
+    match AvinCli::run().await {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => {
             eprintln!("{}", err.report());

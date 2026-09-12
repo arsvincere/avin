@@ -12,6 +12,8 @@ type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum DomainError {
+    DataProvider(String),
+    MarketData(String),
     Exchange(String),
     Category(String),
     Ticker(String),
@@ -49,6 +51,8 @@ impl DomainError {
 impl Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::DataProvider(msg) => write!(f, "{msg}"),
+            Self::MarketData(msg) => write!(f, "{msg}"),
             Self::Exchange(msg) => write!(f, "{msg}"),
             Self::Category(msg) => write!(f, "{msg}"),
             Self::Ticker(msg) => write!(f, "{msg}"),
@@ -68,6 +72,8 @@ impl Display for DomainError {
 impl Error for DomainError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
+            Self::DataProvider(_) => None,
+            Self::MarketData(_) => None,
             Self::Exchange(_) => None,
             Self::Category(_) => None,
             Self::Ticker(_) => None,

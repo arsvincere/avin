@@ -5,29 +5,6 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_core::{DataProvider, MarketData, Year};
-use avin_domain::InstrumentId;
+#![allow(clippy::all)]
 
-pub enum StorageKey {
-    Provider {
-        provider: DataProvider,
-    },
-
-    Instrument {
-        provider: DataProvider,
-        iid: InstrumentId,
-    },
-
-    MarketData {
-        provider: DataProvider,
-        iid: InstrumentId,
-        md: MarketData,
-    },
-
-    Year {
-        provider: DataProvider,
-        iid: InstrumentId,
-        md: MarketData,
-        year: Year,
-    },
-}
+include!("tinkoff.public.invest.api.contract.v1.rs");

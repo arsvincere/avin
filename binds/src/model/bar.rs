@@ -5,8 +5,6 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-// TODO: ts: i64 -> time: Time
-
 // use chrono::{DateTime, Utc};
 // use pyo3::prelude::*;
 //

@@ -22,7 +22,7 @@ pub struct AvinCli {
 }
 
 impl AvinCli {
-    pub fn run() -> Result<(), AvinError> {
+    pub async fn run() -> Result<(), AvinError> {
         let cli = Self::parse();
 
         if cli.group.requires_workspace() {
@@ -34,7 +34,7 @@ impl AvinCli {
 
         match cli.group {
             Group::Workspace(command) => command.run(),
-            Group::Instruments { command } => command.run(),
+            Group::Instruments { command } => command.run().await,
             Group::Data { command } => command.run(),
         }
     }

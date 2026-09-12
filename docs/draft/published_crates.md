@@ -1,6 +1,6 @@
 # Published
 avin
-avin_analyse
+avin_analyse    -> tool
 avin_connect
 avin_core
 avin_data

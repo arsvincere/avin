@@ -7,12 +7,12 @@
 
 #![allow(clippy::module_inception)]
 
-mod data;
+mod common;
 mod error;
+mod price;
 mod time;
-mod value;
 
-pub use data::{DataProvider, MarketData};
+pub use common::{Direction, Quantity};
 pub use error::CoreError;
+pub use price::{Price, PriceRange};
 pub use time::{Time, TimeRange, Year};
-pub use value::{Price, PriceRange, Quantity};

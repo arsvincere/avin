@@ -6,3 +6,8 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 mod data;
+mod error;
+mod instrument;
+
+pub use error::ServiceError;
+pub use instrument::InstrumentService;

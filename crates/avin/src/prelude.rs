@@ -8,8 +8,8 @@
 pub use std::str::FromStr;
 
 pub use crate::model::{
-    Asset, Future, HasCharts, InstrumentInfoView, Share, Time, TimeFrame,
-    TimeRange, Watchlist,
+    Asset, Direction, Future, HasCharts, InstrumentInfoView, Share, Time,
+    TimeFrame, TimeRange, Watchlist,
 };
 
 pub use crate::system::Workspace;

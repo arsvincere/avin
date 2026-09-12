@@ -24,8 +24,9 @@ keywords = [
 ]
 
 [workspace.dependencies]
-avin = { path = "crates/avin" }
+avin_connect = { path = "crates/avin_connect" }
 avin_core = { path = "crates/avin_core" }
+avin_data = { path = "crates/avin_data" }
 avin_domain = { path = "crates/avin_domain" }
 avin_service = { path = "crates/avin_service" }
 avin_storage = { path = "crates/avin_storage" }
@@ -39,5 +40,12 @@ serde = { version = "1", features = ["derive"] }
 tempfile = "3"
 toml = "1"
 zip = "8"
+
+prost = "0.14"
+prost-types = "0.14"
+tonic = { version = "0.14", features = [ "tls-ring", "tls-native-roots", ] }
+tonic-prost = "0.14"
+tonic-prost-build = "0.14"
+tokio = { version = "1", features = ["full"] }
 
 polars = { version = "0.55", features = ["parquet"] }

@@ -10,8 +10,7 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
-use avin_core::DataProvider;
-use avin_domain::{InstrumentId, TimeFrame};
+use avin_domain::{DataProvider, InstrumentId, TimeFrame};
 
 use crate::SystemError;
 
@@ -66,6 +65,16 @@ impl DataManifest {
     /// Returns the configured market data provider sets.
     pub fn sets(&self) -> &[DataProviderSet] {
         &self.sets
+    }
+
+    pub fn providers(&self) -> Vec<DataProvider> {
+        let mut all = Vec::new();
+
+        for set in self.sets.iter() {
+            all.push(set.provider);
+        }
+
+        all
     }
 }
 
