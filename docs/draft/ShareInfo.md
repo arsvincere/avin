@@ -39,8 +39,6 @@ use avin_core::Quantity;
 
 use crate::{Category, DomainError, Exchange, InstrumentId, Ticker};
 
-// TODO: docstring & tests
-
 #[derive(Debug, Clone)]
 pub struct ShareInfo {
     iid: InstrumentId,
@@ -126,8 +124,6 @@ use std::collections::HashMap;
 use avin_core::Quantity;
 
 use crate::{Category, DomainError, Exchange, InstrumentId, Ticker};
-
-// TODO: docstring & tests
 
 #[derive(Debug, Clone)]
 pub struct FutureInfo {

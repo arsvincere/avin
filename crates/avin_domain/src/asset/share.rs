@@ -68,7 +68,7 @@ mod tests {
 
         info.insert("category".to_string(), category.to_string());
 
-        InstrumentInfo::new(info).unwrap()
+        InstrumentInfo::new_unchecked(info)
     }
 
     #[test]

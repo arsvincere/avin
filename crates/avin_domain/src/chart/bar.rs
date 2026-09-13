@@ -70,7 +70,7 @@ impl Bar {
         l: Price,
         c: Price,
         v: Quantity,
-    ) -> Bar {
+    ) -> Self {
         Bar {
             time,
             o,

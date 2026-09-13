@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use avin_core::{Price, Quantity};
+
 use crate::{
     Category, Chart, Exchange, InstrumentId, InstrumentInfo, Ticker,
     TimeFrame,
@@ -29,20 +31,16 @@ pub trait InstrumentInfoView {
         self.info().ticker()
     }
 
-    fn figi(&self) -> &str {
-        self.info().figi()
-    }
-
     fn name(&self) -> &str {
         self.info().name()
     }
 
-    fn lot(&self) -> u32 {
-        self.info().lot()
+    fn price_step(&self) -> Price {
+        self.info().price_step()
     }
 
-    fn step(&self) -> f64 {
-        self.info().step()
+    fn lot_size(&self) -> Quantity {
+        self.info().lot_size()
     }
 }
 

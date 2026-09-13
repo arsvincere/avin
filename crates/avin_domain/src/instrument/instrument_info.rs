@@ -7,13 +7,11 @@
 
 use std::{collections::HashMap, str::FromStr};
 
+use avin_core::{Price, Quantity};
+
 use crate::DomainError;
 
 use crate::{Category, Exchange, InstrumentId, Ticker};
-
-const REQUIRED_KEYS: [&str; 7] = [
-    "exchange", "category", "ticker", "figi", "name", "lot", "step",
-];
 
 /// Instrument reference data.
 ///
@@ -36,21 +34,79 @@ pub struct InstrumentInfo {
 }
 
 impl InstrumentInfo {
-    /// Creates an `InstrumentInfo` from raw key-value fields.
+    // TODO: вынести в "приватный трейт"
+    /// Creates an `InstrumentInfo` from trusted raw key-value fields.
     ///
-    /// Required fields are `exchange`, `category`, `ticker`, `figi`,
-    /// `name`, `lot`, and `step`. Additional fields are allowed and preserved.
+    /// No validation is performed. The caller must ensure that all canonical
+    /// fields required by the accessors are present and contain valid values.
+    pub fn new_unchecked(info: HashMap<String, String>) -> Self {
+        Self { info }
+    }
+
+    /// Creates share instrument information from canonical and extra fields.
+    ///
+    /// Canonical share fields are built from the typed arguments.
+    /// `extra_info` may contain arbitrary provider-specific metadata, but
+    /// must not contain keys reserved by the canonical fields.
     ///
     /// # Errors
     ///
-    /// Returns an error if:
-    ///
-    /// - a required key or value is missing;
-    /// - `exchange`, `category`, or `ticker` is invalid;
-    /// - `lot` cannot be parsed as `u32` or is zero;
-    /// - `step` cannot be parsed as `f64`, is non-finite, or is not positive.
-    pub fn new(info: HashMap<String, String>) -> Result<Self, DomainError> {
-        validate_info(&info)?;
+    /// Returns [`DomainError::InstrumentInfo`] if:
+    /// - `price_step` is not positive;
+    /// - `lot_size` is zero;
+    /// - `extra_info` contains a reserved canonical key.
+    pub fn new_share(
+        exchange: Exchange,
+        ticker: Ticker,
+        name: String,
+        price_step: Price,
+        lot_size: Quantity,
+        extra_info: HashMap<String, String>,
+    ) -> Result<Self, DomainError> {
+        // check price step
+        if price_step.value() <= 0.0 {
+            let msg =
+                format!("price step must be positive, got {price_step}");
+            return Err(DomainError::InstrumentInfo {
+                message: msg,
+                source: None,
+            });
+        }
+
+        // check lot size
+        if lot_size.value() == 0.0 {
+            let msg =
+                format!("lot size must be greater than zero, got {lot_size}");
+            return Err(DomainError::InstrumentInfo {
+                message: msg,
+                source: None,
+            });
+        }
+
+        // fill required fields
+        let category = Category::Share;
+        let mut info = HashMap::new();
+
+        info.insert("exchange".to_string(), exchange.key().to_string());
+        info.insert("category".to_string(), category.key().to_string());
+        info.insert("ticker".to_string(), ticker.to_string());
+        info.insert("name".to_string(), name);
+        info.insert("price_step".to_string(), price_step.to_string());
+        info.insert("lot_size".to_string(), lot_size.to_string());
+
+        // check collisions with canonical fields
+        for key in extra_info.keys() {
+            if info.contains_key(key) {
+                let msg = format!("extra info contains reserved key '{key}'");
+                return Err(DomainError::InstrumentInfo {
+                    message: msg,
+                    source: None,
+                });
+            }
+        }
+
+        // add extra info
+        info.extend(extra_info);
 
         Ok(Self { info })
     }
@@ -85,24 +141,23 @@ impl InstrumentInfo {
         Ticker::new(ticker).unwrap()
     }
 
-    /// Returns FIGI - Financial Instrument Global Identifier.
-    pub fn figi(&self) -> &str {
-        self.info.get("figi").unwrap()
-    }
-
     /// Returns the instrument name.
     pub fn name(&self) -> &str {
         self.info.get("name").unwrap()
     }
 
-    /// Returns the lot size.
-    pub fn lot(&self) -> u32 {
-        self.info.get("lot").unwrap().parse().unwrap()
+    /// Returns the minimum price step.
+    pub fn price_step(&self) -> Price {
+        let step: f64 = self.info.get("price_step").unwrap().parse().unwrap();
+
+        Price::new(step).unwrap()
     }
 
-    /// Returns the minimum price step.
-    pub fn step(&self) -> f64 {
-        self.info.get("step").unwrap().parse().unwrap()
+    /// Returns the lot size.
+    pub fn lot_size(&self) -> Quantity {
+        let size: f64 = self.info.get("lot_size").unwrap().parse().unwrap();
+
+        Quantity::new(size).unwrap()
     }
 
     /// Returns the original instrument metadata.
@@ -114,100 +169,18 @@ impl InstrumentInfo {
     }
 }
 
-fn validate_info(info: &HashMap<String, String>) -> Result<(), DomainError> {
-    validate_info_keys_complete(info)?;
-
-    let exchange = info.get("exchange").unwrap();
-    Exchange::from_str(exchange).map_err(|err| {
-        DomainError::InstrumentInfo {
-            message: "failed parsing 'exchange'".to_string(),
-            source: Some(Box::new(err)),
-        }
-    })?;
-
-    let category = info.get("category").unwrap();
-    Category::from_str(category).map_err(|err| {
-        DomainError::InstrumentInfo {
-            message: "failed parsing 'category'".to_string(),
-            source: Some(Box::new(err)),
-        }
-    })?;
-
-    let ticker = info.get("ticker").unwrap();
-    Ticker::new(ticker).map_err(|err| DomainError::InstrumentInfo {
-        message: "failed parsing 'ticker'".to_string(),
-        source: Some(Box::new(err)),
-    })?;
-
-    let lot = info.get("lot").unwrap();
-    let lot =
-        u32::from_str(lot).map_err(|err| DomainError::InstrumentInfo {
-            message: format!(
-                "failed parsing 'lot' as u32, got '{lot}': {err}"
-            ),
-            source: None,
-        })?;
-    if lot == 0 {
-        return Err(DomainError::InstrumentInfo {
-            message: "'lot' must be greater than zero".to_string(),
-            source: None,
-        });
-    }
-
-    let step = info.get("step").unwrap();
-    let step =
-        f64::from_str(step).map_err(|err| DomainError::InstrumentInfo {
-            message: format!(
-                "failed parsing 'step' as f64, got '{step}': {err}"
-            ),
-            source: None,
-        })?;
-    if !step.is_finite() || step <= 0.0 {
-        let err = DomainError::InstrumentInfo {
-            message: "'step' must be finite and greater than zero".into(),
-            source: None,
-        };
-        return Err(err);
-    }
-
-    Ok(())
-}
-
-fn validate_info_keys_complete(
-    info: &HashMap<String, String>,
-) -> Result<(), DomainError> {
-    for key in REQUIRED_KEYS {
-        if !info.contains_key(key) {
-            return Err(DomainError::InstrumentInfo {
-                message: format!("missing key '{key}'"),
-                source: None,
-            });
-        }
-
-        if info.get(key).unwrap().is_empty() {
-            return Err(DomainError::InstrumentInfo {
-                message: format!("missing value for '{key}'"),
-                source: None,
-            });
-        }
-    }
-
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn valid_raw_info() -> HashMap<String, String> {
         [
-            ("exchange", "MOEX"),
-            ("category", "SHARE"),
+            ("exchange", "moex"),
+            ("category", "share"),
             ("ticker", "SBER"),
-            ("figi", "BBG004730N88"),
             ("name", "Сбер Банк"),
-            ("lot", "1"),
-            ("step", "0.01"),
+            ("lot_size", "1"),
+            ("price_step", "0.01"),
             ("uid", "e6123145-9665-43e0-8413-cd61b8aa9b13"),
         ]
         .into_iter()
@@ -216,28 +189,16 @@ mod tests {
     }
 
     #[test]
-    fn required_keys() {
-        assert_eq!(
-            REQUIRED_KEYS,
-            [
-                "exchange", "category", "ticker", "figi", "name", "lot",
-                "step",
-            ]
-        );
-    }
-
-    #[test]
     fn valid_info() {
         let raw_info = valid_raw_info();
-        let info = InstrumentInfo::new(raw_info).unwrap();
+        let info = InstrumentInfo::new_unchecked(raw_info);
 
         assert_eq!(info.exchange(), Exchange::Moex);
         assert_eq!(info.category(), Category::Share);
         assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
-        assert_eq!(info.figi(), "BBG004730N88");
         assert_eq!(info.name(), "Сбер Банк");
-        assert_eq!(info.lot(), 1);
-        assert_eq!(info.step(), 0.01);
+        assert_eq!(info.price_step().value(), 0.01);
+        assert_eq!(info.lot_size().value(), 1.0);
 
         let uid = info.raw_info().get("uid").unwrap();
         assert_eq!(uid, "e6123145-9665-43e0-8413-cd61b8aa9b13");
@@ -250,81 +211,5 @@ mod tests {
                 Ticker::new("SBER").unwrap(),
             )
         );
-    }
-
-    #[test]
-    fn missing_required_key() {
-        for key in REQUIRED_KEYS {
-            let mut raw_info = valid_raw_info();
-            raw_info.remove(key);
-
-            let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-        }
-    }
-
-    #[test]
-    fn missing_required_value() {
-        for key in REQUIRED_KEYS {
-            let mut raw_info = valid_raw_info();
-            raw_info.insert(key.to_string(), String::new());
-
-            let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-        }
-    }
-
-    #[test]
-    fn invalid_exchange() {
-        let mut raw_info = valid_raw_info();
-        raw_info.insert("exchange".to_string(), "*/=-:;".to_string());
-
-        let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-    }
-
-    #[test]
-    fn invalid_lot() {
-        let mut raw_info = valid_raw_info();
-        raw_info.insert("lot".to_string(), "abc".to_string());
-
-        let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-    }
-
-    #[test]
-    fn zero_lot() {
-        let mut raw_info = valid_raw_info();
-        raw_info.insert("lot".to_string(), "0".to_string());
-
-        let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-    }
-
-    #[test]
-    fn invalid_step() {
-        let mut raw_info = valid_raw_info();
-        raw_info.insert("step".to_string(), "abc".to_string());
-
-        let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-    }
-
-    #[test]
-    fn invalid_step_value() {
-        for step in ["0", "-0.05", "NaN", "inf", "-inf"] {
-            let mut raw_info = valid_raw_info();
-            raw_info.insert("step".to_string(), step.to_string());
-
-            let err = InstrumentInfo::new(raw_info).unwrap_err();
-
-            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
-        }
     }
 }
