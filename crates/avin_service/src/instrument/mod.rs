@@ -5,9 +5,6 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod data;
-mod error;
-mod instrument;
+mod facade;
 
-pub use error::ServiceError;
-pub use instrument::InstrumentService;
+pub use facade::InstrumentService;
