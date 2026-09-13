@@ -5,6 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+mod catalog;
 mod facade;
 
 pub use facade::InstrumentService;

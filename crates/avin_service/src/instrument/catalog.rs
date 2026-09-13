@@ -9,45 +9,46 @@
 #![allow(unused)]
 
 use avin_core::DataProvider;
-use avin_domain::{Category, InstrumentInfo, InstrumentList};
+use avin_domain::{Category, InstrumentId, InstrumentInfo, InstrumentList};
 
 use crate::ServiceError;
 
-use super::catalog::InstrumentCatalog;
+pub(super) struct InstrumentCatalog {}
 
-pub struct InstrumentService {}
-
-impl InstrumentService {
-    pub fn cache(provider: DataProvider) -> Result<(), ServiceError> {
-        println!("InstrumentService cache {provider}");
-
-        Ok(())
-    }
-
-    pub fn clear(provider: DataProvider) -> Result<(), ServiceError> {
-        println!("InstrumentService clear {provider}");
-
-        Ok(())
-    }
-
+impl InstrumentCatalog {
     pub fn find(
         provider: DataProvider,
         code: &str,
     ) -> Result<InstrumentInfo, ServiceError> {
-        InstrumentCatalog::find(provider, code)
+        println!("InstrumentCatalog find {provider} {code}");
+
+        todo!()
+    }
+
+    pub fn find_iid(
+        provider: DataProvider,
+        iid: &InstrumentId,
+    ) -> Result<InstrumentInfo, ServiceError> {
+        println!("InstrumentCatalog find_figi {provider} {iid}");
+
+        todo!()
     }
 
     pub fn find_figi(
         provider: DataProvider,
         figi: &str,
     ) -> Result<InstrumentInfo, ServiceError> {
-        InstrumentCatalog::find_figi(provider, figi)
+        println!("InstrumentCatalog find_figi {provider} {figi}");
+
+        todo!()
     }
 
     pub fn list(
         provider: DataProvider,
         category: Category,
     ) -> Result<InstrumentList, ServiceError> {
-        InstrumentCatalog::list(provider, category)
+        println!("InstrumentCatalog list {provider} {category}");
+
+        todo!()
     }
 }

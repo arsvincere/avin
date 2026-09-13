@@ -24,9 +24,6 @@ InstrumentService::list(
 ## InstrumentCatalog
 
 ```rust
-InstrumentCatalog::cache(provider: DataProvider) -> Result<(), AvinError>
-InstrumentCatalog::clear(provider: DataProvider) -> Result<(), AvinError>
-
 InstrumentCatalog::find(
     provider: DataProvider,
     code: &str,
