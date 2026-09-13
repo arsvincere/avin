@@ -8,7 +8,10 @@
 #![allow(unused)]
 
 use avin_core::{DataProvider, MarketData, TimeRange};
-use avin_domain::{Bar, Category, InstrumentId, InstrumentList, TimeFrame};
+use avin_domain::{
+    Bar, Category, InstrumentId, InstrumentInfo, InstrumentList, Tick,
+    TimeFrame,
+};
 
 use crate::DataError;
 
@@ -26,7 +29,7 @@ impl TBankProvider {
     }
 
     pub fn fetch_bars(
-        iid: InstrumentId,
+        instrument: InstrumentInfo,
         tf: TimeFrame,
         range: TimeRange,
     ) -> Result<Vec<Bar>, DataError> {
@@ -45,10 +48,10 @@ impl TBankProvider {
         todo!()
     }
 
-    // pub fn fetch_ticks(
-    //     iid: InstrumentId,
-    //     range: TimeRange,
-    // ) -> Result<Vec<Tick>, DataError> {
-    //     todo!()
-    // }
+    pub fn fetch_ticks(
+        instrument: InstrumentInfo,
+        range: TimeRange,
+    ) -> Result<Vec<Tick>, DataError> {
+        todo!()
+    }
 }
