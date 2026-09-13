@@ -5,11 +5,29 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod data;
-mod error;
-mod helper;
-mod info;
+use avin_core::{DataProvider, MarketData, Year};
+use avin_domain::InstrumentId;
 
-pub use data::DataKey;
-pub use error::StorageError;
-pub use info::{InfoKey, InstrumentInfoStorage};
+pub enum DataKey {
+    Provider {
+        provider: DataProvider,
+    },
+
+    Instrument {
+        provider: DataProvider,
+        iid: InstrumentId,
+    },
+
+    MarketData {
+        provider: DataProvider,
+        iid: InstrumentId,
+        md: MarketData,
+    },
+
+    Year {
+        provider: DataProvider,
+        iid: InstrumentId,
+        md: MarketData,
+        year: Year,
+    },
+}

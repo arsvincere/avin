@@ -5,29 +5,16 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_core::{DataProvider, MarketData, Year};
-use avin_domain::InstrumentId;
+use avin_core::DataProvider;
+use avin_domain::Category;
 
-pub enum StorageKey {
+pub enum InfoKey {
     Provider {
         provider: DataProvider,
     },
 
-    Instrument {
+    Category {
         provider: DataProvider,
-        iid: InstrumentId,
-    },
-
-    MarketData {
-        provider: DataProvider,
-        iid: InstrumentId,
-        md: MarketData,
-    },
-
-    Year {
-        provider: DataProvider,
-        iid: InstrumentId,
-        md: MarketData,
-        year: Year,
+        category: Category,
     },
 }
