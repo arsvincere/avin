@@ -7,8 +7,10 @@
 
 #![allow(unused)]
 
-use avin_core::{MarketData, TimeRange};
-use avin_domain::InstrumentId;
+use avin_core::{DataProvider, MarketData, TimeRange};
+use avin_domain::{Bar, Category, InstrumentId, InstrumentList, TimeFrame};
+
+use crate::DataError;
 
 pub struct TBankProvider {}
 
@@ -17,11 +19,36 @@ impl TBankProvider {
         &[MarketData::Bar1M, MarketData::Tick]
     }
 
-    pub fn cache() {
+    pub fn fetch_instruments(
+        category: Category,
+    ) -> Result<InstrumentList, DataError> {
         todo!()
     }
 
-    pub fn fetch(iid: InstrumentId, md: MarketData, range: TimeRange) {
+    pub fn fetch_bars(
+        iid: InstrumentId,
+        tf: TimeFrame,
+        range: TimeRange,
+    ) -> Result<Vec<Bar>, DataError> {
+        if tf != TimeFrame::M1 {
+            let msg = format!(
+                "{} doesn't provide {tf} bars, available=[{}]",
+                DataProvider::TBank,
+                TimeFrame::M1,
+            );
+            return Err(DataError::Unavailable {
+                message: msg,
+                source: None,
+            });
+        }
+
         todo!()
     }
+
+    // pub fn fetch_ticks(
+    //     iid: InstrumentId,
+    //     range: TimeRange,
+    // ) -> Result<Vec<Tick>, DataError> {
+    //     todo!()
+    // }
 }
