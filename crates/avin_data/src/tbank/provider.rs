@@ -7,10 +7,10 @@
 
 #![allow(unused)]
 
-use avin_core::{DataProvider, MarketData, TimeRange};
+use avin_core::TimeRange;
 use avin_domain::{
-    Bar, Category, InstrumentId, InstrumentInfo, InstrumentList, Tick,
-    TimeFrame,
+    Bar, Category, DataProvider, InstrumentId, InstrumentInfo,
+    InstrumentList, MarketData, Tick, TimeFrame,
 };
 
 use crate::DataError;

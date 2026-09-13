@@ -10,8 +10,7 @@
 
 use polars::prelude::DataFrame;
 
-use avin_core::DataProvider;
-use avin_domain::Category;
+use avin_domain::{Category, DataProvider};
 
 use crate::StorageError;
 

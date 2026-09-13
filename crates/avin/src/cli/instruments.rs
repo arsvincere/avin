@@ -7,7 +7,7 @@
 
 use clap::Subcommand;
 
-use avin_core::DataProvider;
+use avin_domain::DataProvider;
 
 use avin::err::AvinError;
 

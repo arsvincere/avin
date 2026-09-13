@@ -7,8 +7,8 @@
 
 use clap::{Args, Subcommand};
 
-use avin_core::{DataProvider, MarketData, Year};
-use avin_domain::InstrumentId;
+use avin_core::Year;
+use avin_domain::{DataProvider, InstrumentId, MarketData};
 
 use avin::err::AvinError;
 

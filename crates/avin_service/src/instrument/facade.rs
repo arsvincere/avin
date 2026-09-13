@@ -8,8 +8,7 @@
 // TODO: del it after impl
 #![allow(unused)]
 
-use avin_core::DataProvider;
-use avin_domain::{Category, InstrumentInfo, InstrumentList};
+use avin_domain::{Category, DataProvider, InstrumentInfo, InstrumentList};
 
 use crate::ServiceError;
 

@@ -10,8 +10,7 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
-use avin_core::DataProvider;
-use avin_domain::{InstrumentId, TimeFrame};
+use avin_domain::{DataProvider, InstrumentId, TimeFrame};
 
 use crate::SystemError;
 

@@ -11,7 +11,7 @@ use std::str::FromStr;
 use log::LevelFilter;
 use serde::Deserialize;
 
-use avin_core::DataProvider;
+use avin_domain::DataProvider;
 
 use crate::SystemError;
 

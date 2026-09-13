@@ -5,8 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_core::DataProvider;
-use avin_domain::Category;
+use avin_domain::{Category, DataProvider};
 
 pub enum InfoKey {
     Provider {
