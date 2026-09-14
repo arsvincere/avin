@@ -6,6 +6,8 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("cargo:rerun-if-changed=src/tbank/proto");
+
     std::fs::create_dir_all("src/tbank/api")?;
 
     tonic_prost_build::configure()
