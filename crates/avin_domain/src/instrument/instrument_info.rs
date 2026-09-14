@@ -179,8 +179,8 @@ mod tests {
             ("category", "share"),
             ("ticker", "SBER"),
             ("name", "Сбер Банк"),
-            ("lot_size", "1"),
             ("price_step", "0.01"),
+            ("lot_size", "10"),
             ("uid", "e6123145-9665-43e0-8413-cd61b8aa9b13"),
         ]
         .into_iter()
@@ -188,20 +188,31 @@ mod tests {
         .collect()
     }
 
+    fn new_share(
+        price_step: f64,
+        lot_size: f64,
+        extra_info: HashMap<String, String>,
+    ) -> Result<InstrumentInfo, DomainError> {
+        InstrumentInfo::new_share(
+            Exchange::Moex,
+            Ticker::new("SBER").unwrap(),
+            "Сбер Банк".to_string(),
+            Price::new(price_step).unwrap(),
+            Quantity::new(lot_size).unwrap(),
+            extra_info,
+        )
+    }
+
     #[test]
-    fn valid_info() {
-        let raw_info = valid_raw_info();
-        let info = InstrumentInfo::new_unchecked(raw_info);
+    fn new_unchecked() {
+        let info = InstrumentInfo::new_unchecked(valid_raw_info());
 
         assert_eq!(info.exchange(), Exchange::Moex);
         assert_eq!(info.category(), Category::Share);
         assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
         assert_eq!(info.name(), "Сбер Банк");
-        assert_eq!(info.price_step().value(), 0.01);
-        assert_eq!(info.lot_size().value(), 1.0);
-
-        let uid = info.raw_info().get("uid").unwrap();
-        assert_eq!(uid, "e6123145-9665-43e0-8413-cd61b8aa9b13");
+        assert_eq!(info.price_step(), Price::new(0.01).unwrap());
+        assert_eq!(info.lot_size(), Quantity::new(10.0).unwrap());
 
         assert_eq!(
             info.iid(),
@@ -211,5 +222,79 @@ mod tests {
                 Ticker::new("SBER").unwrap(),
             )
         );
+
+        assert_eq!(
+            info.raw_info().get("uid").unwrap(),
+            "e6123145-9665-43e0-8413-cd61b8aa9b13"
+        );
+    }
+
+    #[test]
+    fn new_share_valid() {
+        let extra_info = HashMap::from([
+            (
+                "uid".to_string(),
+                "e6123145-9665-43e0-8413-cd61b8aa9b13".to_string(),
+            ),
+            ("figi".to_string(), "BBG004730N88".to_string()),
+        ]);
+
+        let info = new_share(0.01, 10.0, extra_info).unwrap();
+
+        assert_eq!(info.exchange(), Exchange::Moex);
+        assert_eq!(info.category(), Category::Share);
+        assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
+        assert_eq!(info.name(), "Сбер Банк");
+        assert_eq!(info.price_step(), Price::new(0.01).unwrap());
+        assert_eq!(info.lot_size(), Quantity::new(10.0).unwrap());
+
+        assert_eq!(info.raw_info().get("exchange").unwrap(), "moex");
+        assert_eq!(info.raw_info().get("category").unwrap(), "share");
+        assert_eq!(info.raw_info().get("ticker").unwrap(), "SBER");
+        assert_eq!(info.raw_info().get("name").unwrap(), "Сбер Банк");
+        assert_eq!(info.raw_info().get("price_step").unwrap(), "0.01");
+        assert_eq!(info.raw_info().get("lot_size").unwrap(), "10");
+
+        assert_eq!(
+            info.raw_info().get("uid").unwrap(),
+            "e6123145-9665-43e0-8413-cd61b8aa9b13"
+        );
+        assert_eq!(info.raw_info().get("figi").unwrap(), "BBG004730N88");
+    }
+
+    #[test]
+    fn new_share_price_step_positive() {
+        for price_step in [0.0, -0.01] {
+            let err =
+                new_share(price_step, 10.0, HashMap::new()).unwrap_err();
+
+            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
+        }
+    }
+
+    #[test]
+    fn new_share_lot_size_positive() {
+        let err = new_share(0.01, 0.0, HashMap::new()).unwrap_err();
+
+        assert!(matches!(err, DomainError::InstrumentInfo { .. }));
+    }
+
+    #[test]
+    fn new_share_reserved_extra_info() {
+        for key in [
+            "exchange",
+            "category",
+            "ticker",
+            "name",
+            "price_step",
+            "lot_size",
+        ] {
+            let extra_info =
+                HashMap::from([(key.to_string(), "override".to_string())]);
+
+            let err = new_share(0.01, 10.0, extra_info).unwrap_err();
+
+            assert!(matches!(err, DomainError::InstrumentInfo { .. }));
+        }
     }
 }
