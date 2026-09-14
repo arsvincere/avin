@@ -5,8 +5,14 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod error;
-mod tbank;
+use avin_domain::InstrumentList;
 
-pub use error::ConnectError;
-pub use tbank::TBankClient;
+use crate::ConnectError;
+
+pub struct TBankClient {}
+
+impl TBankClient {
+    pub fn shares() -> Result<InstrumentList, ConnectError> {
+        todo!()
+    }
+}

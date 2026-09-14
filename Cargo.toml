@@ -24,7 +24,6 @@ keywords = [
 ]
 
 [workspace.dependencies]
-avin = { path = "crates/avin" }
 avin_connect = { path = "crates/avin_connect" }
 avin_core = { path = "crates/avin_core" }
 avin_data = { path = "crates/avin_data" }

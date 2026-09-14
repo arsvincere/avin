@@ -10,3 +10,4 @@ homepage.workspace = true
 readme = "README.md"
 
 [dependencies]
+avin_domain = { workspace = true }

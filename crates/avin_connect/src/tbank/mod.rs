@@ -5,8 +5,6 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod error;
-mod tbank;
+mod client;
 
-pub use error::ConnectError;
-pub use tbank::TBankClient;
+pub use client::TBankClient;
