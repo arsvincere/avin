@@ -5,7 +5,4 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod api;
-mod client;
-
-pub use client::TBankClient;
+include!("tinkoff.public.invest.api.contract.v1.rs");
