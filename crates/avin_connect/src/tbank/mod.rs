@@ -7,5 +7,6 @@
 
 mod api;
 mod client;
+mod interceptor;
 
 pub use client::TBankClient;

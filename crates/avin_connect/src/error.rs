@@ -12,6 +12,10 @@ type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum ConnectError {
+    Authorization {
+        message: String,
+        source: Option<ErrorSource>,
+    },
     TBank {
         message: String,
         source: Option<ErrorSource>,
@@ -35,6 +39,7 @@ impl ConnectError {
 impl Display for ConnectError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Authorization { message, .. } => write!(f, "{message}"),
             Self::TBank { message, .. } => write!(f, "{message}"),
         }
     }
@@ -43,7 +48,8 @@ impl Display for ConnectError {
 impl Error for ConnectError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::TBank { source, .. } => {
+            Self::Authorization { source, .. }
+            | Self::TBank { source, .. } => {
                 source.as_deref().map(|err| err as &(dyn Error + 'static))
             }
         }
