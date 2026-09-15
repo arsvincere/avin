@@ -9,8 +9,6 @@ use tonic::metadata::{Ascii, MetadataValue};
 use tonic::service::Interceptor;
 use tonic::{Request, Status};
 
-use crate::ConnectError::Authorization;
-
 #[derive(Debug, Clone)]
 pub struct TBankInterceptor {
     authorization: MetadataValue<Ascii>,

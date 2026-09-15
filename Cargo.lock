@@ -250,11 +250,14 @@ dependencies = [
 name = "avin_service"
 version = "0.4.0"
 dependencies = [
+ "avin_connect",
  "avin_core",
  "avin_data",
  "avin_domain",
  "avin_storage",
+ "avin_system",
  "polars",
+ "tokio",
 ]
 
 [[package]]
@@ -3377,7 +3380,9 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
+ "parking_lot",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",
