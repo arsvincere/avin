@@ -5,7 +5,12 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_domain::{InstrumentInfo, InstrumentList};
+#![allow(unused)]
+
+use std::collections::HashMap;
+
+use avin_core::{Price, Quantity};
+use avin_domain::{Exchange, InstrumentInfo, InstrumentList, Ticker};
 
 use crate::ConnectError;
 
@@ -29,7 +34,15 @@ impl TBankClient {
             }
         })?;
 
+        let tls =
+            tonic::transport::ClientTlsConfig::new().with_native_roots();
+
         let channel = tonic::transport::Channel::from_static(ENDPOINT)
+            .tls_config(tls)
+            .map_err(|err| ConnectError::TBank {
+                message: "failed to configure TBank TLS".to_string(),
+                source: Some(Box::new(err)),
+            })?
             .connect()
             .await
             .map_err(|err| ConnectError::TBank {
@@ -69,14 +82,18 @@ impl TBankClient {
         let mut instruments = InstrumentList::new();
 
         for share in response.instruments {
-            let info = convert_share(share)?;
-            instruments.add(info).map_err(|err| {
-                let msg = "TODO msg".to_string();
-                ConnectError::TBank {
-                    message: msg,
-                    source: Some(Box::new(err)),
-                }
-            })?;
+            if unsupported(&share) {
+                continue;
+            }
+
+            // let info = convert_share(share)?;
+            // instruments.add(info).map_err(|err| {
+            //     let msg = "TODO msg".to_string();
+            //     ConnectError::TBank {
+            //         message: msg,
+            //         source: Some(Box::new(err)),
+            //     }
+            // })?;
         }
 
         Ok(instruments)
@@ -84,7 +101,165 @@ impl TBankClient {
 }
 
 fn convert_share(share: api::Share) -> Result<InstrumentInfo, ConnectError> {
-    dbg!(&share);
+    // Share {
+    //     figi: "BBG004730N88",
+    //     ticker: "SBER",
+    //     class_code: "TQBR",
+    //     isin: "RU0009029540",
+    //     lot: 1,
+    //     currency: "rub",
+    //     klong: None,
+    //     kshort: None,
+    //     dlong: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 199900000,
+    //         },
+    //     ),
+    //     dshort: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 200000000,
+    //         },
+    //     ),
+    //     dlong_min: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 142800000,
+    //         },
+    //     ),
+    //     dshort_min: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 142800000,
+    //         },
+    //     ),
+    //     short_enabled_flag: true,
+    //     name: "Сбербанк",
+    //     exchange: "moex_mrng_evng_e_wknd_dlr",
+    //     ipo_date: Some(
+    //         Timestamp {
+    //             seconds: 1184112000,
+    //             nanos: 0,
+    //         },
+    //     ),
+    //     issue_size: 21586948000,
+    //     country_of_risk: "RU",
+    //     country_of_risk_name: "Российская Федерация",
+    //     sector: "financial",
+    //     issue_size_plan: 21586948000,
+    //     nominal: Some(
+    //         MoneyValue {
+    //             currency: "rub",
+    //             units: 3,
+    //             nano: 0,
+    //         },
+    //     ),
+    //     trading_status: NormalTrading,
+    //     otc_flag: false,
+    //     buy_available_flag: true,
+    //     sell_available_flag: true,
+    //     div_yield_flag: true,
+    //     share_type: Common,
+    //     min_price_increment: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 10000000,
+    //         },
+    //     ),
+    //     api_trade_available_flag: true,
+    //     uid: "e6123145-9665-43e0-8413-cd61b8aa9b13",
+    //     real_exchange: Moex,
+    //     position_uid: "41eb2102-5333-4713-bf15-72b204c4bf7b",
+    //     asset_uid: "40d89385-a03a-4659-bf4e-d3ecba011782",
+    //     instrument_exchange: InstrumentExchangeUnspecified,
+    //     required_tests: [],
+    //     for_iis_flag: true,
+    //     for_qual_investor_flag: false,
+    //     weekend_flag: true,
+    //     blocked_tca_flag: false,
+    //     liquidity_flag: true,
+    //     first_1min_candle_date: Some(
+    //         Timestamp {
+    //             seconds: 1520447580,
+    //             nanos: 0,
+    //         },
+    //     ),
+    //     first_1day_candle_date: Some(
+    //         Timestamp {
+    //             seconds: 946969200,
+    //             nanos: 0,
+    //         },
+    //     ),
+    //     brand: Some(
+    //         BrandData {
+    //             logo_name: "sber3.png",
+    //             logo_base_color: "#309c0b",
+    //             text_color: "#ffffff",
+    //         },
+    //     ),
+    //     dlong_client: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 142800000,
+    //         },
+    //     ),
+    //     dshort_client: Some(
+    //         Quotation {
+    //             units: 0,
+    //             nano: 142800000,
+    //         },
+    //     ),
+    // }
 
-    todo!();
+    let exchange = convert_exchange(share.real_exchange())?;
+    let ticker = Ticker::new(share.ticker).unwrap();
+    let name = share.name;
+    let price_step = match share.min_price_increment {
+        Some(value) => Price::new(convert_qutation(value)).unwrap(),
+        None => Price::new(0.0).unwrap(), // unreacheble
+    };
+    let lot_size = Quantity::new(share.lot as f64).unwrap();
+
+    let extra_info = HashMap::new();
+
+    let info = InstrumentInfo::new_share(
+        exchange, ticker, name, price_step, lot_size, extra_info,
+    )
+    .unwrap();
+
+    Ok(info)
+}
+
+fn convert_exchange(
+    exchange: api::RealExchange,
+) -> Result<Exchange, ConnectError> {
+    match exchange {
+        api::RealExchange::Moex => Ok(Exchange::Moex),
+        api::RealExchange::Rts => Ok(Exchange::Spb),
+        api::RealExchange::Unspecified => todo!(),
+        api::RealExchange::Otc => todo!(),
+        api::RealExchange::Dealer => todo!(),
+    }
+}
+
+fn convert_qutation(value: api::Quotation) -> f64 {
+    let frac: f64 = value.nano as f64 / 1_000_000_000.0;
+
+    value.units as f64 + frac
+}
+
+fn unsupported(share: &api::Share) -> bool {
+    // бывает для инструментов которые уже не торгуются
+    if share.min_price_increment.is_none() {
+        return false;
+    }
+
+    match share.real_exchange() {
+        api::RealExchange::Unspecified => false,
+        api::RealExchange::Moex => true,
+        api::RealExchange::Rts => true,
+        api::RealExchange::Otc => false,
+        api::RealExchange::Dealer => false,
+    }
 }
