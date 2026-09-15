@@ -218,7 +218,7 @@ fn convert_share(share: api::Share) -> Result<InstrumentInfo, ConnectError> {
     let name = share.name;
 
     let price_step = match share.min_price_increment {
-        Some(value) => Price::new(convert_qutation(value)).unwrap(),
+        Some(value) => Price::new(convert_quotation(value)).unwrap(),
         None => {
             let msg = format!(
                 "TBank share {} has no min_price_increment",
@@ -233,39 +233,6 @@ fn convert_share(share: api::Share) -> Result<InstrumentInfo, ConnectError> {
 
     let lot_size = Quantity::new(share.lot as f64).unwrap();
 
-    let short_enabled = share.short_enabled_flag.to_string();
-
-    let k_long: f64 = match share.dlong {
-        Some(value) => convert_qutation(value),
-        None => 1.0,
-    };
-    let k_short: f64 = match share.dshort {
-        Some(value) => convert_qutation(value),
-        None => 1.0,
-    };
-    let k_long_qual: f64 = match share.dlong_min {
-        Some(value) => convert_qutation(value),
-        None => 1.0,
-    };
-    let k_short_qual: f64 = match share.dshort_min {
-        Some(value) => convert_qutation(value),
-        None => 1.0,
-    };
-    let first_1m_ts = match share.first_1min_candle_date {
-        Some(ts) => {
-            let ts = ts.seconds * 1_000_000_000 + ts.nanos as i64;
-            ts.to_string()
-        }
-        None => String::new(),
-    };
-    let first_d_ts = match share.first_1day_candle_date {
-        Some(ts) => {
-            let ts = ts.seconds * 1_000_000_000 + ts.nanos as i64;
-            ts.to_string()
-        }
-        None => String::new(),
-    };
-
     let mut extra_info = HashMap::new();
     extra_info.insert("country".to_string(), share.country_of_risk);
     extra_info.insert("currency".to_string(), share.currency);
@@ -275,13 +242,32 @@ fn convert_share(share: api::Share) -> Result<InstrumentInfo, ConnectError> {
     extra_info.insert("figi".to_string(), share.figi);
     extra_info.insert("isin".to_string(), share.isin);
     extra_info.insert("uid".to_string(), share.uid);
-    extra_info.insert("short_enabled".to_string(), short_enabled);
-    extra_info.insert("k_long".to_string(), k_long.to_string());
-    extra_info.insert("k_short".to_string(), k_short.to_string());
-    extra_info.insert("k_long_qual".to_string(), k_long_qual.to_string());
-    extra_info.insert("k_short_qual".to_string(), k_short_qual.to_string());
-    extra_info.insert("first_1m".to_string(), first_1m_ts);
-    extra_info.insert("first_d".to_string(), first_d_ts);
+    extra_info.insert(
+        "short_enabled".to_string(),
+        share.short_enabled_flag.to_string(),
+    );
+
+    if let Some(value) = share.dlong_client {
+        extra_info
+            .insert("long".to_string(), convert_quotation(value).to_string());
+    }
+
+    if let Some(value) = share.dshort_client {
+        extra_info.insert(
+            "short".to_string(),
+            convert_quotation(value).to_string(),
+        );
+    }
+
+    if let Some(ts) = share.first_1min_candle_date {
+        let ts = ts.seconds * 1_000_000_000 + ts.nanos as i64;
+        extra_info.insert("first_1m".to_string(), ts.to_string());
+    };
+
+    if let Some(ts) = share.first_1day_candle_date {
+        let ts = ts.seconds * 1_000_000_000 + ts.nanos as i64;
+        extra_info.insert("first_d".to_string(), ts.to_string());
+    };
 
     let info = InstrumentInfo::new_share(
         exchange, ticker, name, price_step, lot_size, extra_info,
@@ -303,7 +289,7 @@ fn convert_exchange(
     }
 }
 
-fn convert_qutation(value: api::Quotation) -> f64 {
+fn convert_quotation(value: api::Quotation) -> f64 {
     let frac: f64 = value.nano as f64 / 1_000_000_000.0;
 
     value.units as f64 + frac
