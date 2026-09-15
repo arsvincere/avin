@@ -82,18 +82,19 @@ impl TBankClient {
         let mut instruments = InstrumentList::new();
 
         for share in response.instruments {
-            if unsupported(&share) {
+            if !supported(&share) {
                 continue;
             }
 
-            // let info = convert_share(share)?;
-            // instruments.add(info).map_err(|err| {
-            //     let msg = "TODO msg".to_string();
-            //     ConnectError::TBank {
-            //         message: msg,
-            //         source: Some(Box::new(err)),
-            //     }
-            // })?;
+            let info = convert_share(share)?;
+
+            instruments.add(info).map_err(|err| {
+                let msg = "TBank failed add instrument".to_string();
+                ConnectError::TBank {
+                    message: msg,
+                    source: Some(Box::new(err)),
+                }
+            })?;
         }
 
         Ok(instruments)
@@ -213,15 +214,74 @@ fn convert_share(share: api::Share) -> Result<InstrumentInfo, ConnectError> {
     // }
 
     let exchange = convert_exchange(share.real_exchange())?;
-    let ticker = Ticker::new(share.ticker).unwrap();
+    let ticker = Ticker::new(share.ticker.clone()).unwrap();
     let name = share.name;
+
     let price_step = match share.min_price_increment {
         Some(value) => Price::new(convert_qutation(value)).unwrap(),
-        None => Price::new(0.0).unwrap(), // unreacheble
+        None => {
+            let msg = format!(
+                "TBank share {} has no min_price_increment",
+                share.ticker
+            );
+            return Err(ConnectError::TBank {
+                message: msg,
+                source: None,
+            });
+        }
     };
+
     let lot_size = Quantity::new(share.lot as f64).unwrap();
 
-    let extra_info = HashMap::new();
+    let short_enabled = share.short_enabled_flag.to_string();
+
+    let k_long: f64 = match share.dlong {
+        Some(value) => convert_qutation(value),
+        None => 1.0,
+    };
+    let k_short: f64 = match share.dshort {
+        Some(value) => convert_qutation(value),
+        None => 1.0,
+    };
+    let k_long_qual: f64 = match share.dlong_min {
+        Some(value) => convert_qutation(value),
+        None => 1.0,
+    };
+    let k_short_qual: f64 = match share.dshort_min {
+        Some(value) => convert_qutation(value),
+        None => 1.0,
+    };
+    let first_1m_ts = match share.first_1min_candle_date {
+        Some(ts) => {
+            let ts = ts.seconds * 1_000_000_000 + ts.nanos as i64;
+            ts.to_string()
+        }
+        None => String::new(),
+    };
+    let first_d_ts = match share.first_1day_candle_date {
+        Some(ts) => {
+            let ts = ts.seconds * 1_000_000_000 + ts.nanos as i64;
+            ts.to_string()
+        }
+        None => String::new(),
+    };
+
+    let mut extra_info = HashMap::new();
+    extra_info.insert("country".to_string(), share.country_of_risk);
+    extra_info.insert("currency".to_string(), share.currency);
+    extra_info.insert("sector".to_string(), share.sector);
+    extra_info.insert("exchange_section".to_string(), share.exchange);
+    extra_info.insert("class_code".to_string(), share.class_code);
+    extra_info.insert("figi".to_string(), share.figi);
+    extra_info.insert("isin".to_string(), share.isin);
+    extra_info.insert("uid".to_string(), share.uid);
+    extra_info.insert("short_enabled".to_string(), short_enabled);
+    extra_info.insert("k_long".to_string(), k_long.to_string());
+    extra_info.insert("k_short".to_string(), k_short.to_string());
+    extra_info.insert("k_long_qual".to_string(), k_long_qual.to_string());
+    extra_info.insert("k_short_qual".to_string(), k_short_qual.to_string());
+    extra_info.insert("first_1m".to_string(), first_1m_ts);
+    extra_info.insert("first_d".to_string(), first_d_ts);
 
     let info = InstrumentInfo::new_share(
         exchange, ticker, name, price_step, lot_size, extra_info,
@@ -249,7 +309,7 @@ fn convert_qutation(value: api::Quotation) -> f64 {
     value.units as f64 + frac
 }
 
-fn unsupported(share: &api::Share) -> bool {
+fn supported(share: &api::Share) -> bool {
     // бывает для инструментов которые уже не торгуются
     if share.min_price_increment.is_none() {
         return false;
