@@ -8,7 +8,7 @@
 use avin_core::Year;
 use avin_domain::{DataProvider, InstrumentId, MarketData};
 
-pub enum DataKey {
+pub enum MarketDataKey {
     Provider {
         provider: DataProvider,
     },

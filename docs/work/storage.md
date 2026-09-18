@@ -7,9 +7,6 @@ avin instruments cache --provider tbank
 avin instruments clear
 avin instruments clear --provider tbank
 
-avin instruments list
-avin instruments list --provider tbank
-avin instruments list --provider tbank --exchange moex
 avin instruments list --provider tbank --exchange moex --category share
 
 avin data sync --resume

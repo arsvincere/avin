@@ -25,11 +25,11 @@ avin
     ↓
 tools / gui
     ↓
+service
+    ↓
 data
     ↓
-connect
-    ↓
-system
+system / connect / storage
     ↓
 domain
     ↓
@@ -43,8 +43,11 @@ avin    -> re-exports
 tools   -> core, domain, service
 gui     -> core, domain, service
 
+service -> core, domain, system, connect, storage, data
+
 data    -> core, domain, system, connect
-connect -> core, domain, system
+storage -> core, domain, system
+connect -> core, domain
 system  -> core, domain
 domain  -> core
 core    ->

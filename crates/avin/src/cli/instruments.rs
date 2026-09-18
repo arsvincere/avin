@@ -5,11 +5,11 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use avin_service::InstrumentService;
-use avin_system::Workspace;
 use clap::Subcommand;
 
 use avin_domain::DataProvider;
+use avin_service::InstrumentService;
+use avin_system::Workspace;
 
 use avin::err::AvinError;
 
@@ -36,25 +36,41 @@ impl InstrumentsCommand {
 }
 
 async fn cache(provider: Option<DataProvider>) -> Result<(), AvinError> {
+    // If provider is None, use all providers from the workspace data manifest.
     let providers = match provider {
         Some(p) => vec![p],
         None => {
-            let ws = Workspace::get().expect("TODO msg");
+            let ws = Workspace::get().expect(
+                "workspace must be initialized before \
+                running instrument commands",
+            );
             ws.data.providers()
         }
     };
 
+    // warn if nothing to cache
+    if providers.is_empty() {
+        log::warn!(
+            "No data provider specified and no providers configured \
+            in the workspace data manifest. Nothing to cache."
+        );
+        return Ok(());
+    }
+
+    // caching
     for provider in providers {
-        log::info!("Caching instruments info: {provider}");
+        log::info!("Caching instruments from {provider}");
+
         InstrumentService::cache(provider).await.map_err(|err| {
-            let msg = "TODO msg".to_string();
-            // TODO: тип ошибки? или тут вообще уже похую и нужен anyhow?
+            let msg = "instrument caching failed".to_string();
             AvinError::Cli {
                 message: msg,
                 source: Some(Box::new(err)),
             }
         })?;
     }
+
+    log::info!("Instrument reference data cached successfully");
 
     Ok(())
 }

@@ -14,4 +14,5 @@ avin_core = { workspace = true }
 avin_domain = { workspace = true }
 avin_system = { workspace = true }
 
+log = { workspace = true }
 polars = { workspace = true }

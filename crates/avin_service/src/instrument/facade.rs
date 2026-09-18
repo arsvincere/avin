@@ -5,14 +5,13 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-// TODO: del it after impl
-#![allow(unused)]
-
-use polars::prelude::DataFrame;
-
 use avin_data::TBankProvider;
-use avin_domain::{Category, DataProvider, InstrumentInfo, InstrumentList};
+use avin_domain::{
+    Category, DataProvider, Exchange, InstrumentInfo, InstrumentList,
+};
 use avin_storage::InstrumentInfoStorage;
+
+use DataProvider::{MoexAlgo, TBank};
 
 use crate::ServiceError;
 
@@ -24,7 +23,7 @@ impl InstrumentService {
     pub async fn cache(provider: DataProvider) -> Result<(), ServiceError> {
         match provider {
             DataProvider::TBank => cache_tbank().await,
-            DataProvider::MoexAlgo => todo!(),
+            DataProvider::MoexAlgo => cache_moexalgo().await,
         }
     }
 
@@ -50,20 +49,28 @@ impl InstrumentService {
 
     pub fn list(
         provider: DataProvider,
+        exchange: Exchange,
         category: Category,
     ) -> Result<InstrumentList, ServiceError> {
-        InstrumentCatalog::list(provider, category)
+        InstrumentCatalog::list(provider, exchange, category)
     }
 }
 
 async fn cache_tbank() -> Result<(), ServiceError> {
     let packs = TBankProvider::fetch_instruments().await.map_err(|err| {
-        let msg = "failed fetch instruments from T-Bank".to_string();
+        let msg = format!("failed to fetch instruments from {}", TBank);
         ServiceError::Fetch {
             message: msg,
             source: Some(Box::new(err)),
         }
     })?;
+
+    if packs.is_empty() {
+        return Err(ServiceError::Fetch {
+            message: "T-Bank returned no instrument packs".into(),
+            source: None,
+        });
+    }
 
     for pack in packs.into_iter() {
         InstrumentInfoStorage::save(
@@ -73,7 +80,7 @@ async fn cache_tbank() -> Result<(), ServiceError> {
             pack.instruments(),
         )
         .map_err(|err| {
-            let msg = "failed save instruments cache".to_string();
+            let msg = "failed to save instruments cache".to_string();
             ServiceError::Store {
                 message: msg,
                 source: Some(Box::new(err)),
@@ -82,4 +89,13 @@ async fn cache_tbank() -> Result<(), ServiceError> {
     }
 
     Ok(())
+}
+
+async fn cache_moexalgo() -> Result<(), ServiceError> {
+    let msg = format!("{} support is not implemented", MoexAlgo);
+
+    Err(ServiceError::Fetch {
+        message: msg,
+        source: None,
+    })
 }

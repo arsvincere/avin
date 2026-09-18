@@ -7,4 +7,4 @@
 
 mod key;
 
-pub use key::DataKey;
+pub use key::MarketDataKey;

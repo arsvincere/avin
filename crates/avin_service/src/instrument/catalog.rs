@@ -9,7 +9,8 @@
 #![allow(unused)]
 
 use avin_domain::{
-    Category, DataProvider, InstrumentId, InstrumentInfo, InstrumentList,
+    Category, DataProvider, Exchange, InstrumentId, InstrumentInfo,
+    InstrumentList,
 };
 
 use crate::ServiceError;
@@ -46,6 +47,7 @@ impl InstrumentCatalog {
 
     pub fn list(
         provider: DataProvider,
+        exchange: Exchange,
         category: Category,
     ) -> Result<InstrumentList, ServiceError> {
         println!("InstrumentCatalog list {provider} {category}");

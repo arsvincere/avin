@@ -8,17 +8,57 @@
 use std::error::Error;
 use std::fmt::Display;
 
-type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
+type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum StorageError {
-    Instrument {
+    Conversion {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
+    },
+    Save {
+        message: String,
+        source: Option<Source>,
+    },
+    Load {
+        message: String,
+        source: Option<Source>,
+    },
+    Delete {
+        message: String,
+        source: Option<Source>,
     },
 }
 
 impl StorageError {
+    pub fn conversion(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Conversion {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn save(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Save {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn load(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Load {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn delete(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Delete {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn report(&self) -> String {
         let mut report = self.to_string();
         let mut source = self.source();
@@ -35,7 +75,10 @@ impl StorageError {
 impl Display for StorageError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Instrument { message, .. } => write!(f, "{message}"),
+            Self::Conversion { message, .. } => write!(f, "{message}"),
+            Self::Save { message, .. } => write!(f, "{message}"),
+            Self::Load { message, .. } => write!(f, "{message}"),
+            Self::Delete { message, .. } => write!(f, "{message}"),
         }
     }
 }
@@ -43,7 +86,10 @@ impl Display for StorageError {
 impl Error for StorageError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Instrument { source, .. } => {
+            Self::Conversion { source, .. }
+            | Self::Save { source, .. }
+            | Self::Load { source, .. }
+            | Self::Delete { source, .. } => {
                 source.as_deref().map(|err| err as &(dyn Error + 'static))
             }
         }
