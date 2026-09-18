@@ -61,7 +61,9 @@ impl AvinLogger {
 
 impl Log for AvinLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level().to_level_filter() <= self.level
+        let is_avin = metadata.target().starts_with("avin");
+
+        is_avin && metadata.level().to_level_filter() <= self.level
     }
 
     fn log(&self, record: &Record) {
