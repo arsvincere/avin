@@ -9,25 +9,24 @@ use std::{collections::HashMap, str::FromStr};
 
 use avin_core::{Price, Quantity};
 
-use crate::DomainError;
+use crate::{DataProvider, DomainError};
 
 use crate::{Category, Exchange, InstrumentId, Ticker};
 
 /// Instrument reference data.
 ///
 /// Represents a locally stored instrument description used for instrument
-/// lookup, asset creation, and offline market research.
+/// lookup and asset creation in offline market research.
 ///
-/// `InstrumentInfo` is not intended to be instantiated directly. Instances are
-/// created by AVIN as part of concrete instrument objects such as futures,
-/// shares, bonds, and options.
+/// `InstrumentInfo` is not intended to be instantiated directly by users.
+/// AVIN creates it from provider reference data and uses it for instrument
+/// lookup and for creating concrete asset types such as `Share`, `Future`,
+/// `Bond`, and other.
 ///
 /// The underlying metadata is intentionally stored as raw string values to
-/// provide a stable, provider-independent representation. Typed accessors
-/// parse individual values on demand.
-///
-/// Reference data may be slightly outdated and must not be treated as
-/// authoritative for live trading validation.
+/// provide a stable representation across providers. Typed accessors parse
+/// canonical fields on demand, while provider-specific fields remain
+/// available through [`InstrumentInfo::raw_info`].
 #[derive(Debug, Clone)]
 pub struct InstrumentInfo {
     info: HashMap<String, String>,
@@ -56,6 +55,7 @@ impl InstrumentInfo {
     /// - `lot_size` is zero;
     /// - `extra_info` contains a reserved canonical key.
     pub fn new_share(
+        provider: DataProvider,
         exchange: Exchange,
         ticker: Ticker,
         name: String,
@@ -95,6 +95,7 @@ impl InstrumentInfo {
         let category = Category::Share;
         let mut info = HashMap::new();
 
+        info.insert("provider".to_string(), provider.key().to_string());
         info.insert("exchange".to_string(), exchange.key().to_string());
         info.insert("category".to_string(), category.key().to_string());
         info.insert("ticker".to_string(), ticker.to_string());
@@ -117,6 +118,13 @@ impl InstrumentInfo {
         info.extend(extra_info);
 
         Ok(Self { info })
+    }
+
+    /// Returns the provider of this instrument reference data.
+    pub fn provider(&self) -> DataProvider {
+        let provider = self.info.get("provider").unwrap();
+
+        DataProvider::from_str(provider).unwrap()
     }
 
     /// Returns the canonical instrument ID.
@@ -183,6 +191,7 @@ mod tests {
 
     fn valid_raw_info() -> HashMap<String, String> {
         [
+            ("provider", "tbank"),
             ("exchange", "moex"),
             ("category", "share"),
             ("ticker", "SBER"),
@@ -202,6 +211,7 @@ mod tests {
         extra_info: HashMap<String, String>,
     ) -> Result<InstrumentInfo, DomainError> {
         InstrumentInfo::new_share(
+            DataProvider::TBank,
             Exchange::Moex,
             Ticker::new("SBER").unwrap(),
             "Сбер Банк".to_string(),
@@ -215,6 +225,7 @@ mod tests {
     fn new_unchecked() {
         let info = InstrumentInfo::new_unchecked(valid_raw_info());
 
+        assert_eq!(info.provider(), DataProvider::TBank);
         assert_eq!(info.exchange(), Exchange::Moex);
         assert_eq!(info.category(), Category::Share);
         assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
@@ -249,6 +260,7 @@ mod tests {
 
         let info = new_share(0.01, 10.0, extra_info).unwrap();
 
+        assert_eq!(info.provider(), DataProvider::TBank);
         assert_eq!(info.exchange(), Exchange::Moex);
         assert_eq!(info.category(), Category::Share);
         assert_eq!(info.ticker(), Ticker::new("SBER").unwrap());
@@ -256,6 +268,7 @@ mod tests {
         assert_eq!(info.price_step(), Price::new(0.01).unwrap());
         assert_eq!(info.lot_size(), Quantity::new(10.0).unwrap());
 
+        assert_eq!(info.raw_info().get("provider").unwrap(), "tbank");
         assert_eq!(info.raw_info().get("exchange").unwrap(), "moex");
         assert_eq!(info.raw_info().get("category").unwrap(), "share");
         assert_eq!(info.raw_info().get("ticker").unwrap(), "SBER");
@@ -290,6 +303,7 @@ mod tests {
     #[test]
     fn new_share_reserved_extra_info() {
         for key in [
+            "provider",
             "exchange",
             "category",
             "ticker",
@@ -297,8 +311,7 @@ mod tests {
             "price_step",
             "lot_size",
         ] {
-            let extra_info =
-                HashMap::from([(key.to_string(), "override".to_string())]);
+            let extra_info = HashMap::from([(key.into(), "override".into())]);
 
             let err = new_share(0.01, 10.0, extra_info).unwrap_err();
 

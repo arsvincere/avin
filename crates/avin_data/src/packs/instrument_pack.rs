@@ -65,8 +65,13 @@ impl InstrumentPack {
         &mut self,
         instrument: InstrumentInfo,
     ) -> Result<(), DataError> {
-        // TODO: ???
-        // а не добавить ли в InstrumentInfo еще и provider? и его тоже чекать?
+        // check provider
+        if self.provider != instrument.provider() {
+            return Err(DataError::TmpError {
+                message: "TODO msg".to_string(),
+                source: None,
+            });
+        }
 
         // check exchange
         if self.exchange != instrument.exchange() {

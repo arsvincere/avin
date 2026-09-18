@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 
 use avin_core::{Price, Quantity, Time};
-use avin_domain::{Exchange, InstrumentInfo, Ticker};
+use avin_domain::{DataProvider, Exchange, InstrumentInfo, Ticker};
 
 use crate::ConnectorError;
 use crate::tbank::api;
@@ -155,6 +155,8 @@ impl TryFrom<api::Share> for InstrumentInfo {
         //     ),
         // }
 
+        let provider = DataProvider::TBank;
+
         let exchange = Exchange::try_from(share.real_exchange())?;
 
         let ticker = Ticker::new(share.ticker.clone())
@@ -218,7 +220,8 @@ impl TryFrom<api::Share> for InstrumentInfo {
         };
 
         let info = InstrumentInfo::new_share(
-            exchange, ticker, name, price_step, lot_size, extra_info,
+            provider, exchange, ticker, name, price_step, lot_size,
+            extra_info,
         )
         .map_err(|err| {
             let msg = format!(
