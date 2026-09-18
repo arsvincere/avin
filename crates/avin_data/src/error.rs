@@ -8,25 +8,46 @@
 use std::error::Error;
 use std::fmt::Display;
 
-type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
+type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum DataError {
-    TmpError {
+    Pack {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     Unavailable {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     Connect {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
 }
 
 impl DataError {
+    pub fn pack(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Pack {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn unavailable(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Unavailable {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn connect(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Connect {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn report(&self) -> String {
         let mut report = self.to_string();
         let mut source = self.source();
@@ -43,7 +64,7 @@ impl DataError {
 impl Display for DataError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::TmpError { message, .. } => write!(f, "{message}"),
+            Self::Pack { message, .. } => write!(f, "{message}"),
             Self::Unavailable { message, .. } => write!(f, "{message}"),
             Self::Connect { message, .. } => write!(f, "{message}"),
         }
@@ -53,7 +74,7 @@ impl Display for DataError {
 impl Error for DataError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::TmpError { source, .. }
+            Self::Pack { source, .. }
             | Self::Unavailable { source, .. }
             | Self::Connect { source, .. } => {
                 source.as_deref().map(|err| err as &(dyn Error + 'static))

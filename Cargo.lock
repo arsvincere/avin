@@ -273,6 +273,7 @@ dependencies = [
  "avin_core",
  "avin_domain",
  "avin_system",
+ "log",
  "polars",
 ]
 

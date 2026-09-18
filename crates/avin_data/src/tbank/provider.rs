@@ -5,6 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+// TODO: delete after impl
 #![allow(unused)]
 
 use avin_connect::TBankClient;
@@ -17,6 +18,10 @@ use avin_system::Workspace;
 
 use crate::{DataError, InstrumentPack};
 
+use Category::Share;
+use DataProvider::TBank;
+use Exchange::{Moex, Spb};
+
 pub struct TBankProvider {}
 
 impl TBankProvider {
@@ -26,50 +31,26 @@ impl TBankProvider {
 
     pub async fn fetch_instruments() -> Result<Vec<InstrumentPack>, DataError>
     {
-        let ws = Workspace::get().map_err(|err| {
-            let msg = "TODO msg".to_string();
-            DataError::Connect {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
-        })?;
-
-        let token = ws.secret.tbank_token();
-        let tbank = TBankClient::connect(token).await.map_err(|err| {
-            let msg = "TODO msg".to_string();
-            DataError::Connect {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
-        })?;
+        let tbank = connect_tbank().await?;
 
         let shares = tbank.shares().await.map_err(|err| {
-            let msg = "TODO msg".to_string();
-            DataError::Connect {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            let msg = "failed to fetch T-Bank instrument reference data";
+            DataError::connect(msg, Some(err.into()))
         })?;
 
-        // NOTE: T-Bank get shares from MOEX and SBP, separate it
-        let mut moex = InstrumentPack::new(
-            DataProvider::TBank,
-            Exchange::Moex,
-            Category::Share,
-        );
-        let mut spb = InstrumentPack::new(
-            DataProvider::TBank,
-            Exchange::Spb,
-            Category::Share,
-        );
-
-        for share in shares.into_iter() {
+        // T-Bank returns shares from MOEX and SPB, separate them by exchange.
+        let mut moex = Vec::new();
+        let mut spb = Vec::new();
+        for share in shares {
             match share.exchange() {
-                Exchange::Moex => moex.add(share).expect("TODO msg"),
-                Exchange::Spb => spb.add(share).expect("TODO msg"),
-                other => unreachable!("TODO msg"),
+                Moex => moex.push(share),
+                Spb => spb.push(share),
+                other => unreachable!("unsupported T-Bank exchange: {other}"),
             }
         }
+
+        let moex = InstrumentPack::new(TBank, Moex, Share, moex)?;
+        let spb = InstrumentPack::new(TBank, Spb, Share, spb)?;
 
         Ok(vec![moex, spb])
     }
@@ -81,14 +62,10 @@ impl TBankProvider {
     ) -> Result<Vec<Bar>, DataError> {
         if tf != TimeFrame::M1 {
             let msg = format!(
-                "{} doesn't provide {tf} bars, available=[{}]",
-                DataProvider::TBank,
+                "T-Bank doesn't provide {tf} bars, available=[{}]",
                 TimeFrame::M1,
             );
-            return Err(DataError::Unavailable {
-                message: msg,
-                source: None,
-            });
+            return Err(DataError::unavailable(msg, None));
         }
 
         todo!()
@@ -100,4 +77,16 @@ impl TBankProvider {
     ) -> Result<Vec<Tick>, DataError> {
         todo!()
     }
+}
+
+async fn connect_tbank() -> Result<TBankClient, DataError> {
+    let ws = Workspace::get().map_err(|err| {
+        DataError::connect("failed to access workspace", Some(err.into()))
+    })?;
+
+    let token = ws.secret.tbank_token();
+
+    TBankClient::connect(token).await.map_err(|err| {
+        DataError::connect("failed to connect to T-Bank", Some(err.into()))
+    })
 }

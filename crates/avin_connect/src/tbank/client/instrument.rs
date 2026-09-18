@@ -32,7 +32,7 @@ impl TBankClient {
             .shares(request)
             .await
             .map_err(|err| ConnectorError::Request {
-                message: "failed to fetch T-Bank shares".into(),
+                message: "failed to get T-Bank shares".into(),
                 source: Some(Box::new(err)),
             })?
             .into_inner();

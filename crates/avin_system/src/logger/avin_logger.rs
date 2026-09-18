@@ -35,10 +35,20 @@ impl AvinLogger {
     }
 
     fn write_console(&self, record: &Record, now: &DateTime<Local>) {
+        let (color, reset) = match record.level() {
+            log::Level::Error => ("\x1b[31m", "\x1b[0m"), // red
+            log::Level::Warn => ("\x1b[33m", "\x1b[0m"),  // yellow
+            log::Level::Info => ("\x1b[32m", "\x1b[0m"),  // green
+            log::Level::Debug => ("\x1b[36m", "\x1b[0m"), // cyan
+            log::Level::Trace => ("\x1b[90m", "\x1b[0m"), // gray
+        };
+
         eprintln!(
-            "{} [{}] {}",
+            "{} {}[{}]{} {}",
             now.format("%H:%M:%S"),
+            color,
             record.level(),
+            reset,
             record.args()
         );
     }

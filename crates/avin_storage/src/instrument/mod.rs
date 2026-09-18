@@ -6,8 +6,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 mod key;
-#[allow(clippy::module_inception)]
 mod storage;
 
-pub use key::InfoKey;
+pub use key::InstrumentInfoKey;
 pub use storage::InstrumentInfoStorage;
