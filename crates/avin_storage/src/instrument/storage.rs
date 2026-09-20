@@ -59,11 +59,30 @@ impl InstrumentInfoStorage {
         todo!()
     }
 
-    pub fn delete(
-        provider: DataProvider,
-        exchange: Exchange,
-        category: Category,
-    ) -> Result<(), StorageError> {
-        todo!()
+    pub fn delete(key: &InstrumentInfoKey) -> Result<(), StorageError> {
+        let path = key.path()?;
+
+        if !(crate::helper::is_exists(&path)?) {
+            log::debug!("Skip delete, path not exists {}", path.display());
+            return Ok(());
+        }
+
+        if crate::helper::is_dir(&path)? {
+            crate::helper::delete_dir(&path)?;
+            log::debug!("Deleted {}", path.display());
+            return Ok(());
+        }
+
+        if crate::helper::is_file(&path)? {
+            crate::helper::delete_file(&path)?;
+            log::debug!("Deleted {}", path.display());
+            return Ok(());
+        }
+
+        let msg = format!(
+            "failed to delete, not a file or directory {}",
+            path.display()
+        );
+        Err(StorageError::delete(msg, None))
     }
 }

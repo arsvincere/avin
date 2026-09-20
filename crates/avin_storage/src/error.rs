@@ -16,6 +16,10 @@ pub enum StorageError {
         message: String,
         source: Option<Source>,
     },
+    Fs {
+        message: String,
+        source: Option<Source>,
+    },
     Save {
         message: String,
         source: Option<Source>,
@@ -33,6 +37,13 @@ pub enum StorageError {
 impl StorageError {
     pub fn conversion(msg: impl Into<String>, err: Option<Source>) -> Self {
         Self::Conversion {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn fs(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Fs {
             message: msg.into(),
             source: err,
         }
@@ -76,6 +87,7 @@ impl Display for StorageError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Conversion { message, .. } => write!(f, "{message}"),
+            Self::Fs { message, .. } => write!(f, "{message}"),
             Self::Save { message, .. } => write!(f, "{message}"),
             Self::Load { message, .. } => write!(f, "{message}"),
             Self::Delete { message, .. } => write!(f, "{message}"),
@@ -87,6 +99,7 @@ impl Error for StorageError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Conversion { source, .. }
+            | Self::Fs { source, .. }
             | Self::Save { source, .. }
             | Self::Load { source, .. }
             | Self::Delete { source, .. } => {

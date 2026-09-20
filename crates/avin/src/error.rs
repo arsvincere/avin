@@ -8,17 +8,24 @@
 use std::error::Error;
 use std::fmt::Display;
 
-type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
+type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum AvinError {
     Cli {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
 }
 
 impl AvinError {
+    pub fn cli(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Cli {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn report(&self) -> String {
         let mut report = self.to_string();
         let mut source = self.source();

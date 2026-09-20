@@ -62,11 +62,7 @@ async fn cache(provider: Option<DataProvider>) -> Result<(), AvinError> {
         log::info!("Caching instruments from {provider}");
 
         InstrumentService::cache(provider).await.map_err(|err| {
-            let msg = "instrument caching failed".to_string();
-            AvinError::Cli {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            AvinError::cli("caching failed", Some(err.into()))
         })?;
     }
 
@@ -76,13 +72,22 @@ async fn cache(provider: Option<DataProvider>) -> Result<(), AvinError> {
 }
 
 fn clear(provider: Option<DataProvider>) -> Result<(), AvinError> {
-    println!("Clear instruments info: {provider:?}");
-
-    let _provider = match provider {
-        Some(p) => p,
-        None => {
-            todo!()
-        }
+    // If provider is None, clear all.
+    let providers = match provider {
+        Some(p) => vec![p],
+        None => DataProvider::all().to_vec(),
     };
-    todo!()
+
+    // clearing
+    for provider in providers {
+        log::info!("Clearing instrument cache for {provider}");
+
+        InstrumentService::clear(provider).map_err(|err| {
+            AvinError::cli("clearing failed", Some(err.into()))
+        })?;
+    }
+
+    log::info!("Instrument reference data cleared successfully");
+
+    Ok(())
 }

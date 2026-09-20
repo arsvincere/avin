@@ -5,11 +5,123 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use std::{fs::File, path::Path};
+use std::{fs, fs::File, path::Path};
 
 use polars::prelude::{DataFrame, ParquetWriter};
 
 use crate::StorageError;
+
+/// Returns `true` if the path exists.
+///
+/// # Errors
+///
+/// Returns an error if the path metadata cannot be read.
+pub fn is_exists(path: &Path) -> Result<bool, StorageError> {
+    match fs::metadata(path) {
+        Ok(_) => Ok(true),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(err) => {
+            let msg =
+                format!("failed to read metadata for '{}'", path.display());
+            Err(StorageError::fs(msg, Some(err.into())))
+        }
+    }
+}
+
+/// Returns `true` if the path points to a regular file.
+///
+/// Returns `false` if the path exists but points to another type of
+/// file system entry.
+///
+/// # Errors
+///
+/// Returns an error if the path does not exist or if its metadata
+/// cannot be read.
+pub fn is_file(path: &Path) -> Result<bool, StorageError> {
+    let metadata = fs::metadata(path).map_err(|err| {
+        let msg = format!("failed to read metadata: {}", path.display());
+        StorageError::fs(msg, Some(err.into()))
+    })?;
+
+    Ok(metadata.is_file())
+}
+
+/// Returns `true` if the path points to a directory.
+///
+/// Returns `false` if the path exists but points to another type of file system
+/// entry.
+///
+/// # Errors
+///
+/// Returns an error if the path does not exist or if its metadata cannot be
+/// read.
+pub fn is_dir(path: &Path) -> Result<bool, StorageError> {
+    let metadata = fs::metadata(path).map_err(|err| {
+        let msg = format!("failed to read metadata: {}", path.display());
+        StorageError::fs(msg, Some(err.into()))
+    })?;
+
+    Ok(metadata.is_dir())
+}
+
+/// Creates a directory and all missing parent directories.
+///
+/// # Errors
+///
+/// Returns an error if the directory or any missing parent directory
+/// cannot be created.
+pub fn make_dirs(dir_path: &Path) -> Result<(), StorageError> {
+    std::fs::create_dir_all(dir_path).map_err(|err| {
+        let msg = format!("failed to create dir: {}", dir_path.display());
+        StorageError::save(msg, Some(err.into()))
+    })
+}
+
+/// Creates all missing parent directories for a file path.
+///
+/// # Errors
+///
+/// Returns an error if the file path has no parent directory or if the
+/// parent directories cannot be created.
+pub fn make_dirs_for_file(file_path: &Path) -> Result<(), StorageError> {
+    let dir_path = file_path.parent().ok_or_else(|| {
+        let msg = format!("path has no parent dir: {}", file_path.display());
+        StorageError::save(msg, None)
+    })?;
+
+    // No parent directories to create if the file is in the current dir.
+    if dir_path.as_os_str().is_empty() {
+        return Ok(());
+    }
+
+    make_dirs(dir_path)
+}
+
+/// Deletes a file.
+///
+/// # Errors
+///
+/// Returns an error if the file does not exist, cannot be removed, or if
+/// the path points to something other than a regular file.
+pub fn delete_file(path: &Path) -> Result<(), StorageError> {
+    fs::remove_file(path).map_err(|err| {
+        let msg = format!("failed to delete file: {}", path.display());
+        StorageError::delete(msg, Some(err.into()))
+    })
+}
+
+/// Deletes a directory and all of its contents recursively.
+///
+/// # Errors
+///
+/// Returns an error if the directory does not exist, cannot be removed,
+/// or if any file or subdirectory inside it cannot be removed.
+pub fn delete_dir(path: &Path) -> Result<(), StorageError> {
+    fs::remove_dir_all(path).map_err(|err| {
+        let msg = format!("failed to delete directory: {}", path.display());
+        StorageError::delete(msg, Some(err.into()))
+    })
+}
 
 // /// Reads a Parquet file into a Polars `DataFrame`.
 // ///
@@ -71,25 +183,4 @@ pub fn write_pqt(
     })?;
 
     Ok(())
-}
-
-pub fn make_dirs(dir_path: &Path) -> Result<(), StorageError> {
-    std::fs::create_dir_all(dir_path).map_err(|err| {
-        let msg = format!("failed to create dir: {}", dir_path.display());
-        StorageError::save(msg, Some(err.into()))
-    })
-}
-
-pub fn make_dirs_for_file(file_path: &Path) -> Result<(), StorageError> {
-    let dir_path = file_path.parent().ok_or_else(|| {
-        let msg = format!("path has no parent dir: {}", file_path.display());
-        StorageError::save(msg, None)
-    })?;
-
-    // No parent directories to create if the file is in the current dir.
-    if dir_path.as_os_str().is_empty() {
-        return Ok(());
-    }
-
-    make_dirs(dir_path)
 }

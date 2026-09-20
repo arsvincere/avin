@@ -9,7 +9,7 @@ use avin_data::TBankProvider;
 use avin_domain::{
     Category, DataProvider, Exchange, InstrumentInfo, InstrumentList,
 };
-use avin_storage::InstrumentInfoStorage;
+use avin_storage::{InstrumentInfoKey, InstrumentInfoStorage};
 
 use DataProvider::{MoexAlgo, TBank};
 
@@ -28,9 +28,12 @@ impl InstrumentService {
     }
 
     pub fn clear(provider: DataProvider) -> Result<(), ServiceError> {
-        println!("InstrumentService clear {provider}");
+        let key = InstrumentInfoKey::provider(provider);
 
-        todo!();
+        InstrumentInfoStorage::delete(&key).map_err(|err| {
+            let msg = format!("failed to delete cache {provider}");
+            ServiceError::store(msg, Some(err.into()))
+        })
     }
 
     pub fn find(
