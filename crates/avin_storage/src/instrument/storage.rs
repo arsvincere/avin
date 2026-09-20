@@ -25,6 +25,25 @@ impl InstrumentInfoStorage {
         todo!()
     }
 
+    pub fn inventory() -> Result<Vec<InstrumentInfoKey>, StorageError> {
+        let mut keys = Vec::new();
+
+        for p in DataProvider::all() {
+            for e in Exchange::all() {
+                for c in Category::all() {
+                    let key = InstrumentInfoKey::category(*p, *e, *c);
+                    let path = key.path()?;
+
+                    if crate::helper::is_exists(&path)? {
+                        keys.push(key);
+                    }
+                }
+            }
+        }
+
+        Ok(keys)
+    }
+
     pub fn save(
         provider: DataProvider,
         exchange: Exchange,
@@ -56,7 +75,14 @@ impl InstrumentInfoStorage {
         exchange: Exchange,
         category: Category,
     ) -> Result<DataFrame, StorageError> {
-        todo!()
+        let key = InstrumentInfoKey::category(provider, exchange, category);
+        let path = key.path()?;
+
+        let df = crate::helper::read_pqt(&path)?;
+
+        log::debug!("Loaded {}", path.display());
+
+        Ok(df)
     }
 
     pub fn delete(key: &InstrumentInfoKey) -> Result<(), StorageError> {

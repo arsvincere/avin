@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+// TODO: Io вместо Fs Save Load Delete ???
+
 use std::error::Error;
 use std::fmt::Display;
 
@@ -12,6 +14,10 @@ type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum StorageError {
+    Path {
+        message: String,
+        source: Option<Source>,
+    },
     Conversion {
         message: String,
         source: Option<Source>,
@@ -35,6 +41,13 @@ pub enum StorageError {
 }
 
 impl StorageError {
+    pub fn path(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Delete {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn conversion(msg: impl Into<String>, err: Option<Source>) -> Self {
         Self::Conversion {
             message: msg.into(),
@@ -86,6 +99,7 @@ impl StorageError {
 impl Display for StorageError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Path { message, .. } => write!(f, "{message}"),
             Self::Conversion { message, .. } => write!(f, "{message}"),
             Self::Fs { message, .. } => write!(f, "{message}"),
             Self::Save { message, .. } => write!(f, "{message}"),
@@ -98,7 +112,8 @@ impl Display for StorageError {
 impl Error for StorageError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Conversion { source, .. }
+            Self::Path { source, .. }
+            | Self::Conversion { source, .. }
             | Self::Fs { source, .. }
             | Self::Save { source, .. }
             | Self::Load { source, .. }

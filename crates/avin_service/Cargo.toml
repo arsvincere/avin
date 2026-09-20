@@ -17,5 +17,6 @@ avin_domain = { workspace = true }
 avin_storage = { workspace = true }
 avin_system = { workspace = true }
 
+cached = { workspace = true }
 polars = { workspace = true }
 tokio = { workspace = true }

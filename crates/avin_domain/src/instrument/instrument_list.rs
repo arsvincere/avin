@@ -5,6 +5,8 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+// TODO: after cli vertical slice - delete it?
+
 use std::collections::HashMap;
 
 use crate::DomainError;

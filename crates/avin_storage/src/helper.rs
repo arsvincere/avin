@@ -7,7 +7,7 @@
 
 use std::{fs, fs::File, path::Path};
 
-use polars::prelude::{DataFrame, ParquetWriter};
+use polars::prelude::{DataFrame, ParquetReader, ParquetWriter, SerReader};
 
 use crate::StorageError;
 
@@ -73,7 +73,7 @@ pub fn is_dir(path: &Path) -> Result<bool, StorageError> {
 pub fn make_dirs(dir_path: &Path) -> Result<(), StorageError> {
     std::fs::create_dir_all(dir_path).map_err(|err| {
         let msg = format!("failed to create dir: {}", dir_path.display());
-        StorageError::save(msg, Some(err.into()))
+        StorageError::fs(msg, Some(err.into()))
     })
 }
 
@@ -86,7 +86,7 @@ pub fn make_dirs(dir_path: &Path) -> Result<(), StorageError> {
 pub fn make_dirs_for_file(file_path: &Path) -> Result<(), StorageError> {
     let dir_path = file_path.parent().ok_or_else(|| {
         let msg = format!("path has no parent dir: {}", file_path.display());
-        StorageError::save(msg, None)
+        StorageError::fs(msg, None)
     })?;
 
     // No parent directories to create if the file is in the current dir.
@@ -123,37 +123,24 @@ pub fn delete_dir(path: &Path) -> Result<(), StorageError> {
     })
 }
 
-// /// Reads a Parquet file into a Polars `DataFrame`.
-// ///
-// /// # Errors
-// ///
-// /// Returns an error if the file cannot be opened or if Polars cannot read
-// /// the Parquet data.
-// pub fn read_pqt(path: &Path) -> Result<DataFrame, StorageError> {
-//     let file = match File::open(path) {
-//         Ok(file) => file,
-//         Err(err) => {
-//             return Err(StorageError::Io {
-//                 message: format!(
-//                     "Failed to open Parquet file: {}",
-//                     path.display()
-//                 ),
-//                 source: err,
-//             });
-//         }
-//     };
-//
-//     match ParquetReader::new(file).finish() {
-//         Ok(df) => Ok(df),
-//         Err(err) => Err(StorageError::Polars {
-//             message: format!(
-//                 "Failed to read Parquet file: {}",
-//                 path.display()
-//             ),
-//             source: err,
-//         }),
-//     }
-// }
+/// Reads a Parquet file into a Polars `DataFrame`.
+///
+/// # Errors
+///
+/// Returns an error if the file cannot be opened or read.
+pub fn read_pqt(path: &Path) -> Result<DataFrame, StorageError> {
+    // open file
+    let file = File::open(path).map_err(|err| {
+        let msg = format!("failed to open file '{}'", path.display());
+        StorageError::load(msg, Some(err.into()))
+    })?;
+
+    // read DataFrame
+    ParquetReader::new(file).finish().map_err(|err| {
+        let msg = format!("failed to read file '{}'", path.display());
+        StorageError::load(msg, Some(err.into()))
+    })
+}
 
 /// Writes a Polars `DataFrame` to a Parquet file.
 ///
@@ -172,11 +159,13 @@ pub fn write_pqt(
 ) -> Result<(), StorageError> {
     make_dirs_for_file(path)?;
 
+    // create file
     let file = File::create(path).map_err(|err| {
         let msg = format!("failed to create file '{}'", path.display());
         StorageError::save(msg, Some(err.into()))
     })?;
 
+    // write file
     ParquetWriter::new(file).finish(df).map_err(|err| {
         let msg = format!("failed to write file '{}'", path.display());
         StorageError::save(msg, Some(err.into()))

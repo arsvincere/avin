@@ -52,7 +52,8 @@ impl InstrumentInfoKey {
 
     pub(super) fn path(&self) -> Result<PathBuf, StorageError> {
         let workspace = Workspace::get().map_err(|err| {
-            StorageError::save("failed to access workspace", Some(err.into()))
+            let msg = "failed to resolve storage path";
+            StorageError::path(msg, Some(err.into()))
         })?;
 
         let mut path = workspace.dirs.instruments().to_path_buf();

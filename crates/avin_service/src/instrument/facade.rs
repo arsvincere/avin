@@ -6,9 +6,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use avin_data::TBankProvider;
-use avin_domain::{
-    Category, DataProvider, Exchange, InstrumentInfo, InstrumentList,
-};
+use avin_domain::{Category, DataProvider, Exchange, InstrumentInfo};
 use avin_storage::{InstrumentInfoKey, InstrumentInfoStorage};
 
 use DataProvider::{MoexAlgo, TBank};
@@ -22,8 +20,8 @@ pub struct InstrumentService {}
 impl InstrumentService {
     pub async fn cache(provider: DataProvider) -> Result<(), ServiceError> {
         match provider {
-            DataProvider::TBank => cache_tbank().await,
-            DataProvider::MoexAlgo => cache_moexalgo().await,
+            TBank => cache_tbank().await,
+            MoexAlgo => cache_moexalgo().await,
         }
     }
 
@@ -36,11 +34,39 @@ impl InstrumentService {
         })
     }
 
+    pub fn inventory()
+    -> Result<Vec<(DataProvider, Exchange, Category)>, ServiceError> {
+        let keys = InstrumentInfoStorage::inventory().map_err(|err| {
+            let msg = "failed to inventory instrument cache";
+            ServiceError::store(msg, Some(err.into()))
+        })?;
+
+        let mut inventory = Vec::with_capacity(keys.len());
+
+        for key in keys {
+            let (provider, exchange, category) = match key {
+                InstrumentInfoKey::Category {
+                    provider,
+                    exchange,
+                    category,
+                } => (provider, exchange, category),
+
+                _ => {
+                    unreachable!("inventory must contain only category keys")
+                }
+            };
+
+            inventory.push((provider, exchange, category));
+        }
+
+        Ok(inventory)
+    }
+
     pub fn find(
         provider: DataProvider,
         code: &str,
     ) -> Result<InstrumentInfo, ServiceError> {
-        InstrumentCatalog::find(provider, code)
+        InstrumentCatalog::find_code(provider, code)
     }
 
     pub fn find_figi(
@@ -54,7 +80,7 @@ impl InstrumentService {
         provider: DataProvider,
         exchange: Exchange,
         category: Category,
-    ) -> Result<InstrumentList, ServiceError> {
+    ) -> Result<Vec<InstrumentInfo>, ServiceError> {
         InstrumentCatalog::list(provider, exchange, category)
     }
 }
