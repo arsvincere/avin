@@ -59,17 +59,12 @@ impl InstrumentService {
 async fn cache_tbank() -> Result<(), ServiceError> {
     let packs = TBankProvider::fetch_instruments().await.map_err(|err| {
         let msg = format!("failed to fetch instruments from {}", TBank);
-        ServiceError::Fetch {
-            message: msg,
-            source: Some(Box::new(err)),
-        }
+        ServiceError::fetch(msg, Some(err.into()))
     })?;
 
     if packs.is_empty() {
-        return Err(ServiceError::Fetch {
-            message: "T-Bank returned no instrument packs".into(),
-            source: None,
-        });
+        let msg = "T-Bank returned no instrument packs";
+        return Err(ServiceError::fetch(msg, None));
     }
 
     for pack in packs.into_iter() {
@@ -81,10 +76,7 @@ async fn cache_tbank() -> Result<(), ServiceError> {
         )
         .map_err(|err| {
             let msg = "failed to save instruments cache".to_string();
-            ServiceError::Store {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            ServiceError::store(msg, Some(err.into()))
         })?;
     }
 
@@ -94,8 +86,5 @@ async fn cache_tbank() -> Result<(), ServiceError> {
 async fn cache_moexalgo() -> Result<(), ServiceError> {
     let msg = format!("{} support is not implemented", MoexAlgo);
 
-    Err(ServiceError::Fetch {
-        message: msg,
-        source: None,
-    })
+    Err(ServiceError::fetch(msg, None))
 }

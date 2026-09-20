@@ -8,21 +8,35 @@
 use std::error::Error;
 use std::fmt::Display;
 
-type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
+type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum ServiceError {
     Fetch {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     Store {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
 }
 
 impl ServiceError {
+    pub fn fetch(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Fetch {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn store(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Store {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn report(&self) -> String {
         let mut report = self.to_string();
         let mut source = self.source();

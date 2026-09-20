@@ -25,10 +25,8 @@ pub trait DataFrameExt: Sized {
 impl DataFrameExt for InstrumentInfo {
     fn to_df(instruments: &[Self]) -> Result<DataFrame, StorageError> {
         if instruments.is_empty() {
-            return Err(StorageError::conversion(
-                "no instruments to convert",
-                None,
-            ));
+            let msg = "no instruments to convert";
+            return Err(StorageError::conversion(msg, None));
         }
 
         // collect all unique column names

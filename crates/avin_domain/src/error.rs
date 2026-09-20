@@ -8,7 +8,7 @@
 use std::error::Error;
 use std::fmt::Display;
 
-type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
+type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum DomainError {
@@ -19,11 +19,11 @@ pub enum DomainError {
     Ticker(String),
     InstrumentId {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     InstrumentInfo {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     InstrumentList(String),
     Share(String),
@@ -35,6 +35,26 @@ pub enum DomainError {
 }
 
 impl DomainError {
+    pub fn instrument_id(
+        msg: impl Into<String>,
+        err: Option<Source>,
+    ) -> Self {
+        Self::InstrumentId {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn instrument_info(
+        msg: impl Into<String>,
+        err: Option<Source>,
+    ) -> Self {
+        Self::InstrumentInfo {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn report(&self) -> String {
         let mut report = self.to_string();
         let mut source = self.source();

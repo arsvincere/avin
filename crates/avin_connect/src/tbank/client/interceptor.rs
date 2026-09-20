@@ -19,11 +19,11 @@ pub(super) struct TBankInterceptor {
 
 impl TBankInterceptor {
     pub(super) fn new(token: &str) -> Result<Self, ConnectorError> {
-        let auth: MetadataValue<Ascii> = format!("Bearer {token}")
-            .parse()
-            .map_err(|err| ConnectorError::Authorization {
-                message: "failed to encode T-Bank authorization token".into(),
-                source: Some(Box::new(err)),
+        let auth = format!("Bearer {token}")
+            .parse::<MetadataValue<Ascii>>()
+            .map_err(|err| {
+                let msg = "failed to encode T-Bank authorization token";
+                ConnectorError::authorization(msg, Some(err.into()))
             })?;
 
         let app_name = MetadataValue::from_static("arsvincere.avin");

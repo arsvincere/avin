@@ -8,29 +8,60 @@
 use std::error::Error;
 use std::fmt::Display;
 
-type ErrorSource = Box<dyn Error + Send + Sync + 'static>;
+type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum ConnectorError {
     Authorization {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     Connection {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     Request {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
     Conversion {
         message: String,
-        source: Option<ErrorSource>,
+        source: Option<Source>,
     },
 }
 
 impl ConnectorError {
+    pub fn authorization(
+        msg: impl Into<String>,
+        err: Option<Source>,
+    ) -> Self {
+        Self::Authorization {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn connection(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Connection {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn request(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Request {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
+    pub fn conversion(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Conversion {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn report(&self) -> String {
         let mut report = self.to_string();
         let mut source = self.source();

@@ -125,31 +125,23 @@ impl FromStr for InstrumentId {
         let parts: Vec<&str> = s.splitn(3, '.').collect();
 
         if parts.len() != 3 {
-            return Err(DomainError::InstrumentId {
-                message: format!("invalid instrument id '{s}'"),
-                source: None,
-            });
+            let msg = format!("invalid instrument id '{s}'");
+            return Err(DomainError::instrument_id(msg, None));
         }
 
         let exchange = Exchange::from_str(parts[0]).map_err(|err| {
-            DomainError::InstrumentId {
-                message: "failed parsing exchange".to_string(),
-                source: Some(Box::new(err)),
-            }
+            let msg = "failed parsing exchange";
+            DomainError::instrument_id(msg, Some(err.into()))
         })?;
 
         let category = Category::from_str(parts[1]).map_err(|err| {
-            DomainError::InstrumentId {
-                message: "failed parsing category".to_string(),
-                source: Some(Box::new(err)),
-            }
+            let msg = "failed parsing category";
+            DomainError::instrument_id(msg, Some(err.into()))
         })?;
 
         let ticker = Ticker::new(parts[2]).map_err(|err| {
-            DomainError::InstrumentId {
-                message: "failed parsing ticker".to_string(),
-                source: Some(Box::new(err)),
-            }
+            let msg = "failed parsing ticker";
+            DomainError::instrument_id(msg, Some(err.into()))
         })?;
 
         Ok(Self::new(exchange, category, ticker))

@@ -77,10 +77,7 @@ impl LogFile {
                 "logger: failed to write log record to {}",
                 path.display()
             );
-            SystemError::Logger {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::logger(msg, Some(err.into()))
         })
     }
 }
@@ -91,10 +88,7 @@ fn create_dirs(dir_path: &Path) -> Result<(), SystemError> {
             "logger: failed to create log dir {}",
             dir_path.display()
         );
-        SystemError::Logger {
-            message: msg,
-            source: Some(Box::new(err)),
-        }
+        SystemError::logger(msg, Some(err.into()))
     })
 }
 
@@ -104,12 +98,8 @@ fn open_log_file(dir: &Path, date: NaiveDate) -> Result<File, SystemError> {
     let result = OpenOptions::new().create(true).append(true).open(&path);
 
     result.map_err(|err| {
-        let msg =
-            format!("logger: failed to open log file {}", path.display());
-        SystemError::Logger {
-            message: msg,
-            source: Some(Box::new(err)),
-        }
+        let msg = format!("logger: failed to open file {}", path.display());
+        SystemError::logger(msg, Some(err.into()))
     })
 }
 
@@ -146,10 +136,7 @@ fn cleanup_old_logs(
                     "logger: failed to delete old log file {}",
                     path.display()
                 );
-                SystemError::Logger {
-                    message: msg,
-                    source: Some(Box::new(err)),
-                }
+                SystemError::logger(msg, Some(err.into()))
             })?;
         }
     }
@@ -163,10 +150,7 @@ fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
             "logger: failed to read directory {}",
             dir_path.display()
         );
-        SystemError::Logger {
-            message: msg,
-            source: Some(Box::new(err)),
-        }
+        SystemError::logger(msg, Some(err.into()))
     })?;
 
     let mut files = Vec::new();
@@ -177,10 +161,7 @@ fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
                 "logger: failed to read entry in directory {}",
                 dir_path.display()
             );
-            SystemError::Logger {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::logger(msg, Some(err.into()))
         })?;
 
         let file_type = entry.file_type().map_err(|err| {
@@ -188,10 +169,7 @@ fn get_files(dir_path: &Path) -> Result<Vec<PathBuf>, SystemError> {
                 "logger: failed to read file type for {}",
                 entry.path().display()
             );
-            SystemError::Logger {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::logger(msg, Some(err.into()))
         })?;
 
         if file_type.is_file() {

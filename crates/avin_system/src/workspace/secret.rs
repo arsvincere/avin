@@ -42,10 +42,7 @@ impl Secret {
                 "secret.toml: unsupported format '{}', supported={FORMAT}",
                 secret.format
             );
-            return Err(SystemError::Secret {
-                message: msg,
-                source: None,
-            });
+            return Err(SystemError::secret(msg, None));
         }
 
         Ok(secret)

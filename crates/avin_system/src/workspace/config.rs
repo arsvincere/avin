@@ -38,10 +38,7 @@ impl Config {
                 "config.toml: unsupported format '{}', supported={FORMAT}",
                 config.format
             );
-            return Err(SystemError::Config {
-                message: msg,
-                source: None,
-            });
+            return Err(SystemError::config(msg, None));
         }
 
         config.validate()?;
@@ -55,10 +52,7 @@ impl Config {
             let msg = format!(
                 "config.toml: invalid default data provider '{provider}'"
             );
-            SystemError::Config {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::config(msg, Some(err.into()))
         })?;
 
         LevelFilter::from_str(&self.log.level).map_err(|err| {
@@ -67,10 +61,7 @@ impl Config {
                 "config.toml: unknown log level '{}', available {}",
                 self.log.level, available
             );
-            SystemError::Config {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::config(msg, Some(err.into()))
         })?;
 
         Ok(())

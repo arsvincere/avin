@@ -31,9 +31,9 @@ impl TBankClient {
         let response = client
             .shares(request)
             .await
-            .map_err(|err| ConnectorError::Request {
-                message: "failed to get T-Bank shares".into(),
-                source: Some(Box::new(err)),
+            .map_err(|err| {
+                let msg = "failed to get T-Bank shares";
+                ConnectorError::request(msg, Some(err.into()))
             })?
             .into_inner();
 

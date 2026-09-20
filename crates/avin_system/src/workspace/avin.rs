@@ -37,10 +37,7 @@ impl AvinToml {
                 "AVIN.toml: unsupported format '{}', supported={FORMAT}",
                 avin.format
             );
-            return Err(SystemError::AvinToml {
-                message: msg,
-                source: None,
-            });
+            return Err(SystemError::avin_toml(msg, None));
         }
 
         let ws_dir = path.parent().unwrap();

@@ -32,10 +32,7 @@ impl TryFrom<api::RealExchange> for Exchange {
                     "exchange '{}' returned by T-Bank is not supported by AVIN",
                     value.as_str_name()
                 );
-                Err(ConnectorError::Conversion {
-                    message: msg,
-                    source: None,
-                })
+                Err(ConnectorError::conversion(msg, None))
             }
         }
     }
@@ -60,10 +57,7 @@ impl TryFrom<api::Share> for InstrumentInfo {
                     "{provider} share {} has no minimum price increment",
                     share.ticker
                 );
-                return Err(ConnectorError::Conversion {
-                    message: msg,
-                    source: None,
-                });
+                return Err(ConnectorError::conversion(msg, None));
             }
         };
 
@@ -117,10 +111,7 @@ impl TryFrom<api::Share> for InstrumentInfo {
                 "failed to convert {provider} share '{}' to InstrumentInfo",
                 share.ticker
             );
-            ConnectorError::Conversion {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            ConnectorError::conversion(msg, Some(err.into()))
         })?;
 
         Ok(info)

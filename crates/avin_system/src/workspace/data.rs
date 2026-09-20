@@ -36,10 +36,7 @@ impl DataManifest {
                 "data.toml: unsupported format '{}', supported={FORMAT}",
                 raw.format
             );
-            return Err(SystemError::DataManifest {
-                message: msg,
-                source: None,
-            });
+            return Err(SystemError::data(msg, None));
         }
 
         let mut sets = Vec::new();
@@ -165,10 +162,7 @@ fn get_instruments(
                 "data.toml: invalid instrument id in \
                 tbank.instruments '{iid}'"
             );
-            SystemError::DataManifest {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::data(msg, Some(err.into()))
         })?;
 
         result.push(iid);
@@ -200,10 +194,7 @@ fn get_bar_timeframes(
                 "data.toml: invalid timeframe in \
                 tbank.bars.timeframes '{tf}'"
             );
-            SystemError::DataManifest {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::data(msg, Some(err.into()))
         })?;
 
         timeframes.push(tf);
@@ -240,10 +231,7 @@ fn get_time_footprints(
                 "data.toml: invalid timeframe in \
                 tbank.footprints.time '{tf}'"
             );
-            SystemError::DataManifest {
-                message: msg,
-                source: Some(Box::new(err)),
-            }
+            SystemError::data(msg, Some(err.into()))
         })?;
 
         timeframes.push(tf);
@@ -287,6 +275,8 @@ fn get_value_footprints(provider: &ProviderDataToml) -> Vec<u64> {
         Some(value_footprints) => value_footprints.clone(),
     }
 }
+
+// tests ---------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {

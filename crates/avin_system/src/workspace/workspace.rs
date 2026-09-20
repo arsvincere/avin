@@ -94,10 +94,7 @@ fn locate_workspace_file() -> Result<PathBuf, SystemError> {
     // locate in current dir
     let cur_dir = env::current_dir().map_err(|err| {
         let msg = "failed to get current working directory".to_string();
-        SystemError::Workspace {
-            message: msg,
-            source: Some(Box::new(err)),
-        }
+        SystemError::workspace(msg, Some(err.into()))
     })?;
 
     if let Some(ws_file) = workspace_file_in(&cur_dir) {
@@ -113,10 +110,7 @@ fn locate_workspace_file() -> Result<PathBuf, SystemError> {
             and env var {WS_ENV_VAR} is not set",
             cur_dir.display()
         );
-        return Err(SystemError::Workspace {
-            message: msg,
-            source: None,
-        });
+        return Err(SystemError::workspace(msg, None));
     };
 
     let env_dir = PathBuf::from(env_dir);
@@ -130,10 +124,7 @@ fn locate_workspace_file() -> Result<PathBuf, SystemError> {
         but neither '{WS_FILE}' nor '{WS_FILE_HIDDEN}' exists there",
         env_dir.display()
     );
-    Err(SystemError::Workspace {
-        message: msg,
-        source: None,
-    })
+    Err(SystemError::workspace(msg, None))
 }
 
 fn workspace_file_in(dir: &Path) -> Option<PathBuf> {

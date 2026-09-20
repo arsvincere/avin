@@ -65,30 +65,20 @@ impl InstrumentInfo {
     ) -> Result<Self, DomainError> {
         // check name
         if name.is_empty() {
-            return Err(DomainError::InstrumentInfo {
-                message: "instrument name can't be empty".to_string(),
-                source: None,
-            });
+            let msg = "instrument name can't be empty";
+            return Err(DomainError::instrument_info(msg, None));
         }
 
         // check price step
         if price_step.value() <= 0.0 {
-            let msg =
-                format!("price step must be positive, got {price_step}");
-            return Err(DomainError::InstrumentInfo {
-                message: msg,
-                source: None,
-            });
+            let msg = "price step must be positive";
+            return Err(DomainError::instrument_info(msg, None));
         }
 
         // check lot size
         if lot_size.value() == 0.0 {
-            let msg =
-                format!("lot size must be greater than zero, got {lot_size}");
-            return Err(DomainError::InstrumentInfo {
-                message: msg,
-                source: None,
-            });
+            let msg = "lot size must be greater than zero";
+            return Err(DomainError::instrument_info(msg, None));
         }
 
         // fill required fields
@@ -107,10 +97,7 @@ impl InstrumentInfo {
         for key in extra_info.keys() {
             if info.contains_key(key) {
                 let msg = format!("extra info contains reserved key '{key}'");
-                return Err(DomainError::InstrumentInfo {
-                    message: msg,
-                    source: None,
-                });
+                return Err(DomainError::instrument_info(msg, None));
             }
         }
 
