@@ -6,10 +6,11 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use std::fmt::Display;
+use std::str::FromStr;
 
 use chrono::Datelike;
 
-use crate::{CoreError, Time};
+use crate::{CoreError, Time, TimeRange};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Year(u16);
@@ -63,6 +64,17 @@ impl Year {
     /// Returns the calendar year as a `u16`.
     pub fn value(self) -> u16 {
         self.0
+    }
+
+    /// Returns the calendar year as a `TimeRange`.
+    pub fn time_range(self) -> TimeRange {
+        let begin = format!("{}-01-01", self.0);
+        let end = format!("{}-01-01", self.0 + 1);
+
+        let begin = Time::from_str(&begin).unwrap();
+        let end = Time::from_str(&end).unwrap();
+
+        TimeRange::new(begin, end).unwrap()
     }
 }
 
