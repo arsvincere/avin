@@ -9,5 +9,6 @@ mod data;
 mod error;
 mod instrument;
 
+pub use data::DataService;
 pub use error::ServiceError;
 pub use instrument::InstrumentService;
