@@ -77,6 +77,10 @@ impl TryFrom<api::Share> for InstrumentInfo {
             "short_enabled".to_string(),
             share.short_enabled_flag.to_string(),
         );
+        extra_info.insert(
+            "div_yield_flag".to_string(),
+            share.div_yield_flag.to_string(),
+        );
 
         if let Some(value) = share.dlong_client {
             extra_info.insert(
@@ -91,6 +95,11 @@ impl TryFrom<api::Share> for InstrumentInfo {
                 f64::from(value).to_string(),
             );
         }
+
+        if let Some(ts) = share.ipo_date {
+            let time = time(ts);
+            extra_info.insert("ipo_date".to_string(), time.to_string());
+        };
 
         if let Some(ts) = share.first_1min_candle_date {
             let time = time(ts);
