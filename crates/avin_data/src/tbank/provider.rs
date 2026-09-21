@@ -18,7 +18,7 @@ use avin_system::Workspace;
 
 use crate::{DataError, InstrumentPack};
 
-use Category::{Future, Share};
+use Category::{Bond, Future, Share};
 use DataProvider::TBank;
 use Exchange::{Moex, Spb};
 
@@ -41,6 +41,10 @@ impl TBankProvider {
             let msg = "failed to fetch T-Bank futures reference data";
             DataError::connect(msg, Some(err.into()))
         })?;
+        let bonds = tbank.bonds().await.map_err(|err| {
+            let msg = "failed to fetch T-Bank bonds reference data";
+            DataError::connect(msg, Some(err.into()))
+        })?;
 
         // T-Bank returns shares from MOEX and SPB, separate them by exchange.
         let mut moex = Vec::new();
@@ -57,6 +61,7 @@ impl TBankProvider {
             InstrumentPack::new(TBank, Moex, Share, moex)?,
             InstrumentPack::new(TBank, Spb, Share, spb)?,
             InstrumentPack::new(TBank, Moex, Future, futures)?,
+            InstrumentPack::new(TBank, Moex, Bond, bonds)?,
         ];
 
         Ok(packs)

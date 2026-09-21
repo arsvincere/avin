@@ -107,7 +107,7 @@ impl InstrumentInfo {
         Ok(Self { info })
     }
 
-    // TODO: docs
+    // TODO: docs + fields check
     pub fn new_future(
         provider: DataProvider,
         exchange: Exchange,
@@ -137,6 +137,60 @@ impl InstrumentInfo {
 
         // fill required fields
         let category = Category::Future;
+        let mut info = HashMap::new();
+
+        info.insert("provider".to_string(), provider.key().to_string());
+        info.insert("exchange".to_string(), exchange.key().to_string());
+        info.insert("category".to_string(), category.key().to_string());
+        info.insert("ticker".to_string(), ticker.to_string());
+        info.insert("name".to_string(), name);
+        info.insert("price_step".to_string(), price_step.to_string());
+        info.insert("lot_size".to_string(), lot_size.to_string());
+
+        // check collisions with canonical fields
+        for key in extra_info.keys() {
+            if info.contains_key(key) {
+                let msg = format!("extra info contains reserved key '{key}'");
+                return Err(DomainError::instrument_info(msg, None));
+            }
+        }
+
+        // add extra info
+        info.extend(extra_info);
+
+        Ok(Self { info })
+    }
+
+    // TODO: docs + fields check
+    pub fn new_bond(
+        provider: DataProvider,
+        exchange: Exchange,
+        ticker: Ticker,
+        name: String,
+        price_step: Price,
+        lot_size: Quantity,
+        extra_info: HashMap<String, String>,
+    ) -> Result<Self, DomainError> {
+        // check name
+        if name.is_empty() {
+            let msg = "instrument name can't be empty";
+            return Err(DomainError::instrument_info(msg, None));
+        }
+
+        // check price step
+        if price_step.value() <= 0.0 {
+            let msg = "price step must be positive";
+            return Err(DomainError::instrument_info(msg, None));
+        }
+
+        // check lot size
+        if lot_size.value() == 0.0 {
+            let msg = "lot size must be greater than zero";
+            return Err(DomainError::instrument_info(msg, None));
+        }
+
+        // fill required fields
+        let category = Category::Bond;
         let mut info = HashMap::new();
 
         info.insert("provider".to_string(), provider.key().to_string());
