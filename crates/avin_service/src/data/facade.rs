@@ -12,7 +12,7 @@ use polars::prelude::DataFrame;
 
 use avin_core::{TimeRange, Year};
 use avin_data::TBankProvider;
-use avin_domain::{DataProvider, InstrumentId, MarketData};
+use avin_domain::{DataProvider, InstrumentId, MarketData, TimeFrame};
 use avin_storage::{MarketDataKey, StorageStatus};
 
 use DataProvider::{MoexAlgo, TBank};
@@ -83,13 +83,15 @@ fn download_tbank(
     md: MarketData,
     year: Year,
 ) -> Result<(), ServiceError> {
-    let instrument = InstrumentService::find_iid(TBank, iid)?;
-    // let range = year.time_range();           ????
-    // let range = TimeRange::from(year);       ????
-    // let range = TimeRange::try_from(year);   ????
+    let i = InstrumentService::find_iid(TBank, iid)?;
+    let range = year.time_range();
 
     // match md {
-    //     MarketData::Tick => TBankProvider::fetch_ticks(instrument, range),
+    //     MarketData::Tick => TBankProvider::fetch_ticks(i, range),
+    //     MarketData::Bar1M => {
+    //         TBankProvider::fetch_bars(i, TimeFrame::M1, range)
+    //     }
+    //     _ => todo!(),
     // };
 
     todo!();

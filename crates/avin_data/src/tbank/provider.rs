@@ -16,7 +16,7 @@ use avin_domain::{
 };
 use avin_system::Workspace;
 
-use crate::{DataError, InstrumentPack};
+use crate::{BarsPack, DataError, InstrumentPack};
 
 use Category::{Bond, Future, Share};
 use DataProvider::TBank;
@@ -71,7 +71,7 @@ impl TBankProvider {
         instrument: InstrumentInfo,
         tf: TimeFrame,
         range: TimeRange,
-    ) -> Result<Vec<Bar>, DataError> {
+    ) -> Result<BarsPack, DataError> {
         if tf != TimeFrame::M1 {
             let msg = format!(
                 "T-Bank doesn't provide {tf} bars, available=[{}]",
