@@ -6,5 +6,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 mod key;
+mod storage;
 
 pub use key::MarketDataKey;
+pub use storage::MarketDataStorage;

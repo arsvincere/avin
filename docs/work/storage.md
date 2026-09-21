@@ -122,31 +122,6 @@ complete = true
 
 # Api
 
-## InstrumentInfoStorage
-
-```rust
-InstrumentInfoStorage::exists(
-    provider: DataProvider,
-    category: Category,
-) -> Result<bool, AvinError>
-
-InstrumentInfoStorage::save(
-    provider: DataProvider,
-    category: Category,
-    df: DataFrame,
-) -> Result<(), AvinError>
-
-InstrumentInfoStorage::load(
-    provider: DataProvider,
-    category: Category,
-) -> Result<DataFrame, AvinError>
-
-InstrumentInfoStorage::delete(
-    provider: DataProvider,
-    category: Category,
-) -> Result<(), AvinError>
-```
-
 ## MarketDataStorage
 
 ```rust

@@ -13,5 +13,5 @@ mod traits;
 
 pub use error::StorageError;
 pub use instrument::{InstrumentInfoKey, InstrumentInfoStorage};
-pub use market_data::MarketDataKey;
+pub use market_data::{MarketDataKey, MarketDataStorage};
 pub use traits::DataFrameExt;
