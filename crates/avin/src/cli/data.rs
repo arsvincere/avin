@@ -5,6 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+use avin_service::DataService;
 use clap::{Args, Subcommand};
 
 use avin_core::Year;
@@ -14,8 +15,9 @@ use avin::err::AvinError;
 
 #[derive(Subcommand)]
 pub(super) enum DataCommand {
-    Sync(SyncOptions),
+    Download(DownloadOptions),
     Delete(DeleteOptions),
+    Sync(SyncOptions),
     Prune,
     Compact,
 }
@@ -23,6 +25,8 @@ pub(super) enum DataCommand {
 impl DataCommand {
     pub(super) fn run(self) -> Result<(), AvinError> {
         match self {
+            DataCommand::Download(options) => download(options),
+
             DataCommand::Sync(options) => {
                 if options.resume {
                     println!("Resume sync");
@@ -47,6 +51,7 @@ impl DataCommand {
                     options.data,
                     options.year,
                 );
+                Ok(())
             }
 
             DataCommand::Delete(options) => {
@@ -57,19 +62,50 @@ impl DataCommand {
                     options.data,
                     options.year,
                 );
+                Ok(())
             }
 
             DataCommand::Prune => {
                 println!("Prune data");
+                Ok(())
             }
 
             DataCommand::Compact => {
                 println!("Compact data");
+                Ok(())
             }
-        };
-
-        Ok(())
+        }
     }
+}
+
+#[derive(Args)]
+pub(super) struct DownloadOptions {
+    #[arg(long)]
+    provider: DataProvider,
+
+    #[arg(long, requires = "provider")]
+    instrument: InstrumentId,
+
+    #[arg(long, requires = "instrument")]
+    data: Option<MarketData>,
+
+    #[arg(long, requires = "data", value_parser = parse_year)]
+    year: Option<Year>,
+}
+
+#[derive(Args)]
+pub(super) struct DeleteOptions {
+    #[arg(long)]
+    provider: Option<DataProvider>,
+
+    #[arg(long, requires = "provider")]
+    instrument: Option<InstrumentId>,
+
+    #[arg(long, requires = "instrument")]
+    data: Option<MarketData>,
+
+    #[arg(long, requires = "data", value_parser = parse_year)]
+    year: Option<Year>,
 }
 
 #[derive(Args)]
@@ -99,21 +135,19 @@ pub(super) struct SyncOptions {
     year: Option<Year>,
 }
 
-#[derive(Args)]
-pub(super) struct DeleteOptions {
-    #[arg(long)]
-    provider: Option<DataProvider>,
+fn download(opt: DownloadOptions) -> Result<(), AvinError> {
+    DataService::download(
+        opt.provider,
+        &opt.instrument,
+        opt.data.unwrap(),
+        opt.year.unwrap(),
+    )
+    .unwrap();
 
-    #[arg(long, requires = "provider")]
-    instrument: Option<InstrumentId>,
-
-    #[arg(long, requires = "instrument")]
-    data: Option<MarketData>,
-
-    #[arg(long, requires = "data", value_parser = parse_year)]
-    year: Option<Year>,
+    Ok(())
 }
 
+// TODO: добавить парсер в сам тип Year чтобы clap им мог пользоваться
 fn parse_year(value: &str) -> Result<Year, String> {
     let year = value
         .parse::<u16>()

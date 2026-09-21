@@ -6,7 +6,9 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use avin_data::TBankProvider;
-use avin_domain::{Category, DataProvider, Exchange, InstrumentInfo};
+use avin_domain::{
+    Category, DataProvider, Exchange, InstrumentId, InstrumentInfo,
+};
 use avin_storage::{InstrumentInfoKey, InstrumentInfoStorage};
 
 use DataProvider::{MoexAlgo, TBank};
@@ -62,11 +64,18 @@ impl InstrumentService {
         Ok(inventory)
     }
 
-    pub fn find(
+    pub fn find_code(
         provider: DataProvider,
         code: &str,
     ) -> Result<InstrumentInfo, ServiceError> {
         InstrumentCatalog::find_code(provider, code)
+    }
+
+    pub fn find_iid(
+        provider: DataProvider,
+        iid: &InstrumentId,
+    ) -> Result<InstrumentInfo, ServiceError> {
+        InstrumentCatalog::find_iid(provider, iid)
     }
 
     pub fn find_figi(
