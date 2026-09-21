@@ -33,13 +33,13 @@ impl TBankClient {
         let channel = Channel::from_static(ENDPOINT)
             .tls_config(tls)
             .map_err(|err| {
-                let msg = "failed to configure TBank TLS";
+                let msg = "failed to configure T-Bank TLS";
                 ConnectorError::connection(msg, Some(err.into()))
             })?
             .connect()
             .await
             .map_err(|err| {
-                let msg = "failed to connect to TBank API";
+                let msg = "failed to connect to T-Bank API";
                 ConnectorError::connection(msg, Some(err.into()))
             })?;
 

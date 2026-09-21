@@ -39,7 +39,7 @@ impl TBankClient {
 
         let mut instruments = Vec::new();
         for share in response.instruments {
-            if !supported(&share) {
+            if !supported_share(&share) {
                 continue;
             }
             let info = InstrumentInfo::try_from(share)?;
@@ -48,12 +48,46 @@ impl TBankClient {
 
         Ok(instruments)
     }
+
+    pub async fn futures(
+        &self,
+    ) -> Result<Vec<InstrumentInfo>, ConnectorError> {
+        let request = api::InstrumentsRequest {
+            instrument_status: Some(api::InstrumentStatus::Base as i32),
+            instrument_exchange: None,
+        };
+
+        let mut client = InstrumentsServiceClient::with_interceptor(
+            self.channel.clone(),
+            self.interceptor.clone(),
+        );
+
+        let response = client
+            .futures(request)
+            .await
+            .map_err(|err| {
+                let msg = "failed to get T-Bank futures";
+                ConnectorError::request(msg, Some(err.into()))
+            })?
+            .into_inner();
+
+        let mut instruments = Vec::new();
+        for future in response.instruments {
+            if !supported_future(&future) {
+                continue;
+            }
+            let info = InstrumentInfo::try_from(future)?;
+            instruments.push(info);
+        }
+
+        Ok(instruments)
+    }
 }
 
-// NOTE: отбрасываем всякую непонятную поебень:
+// отбрасываем всякую непонятную поебень:
 // - внебиржевые инструменты
 // - не торгующиеся больше инструменты у которых нет min price step
-fn supported(share: &api::Share) -> bool {
+fn supported_share(share: &api::Share) -> bool {
     if share.min_price_increment.is_none() {
         return false;
     }
@@ -65,4 +99,15 @@ fn supported(share: &api::Share) -> bool {
         api::RealExchange::Otc => false,
         api::RealExchange::Dealer => false,
     }
+}
+
+// отбрасываем всякую непонятную поебень:
+// - неоактивы (RealExchange::Unspecified)
+// - пока оставляем только MOEX futures
+fn supported_future(future: &api::Future) -> bool {
+    if future.real_exchange() == api::RealExchange::Moex {
+        return true;
+    }
+
+    false
 }

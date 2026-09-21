@@ -18,7 +18,7 @@ use avin_system::Workspace;
 
 use crate::{DataError, InstrumentPack};
 
-use Category::Share;
+use Category::{Future, Share};
 use DataProvider::TBank;
 use Exchange::{Moex, Spb};
 
@@ -34,7 +34,11 @@ impl TBankProvider {
         let tbank = connect_tbank().await?;
 
         let shares = tbank.shares().await.map_err(|err| {
-            let msg = "failed to fetch T-Bank instrument reference data";
+            let msg = "failed to fetch T-Bank shares reference data";
+            DataError::connect(msg, Some(err.into()))
+        })?;
+        let futures = tbank.futures().await.map_err(|err| {
+            let msg = "failed to fetch T-Bank futures reference data";
             DataError::connect(msg, Some(err.into()))
         })?;
 
@@ -49,10 +53,13 @@ impl TBankProvider {
             }
         }
 
-        let moex = InstrumentPack::new(TBank, Moex, Share, moex)?;
-        let spb = InstrumentPack::new(TBank, Spb, Share, spb)?;
+        let packs = vec![
+            InstrumentPack::new(TBank, Moex, Share, moex)?,
+            InstrumentPack::new(TBank, Spb, Share, spb)?,
+            InstrumentPack::new(TBank, Moex, Future, futures)?,
+        ];
 
-        Ok(vec![moex, spb])
+        Ok(packs)
     }
 
     pub fn fetch_bars(
