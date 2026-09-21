@@ -277,13 +277,14 @@ impl TryFrom<api::Bond> for InstrumentInfo {
         extra_info.insert("exchange_section".into(), bond.exchange);
         extra_info.insert("class_code".into(), bond.class_code);
         extra_info.insert("figi".into(), bond.figi);
+        extra_info.insert("isin".into(), bond.isin);
         extra_info.insert("uid".into(), bond.uid);
         extra_info.insert(
             "short_enabled".into(),
             bond.short_enabled_flag.to_string(),
         );
         extra_info.insert(
-            "coupon_quantity".into(),
+            "coupon_quantity_per_year".into(),
             bond.coupon_quantity_per_year.to_string(),
         );
 

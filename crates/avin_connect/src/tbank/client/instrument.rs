@@ -98,7 +98,7 @@ impl TBankClient {
             .bonds(request)
             .await
             .map_err(|err| {
-                let msg = "failed to get T-Bank futures";
+                let msg = "failed to get T-Bank bonds";
                 ConnectorError::request(msg, Some(err.into()))
             })?
             .into_inner();
