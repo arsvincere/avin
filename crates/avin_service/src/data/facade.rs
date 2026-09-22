@@ -95,12 +95,12 @@ fn download_bars(
 ) -> Result<(), ServiceError> {
     let range = year.time_range();
 
-    let result = match provider {
+    let fetch_result = match provider {
         TBank => TBankProvider::fetch_bars(instrument.clone(), tf, range),
         MoexAlgo => todo!(),
     };
 
-    let packs = result.map_err(|err| {
+    let pack_iterator = fetch_result.map_err(|err| {
         let msg = "";
         ServiceError::fetch(msg, Some(err.into()))
     })?;
@@ -114,8 +114,8 @@ fn download_bars(
         ServiceError::store(msg, Some(err.into()))
     })?;
 
-    for pack in packs {
-        let pack = pack.map_err(|err| {
+    for pack_result in pack_iterator {
+        let pack = pack_result.map_err(|err| {
             let msg = "";
             ServiceError::fetch(msg, Some(err.into()))
         })?;

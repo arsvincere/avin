@@ -79,16 +79,26 @@ impl WriteOperation {
         range: TimeRange,
         data: &[T],
     ) -> Result<(), StorageError> {
-        match self.md {
-            MarketData::Tick if TypeId::of::<T>() != TypeId::of::<Tick>() => {
-                todo!("err");
+        let valid = match self.md {
+            MarketData::Tick => TypeId::of::<T>() == TypeId::of::<Tick>(),
+
+            MarketData::Bar1M
+            | MarketData::Bar5M
+            | MarketData::Bar10M
+            | MarketData::Bar15M
+            | MarketData::Bar1H
+            | MarketData::Bar4H
+            | MarketData::BarDay
+            | MarketData::BarWeek
+            | MarketData::BarMonth => {
+                TypeId::of::<T>() == TypeId::of::<Bar>()
             }
 
-            MarketData::Bar1M if TypeId::of::<T>() != TypeId::of::<Bar>() => {
-                todo!("err");
-            }
+            MarketData::OrderBook => todo!(),
+        };
 
-            _ => todo!(),
+        if !valid {
+            todo!("err")
         }
 
         let df = T::to_df(data)?;
