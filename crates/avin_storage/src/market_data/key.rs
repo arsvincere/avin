@@ -6,7 +6,7 @@
 // ───────────────────────────────────────────────────────────────────────────
 
 use avin_core::Year;
-use avin_domain::{DataProvider, InstrumentId, InstrumentInfo, MarketData};
+use avin_domain::{DataProvider, InstrumentId, MarketData};
 
 pub enum MarketDataKey {
     Provider {

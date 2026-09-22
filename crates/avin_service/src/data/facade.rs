@@ -15,9 +15,7 @@ use avin_data::TBankProvider;
 use avin_domain::{
     Bar, DataProvider, InstrumentId, InstrumentInfo, MarketData, TimeFrame,
 };
-use avin_storage::{
-    DataChunk, MarketDataKey, MarketDataStorage, StorageStatus,
-};
+use avin_storage::{MarketDataKey, MarketDataStorage, StorageStatus};
 
 use DataProvider::{MoexAlgo, TBank};
 
@@ -32,8 +30,7 @@ impl DataService {
         md: MarketData,
         year: Year,
     ) -> Result<(), ServiceError> {
-        let i = InstrumentService::find_iid(TBank, iid)?;
-        let range = year.time_range();
+        let i = InstrumentService::find_iid(provider, iid)?;
 
         match md {
             MarketData::Tick => download_ticks(provider, i, year)?,
@@ -123,13 +120,8 @@ fn download_bars(
             ServiceError::fetch(msg, Some(err.into()))
         })?;
 
-        // operation.add_bars(pack.range(), pack.bars()); ??? но при этом операция следит что добавление корректно
-        //
-        // или
-        //
-        // let df = Bar::to_df(pack.bars())?;
-        // let chunk = DataChunk::new(range, df);
-        // operation.add(chunk);            ???
+        // need impl DataFrameExt for Bar
+        // operation.add(pack.range(), pack.bars());
     }
 
     operation.finalize().map_err(|err| {

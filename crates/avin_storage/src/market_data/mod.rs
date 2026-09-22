@@ -9,4 +9,4 @@ mod key;
 mod storage;
 
 pub use key::MarketDataKey;
-pub use storage::{DataChunk, MarketDataStorage, StorageStatus};
+pub use storage::{MarketDataStorage, StorageStatus};

@@ -8,12 +8,16 @@
 // TODO: delete after impl
 #![allow(unused)]
 
+use std::any::TypeId;
+
 use polars::prelude::DataFrame;
 
 use avin_core::{Quantity, Time, TimeRange, Year};
-use avin_domain::{DataProvider, InstrumentId, MarketData};
+use avin_domain::{
+    Bar, DataProvider, InstrumentId, MarketData, Tick, TimeFrame,
+};
 
-use crate::{MarketDataKey, StorageError};
+use crate::{DataFrameExt, MarketDataKey, StorageError};
 
 pub struct MarketDataStorage {}
 
@@ -34,31 +38,25 @@ impl MarketDataStorage {
         todo!()
     }
 
-    pub fn write(
-        key: MarketDataKey, // или provider, iid, md, year??? key может быть не валиден...
-    ) -> Result<WriteOperation, StorageError> {
-        todo!()
-    }
-
-    pub fn delete(key: MarketDataKey) -> Result<(), StorageError> {
+    pub fn write(key: MarketDataKey) -> Result<WriteOperation, StorageError> {
         todo!()
     }
 
     pub fn load_range(
-        provider: DataProvider,
-        iid: &InstrumentId,
-        md: MarketData,
+        key: MarketDataKey,
         range: TimeRange,
     ) -> Result<DataFrame, StorageError> {
         todo!()
     }
 
     pub fn load_latest(
-        provider: DataProvider,
-        iid: &InstrumentId,
-        md: MarketData,
+        key: MarketDataKey,
         quantity: Quantity,
     ) -> Result<DataFrame, StorageError> {
+        todo!()
+    }
+
+    pub fn delete(key: MarketDataKey) -> Result<(), StorageError> {
         todo!()
     }
 }
@@ -76,31 +74,37 @@ pub struct WriteOperation {
 }
 
 impl WriteOperation {
-    pub fn add(&self, chunk: DataChunk) -> Result<(), StorageError> {
+    pub fn add<T: DataFrameExt + 'static>(
+        &self,
+        range: TimeRange,
+        data: &[T],
+    ) -> Result<(), StorageError> {
+        match self.md {
+            MarketData::Tick if TypeId::of::<T>() != TypeId::of::<Tick>() => {
+                todo!("err");
+            }
+
+            MarketData::Bar1M if TypeId::of::<T>() != TypeId::of::<Bar>() => {
+                todo!("err");
+            }
+
+            _ => todo!(),
+        }
+
+        let df = T::to_df(data)?;
+
         todo!()
     }
+
     pub fn finalize(self) -> Result<(), StorageError> {
         todo!()
     }
+
     pub fn abort(self) -> Result<(), StorageError> {
         todo!()
     }
+
     pub fn next_time(&self) -> Result<Option<Time>, StorageError> {
         todo!()
-    }
-}
-
-pub struct DataChunk {
-    coverage_range: TimeRange,
-    df: DataFrame,
-}
-
-impl DataChunk {
-    pub fn new(coverage_range: TimeRange, df: DataFrame) -> Self {
-        // TODO: validate range???? уже сложнее потому что хз что в дф
-        // тики бары стаканы... надо уже схему смотреть... код сложнее
-        // проще будет если передавать стореджу доменные объекты а он
-        // уже разбирается с ними и превращает в дф...
-        Self { coverage_range, df }
     }
 }
