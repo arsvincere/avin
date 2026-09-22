@@ -15,17 +15,15 @@ use crate::DataError;
 
 pub struct TicksPack {
     instrument: InstrumentInfo,
-    timeframe: TimeFrame,
     range: TimeRange,
-    bars: Vec<Tick>,
+    ticks: Vec<Tick>,
 }
 
 impl TicksPack {
     pub fn new(
         instrument: InstrumentInfo,
-        tf: TimeFrame,
         range: TimeRange,
-        bars: Vec<Tick>,
+        ticks: Vec<Tick>,
     ) -> Result<Self, DataError> {
         // check sorted
         // check in range
@@ -36,15 +34,11 @@ impl TicksPack {
         &self.instrument
     }
 
-    pub fn timeframe(&self) -> TimeFrame {
-        self.timeframe
-    }
-
     pub fn range(&self) -> TimeRange {
         self.range
     }
 
-    pub fn bars(&self) -> &[Tick] {
-        &self.bars
+    pub fn ticks(&self) -> &[Tick] {
+        &self.ticks
     }
 }
