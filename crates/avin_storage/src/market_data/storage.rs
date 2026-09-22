@@ -94,3 +94,13 @@ pub struct DataChunk {
     coverage_range: TimeRange,
     df: DataFrame,
 }
+
+impl DataChunk {
+    pub fn new(coverage_range: TimeRange, df: DataFrame) -> Self {
+        // TODO: validate range???? уже сложнее потому что хз что в дф
+        // тики бары стаканы... надо уже схему смотреть... код сложнее
+        // проще будет если передавать стореджу доменные объекты а он
+        // уже разбирается с ними и превращает в дф...
+        Self { coverage_range, df }
+    }
+}

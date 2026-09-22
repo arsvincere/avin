@@ -13,4 +13,8 @@ pub use bars_pack::BarsPack;
 pub use instrument_pack::InstrumentPack;
 pub use ticks_pack::TicksPack;
 
+// ───────────────────────────────────────────────────────────────────────────
+
+use crate::DataError;
+
 pub type PackIterator<T> = Box<dyn Iterator<Item = Result<T, DataError>>>;
