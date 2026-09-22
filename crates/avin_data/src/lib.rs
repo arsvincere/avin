@@ -10,5 +10,5 @@ mod packs;
 mod tbank;
 
 pub use error::DataError;
-pub use packs::{BarsPack, InstrumentPack};
+pub use packs::{BarsPack, InstrumentPack, PackIterator, TicksPack};
 pub use tbank::TBankProvider;

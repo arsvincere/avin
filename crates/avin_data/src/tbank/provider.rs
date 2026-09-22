@@ -16,7 +16,7 @@ use avin_domain::{
 };
 use avin_system::Workspace;
 
-use crate::{BarsPack, DataError, InstrumentPack};
+use crate::{BarsPack, DataError, InstrumentPack, PackIterator, TicksPack};
 
 use Category::{Bond, Future, Share};
 use DataProvider::TBank;
@@ -71,12 +71,13 @@ impl TBankProvider {
         instrument: InstrumentInfo,
         tf: TimeFrame,
         range: TimeRange,
-    ) -> Result<BarsPack, DataError> {
+    ) -> Result<PackIterator<BarsPack>, DataError> {
         if tf != TimeFrame::M1 {
             let msg = format!(
                 "T-Bank doesn't provide {tf} bars, available=[{}]",
                 TimeFrame::M1,
             );
+
             return Err(DataError::unavailable(msg, None));
         }
 
@@ -86,7 +87,7 @@ impl TBankProvider {
     pub fn fetch_ticks(
         instrument: InstrumentInfo,
         range: TimeRange,
-    ) -> Result<Vec<Tick>, DataError> {
+    ) -> Result<PackIterator<TicksPack>, DataError> {
         todo!()
     }
 }
