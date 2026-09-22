@@ -43,35 +43,6 @@ impl DataService {
             _ => todo!(),
         };
 
-        // let packs = match provider {
-        //     TBank => TBankProvider::fetch(i, md, range)?,
-        //     MoexAlgo => todo!(),
-        // };
-        //
-        // // Open storage operation
-        // let operation = MarketDataStorage::write(provider, iid, md, year)?;
-        //
-        // for pack in packs {
-        //     match pack {
-        //         Pack::Bars(p) => operation.add_bars(p.bars()),
-        //         Pack::Ticks(p) => operation.add_ticks(p.ticks()),
-        //         Pack::Instruments(p) => unreachable!(),
-        //     }
-        // }
-        //
-        // for pack in packs {
-        //     let Pack::Bars(pack) = pack else {
-        //         // error
-        //         todo!()
-        //     };
-        //     let df = Bar::to_df(pack.bars())?;
-        //     let chunk = DataChunk {
-        //         coverage_range: range,
-        //         df,
-        //     };
-        //     operation.add(chunk)
-        // }
-
         todo!()
     }
 
@@ -176,29 +147,3 @@ fn download_ticks(
 ) -> Result<(), ServiceError> {
     todo!()
 }
-
-// fn download_tbank(
-//     iid: &InstrumentId,
-//     md: MarketData,
-//     year: Year,
-// ) -> Result<(), ServiceError> {
-//     // match md {
-//     //     MarketData::Tick => TBankProvider::fetch_ticks(i, range),
-//     //     MarketData::Bar1M => {
-//     //         TBankProvider::fetch_bars(i, TimeFrame::M1, range)
-//     //     }
-//     //     _ => todo!(),
-//     // };
-//
-//     todo!();
-// }
-//
-// fn download_moexalgo(
-//     _iid: &InstrumentId,
-//     _md: MarketData,
-//     _year: Year,
-// ) -> Result<(), ServiceError> {
-//     let msg = format!("{} support is not implemented", MoexAlgo);
-//
-//     Err(ServiceError::fetch(msg, None))
-// }
