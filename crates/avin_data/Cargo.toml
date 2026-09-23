@@ -17,5 +17,5 @@ avin_system = { workspace = true }
 
 chrono = { workspace = true }
 tempfile = { workspace = true }
-ureq = { workspace = true }
+reqwest = { workspace = true }
 zip = { workspace = true }

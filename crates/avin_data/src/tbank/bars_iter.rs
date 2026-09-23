@@ -16,7 +16,8 @@ use std::thread;
 use std::time::Duration;
 
 use chrono::{DateTime, Datelike, Utc};
-use ureq::{Agent, Error as HttpError};
+use reqwest::StatusCode;
+use reqwest::blocking::Client;
 use zip::ZipArchive;
 
 use avin_core::{Price, Quantity, Time, TimeRange};
@@ -31,7 +32,6 @@ pub(super) struct TBankBarsIterator {
     range: TimeRange,
     uid: String,
     token: String,
-    agent: Agent,
     years: RangeInclusive<i32>,
     archive: Option<YearArchive>,
 }
@@ -66,17 +66,12 @@ impl TBankBarsIterator {
         let first_year = range.begin().dt().year();
         let last_year = Time::new(range.end().ts() - 1).dt().year();
 
-        let config = Agent::config_builder()
-            .timeout_global(Some(Duration::from_secs(30)))
-            .build();
-
         Ok(Self {
             instrument,
             tf,
             range,
             uid,
             token: ws.secret.tbank_token().to_string(),
-            agent: Agent::new_with_config(config),
             years: first_year..=last_year,
             archive: None,
         })
@@ -88,7 +83,6 @@ impl TBankBarsIterator {
         })?;
 
         if !download_archive(
-            &self.agent,
             &self.token,
             &self.uid,
             year,
@@ -187,30 +181,75 @@ impl YearArchive {
 }
 
 fn download_archive(
-    agent: &Agent,
     token: &str,
     uid: &str,
     year: i32,
     file: &mut File,
 ) -> Result<bool, DataError> {
+    thread::scope(|scope| {
+        scope
+            .spawn(|| download_archive_blocking(token, uid, year, file))
+            .join()
+            .map_err(|_| {
+                DataError::connect(
+                    "T-Bank download thread panicked",
+                    None,
+                )
+            })?
+    })
+}
+
+fn download_archive_blocking(
+    token: &str,
+    uid: &str,
+    year: i32,
+    file: &mut File,
+) -> Result<bool, DataError> {
+    let client = Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()
+        .map_err(|err| {
+            connect_error("failed to create T-Bank HTTP client", err)
+        })?;
+
     let url = format!(
         "https://invest-public-api.tbank.ru/history-data?instrumentId={uid}&year={year}"
     );
-    let authorization = format!("Bearer {token}");
 
     for attempt in 0..5 {
-        let response = agent
+        let response = client
             .get(&url)
-            .header("Authorization", authorization.as_str())
-            .call();
+            .bearer_auth(token)
+            .send();
 
         match response {
             Ok(mut response) => {
-                let size = io::copy(
-                    &mut response.body_mut().as_reader(),
-                    file,
-                )
-                .map_err(|err| {
+                let status = response.status();
+
+                if status == StatusCode::NOT_FOUND {
+                    return Ok(false);
+                }
+
+                if retryable(status.as_u16()) {
+                    if attempt == 4 {
+                        let msg = format!(
+                            "failed to download T-Bank bars for {year} after 5 attempts: HTTP {status}"
+                        );
+                        return Err(DataError::connect(msg, None));
+                    }
+
+                    thread::sleep(Duration::from_secs(1_u64 << attempt));
+                    continue;
+                }
+
+                if !status.is_success() {
+                    let msg = format!(
+                        "failed to download T-Bank bars for {year}: HTTP {status}"
+                    );
+                    return Err(DataError::connect(msg, None));
+                }
+
+                let size = io::copy(&mut response, file).map_err(|err| {
                     connect_error(
                         format!("failed to download T-Bank bars for {year}"),
                         err,
@@ -218,15 +257,6 @@ fn download_archive(
                 })?;
 
                 return Ok(size > 0);
-            }
-
-            Err(HttpError::StatusCode(404)) => return Ok(false),
-
-            Err(HttpError::StatusCode(code)) if !retryable(code) => {
-                let msg = format!(
-                    "failed to download T-Bank bars for {year}: HTTP {code}"
-                );
-                return Err(DataError::connect(msg, None));
             }
 
             Err(err) => {
