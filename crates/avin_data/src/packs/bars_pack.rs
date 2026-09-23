@@ -89,7 +89,7 @@ impl BarsPack {
         self.range
     }
 
-    /// Returns all bars of pack.
+    /// Returns all bars in the pack.
     pub fn bars(&self) -> &[Bar] {
         &self.bars
     }
@@ -176,11 +176,27 @@ mod tests {
     }
 
     #[test]
-    fn reject_outside_range() {
+    fn reject_outside_range_left() {
         let bars = vec![
             bar("2026-01-01 09:59"),
             bar("2026-01-01 10:00"),
             bar("2026-01-01 10:01"),
+        ];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let result = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(matches!(result, Err(DataError::Pack { .. })));
+    }
+
+    #[test]
+    fn reject_outside_range_right() {
+        let bars = vec![
+            bar("2026-01-01 10:00"),
+            bar("2026-01-01 10:01"),
+            bar("2026-01-01 11:00"),
         ];
         let instrument = instrument();
         let tf = TimeFrame::M1;
