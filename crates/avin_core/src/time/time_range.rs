@@ -92,6 +92,11 @@ impl TimeRange {
     pub fn contains(&self, time: Time) -> bool {
         self.begin <= time && time < self.end
     }
+
+    /// Returns `true` if the range contains 0 nanoseconds.
+    pub fn is_empty(&self) -> bool {
+        self.begin == self.end
+    }
 }
 
 impl Display for TimeRange {

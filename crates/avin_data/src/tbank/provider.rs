@@ -18,6 +18,8 @@ use avin_system::Workspace;
 
 use crate::{BarsPack, DataError, InstrumentPack, PackIterator, TicksPack};
 
+use super::bars_iter::TBankBarsIterator;
+
 use Category::{Bond, Future, Share};
 use DataProvider::TBank;
 use Exchange::{Moex, Spb};
@@ -81,7 +83,15 @@ impl TBankProvider {
             return Err(DataError::unavailable(msg, None));
         }
 
-        todo!()
+        if range.is_empty() {
+            return Ok(Box::new(std::iter::empty::<
+                Result<BarsPack, DataError>,
+            >()));
+        }
+
+        let iterator = TBankBarsIterator::new(instrument, tf, range)?;
+
+        Ok(Box::new(iterator))
     }
 
     pub fn fetch_ticks(

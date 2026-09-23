@@ -111,19 +111,11 @@ book:
 # Remove caches
 [group('Project')]
 clean:
-    rm -rf *.egg-info
-    rm -rf .cache
-    rm -rf .coverage
     rm -rf .mypy_cache
     rm -rf .pytest_cache
     rm -rf .ruff_cache
     rm -rf avin.zip
-    rm -rf coverage.xml
-    rm -rf htmlcov
-    rm -rf build
-    rm -rf dist
     rm -rf target
-    uv run ruff clean || true
 
 # Remove caches and .venv
 [group('Project')]

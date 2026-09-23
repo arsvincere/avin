@@ -5,8 +5,21 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod bars_iter;
-mod helper;
-mod provider;
+#![allow(unused)]
 
-pub use provider::TBankProvider;
+use avin_core::TimeRange;
+use avin_domain::{InstrumentInfo, TimeFrame};
+
+use crate::DataError;
+
+pub(super) struct TBankBarsIterator {}
+
+impl TBankBarsIterator {
+    pub(super) fn new(
+        instrument: InstrumentInfo,
+        tf: TimeFrame,
+        range: TimeRange,
+    ) -> Result<Self, DataError> {
+        todo!();
+    }
+}
