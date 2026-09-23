@@ -47,11 +47,8 @@ impl TBankBarsIterator {
         tf: TimeFrame,
         range: TimeRange,
     ) -> Result<Self, DataError> {
-        let uid = instrument
-            .raw_info()
-            .get("uid")
-            .cloned()
-            .ok_or_else(|| {
+        let uid =
+            instrument.raw_info().get("uid").cloned().ok_or_else(|| {
                 let msg = format!(
                     "T-Bank instrument {} has no uid",
                     instrument.iid(),
@@ -77,17 +74,15 @@ impl TBankBarsIterator {
         })
     }
 
-    fn download_year(&self, year: i32) -> Result<Option<YearArchive>, DataError> {
+    fn download_year(
+        &self,
+        year: i32,
+    ) -> Result<Option<YearArchive>, DataError> {
         let mut file = tempfile::tempfile().map_err(|err| {
             connect_error("failed to create temp file for T-Bank bars", err)
         })?;
 
-        if !download_archive(
-            &self.token,
-            &self.uid,
-            year,
-            &mut file,
-        )? {
+        if !download_archive(&self.token, &self.uid, year, &mut file)? {
             return Ok(None);
         }
 
@@ -191,10 +186,7 @@ fn download_archive(
             .spawn(|| download_archive_blocking(token, uid, year, file))
             .join()
             .map_err(|_| {
-                DataError::connect(
-                    "T-Bank download thread panicked",
-                    None,
-                )
+                DataError::connect("T-Bank download thread panicked", None)
             })?
     })
 }
@@ -209,18 +201,15 @@ fn download_archive_blocking(
         .timeout(Duration::from_secs(30))
         .build()
         .map_err(|err| {
-            connect_error("failed to create T-Bank HTTP client", err)
-        })?;
+        connect_error("failed to create T-Bank HTTP client", err)
+    })?;
 
     let url = format!(
         "https://invest-public-api.tbank.ru/history-data?instrumentId={uid}&year={year}"
     );
 
     for attempt in 0..5 {
-        let response = client
-            .get(&url)
-            .bearer_auth(token)
-            .send();
+        let response = client.get(&url).bearer_auth(token).send();
 
         match response {
             Ok(mut response) => {
@@ -326,9 +315,8 @@ fn read_pack(
 }
 
 fn parse_file_day(name: &str, uid: &str) -> Result<Option<Time>, DataError> {
-    let Some(name) = Path::new(name)
-        .file_name()
-        .and_then(|name| name.to_str())
+    let Some(name) =
+        Path::new(name).file_name().and_then(|name| name.to_str())
     else {
         return Ok(None);
     };
