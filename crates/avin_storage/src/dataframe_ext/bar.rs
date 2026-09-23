@@ -80,3 +80,33 @@ impl DataFrameExt for Bar {
         Ok(bars)
     }
 }
+
+#[test]
+fn bar_dataframe_round_trip() {
+    let bars = vec![
+        Bar::new_unchecked(
+            Time::new(1_000_000_000),
+            Price::new(100.0).unwrap(),
+            Price::new(110.0).unwrap(),
+            Price::new(90.0).unwrap(),
+            Price::new(105.0).unwrap(),
+            Quantity::new(1000.0).unwrap(),
+        ),
+        Bar::new_unchecked(
+            Time::new(2_000_000_000),
+            Price::new(105.0).unwrap(),
+            Price::new(120.0).unwrap(),
+            Price::new(100.0).unwrap(),
+            Price::new(115.0).unwrap(),
+            Quantity::new(2000.0).unwrap(),
+        ),
+    ];
+
+    let df = Bar::to_df(&bars).unwrap();
+
+    assert_eq!(df.schema().as_ref(), &StorageSchema::bar());
+
+    let restored = Bar::from_df(df).unwrap();
+
+    assert_eq!(restored, bars);
+}
