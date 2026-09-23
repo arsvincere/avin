@@ -136,38 +136,13 @@ impl DataFrameExt for Bar {
             return Err(StorageError::conversion(msg, None));
         }
 
-        let time = df.column("timestamp").unwrap().i64().map_err(|err| {
-            let msg = "column 'timestamp' must contain i64";
-            StorageError::conversion(msg, Some(err.into()))
-        })?;
-
-        let open = df.column("open").unwrap().f64().map_err(|err| {
-            let msg = "column 'open' must contain f64";
-            StorageError::conversion(msg, Some(err.into()))
-        })?;
-
-        let high = df.column("high").unwrap().f64().map_err(|err| {
-            let msg = "column 'high' must contain f64";
-            StorageError::conversion(msg, Some(err.into()))
-        })?;
-
-        let low = df.column("low").unwrap().f64().map_err(|err| {
-            let msg = "column 'low' must contain f64";
-            StorageError::conversion(msg, Some(err.into()))
-        })?;
-
-        let close = df.column("close").unwrap().f64().map_err(|err| {
-            let msg = "column 'close' must contain f64";
-            StorageError::conversion(msg, Some(err.into()))
-        })?;
-
-        let volume = df
-            .column("volume")
-            .and_then(|column| column.f64())
-            .map_err(|err| {
-                let msg = "column 'volume' must contain f64";
-                StorageError::conversion(msg, Some(err.into()))
-            })?;
+        // schema is checked, then unwrap() is ok
+        let time = df.column("timestamp").unwrap().i64().unwrap();
+        let open = df.column("open").unwrap().f64().unwrap();
+        let high = df.column("high").unwrap().f64().unwrap();
+        let low = df.column("low").unwrap().f64().unwrap();
+        let close = df.column("close").unwrap().f64().unwrap();
+        let volume = df.column("volume").unwrap().f64().unwrap();
 
         let mut bars = Vec::with_capacity(df.height());
 
