@@ -14,3 +14,8 @@ avin_connect = { workspace = true }
 avin_core = { workspace = true }
 avin_domain = { workspace = true }
 avin_system = { workspace = true }
+
+chrono = { workspace = true }
+tempfile = { workspace = true }
+ureq = { workspace = true }
+zip = { workspace = true }
