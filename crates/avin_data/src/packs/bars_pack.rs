@@ -10,6 +10,9 @@ use avin_domain::{Bar, InstrumentInfo, TimeFrame};
 
 use crate::DataError;
 
+/// A validated pack of historical bars for one instrument and timeframe.
+///
+/// The pack covers the specified [`TimeRange`] and may contain no bars.
 pub struct BarsPack {
     instrument: InstrumentInfo,
     timeframe: TimeFrame,
@@ -18,6 +21,17 @@ pub struct BarsPack {
 }
 
 impl BarsPack {
+    /// Creates a pack of historical bars.
+    ///
+    /// Validates that bars:
+    /// - are ordered by increasing time;
+    /// - have unique times;
+    /// - belong to `range`;
+    /// - are aligned to the timeframe.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DataError::Pack`] if validation fails.
     pub fn new(
         instrument: InstrumentInfo,
         tf: TimeFrame,
@@ -60,18 +74,22 @@ impl BarsPack {
         })
     }
 
+    /// Returns the instrument associated with the bars.
     pub fn instrument(&self) -> &InstrumentInfo {
         &self.instrument
     }
 
+    /// Returns the bars timeframe.
     pub fn timeframe(&self) -> TimeFrame {
         self.timeframe
     }
 
+    /// Returns the time range represented by the pack.
     pub fn range(&self) -> TimeRange {
         self.range
     }
 
+    /// Returns all bars of pack.
     pub fn bars(&self) -> &[Bar] {
         &self.bars
     }
