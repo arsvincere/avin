@@ -5,9 +5,15 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-mod bar;
-mod df_ext;
-mod instrument;
-mod schema;
+use polars::prelude::DataFrame;
 
-pub use df_ext::DataFrameExt;
+use crate::StorageError;
+
+/// Conversion between AVIN domain objects and Polars DataFrames.
+pub trait DataFrameExt: Sized {
+    /// Converts a slice of domain objects into a DataFrame.
+    fn to_df(data: &[Self]) -> Result<DataFrame, StorageError>;
+
+    /// Converts a DataFrame into domain objects.
+    fn from_df(df: DataFrame) -> Result<Vec<Self>, StorageError>;
+}
