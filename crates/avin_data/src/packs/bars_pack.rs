@@ -76,3 +76,116 @@ impl BarsPack {
         &self.bars
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use std::str::FromStr;
+
+    use avin_core::{Price, Quantity, Time};
+
+    use super::*;
+
+    fn instrument() -> InstrumentInfo {
+        InstrumentInfo::new_unchecked(HashMap::new())
+    }
+
+    fn bar(time: &str) -> Bar {
+        Bar::new_unchecked(
+            Time::from_str(time).unwrap(),
+            Price::new(10.0).unwrap(),
+            Price::new(11.0).unwrap(),
+            Price::new(9.0).unwrap(),
+            Price::new(10.5).unwrap(),
+            Quantity::new(100.0).unwrap(),
+        )
+    }
+
+    fn range() -> TimeRange {
+        TimeRange::new(
+            Time::from_str("2026-01-01 10:00").unwrap(),
+            Time::from_str("2026-01-01 11:00").unwrap(),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn valid() {
+        let bars = vec![
+            bar("2026-01-01 10:00"),
+            bar("2026-01-01 10:01"),
+            bar("2026-01-01 10:02"),
+        ];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let pack = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(pack.is_ok());
+    }
+
+    #[test]
+    fn reject_unsorted() {
+        let bars = vec![
+            bar("2026-01-01 10:00"),
+            bar("2026-01-01 10:02"),
+            bar("2026-01-01 10:01"),
+        ];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let result = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(matches!(result, Err(DataError::Pack { .. })));
+    }
+
+    #[test]
+    fn reject_duplicates() {
+        let bars = vec![
+            bar("2026-01-01 10:00"),
+            bar("2026-01-01 10:01"),
+            bar("2026-01-01 10:01"),
+        ];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let result = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(matches!(result, Err(DataError::Pack { .. })));
+    }
+
+    #[test]
+    fn reject_outside_range() {
+        let bars = vec![
+            bar("2026-01-01 09:59"),
+            bar("2026-01-01 10:00"),
+            bar("2026-01-01 10:01"),
+        ];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let result = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(matches!(result, Err(DataError::Pack { .. })));
+    }
+
+    #[test]
+    fn reject_misaligned_time() {
+        let bars = vec![
+            bar("2026-01-01 10:00"),
+            bar("2026-01-01 10:01:30"),
+            bar("2026-01-01 10:02"),
+        ];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let result = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(matches!(result, Err(DataError::Pack { .. })));
+    }
+}
