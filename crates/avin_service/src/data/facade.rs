@@ -33,14 +33,12 @@ impl DataService {
         let i = InstrumentService::find_iid(provider, iid)?;
 
         match md {
-            MarketData::Tick => download_ticks(provider, i, year)?,
+            MarketData::Tick => download_ticks(provider, i, year),
             MarketData::Bar1M => {
-                download_bars(provider, i, TimeFrame::M1, year)?
+                download_bars(provider, i, TimeFrame::M1, year)
             }
             _ => todo!(),
-        };
-
-        todo!()
+        }
     }
 
     pub fn load(
