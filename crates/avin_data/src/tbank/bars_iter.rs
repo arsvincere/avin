@@ -33,12 +33,6 @@ pub(super) struct TBankBarsIterator {
     uid: String,
     token: String,
     years: RangeInclusive<i32>,
-    archive: Option<YearArchive>,
-}
-
-struct YearArchive {
-    zip: ZipArchive<File>,
-    entries: std::vec::IntoIter<usize>,
 }
 
 impl TBankBarsIterator {
@@ -70,14 +64,51 @@ impl TBankBarsIterator {
             uid,
             token: ws.secret.tbank_token().to_string(),
             years: first_year..=last_year,
-            archive: None,
         })
+    }
+
+    fn read_year(&self, year: i32) -> Result<BarsPack, DataError> {
+        let year = year_range(year)?;
+        let begin = max(self.range.begin(), year.begin());
+        let end = min(self.range.end(), year.end());
+        let range = TimeRange::new(begin, end).map_err(|err| {
+            pack_error("failed to build T-Bank bars year range", err)
+        })?;
+
+        let Some(mut archive) = self.download_year(begin.dt().year())? else {
+            return BarsPack::new(
+                self.instrument.clone(),
+                self.tf,
+                range,
+                Vec::new(),
+            );
+        };
+
+        let mut bars = Vec::new();
+
+        for index in 0..archive.len() {
+            let file = archive.by_index(index).map_err(|err| {
+                connect_error("failed to read T-Bank archive entry", err)
+            })?;
+
+            if file.is_dir() {
+                continue;
+            }
+
+            let name = file.name().to_string();
+
+            read_bars(&mut bars, range, &self.uid, &name, file)?;
+        }
+
+        bars.sort_by_key(|bar| bar.time);
+
+        BarsPack::new(self.instrument.clone(), self.tf, range, bars)
     }
 
     fn download_year(
         &self,
         year: i32,
-    ) -> Result<Option<YearArchive>, DataError> {
+    ) -> Result<Option<ZipArchive<File>>, DataError> {
         let mut file = tempfile::tempfile().map_err(|err| {
             connect_error("failed to create temp file for T-Bank bars", err)
         })?;
@@ -90,38 +121,9 @@ impl TBankBarsIterator {
             connect_error("failed to rewind T-Bank archive", err)
         })?;
 
-        YearArchive::new(file).map(Some)
-    }
-
-    fn next_pack(&mut self) -> Option<Result<BarsPack, DataError>> {
-        loop {
-            let archive = self.archive.as_mut()?;
-            let index = archive.entries.next()?;
-
-            let file = match archive.zip.by_index(index) {
-                Ok(file) => file,
-                Err(err) => {
-                    return Some(Err(connect_error(
-                        "failed to read T-Bank archive entry",
-                        err,
-                    )));
-                }
-            };
-            let name = file.name().to_string();
-
-            match read_pack(
-                &self.instrument,
-                self.tf,
-                self.range,
-                &self.uid,
-                &name,
-                file,
-            ) {
-                Ok(Some(pack)) => return Some(Ok(pack)),
-                Ok(None) => continue,
-                Err(err) => return Some(Err(err)),
-            }
-        }
+        ZipArchive::new(file).map(Some).map_err(|err| {
+            connect_error("failed to open T-Bank ZIP archive", err)
+        })
     }
 }
 
@@ -129,50 +131,22 @@ impl Iterator for TBankBarsIterator {
     type Item = Result<BarsPack, DataError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            if let Some(result) = self.next_pack() {
-                return Some(result);
-            }
-
-            let year = self.years.next()?;
-
-            match self.download_year(year) {
-                Ok(Some(archive)) => self.archive = Some(archive),
-                Ok(None) => continue,
-                Err(err) => return Some(Err(err)),
-            }
-        }
+        let year = self.years.next()?;
+        Some(self.read_year(year))
     }
 }
 
-impl YearArchive {
-    fn new(file: File) -> Result<Self, DataError> {
-        let mut zip = ZipArchive::new(file).map_err(|err| {
-            connect_error("failed to open T-Bank ZIP archive", err)
-        })?;
+fn year_range(year: i32) -> Result<TimeRange, DataError> {
+    let begin = Time::from_str(&format!("{year}-01-01")).map_err(|err| {
+        pack_error(format!("invalid T-Bank bars year {year}"), err)
+    })?;
 
-        let mut entries = Vec::new();
-        for index in 0..zip.len() {
-            let entry = zip.by_index(index).map_err(|err| {
-                connect_error("failed to inspect T-Bank ZIP archive", err)
-            })?;
+    let end = Time::from_str(&format!("{}-01-01", year + 1)).map_err(|err| {
+        pack_error(format!("invalid T-Bank bars year {}", year + 1), err)
+    })?;
 
-            if !entry.is_dir() {
-                entries.push((entry.name().to_string(), index));
-            }
-        }
-
-        entries.sort_by(|a, b| a.0.cmp(&b.0));
-
-        Ok(Self {
-            zip,
-            entries: entries
-                .into_iter()
-                .map(|(_, index)| index)
-                .collect::<Vec<_>>()
-                .into_iter(),
-        })
-    }
+    TimeRange::new(begin, end)
+        .map_err(|err| pack_error(format!("invalid T-Bank bars year {year}"), err))
 }
 
 fn download_archive(
@@ -268,28 +242,22 @@ fn retryable(status: u16) -> bool {
     matches!(status, 429 | 500 | 502 | 503 | 504)
 }
 
-fn read_pack(
-    instrument: &InstrumentInfo,
-    tf: TimeFrame,
-    requested: TimeRange,
+fn read_bars(
+    bars: &mut Vec<Bar>,
+    range: TimeRange,
     uid: &str,
     name: &str,
     reader: impl Read,
-) -> Result<Option<BarsPack>, DataError> {
+) -> Result<(), DataError> {
     let Some(day_begin) = parse_file_day(name, uid)? else {
-        return Ok(None);
+        return Ok(());
     };
     let day_end = TimeFrame::Day.end_frame(day_begin);
 
-    if day_end <= requested.begin() || day_begin >= requested.end() {
-        return Ok(None);
+    if day_end <= range.begin() || day_begin >= range.end() {
+        return Ok(());
     }
 
-    let begin = max(day_begin, requested.begin());
-    let end = min(day_end, requested.end());
-    let range = TimeRange::new(begin, end).unwrap();
-
-    let mut bars = Vec::new();
     for (index, line) in BufReader::new(reader).lines().enumerate() {
         let line = line.map_err(|err| {
             connect_error(format!("failed to read {name}:{}", index + 1), err)
@@ -305,9 +273,7 @@ fn read_pack(
         }
     }
 
-    bars.sort_by_key(|bar| bar.time);
-
-    BarsPack::new(instrument.clone(), tf, range, bars).map(Some)
+    Ok(())
 }
 
 fn parse_file_day(name: &str, uid: &str) -> Result<Option<Time>, DataError> {
