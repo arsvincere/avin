@@ -68,14 +68,14 @@ impl TBankBarsIterator {
     }
 
     fn read_year(&self, year: i32) -> Result<BarsPack, DataError> {
-        let year = year_range(year)?;
-        let begin = max(self.range.begin(), year.begin());
-        let end = min(self.range.end(), year.end());
+        let year_range = year_range(year)?;
+        let begin = max(self.range.begin(), year_range.begin());
+        let end = min(self.range.end(), year_range.end());
         let range = TimeRange::new(begin, end).map_err(|err| {
             pack_error("failed to build T-Bank bars year range", err)
         })?;
 
-        let Some(mut archive) = self.download_year(begin.dt().year())? else {
+        let Some(mut archive) = self.download_year(year)? else {
             return BarsPack::new(
                 self.instrument.clone(),
                 self.tf,
@@ -145,8 +145,9 @@ fn year_range(year: i32) -> Result<TimeRange, DataError> {
         pack_error(format!("invalid T-Bank bars year {}", year + 1), err)
     })?;
 
-    TimeRange::new(begin, end)
-        .map_err(|err| pack_error(format!("invalid T-Bank bars year {year}"), err))
+    TimeRange::new(begin, end).map_err(|err| {
+        pack_error(format!("invalid T-Bank bars year {year}"), err)
+    })
 }
 
 fn download_archive(
