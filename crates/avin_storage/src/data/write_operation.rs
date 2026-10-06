@@ -15,7 +15,7 @@ use avin_core::{Time, TimeRange, Year};
 use avin_domain::{Bar, DataProvider, InstrumentId, MarketData, Tick};
 use avin_system::Workspace;
 
-use crate::{DataFrameExt, MarketDataKey, StorageError};
+use crate::{DataFrameExt, StorageError};
 
 pub struct WriteOperation {
     provider: DataProvider,

@@ -14,6 +14,7 @@ use avin_core::{Quantity, Time, TimeRange, Year};
 use avin_domain::{
     Bar, DataProvider, InstrumentId, MarketData, Tick, TimeFrame,
 };
+use avin_system::Workspace;
 
 use crate::{DataFrameExt, MarketDataKey, StorageError};
 
@@ -39,7 +40,19 @@ impl MarketDataStorage {
     }
 
     pub fn write(key: MarketDataKey) -> Result<WriteOperation, StorageError> {
-        // TODO: проверка на dirty сначала
+        let workspace = Workspace::get().map_err(|err| {
+            let msg = "failed to resolve storage path";
+            StorageError::path(msg, Some(err.into()))
+        })?;
+
+        let stage = workspace.dirs.market_data().join("stage");
+
+        if crate::helper::is_exists(&stage)? {
+            return Err(StorageError::save(
+                "market data storage is dirty",
+                None,
+            ));
+        }
 
         let write_operation = match key {
             MarketDataKey::Year {
@@ -48,7 +61,8 @@ impl MarketDataStorage {
                 md,
                 year,
             } => WriteOperation::new(provider, iid, md, year),
-            other => todo!("err"),
+
+            _ => todo!("err"),
         };
 
         Ok(write_operation)
