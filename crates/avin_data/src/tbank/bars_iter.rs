@@ -141,9 +141,10 @@ fn year_range(year: i32) -> Result<TimeRange, DataError> {
         pack_error(format!("invalid T-Bank bars year {year}"), err)
     })?;
 
-    let end = Time::from_str(&format!("{}-01-01", year + 1)).map_err(|err| {
-        pack_error(format!("invalid T-Bank bars year {}", year + 1), err)
-    })?;
+    let end =
+        Time::from_str(&format!("{}-01-01", year + 1)).map_err(|err| {
+            pack_error(format!("invalid T-Bank bars year {}", year + 1), err)
+        })?;
 
     TimeRange::new(begin, end).map_err(|err| {
         pack_error(format!("invalid T-Bank bars year {year}"), err)
