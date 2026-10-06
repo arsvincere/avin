@@ -77,7 +77,7 @@ impl MarketDataKey {
             StorageError::path(msg, Some(err.into()))
         })?;
 
-        let mut path = workspace.dirs.instruments().to_path_buf();
+        let mut path = workspace.dirs.market_data().to_path_buf();
 
         match self {
             Self::Provider { provider } => {
