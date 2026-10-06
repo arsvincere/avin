@@ -120,8 +120,7 @@ fn download_bars(
             ServiceError::fetch(msg, Some(err.into()))
         })?;
 
-        // need impl DataFrameExt for Bar
-        // operation.add(pack.range(), pack.bars());
+        operation.add(pack.range(), pack.bars());
     }
 
     operation.finalize().map_err(|err| {

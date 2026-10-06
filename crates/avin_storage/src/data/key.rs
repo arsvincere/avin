@@ -5,8 +5,16 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
+// TODO: delete after impl
+#![allow(unused)]
+
+use std::path::PathBuf;
+
 use avin_core::Year;
 use avin_domain::{DataProvider, InstrumentId, MarketData};
+use avin_system::Workspace;
+
+use crate::StorageError;
 
 pub enum MarketDataKey {
     Provider {
@@ -61,5 +69,51 @@ impl MarketDataKey {
             md,
             year,
         }
+    }
+
+    pub(super) fn path(&self) -> Result<PathBuf, StorageError> {
+        let workspace = Workspace::get().map_err(|err| {
+            let msg = "failed to resolve storage path";
+            StorageError::path(msg, Some(err.into()))
+        })?;
+
+        let mut path = workspace.dirs.instruments().to_path_buf();
+
+        match self {
+            Self::Provider { provider } => {
+                path.push(provider.key());
+            }
+
+            Self::Instrument { provider, iid } => {
+                path.push(provider.key());
+                path.push(iid.exchange().key());
+                path.push(iid.category().key());
+                path.push(iid.ticker().to_string());
+            }
+
+            Self::MarketData { provider, iid, md } => {
+                path.push(provider.key());
+                path.push(iid.exchange().key());
+                path.push(iid.category().key());
+                path.push(iid.ticker().to_string());
+                path.push(md.key());
+            }
+
+            Self::Year {
+                provider,
+                iid,
+                md,
+                year,
+            } => {
+                path.push(provider.key());
+                path.push(iid.exchange().key());
+                path.push(iid.category().key());
+                path.push(iid.ticker().to_string());
+                path.push(md.key());
+                path.push(format!("{}.parquet", year));
+            }
+        };
+
+        Ok(path)
     }
 }

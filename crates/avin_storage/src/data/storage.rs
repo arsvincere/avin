@@ -8,8 +8,6 @@
 // TODO: delete after impl
 #![allow(unused)]
 
-use std::any::TypeId;
-
 use polars::prelude::DataFrame;
 
 use avin_core::{Quantity, Time, TimeRange, Year};
@@ -18,6 +16,8 @@ use avin_domain::{
 };
 
 use crate::{DataFrameExt, MarketDataKey, StorageError};
+
+use super::WriteOperation;
 
 pub struct MarketDataStorage {}
 
@@ -39,7 +39,19 @@ impl MarketDataStorage {
     }
 
     pub fn write(key: MarketDataKey) -> Result<WriteOperation, StorageError> {
-        todo!()
+        // TODO: проверка на dirty сначала
+
+        let write_operation = match key {
+            MarketDataKey::Year {
+                provider,
+                iid,
+                md,
+                year,
+            } => WriteOperation::new(provider, iid, md, year),
+            other => todo!("err"),
+        };
+
+        Ok(write_operation)
     }
 
     pub fn load_range(
@@ -64,57 +76,4 @@ impl MarketDataStorage {
 pub enum StorageStatus {
     Clean,
     Dirty(WriteOperation),
-}
-
-pub struct WriteOperation {
-    provider: DataProvider,
-    iid: InstrumentId,
-    md: MarketData,
-    year: Year,
-}
-
-impl WriteOperation {
-    pub fn add<T: DataFrameExt + 'static>(
-        &self,
-        range: TimeRange,
-        data: &[T],
-    ) -> Result<(), StorageError> {
-        let valid = match self.md {
-            MarketData::Tick => TypeId::of::<T>() == TypeId::of::<Tick>(),
-
-            MarketData::Bar1M
-            | MarketData::Bar5M
-            | MarketData::Bar10M
-            | MarketData::Bar15M
-            | MarketData::Bar1H
-            | MarketData::Bar4H
-            | MarketData::BarDay
-            | MarketData::BarWeek
-            | MarketData::BarMonth => {
-                TypeId::of::<T>() == TypeId::of::<Bar>()
-            }
-
-            MarketData::OrderBook => todo!(),
-        };
-
-        if !valid {
-            todo!("err")
-        }
-
-        let df = T::to_df(data)?;
-
-        todo!()
-    }
-
-    pub fn finalize(self) -> Result<(), StorageError> {
-        todo!()
-    }
-
-    pub fn abort(self) -> Result<(), StorageError> {
-        todo!()
-    }
-
-    pub fn next_time(&self) -> Result<Option<Time>, StorageError> {
-        todo!()
-    }
 }
