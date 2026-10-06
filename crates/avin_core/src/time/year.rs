@@ -84,6 +84,19 @@ impl Display for Year {
     }
 }
 
+impl FromStr for Year {
+    type Err = CoreError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let year: u16 = s.parse().map_err(|err| {
+            let msg = format!("invalid year '{s}': {err}");
+            CoreError::Year(msg)
+        })?;
+
+        Year::new(year)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -132,6 +145,12 @@ mod tests {
         let year = Year::new(2026).unwrap();
 
         assert_eq!(year.to_string(), "2026");
+    }
+
+    #[test]
+    fn from_str() {
+        assert!(Year::from_str("2025").is_ok());
+        assert!(Year::from_str("huita").is_err());
     }
 
     #[test]

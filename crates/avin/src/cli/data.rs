@@ -89,7 +89,7 @@ pub(super) struct DownloadOptions {
     #[arg(long, requires = "instrument")]
     data: Option<MarketData>,
 
-    #[arg(long, requires = "data", value_parser = parse_year)]
+    #[arg(long, requires = "data")]
     year: Option<Year>,
 }
 
@@ -104,7 +104,7 @@ pub(super) struct DeleteOptions {
     #[arg(long, requires = "instrument")]
     data: Option<MarketData>,
 
-    #[arg(long, requires = "data", value_parser = parse_year)]
+    #[arg(long, requires = "data")]
     year: Option<Year>,
 }
 
@@ -131,7 +131,7 @@ pub(super) struct SyncOptions {
     #[arg(long, requires = "instrument")]
     data: Option<MarketData>,
 
-    #[arg(long, requires = "data", value_parser = parse_year)]
+    #[arg(long, requires = "data")]
     year: Option<Year>,
 }
 
@@ -145,13 +145,4 @@ fn download(opt: DownloadOptions) -> Result<(), AvinError> {
     .unwrap();
 
     Ok(())
-}
-
-// TODO: добавить парсер в сам тип Year чтобы clap им мог пользоваться
-fn parse_year(value: &str) -> Result<Year, String> {
-    let year = value
-        .parse::<u16>()
-        .map_err(|_| format!("invalid year '{value}'"))?;
-
-    Year::new(year).map_err(|err| err.to_string())
 }
