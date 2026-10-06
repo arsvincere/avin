@@ -144,6 +144,18 @@ mod tests {
     }
 
     #[test]
+    fn empty() {
+        let bars = vec![];
+        let instrument = instrument();
+        let tf = TimeFrame::M1;
+        let range = range();
+
+        let pack = BarsPack::new(instrument, tf, range, bars);
+
+        assert!(pack.is_ok());
+    }
+
+    #[test]
     fn reject_unsorted() {
         let bars = vec![
             bar("2026-01-01 10:00"),

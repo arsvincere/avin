@@ -5,7 +5,7 @@
 // https://avin.info
 // ───────────────────────────────────────────────────────────────────────────
 
-use std::{fs, fs::File, path::Path};
+use std::{fs, fs::File, path::Path, path::PathBuf};
 
 use polars::prelude::{DataFrame, ParquetReader, ParquetWriter, SerReader};
 
@@ -151,8 +151,6 @@ pub fn read_pqt(path: &Path) -> Result<DataFrame, StorageError> {
 ///
 /// Returns an error if the parent directories cannot be created, if the
 /// file cannot be created, or if Polars cannot write the Parquet data.
-// TODO: Реализовать атомарную запись через временный файл и rename,
-// чтобы при ошибке записи не потерять существующий кэш.
 pub fn write_pqt(
     df: &mut DataFrame,
     path: &Path,
@@ -168,6 +166,44 @@ pub fn write_pqt(
     // write file
     ParquetWriter::new(file).finish(df).map_err(|err| {
         let msg = format!("failed to write file '{}'", path.display());
+        StorageError::save(msg, Some(err.into()))
+    })?;
+
+    Ok(())
+}
+
+pub fn write_pqt_atomic(
+    df: &mut DataFrame,
+    path: &Path,
+) -> Result<(), StorageError> {
+    make_dirs_for_file(path)?;
+
+    let mut tmp = PathBuf::from(path);
+    let file_name = path.file_name().ok_or_else(|| {
+        let msg = format!("path has no file name: {}", path.display());
+        StorageError::save(msg, None)
+    })?;
+
+    let mut tmp_name = file_name.to_os_string();
+    tmp_name.push(".tmp");
+    tmp.set_file_name(tmp_name);
+
+    if is_exists(&tmp)? {
+        delete_file(&tmp)?;
+    }
+
+    if let Err(err) = write_pqt(df, &tmp) {
+        let _ = fs::remove_file(&tmp);
+        return Err(err);
+    }
+
+    fs::rename(&tmp, path).map_err(|err| {
+        let msg = format!(
+            "failed to commit file '{}' -> '{}'",
+            tmp.display(),
+            path.display(),
+        );
+
         StorageError::save(msg, Some(err.into()))
     })?;
 

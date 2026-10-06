@@ -101,7 +101,7 @@ impl TimeRange {
 
 impl Display for TimeRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{}, {})", self.begin, self.end)
+        write!(f, "[{}, {})", self.begin.dt(), self.end.dt())
     }
 }
 

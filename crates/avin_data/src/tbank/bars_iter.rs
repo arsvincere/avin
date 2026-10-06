@@ -305,10 +305,6 @@ fn read_pack(
         }
     }
 
-    if bars.is_empty() {
-        return Ok(None);
-    }
-
     bars.sort_by_key(|bar| bar.time);
 
     BarsPack::new(instrument.clone(), tf, range, bars).map(Some)
