@@ -42,7 +42,7 @@ pub enum StorageError {
 
 impl StorageError {
     pub fn path(msg: impl Into<String>, err: Option<Source>) -> Self {
-        Self::Delete {
+        Self::Path {
             message: msg.into(),
             source: err,
         }

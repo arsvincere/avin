@@ -120,7 +120,10 @@ fn download_bars(
             ServiceError::fetch(msg, Some(err.into()))
         })?;
 
-        operation.add(pack.range(), pack.bars());
+        operation.add(pack.range(), pack.bars()).map_err(|err| {
+            let msg = "";
+            ServiceError::store(msg, Some(err.into()))
+        })?;
     }
 
     operation.finalize().map_err(|err| {

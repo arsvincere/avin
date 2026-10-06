@@ -28,7 +28,7 @@ pub enum ServiceError {
 
 impl ServiceError {
     pub fn find(msg: impl Into<String>, err: Option<Source>) -> Self {
-        Self::Fetch {
+        Self::Find {
             message: msg.into(),
             source: err,
         }

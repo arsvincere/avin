@@ -62,16 +62,16 @@ avin data sync
 ## directory
 
 ```text
-data/moex/share/SBER/tbank/bar_1m
-data/moex/share/SBER/tbank/bar_5m
-data/moex/share/SBER/tbank/tick
-data/moex/share/SBER/tbank/...
+data/tbank/moex/share/SBER/bar_1m
+data/tbank/moex/share/SBER/bar_5m
+data/tbank/moex/share/SBER/tick
+data/tbank/moex/share/SBER/...
 ```
 
 ## files
 ```text
 # v6 — base + tail + stage/
-tbank/
+SBER/
 ├── bar_1m/
 │   ├── 2024.parquet
 │   ├── 2025.parquet
