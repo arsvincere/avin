@@ -8,6 +8,8 @@
 // TODO: del it after impl
 #![allow(unused)]
 
+use std::str::FromStr;
+
 use cached::cached;
 
 use avin_domain::{
@@ -24,18 +26,34 @@ impl InstrumentCatalog {
         provider: DataProvider,
         code: &str,
     ) -> Result<InstrumentInfo, ServiceError> {
-        println!("InstrumentCatalog find {provider} {code}");
+        let iid = InstrumentId::from_str(code).map_err(|err| {
+            let msg = format!("failed parsing instrument code '{code}'");
+            ServiceError::find(msg, Some(err.into()))
+        })?;
 
-        todo!()
+        InstrumentCatalog::find_iid(provider, &iid)
     }
 
     pub fn find_iid(
         provider: DataProvider,
         iid: &InstrumentId,
     ) -> Result<InstrumentInfo, ServiceError> {
-        println!("InstrumentCatalog find_iid {provider} {iid}");
+        // TODO: говнокод... надо решить что делать с case sensitive Ticker Eq
+        let exchange = iid.exchange();
+        let category = iid.category();
+        let ticker = iid.ticker().to_string();
 
-        todo!()
+        let instruments = cached_load(provider, exchange, category)?;
+
+        for i in instruments.iter() {
+            if i.ticker().to_string().eq_ignore_ascii_case(&ticker) {
+                return Ok(i.clone());
+            }
+        }
+
+        let msg = format!("{iid} not found in {provider} instruments");
+
+        Err(ServiceError::find(msg, None))
     }
 
     pub fn find_figi(

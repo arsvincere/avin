@@ -12,6 +12,10 @@ type Source = Box<dyn Error + Send + Sync + 'static>;
 
 #[derive(Debug)]
 pub enum ServiceError {
+    Find {
+        message: String,
+        source: Option<Source>,
+    },
     Fetch {
         message: String,
         source: Option<Source>,
@@ -23,6 +27,13 @@ pub enum ServiceError {
 }
 
 impl ServiceError {
+    pub fn find(msg: impl Into<String>, err: Option<Source>) -> Self {
+        Self::Fetch {
+            message: msg.into(),
+            source: err,
+        }
+    }
+
     pub fn fetch(msg: impl Into<String>, err: Option<Source>) -> Self {
         Self::Fetch {
             message: msg.into(),
@@ -53,6 +64,7 @@ impl ServiceError {
 impl Display for ServiceError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Find { message, .. } => write!(f, "{message}"),
             Self::Fetch { message, .. } => write!(f, "{message}"),
             Self::Store { message, .. } => write!(f, "{message}"),
         }
@@ -62,7 +74,9 @@ impl Display for ServiceError {
 impl Error for ServiceError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::Fetch { source, .. } | Self::Store { source, .. } => {
+            Self::Find { source, .. }
+            | Self::Fetch { source, .. }
+            | Self::Store { source, .. } => {
                 source.as_deref().map(|err| err as &(dyn Error + 'static))
             }
         }
